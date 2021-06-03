@@ -1,0 +1,13 @@
+.comfino-alertbar {
+    background-color: #A9A9A9;
+    color: #FFFFFF;
+    display: block;
+    line-height: 45px;
+    height: 50px;
+    position: relative;
+    text-align: center;
+    text-decoration: none;
+    top: 0px;
+    width: 100%;
+    z-index: 100;
+}
