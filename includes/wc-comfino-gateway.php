@@ -283,7 +283,8 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
         $body = file_get_contents('php://input');
 
         if (!$this->valid_signature($body)) {
-            return;
+            echo json_encode(['status' => 'Invalid signature', 'body' => $body, 'signature' => $this->get_signature()]);
+            exit();
         }
 
         $data = json_decode($body, true);
@@ -404,17 +405,28 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
      */
     private function valid_signature(string $jsonData): bool
     {
-        $headers = getallheaders();
+        return $this->get_signature() === hash('sha3-256', $this->key . $jsonData);
+    }
 
-        if (isset($headers['CR-Signature'])) {
-            $signature = $headers['CR-Signature'];
-        } else if (isset($headers['cr-signature'])) {
-            $signature = $headers['cr-signature'];
-        } else {
-            return false;
+    /**
+     * @return string
+     */
+    private function get_signature(): string
+    {
+        $headers = $_SERVER;
+        $signature = '';
+
+        foreach ($headers as $key => $value) {
+            if (0 === strpos($key, 'HTTP_')) {
+                $headers[substr($key, 5)] = $value;
+            }
         }
 
-        return $signature === hash('sha3-256', $this->key . $jsonData);
+        if (isset($headers['CR_SIGNATURE'])) {
+            $signature = $headers['CR_SIGNATURE'];
+        }
+
+        return $signature;
     }
 
     /**
@@ -422,7 +434,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
      *
      * @return string
      */
-    public function get_icon()
+    public function get_icon(): string
     {
         if ($this->show_logo) {
             $icon = '<img src="' . plugins_url('assets/img/comfino.png', __FILE__) . '" alt="Comfino Logo" />';
