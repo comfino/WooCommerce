@@ -173,18 +173,18 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
             $types[] = $offer['type'];
 
             echo '
-                <div class="confino" id="comfino_offer_' . $offer['type'] . '" data-type="' . $offer['type'] . '">
+                <div class="confino" id="comfino_offer_' . esc_html($offer['type']) . '" data-type="' . esc_html($offer['type']) . '">
                     <div style="text-align: center">
                         <div class="icon">' . $offer['icon'] . '</div>
-                        <div class="name"><strong>' . $offer['name'] . '</strong></div>
+                        <div class="name"><strong>' . esc_html($offer['name']) . '</strong></div>
                         <div class="offer">
-                            <div><strong> ' . $loanTerm . ' ' . __('installments', 'comfino') . ' x ' . $instalmentAmount . ' zł</strong></div>
-                            <div>' . __('Total amount to be repaid', 'comfino') . ': <b>' . $toPay . ' zł</b>, RRSO: ' . $rrso . ' %</div>
+                            <div><strong> ' . esc_html($loanTerm) . ' ' . __('installments', 'comfino') . ' x ' . esc_html($instalmentAmount) . ' zł</strong></div>
+                            <div>' . __('Total amount to be repaid', 'comfino') . ': <b>' . esc_html($toPay) . ' zł</b>, RRSO: ' . esc_html($rrso) . ' %</div>
                         </div>
-                        <div class="description">' . $offer['description'] . '</div>
-                        <div><a id="representative-example-link-' . $offer['type'] . '" class="representative-examlple" href="#" data-type="' . $offer['type'] . '">' . __('Representative example', 'comfino') . '</a>
+                        <div class="description">' . esc_html($offer['description']) . '</div>
+                        <div><a id="representative-example-link-' . esc_html($offer['type']) . '" class="representative-examlple" href="#" data-type="' . esc_html($offer['type']) . '">' . __('Representative example', 'comfino') . '</a>
                         </div>
-                        <div class="comfino-alertbar" id="representative-example-modal-' . $offer['type'] . '">
+                        <div class="comfino-alertbar" id="representative-example-modal-' . esc_html($offer['type']) . '">
                             <div><span class="comfino-close">&times;</span></div>
                             <div class="confino-modal-content"><p>' . $offer['representativeExample'] . '</p></div>
                         </div>
@@ -196,10 +196,10 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
         echo '<option value=""> -- </option>';
 
         foreach ($types as $type) {
-            echo '<option id="comfino_type_' . $type . '" value="' . $type . '">' . $type . '</option>';
+            echo '<option id="comfino_type_' . esc_html($type) . '" value="' . esc_html($type) . '">' . esc_html($type) . '</option>';
         }
 
-        echo '</select><script>Comfino.Gateway.init();</script>';
+        echo '</select>';
     }
 
     /**
@@ -236,7 +236,6 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
             'orderId' => (string)$order->get_id(),
             'notifyUrl' => add_query_arg('wc-api', 'WC_Comfino_Gateway', home_url('/')),
             'loanParameters' => [
-                'amount' => (int)$order->get_total() * 100,
                 'term' => $this->loan_term,
                 'type' => $type,
             ],

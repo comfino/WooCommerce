@@ -1,0 +1,129 @@
+# Copyright (C) 2021 Comfino (Comperia)
+# This file is distributed under the same license as the WooCommerce - Comfino Payment Gateway plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: WooCommerce - Comfino Payment Gateway 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/comfino-"
+"woocommerce-payment-gateway\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2021-07-16T10:08:11+00:00\n"
+"PO-Revision-Date: 2021-07-16 15:52+0200\n"
+"X-Generator: Poedit 2.4.2\n"
+"Last-Translator: \n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n"
+"%100<12 || n%100>14) ? 1 : 2);\n"
+"Language: pl_PL\n"
+
+#. Plugin Name of the plugin
+msgid "WooCommerce - Comfino Payment Gateway"
+msgstr "WooCommerce - Comfino Bramka Płatności"
+
+#. Plugin URI of the plugin
+msgid "https://github.com/comfino/WooCommerce.git"
+msgstr ""
+
+#. Description of the plugin
+msgid "Comfino (Comperia) - Comfino Payment Gateway for WooCommerce."
+msgstr "Comfino (Comperia) - Comfino Bramka płatności dla WooCommerce."
+
+#. Author of the plugin
+msgid "Comfino (Comperia)"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://github.com/comfino"
+msgstr ""
+
+#: comfino-payment-gateway.php:67
+msgid ""
+" The minimum PHP version required for Comfino is %s. You are running %s."
+msgstr ""
+
+#: comfino-payment-gateway.php:73
+msgid "WooCommerce needs to be activated."
+msgstr "WooCommerce musi być aktywny."
+
+#: comfino-payment-gateway.php:77
+msgid ""
+"The minimum WooCommerce version required for Comfino is %s. You are running "
+"%s."
+msgstr ""
+
+#: comfino-payment-gateway.php:93
+msgid "Settings"
+msgstr "Ustawienia"
+
+#: includes/wc-comfino-gateway.php:80
+msgid "Comfino Gateway"
+msgstr "Comfino Bramka"
+
+#: includes/wc-comfino-gateway.php:81
+msgid "Comfino payment gateway"
+msgstr "Comfino Bramka Płatności"
+
+#: includes/wc-comfino-gateway.php:119
+msgid "Enable/Disable"
+msgstr "Włączony/Wyłączony"
+
+#: includes/wc-comfino-gateway.php:121
+msgid "Enable Comfino Payment Module."
+msgstr "Włączony Comfino moduł płatności."
+
+#: includes/wc-comfino-gateway.php:123
+msgid "Show in the Payment List as a payment option"
+msgstr "Pokaż na liście płatności"
+
+#: includes/wc-comfino-gateway.php:126
+msgid "Sandbox mode:"
+msgstr "Tryb piaskownicy:"
+
+#: includes/wc-comfino-gateway.php:128
+msgid "Enable Sandbox Mode"
+msgstr "Włączony Tryb piaskownicy"
+
+#: includes/wc-comfino-gateway.php:132
+msgid "Title:"
+msgstr "Tytuł:"
+
+#: includes/wc-comfino-gateway.php:137
+msgid "Sandbox Key"
+msgstr "Klucz piaskownicy"
+
+#: includes/wc-comfino-gateway.php:141
+msgid "Production Key"
+msgstr "Klucz produkcyjny"
+
+#: includes/wc-comfino-gateway.php:145
+msgid "Loan Term"
+msgstr "Ilość rat"
+
+#: includes/wc-comfino-gateway.php:150
+msgid "Show Logo"
+msgstr "Wyświetlanie logo"
+
+#: includes/wc-comfino-gateway.php:152
+msgid "Show logo on payment method"
+msgstr "Pokaż logo na metodzie płatności"
+
+#: includes/wc-comfino-gateway.php:181
+msgid "installments"
+msgstr "rat"
+
+#: includes/wc-comfino-gateway.php:182
+msgid "Total amount to be repaid"
+msgstr "Łączna kwota do spłaty"
+
+#: includes/wc-comfino-gateway.php:185
+msgid "Representative example"
+msgstr "Przykład reprezentatywny"
+
+#: includes/wc-comfino-gateway.php:260
+msgid "Comfino create order"
+msgstr "Comfino wniosek stworzony"
+
+#: includes/wc-comfino-gateway.php:295
+msgid "Comfino status: "
+msgstr "Comfino status: "

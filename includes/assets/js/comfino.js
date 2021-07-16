@@ -8,8 +8,18 @@ var Comfino = Comfino || {};
     Comfino.Gateway = {
         init: function () {
 
+            $('body').on('updated_checkout', function () {
+                Comfino.Gateway.initConfino();
+
+                $('input[name="payment_method"]').on('change', function () {
+                    Comfino.Gateway.initConfino();
+                });
+            });
+        },
+
+        initConfino: function () {
             $("div[id^='comfino_offer_']").each(function () {
-                $(this).click(function () {
+                $(this).on('click', function () {
                     $("div[id^='comfino_offer_']").each(function () {
                         $(this).removeClass("confino-selected");
                         $(this).addClass("confino-unselected");
@@ -22,7 +32,7 @@ var Comfino = Comfino || {};
             });
 
             $("a[id^='representative-example-link-']").each(function () {
-                $(this).click(function (event) {
+                $(this).on('click', function (event) {
                     event.stopPropagation();
                     $('#representative-example-modal-' + $(this).data('type')).show();
 
@@ -31,7 +41,7 @@ var Comfino = Comfino || {};
             });
 
             $("span[class^='comfino-close']").each(function () {
-                $(this).click(function (event) {
+                $(this).on('click', function (event) {
                     event.stopPropagation();
                     $('.comfino-alertbar').hide();
                 })
