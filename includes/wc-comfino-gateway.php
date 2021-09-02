@@ -67,7 +67,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
     private const COMFINO_OFFERS_ENDPOINT = '/v1/financial-products';
     private const COMFINO_ORDERS_ENDPOINT = '/v1/orders';
     private const COMFINO_PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
-    private const COMFINO_SANDBOX_HOST = 'https://api-ecommerce.craty.pl';
+    private const COMFINO_SANDBOX_HOST = 'https://api-ecommerce.ecraty.pl';
 
     /**
      * WC_Comfino_Gateway constructor.
