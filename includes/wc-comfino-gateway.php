@@ -107,6 +107,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
         add_action('wp_enqueue_scripts', array($this, 'payment_scripts'));
         add_action('woocommerce_api_wc_comfino_gateway', array($this, 'webhook'));
+        add_action('woocommerce_order_status_cancelled', array($this, 'cancel_order'));
     }
 
     /**
@@ -271,6 +272,25 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
             wc_add_notice('Connection error.', 'error');
 
             return [];
+        }
+    }
+
+    /**
+     * @param string $order_id
+     */
+    public function cancel_order($order_id): void
+    {
+        $order = wc_get_order($order_id);
+
+        $args = [
+            'headers' => $this->get_header_request(),
+            'method' => 'PUT'
+        ];
+
+        $response = wp_remote_request($this->host . self::COMFINO_ORDERS_ENDPOINT."/{$order->get_id()}/cancel", $args);
+
+        if (is_wp_error($response)) {
+            wc_add_notice('Connection error.', 'error');
         }
     }
 
