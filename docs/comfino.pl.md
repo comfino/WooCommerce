@@ -25,7 +25,7 @@ Kolejnymi polami wartymi uwagi są:
 
 * Aby moduł mógł działać poprawnie należy ustawić numer telefonu dla użytkownika w koszyku jako wymagany. 
 * Metoda http "PUT" musi być aktywna
-* Wymagane dane w pluginie Confino:
+* Wymagane dane w pluginie Comfino:
     * Klient:
         * imię - 2-63 znaków
         * nazwisko - 2-63 znaków
