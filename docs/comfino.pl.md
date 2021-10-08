@@ -16,7 +16,6 @@ Aby moduł mógł działać konieczne jest aktywowanie i skonfigurowanie go. Pol
 Kolejnymi polami wartymi uwagi są:
 
 * Tytył - pole odpowiada za tekst wyświetlany przy płatności. Domyślnie `"Comfino"`
-* Ilość rat - Domyślnie 48 miesięcy
 
 ![Konfiguracja](images/pl/configuration-1.png "Konfiguracja")
 ![Konfiguracja](images/pl/configuration-2.png "Konfiguracja")

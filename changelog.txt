@@ -1,2 +1,10 @@
+1.2.0
+ * remove empty "Representative example"
+ * remove "Loan Term"
+
+1.1.0
+ * change host api sandbox
+ * fix documentation
+
 1.0.0
  * first release Comfino Payment Gateway
