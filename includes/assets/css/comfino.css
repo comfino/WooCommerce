@@ -1,61 +1,330 @@
-.comfino-alertbar {
-    display: none;
-    background-color: #f0f0f0;
-    position: fixed;
-    float: left;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    padding: 0 20px;
-    margin: 0;
-    border: 1px solid gray;
-    z-index: 1000;
-    overflow: auto;
+.payment_box.payment_method_comfino .comfino {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 10px;
+    font-family: Lato, sans-serif;
+    background-color: #fff;
 }
 
-.confino-modal-content {
-    margin: auto;
-    padding: 40px
+.payment_box.payment_method_comfino .comfino-box {
 }
 
-.comfino-close {
-    color: #aaaaaa;
-    float: right;
-    font-size: 28px;
+.payment_box.payment_method_comfino .header {
+    display: flex;
+    flex-direction: column;
+}
+
+.payment_box.payment_method_comfino .comfino-logo {
+    max-height: 100px;
+    width: 300px;
+    margin: 0 auto;
+}
+
+.payment_box.payment_method_comfino .comfino-title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin: 0.875rem 0;
+}
+
+.payment_box.payment_method_comfino .comfino-select-payment {
+}
+
+.payment_box.payment_method_comfino .comfino-single-payment {
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+}
+
+.payment_box.payment_method_comfino .comfino-single-payment label {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.payment_box.payment_method_comfino .comfino-single-payment__text {
+    padding-left: 5px;
+}
+
+.payment_box.payment_method_comfino .comfino-single-payment input {
+    width: 25px;
+    height: 25px;
+}
+
+.payment_box.payment_method_comfino .comfino-input[type="radio"]:checked, .comfino-input[type="radio"]:not(:checked) {
+    position: absolute;
+    left: -9999px;
+}
+
+.payment_box.payment_method_comfino .comfino-input[type="radio"]:checked+label, .comfino-input[type="radio"]:not(:checked)+label {
+    position: relative;
+    padding-left: 28px;
+    cursor: pointer;
+    line-height: 20px;
+    /* display: flex; */
+    color: #666;
+}
+
+.payment_box.payment_method_comfino .comfino-input[type="radio"]:checked+label:before, .comfino-input[type="radio"]:not(:checked)+label:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    /* top: 0; */
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ddd;
+    border-radius: 100%;
+    background: #fff;
+}
+
+.payment_box.payment_method_comfino .comfino-input[type="radio"]:checked+label:after, .comfino-input[type="radio"]:not(:checked)+label:after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: #599e33;;
+    position: absolute;
+    /* top: 4px; */
+    left: 7px;
+    border-radius: 100%;
+    -webkit-transition: all 0.2s ease;
+    transition: all 0.2s ease;
+}
+
+.payment_box.payment_method_comfino .comfino-input[type="radio"]:not(:checked)+label:after {
+    opacity: 0;
+    -webkit-transform: scale(0);
+    transform: scale(0);
+}
+
+.payment_box.payment_method_comfino .comfino-input[type="radio"]:checked+label:after {
+    opacity: 1;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+}
+
+.payment_box.payment_method_comfino .comfino-payment-box {
+    background-color: rgb(221, 221, 221);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 0;
+    font-size: 1.2rem;
+    margin-top: 1rem;
+}
+
+.payment_box.payment_method_comfino .comfino-payment-title {
+    color: #666;
+}
+
+.payment_box.payment_method_comfino .comfino-total-payment {
     font-weight: bold;
 }
 
-.comfino-close:hover, .close:focus {
-    color: #000;
-    text-decoration: none;
+.payment_box.payment_method_comfino .comfino-installments-box {
+    display: flex;
+    flex-direction: column;
+}
+
+.payment_box.payment_method_comfino .comfino-installments-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.payment_box.payment_method_comfino .comfino-quantity-select {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    max-width: 90%;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.payment_box.payment_method_comfino .comfino-select-box {
+    display: flex;
+}
+
+.payment_box.payment_method_comfino .comfino-installments-quantity {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: rgb(221, 221, 221);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.4rem;
+    margin: 10px 20px;
     cursor: pointer;
 }
 
-.confino {
+.payment_box.payment_method_comfino .comfino-active {
+    background-color: #599e33;;
+}
+
+.payment_box.payment_method_comfino .comfino-monthly-box {
+    background-color: #599e33;;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 0;
+    font-size: 1.2rem;
+    color: #fff;
+    margin-top: 1rem;
+}
+
+.payment_box.payment_method_comfino .comfino-monthly-title {
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.payment_box.payment_method_comfino .comfino-monthly-rate {
+    font-weight: bold;
+}
+
+.payment_box.payment_method_comfino .comfino-summary-box {
+    text-align: center;
+    font-size: .8rem;
+    color: gray;
+}
+
+.payment_box.payment_method_comfino .comfino-summary-total {
+    padding: .5rem 0;
+}
+
+.payment_box.payment_method_comfino .comfino-rrso {
+}
+
+.payment_box.payment_method_comfino .comfino-footer-link {
+    display: block;
+    text-align: center;
+    padding: .5rem 0;
+    color: gray;
+    font-size: .7rem;
+    margin: 1rem 0 2rem 0;
+}
+
+.payment_box.payment_method_comfino .comfino-payment-delay {
+    padding: 1rem;
+}
+
+.payment_box.payment_method_comfino .comfino-payment-delay__title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.payment_box.payment_method_comfino .comfino-payment-delay__title span {
+    display: block;
+    color: #599e33;
+    padding: .3rem 0;
+}
+
+.payment_box.payment_method_comfino .comfino-payment-delay__box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.payment_box.payment_method_comfino .comfino-helper-box {
+    display: flex;
+    margin-top: 10px;
+}
+
+.payment_box.payment_method_comfino .comfino-payment-delay__single-instruction {
+    width: 140px;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.payment_box.payment_method_comfino .comfin-single-instruction__text {
+    text-align: center;
+    font-size: .9rem;
+    padding-top: 1rem;
+    color: #666;
+}
+
+.payment_box.payment_method_comfino .single-instruction-img__background {
+    width: 50px;
+    height: 50px;
+    background-color: #599e33;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: .5rem;
+}
+
+.payment_box.payment_method_comfino .single-instruction-img {
+    width: 100px;
+    filter: invert(100%)
+}
+
+.comfino-modal {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.comfino-modal.open {
+    visibility: visible;
+    opacity: 1;
+    transition-delay: 0s;
+}
+
+.comfino-modal-bg {
+    position: absolute;
+    background: rgba(0,0,0,0.2);
+    width: 100%;
+    height: 100%;
+}
+
+.comfino-modal-container {
+    width: 50%;
+    border-radius: 10px;
+    background: #fff;
     position: relative;
-    margin-bottom: 10px;
-    padding: 10px;
-    background-color: #f5f5f5;
+    padding: 30px;
+}
+
+.comfino-modal-close {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    outline: none;
+    appearance: none;
+    color: red;
+    background: none;
+    border: 0px;
+    font-weight: bold;
     cursor: pointer;
-    border: 1px solid #f5f5f5;
 }
 
-.confino-selected {
-    border: 1px solid red;
+a.representative {
+    cursor: pointer;
 }
 
-.confino-unselected {
-    border: 1px solid #f5f5f5;
+a.representative:hover {
+    filter: brightness(150%);
 }
 
-.confino .icon {
-    margin-bottom: 10px;
+#comfino-installments {
+    display: none;
 }
 
-.confino .name, .confino .offer, .confino .description {
-    margin-bottom: 10px;
-}
-
-#comfino-type {
+#comfino-payment-delay {
     display: none;
 }
