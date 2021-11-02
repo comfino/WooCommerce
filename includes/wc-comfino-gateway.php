@@ -154,20 +154,11 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
     {
         global $woocommerce;
 
-        $offers = $this->fetch_offers((int)round($woocommerce->cart->total) * 100);
-        $types = [];
-        $loanTerm = $this->get_option('loan_term');
         $total = (int) round($woocommerce->cart->total) * 100;
-        $offers = $this->fetch_offers((int) $loanTerm, $total);
+        $offers = $this->fetch_offers($total);
         $paymentInfos = [];
 
         foreach ($offers as $offer) {
-            $loanAmount = round(((float) $offer['instalmentAmount']) * ((float) $offer['loanTerm']) / 100, 2);
-
-            if ($loanAmount < ($total / 100)) {
-                $loanAmount = round($total / 100, 2);
-            }
-
             $instalmentAmount = ((float) $offer['instalmentAmount']) / 100;
             $rrso = ((float) $offer['rrso']) * 100;
             $toPay = ((float) $offer['toPay']) / 100;
