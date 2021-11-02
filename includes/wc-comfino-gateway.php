@@ -58,7 +58,6 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
 
     private $key;
     private $host;
-    private $loan_term;
     private $show_logo;
 
     private const COMFINO_OFFERS_ENDPOINT = '/v1/financial-products';
@@ -139,11 +138,6 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
                 'title' => __('Production Key', 'comfino'),
                 'type' => 'text'
             ],
-            'loan_term' => [
-                'title' => __('Loan Term', 'comfino'),
-                'type' => 'int',
-                'default' => '48',
-            ],
             'show_logo' => [
                 'title' => __('Show Logo', 'comfino'),
                 'type' => 'checkbox',
@@ -160,6 +154,8 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
     {
         global $woocommerce;
 
+        $offers = $this->fetch_offers((int)round($woocommerce->cart->total) * 100);
+        $types = [];
         $loanTerm = $this->get_option('loan_term');
         $total = (int) round($woocommerce->cart->total) * 100;
         $offers = $this->fetch_offers((int) $loanTerm, $total);
@@ -400,12 +396,11 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
     /**
      * Fetch products
      *
-     * @param int $loanTerm
      * @param int $loanAmount
      *
      * @return array
      */
-    private function fetch_offers(int $loanTerm, int $loanAmount): array
+    private function fetch_offers(int $loanAmount): array
     {
         $args = [
             'headers' => $this->get_header_request(),
@@ -413,7 +408,6 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
 
         $params = [
             'loanAmount' => $loanAmount,
-            'loanTerm' => $loanTerm,
         ];
 
         $response = wp_remote_get($this->host.self::COMFINO_OFFERS_ENDPOINT.'?'.http_build_query($params), $args);
@@ -446,6 +440,9 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
                 'ean' => null,
                 'externalId' => (string) $data['product_id'],
                 'price' => (int) $data['total'] * 100,
+                'externalId' => (string)$data['product_id'],
+                'price' => (int)$data['total'] * 100,
+                'loanTerm' => (int)$data['loanTerm'],
             ];
         }
 
