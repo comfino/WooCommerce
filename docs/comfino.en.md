@@ -14,7 +14,7 @@ To install the module, please go to `"Plugins"` tab and then click `"Add new -> 
 
 For the module correct work, activation and configuration is required. You can do this by click `"Settings"` in module information panel. There are a couple of important field that should be filled: `"Sandbox/Production Key"`.
 
-* Title — this is text that will be showing nearby payment option. Default value is `"Comfino"`
+* Title - this is text that will be showing near by payment option. Default value is `"Comfino"`
 
 ![Configuration](images/en/configuration-1.png "Configuration")
 ![Configuration](images/en/configuration-2.png "Configuration")

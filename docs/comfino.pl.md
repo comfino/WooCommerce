@@ -15,7 +15,7 @@ Aby zainstalować moduł, należy przejść do zakładki `"Wtyczki"` a następni
 Aby moduł mógł działać, konieczne jest aktywowanie i skonfigurowanie go. Pole, które są najbardziej istotne i należy je wypełnić to: `"Sandbox/Production Key"`. 
 Kolejnymi polami wartymi uwagi są:
 
-* Tytuł — pole odpowiada za tekst wyświetlany przy płatności. Domyślnie `"Comfino"`
+* Tytył - pole odpowiada za tekst wyświetlany przy płatności. Domyślnie `"Comfino"`
 
 ![Konfiguracja](images/pl/configuration-1.png "Konfiguracja")
 ![Konfiguracja](images/pl/configuration-2.png "Konfiguracja")

@@ -96,10 +96,6 @@ msgstr "Klucz piaskownicy"
 msgid "Production Key"
 msgstr "Klucz produkcyjny"
 
-#: includes/wc-comfino-gateway.php:145
-msgid "Loan Term"
-msgstr "Ilość rat"
-
 #: includes/wc-comfino-gateway.php:150
 msgid "Show Logo"
 msgstr "Wyświetlanie logo"

@@ -61,7 +61,6 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
 
     private $key;
     private $host;
-    private $loan_term;
     private $show_logo;
 
     private const COMFINO_OFFERS_ENDPOINT = '/v1/financial-products';
@@ -89,7 +88,6 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
         $this->init_settings();
         $this->title = $this->get_option('title');
         $this->enabled = $this->get_option('enabled');
-        $this->loan_term = (int)$this->get_option('loan_term');
         $this->show_logo = 'yes' === $this->get_option('show_logo');
 
         $sandbox_mode = 'yes' === $this->get_option('sandbox_mode');
@@ -142,11 +140,6 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
                 'title' => __('Production Key', 'comfino'),
                 'type' => 'text'
             ],
-            'loan_term' => [
-                'title' => __('Loan Term', 'comfino'),
-                'type' => 'int',
-                'default' => '48',
-            ],
             'show_logo' => [
                 'title' => __('Show Logo', 'comfino'),
                 'type' => 'checkbox',
@@ -163,8 +156,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
     {
         global $woocommerce;
 
-        $loanTerm = $this->get_option('loan_term');
-        $offers = $this->fetch_offers((int)$loanTerm, (int)round($woocommerce->cart->total) * 100);
+        $offers = $this->fetch_offers((int)round($woocommerce->cart->total) * 100);
         $types = [];
 
         foreach ($offers as $offer) {
@@ -179,18 +171,22 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
                         <div class="icon">' . $offer['icon'] . '</div>
                         <div class="name"><strong>' . esc_html($offer['name']) . '</strong></div>
                         <div class="offer">
-                            <div><strong> ' . esc_html($loanTerm) . ' ' . __('installments', 'comfino') . ' x ' . esc_html($instalmentAmount) . ' zł</strong></div>
+                            <div><strong> ' . esc_html($offer['loanTerm']) . ' ' . __('installments', 'comfino') . ' x ' . esc_html($instalmentAmount) . ' zł</strong></div>
                             <div>' . __('Total amount to be repaid', 'comfino') . ': <b>' . esc_html($toPay) . ' zł</b>, RRSO: ' . esc_html($rrso) . ' %</div>
                         </div>
-                        <div class="description">' . esc_html($offer['description']) . '</div>
-                        <div><a id="representative-example-link-' . esc_html($offer['type']) . '" class="representative-examlple" href="#" data-type="' . esc_html($offer['type']) . '">' . __('Representative example', 'comfino') . '</a>
+                        <div class="description">' . esc_html($offer['description']) . '</div>';
+
+            if ($offer['representativeExample'] !== '') {
+                echo '  <div>
+                            <a id="representative-example-link-' . esc_html($offer['type']) . '" class="representative-examlple" href="#" data-type="' . esc_html($offer['type']) . '">' . __('Representative example', 'comfino') . '</a>
                         </div>
-                        <div class="comfino-alertbar" id="representative-example-modal-' . esc_html($offer['type']) . '">
-                            <div><span class="comfino-close">&times;</span></div>
-                            <div class="confino-modal-content"><p>' . $offer['representativeExample'] . '</p></div>
-                        </div>
-                    </div>
-                </div>';
+                        <div class="comfino-alertbar" id = "representative-example-modal-' . esc_html($offer['type']) . '">
+                            <div><span class="comfino-close" >&times;</span></div>
+                            <div class="confino-modal-content" ><p> ' . $offer['representativeExample'] . ' </p></div>
+                        </div>';
+            }
+
+            echo '</div></div>';
         }
 
         echo '<select id="comfino-type" name="comfino_type">';
@@ -327,12 +323,11 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
     /**
      * Fetch products
      *
-     * @param int $loanTerm
      * @param int $loanAmount
      *
      * @return array
      */
-    private function fetch_offers(int $loanTerm, int $loanAmount): array
+    private function fetch_offers(int $loanAmount): array
     {
         $args = [
             'headers' => $this->get_header_request(),
@@ -340,7 +335,6 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
 
         $params = [
             'loanAmount' => $loanAmount,
-            'loanTerm' => $loanTerm,
         ];
 
         $response = wp_remote_get($this->host . self::COMFINO_OFFERS_ENDPOINT . '?' . http_build_query($params), $args);
@@ -373,6 +367,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
                 'ean' => null,
                 'externalId' => (string)$data['product_id'],
                 'price' => (int)$data['total'] * 100,
+                'loanTerm' => (int)$data['loanTerm'],
             ];
         }
 
