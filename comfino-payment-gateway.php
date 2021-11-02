@@ -56,6 +56,7 @@ class WC_ComfinoPaymentGateway
 
         add_filter('woocommerce_payment_gateways', array($this, 'add_gateway'));
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), array($this, 'plugin_action_links'));
+        add_filter('wc_order_statuses', array($this, 'filter_order_status'));
         load_plugin_textdomain("comfino", false, basename(__DIR__) . '/languages');
     }
 
@@ -95,6 +96,28 @@ class WC_ComfinoPaymentGateway
         );
 
         return array_merge($plugin_links, $links);
+    }
+
+    /**
+     * @param array $statuses
+     *
+     * @return array
+     */
+    public function filter_order_status(array $statuses): array
+    {
+        global $post;
+
+        if (isset($post)) {
+            $order = new WC_Order($post->ID);
+
+            if ($order->get_payment_method() === 'comfino' && $order->has_status('completed')) {
+                if (isset($statuses['wc-cancelled'])) {
+                    unset($statuses['wc-cancelled']);
+                }
+            }
+        }
+
+        return $statuses;
     }
 
     /**

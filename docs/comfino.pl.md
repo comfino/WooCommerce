@@ -1,10 +1,10 @@
 ## POBIERANIE WTYCZKI
 
-Otwórz stronę https://github.com/comfino/WooCommerce/releases i pobierz najnowszą wersje wtyczki
+Otwórz stronę https://github.com/comfino/WooCommerce/releases i pobierz najnowszą wersję wtyczki.
 
 ## INSTALACJA
 
-Aby zainstalować moduł należy przejść do zakładki `"Wtyczki"` a następnie nacisnąć przycisk `"Dodaj nową -> Wyślij wtyczkę na serwer"`. Należy wybrać odpowiedni plik z modułem. Wtyczka zainstaluje się automatycznie.
+Aby zainstalować moduł, należy przejść do zakładki `"Wtyczki"` a następnie nacisnąć przycisk `"Dodaj nową -> Wyślij wtyczkę na serwer"`. Należy wybrać odpowiedni plik z modułem. Wtyczka zainstaluje się automatycznie.
 
 ![Instalacja](images/pl/instalation-1.png "Instalacja")
 ![Instalacja](images/pl/instalation-2.png "Instalacja")
@@ -12,7 +12,7 @@ Aby zainstalować moduł należy przejść do zakładki `"Wtyczki"` a następnie
 
 ## KONFIGURACJA
 
-Aby moduł mógł działać konieczne jest aktywowanie i skonfigurowanie go. Pole które są najbardziej istotne i należy je wypełnić to: `"Sandbox/Production Key"`. 
+Aby moduł mógł działać, konieczne jest aktywowanie i skonfigurowanie go. Pole, które są najbardziej istotne i należy je wypełnić to: `"Sandbox/Production Key"`. 
 Kolejnymi polami wartymi uwagi są:
 
 * Tytył - pole odpowiada za tekst wyświetlany przy płatności. Domyślnie `"Comfino"`
@@ -22,9 +22,9 @@ Kolejnymi polami wartymi uwagi są:
 
 ## UWAGI
 
-* Aby moduł mógł działać poprawnie należy ustawić numer telefonu dla użytkownika w koszyku jako wymagany. 
-* Metoda http "PUT" musi być aktywna
-* Wymagane dane w pluginie Confino:
+* Aby moduł mógł działać poprawnie, należy ustawić numer telefonu dla użytkownika w koszyku jako wymagany. 
+* Metoda http "PUT" musi być aktywna.
+* Wymagane dane w pluginie Comfino:
     * Klient:
         * imię - 2-63 znaków
         * nazwisko - 2-63 znaków
@@ -34,7 +34,7 @@ Kolejnymi polami wartymi uwagi są:
         * kwota koszyka
         * lista produktów
             * nazwa
-            * ilosc
+            * ilość
             * cena
     * Adres:
         * ulica
@@ -46,7 +46,7 @@ Kolejnymi polami wartymi uwagi są:
 
 ## STATUSY NOTYFIKACJI:
 
-Zmieniają status zamówenia na kompletny. Wynikiem jest faktura i wysyłka towaru.
+Zmieniają status zamówienia na kompletny. Wynikiem jest faktura i wysyłka towaru.
 
 * ACCEPTED
 * WAITING_FOR_PAIMENT

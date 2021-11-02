@@ -1,18 +1,18 @@
 ## DOWNLOAD PLUGIN
 
-Open page https://github.com/comfino/WooCommerce/releases and download latest plugin
+Open page https://github.com/comfino/WooCommerce/releases and download the latest plugin.
 
-## INSTALATION
+## INSTALLATION
 
 To install the module, please go to `"Plugins"` tab and then click `"Add new -> Upload plugin"` button, then panel with `"Module file"` input should appear. In this input choose module's file and click `"Send module button"`. If the module was uploaded, then it should be visible on modules list. Then you should just choose the module and click `"Install"` button.
 
-![Instalation](images/en/instalation-1.png "Instalation")
-![Instalation](images/en/instalation-2.png "Instalation")
-![Instalation](images/en/instalation-3.png "Instalation")
+![Installation](images/en/instalation-1.png "Installation")
+![Installation](images/en/instalation-2.png "Installation")
+![Installation](images/en/instalation-3.png "Installation")
 
 ## CONFIGURATION
 
-For the module correct work, activation and configuration is required. You can do this by click `"Settings"` in module information panel. There are couple of important field that should be filled: `"Sandbox/Production Key"`.
+For the module correct work, activation and configuration is required. You can do this by click `"Settings"` in module information panel. There are a couple of important field that should be filled: `"Sandbox/Production Key"`.
 
 * Title - this is text that will be showing near by payment option. Default value is `"Comfino"`
 
