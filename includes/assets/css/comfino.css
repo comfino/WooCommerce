@@ -15,8 +15,8 @@
 }
 
 .payment_box.payment_method_comfino .comfino-logo {
-    max-height: 100px;
-    width: 300px;
+    max-height: 40px;
+    width: 260px;
     margin: 0 auto;
 }
 
@@ -61,15 +61,13 @@
     padding-left: 28px;
     cursor: pointer;
     line-height: 20px;
-    /* display: flex; */
     color: #666;
 }
 
 .payment_box.payment_method_comfino .comfino-input[type="radio"]:checked+label:before, .comfino-input[type="radio"]:not(:checked)+label:before {
     content: '';
     position: absolute;
-    left: 0;
-    /* top: 0; */
+    left: 2px;
     width: 18px;
     height: 18px;
     border: 2px solid #ddd;
@@ -83,7 +81,6 @@
     height: 8px;
     background: #599e33;;
     position: absolute;
-    /* top: 4px; */
     left: 7px;
     border-radius: 100%;
     -webkit-transition: all 0.2s ease;
@@ -308,7 +305,7 @@
     appearance: none;
     color: red;
     background: none;
-    border: 0px;
+    border: 0;
     font-weight: bold;
     cursor: pointer;
 }
@@ -319,6 +316,12 @@ a.representative {
 
 a.representative:hover {
     filter: brightness(150%);
+}
+
+.comfino-icon {
+    width: 32px;
+    height: 32px;
+    padding-top: 2px;
 }
 
 #comfino-installments {

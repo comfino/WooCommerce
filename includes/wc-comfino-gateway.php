@@ -166,8 +166,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
             $paymentInfos[] = [
                 'name' => $offer['name'],
                 'description' => $offer['description'],
-                /*'icon' => str_replace('<?xml version="1.0" encoding="UTF-8"?>', '', $offer['icon']),*/
-                'icon' => '<img src="'.plugins_url('assets/img/comfino_icon_3.png', __FILE__).'" alt="'.esc_html($offer['name']).'"/>',
+                'icon' => str_replace('<?xml version="1.0" encoding="UTF-8"?>', '', $offer['icon']),
                 'type' => $offer['type'],
                 'sumAmount' => number_format($total / 100, 2, ',', ' '),
                 'representativeExample' => $offer['representativeExample'],
@@ -190,7 +189,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
             <div id="comfino-box" class="comfino">
                 <div class="comfino-box">
                     <div class="header">
-                        <img src="'.plugins_url('assets/img/comfino_logo.png', __FILE__).'" alt="Comfino Logo" class="comfino-logo">
+                        <img src="'.plugins_url('assets/img/comfino_logo.svg', __FILE__).'" alt="Comfino Logo" class="comfino-logo">
                         <div class="comfino-title">Wybierz sposób płatności</div>
                     </div>
                     <main>
@@ -230,7 +229,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
                                 <div class="comfino-helper-box">
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
-                                            <img src="'.plugins_url('assets/img/icons/koszyk.svg', __FILE__).'" alt="" class="single-instruction-img" />
+                                            <img src="'.plugins_url('assets/img/icons/cart.svg', __FILE__).'" alt="" class="single-instruction-img" />
                                         </div>
                                         <div class="comfin-single-instruction__text">Włóż produkt do koszyka</div>
                                     </div>

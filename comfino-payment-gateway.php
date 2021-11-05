@@ -16,7 +16,7 @@ defined('ABSPATH') or exit;
 
 class WC_ComfinoPaymentGateway
 {
-    public const VERSION = '1.2.0';
+    public const VERSION = '2.0.0';
 
     /**
      * @var WC_ComfinoPaymentGateway

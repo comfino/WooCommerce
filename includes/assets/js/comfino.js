@@ -116,7 +116,7 @@ window.Comfino = {
                 <div class="comfino-single-payment">
                     <input type="radio" id="` + comfinoOptId + `" class="comfino-input" name="comfino" />
                     <label for="` + comfinoOptId + `">
-                        ` + item.icon + ` 
+                        <div class="comfino-icon">` + item.icon + `</div> 
                         <span class="comfino-single-payment__text">` + item.name + `</span>
                     </label>
                 </div>
@@ -138,6 +138,9 @@ window.Comfino = {
         return { elements: offerElements, data: offerData };
     },
 
+    /**
+     * Get offers from API.
+     */
     initPayments(data)
     {
         let loanTermBox = document.getElementById('comfino-quantity-select');
