@@ -120,6 +120,7 @@
 .payment_box.payment_method_comfino .comfino-installments-box {
     display: flex;
     flex-direction: column;
+    padding-top: 0;
 }
 
 .payment_box.payment_method_comfino .comfino-installments-title {
@@ -325,6 +326,7 @@ a.representative:hover {
 }
 
 #comfino-installments {
+    padding-top: 0;
     display: none;
 }
 

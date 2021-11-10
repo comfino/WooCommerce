@@ -190,30 +190,30 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
                 <div class="comfino-box">
                     <div class="header">
                         <img src="'.plugins_url('assets/img/comfino_logo.svg', __FILE__).'" alt="Comfino Logo" class="comfino-logo">
-                        <div class="comfino-title">Wybierz sposób płatności</div>
+                        <div class="comfino-title">'.__('Choose payment method', 'comfino').'<!--Wybierz sposób płatności--></div>
                     </div>
                     <main>
                         <section id="comfino-offer-items" class="comfino-select-payment"></section>
                         <section class="comfino-payment-box">
-                            <div class="comfino-payment-title">Wartość zakupów:</div>
+                            <div class="comfino-payment-title">'.__('Value of purchase', 'comfino').'<!--Wartość zakupów-->:</div>
                             <div id="comfino-total-payment" class="comfino-total-payment"></div>
                         </section>
                         <section id="comfino-installments">
                             <section class="comfino-installments-box">
-                                <div class="comfino-installments-title">Wybierz ilość rat</div>
+                                <div class="comfino-installments-title">'.__('Choose number of instalments', 'comfino').'<!--Wybierz ilość rat--></div>
                                 <div id="comfino-quantity-select" class="comfino-quantity-select"></div>
                             </section>
                             <section class="comfino-monthly-box">
-                                <div class="comfino-monthly-title">Miesięczna rata:</div>
+                                <div class="comfino-monthly-title">'.__('Monthly instalment', 'comfino').'<!--Miesięczna rata-->:</div>
                                 <div id="comfino-monthly-rate" class="comfino-monthly-rate"></div>
                             </section>
                             <section class="comfino-summary-box">
-                                <div class="comfino-summary-total">Łączna kwota do spłaty: <span id="comfino-summary-total"></span></div>
+                                <div class="comfino-summary-total">'.__('Total amount to pay', 'comfino').'<!--Łączna kwota do spłaty-->: <span id="comfino-summary-total"></span></div>
                                 <div class="comfino-rrso">RRSO <span id="comfino-rrso"></span></div>
                                 <div id="comfino-description-box" class="comfino-description-box"></div>
                             </section>
                             <footer>
-                                <a id="comfino-repr-example-link" class="representative comfino-footer-link">Przykład reprezentatywny</a>
+                                <a id="comfino-repr-example-link" class="representative comfino-footer-link">'.__('Representative example', 'comfino').'<!--Przykład reprezentatywny--></a>
                                 <div id="modal-repr-example" class="comfino-modal">
                                     <div class="comfino-modal-bg comfino-modal-exit"></div>
                                     <div class="comfino-modal-container">
@@ -224,20 +224,20 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
                             </footer>
                         </section>
                         <section id="comfino-payment-delay" class="comfino-payment-delay">
-                            <div class="comfino-payment-delay__title">Kup teraz, zapłać za 30 dni <span>Jak to działa?</span></div>
+                            <div class="comfino-payment-delay__title">'.__('Buy now, pay in 30 days', 'comfino').'<!--Kup teraz, zapłać za 30 dni--> <span>'.__('How it\'s working?', 'comfino').'<!--Jak to działa?--></span></div>
                             <div class="comfino-payment-delay__box">
                                 <div class="comfino-helper-box">
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
                                             <img src="'.plugins_url('assets/img/icons/cart.svg', __FILE__).'" alt="" class="single-instruction-img" />
                                         </div>
-                                        <div class="comfin-single-instruction__text">Włóż produkt do koszyka</div>
+                                        <div class="comfin-single-instruction__text">'.__('Put the product in the basket', 'comfino').'<!--Włóż produkt do koszyka--></div>
                                     </div>
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
                                             <img src="'.plugins_url('assets/img/icons/twisto.svg', __FILE__).'" alt="" class="single-instruction-img" />
                                         </div>
-                                        <div class="comfin-single-instruction__text">Wybierz płatność Twisto</div>
+                                        <div class="comfin-single-instruction__text">'.__('Choose Twisto payment', 'comfino').'<!--Wybierz płatność Twisto--></div>
                                     </div>
                                 </div>
                                 <div class="comfino-helper-box">
@@ -245,13 +245,13 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
                                         <div class="single-instruction-img__background">
                                             <img src="'.plugins_url('assets/img/icons/check.svg', __FILE__).'" alt="" class="single-instruction-img" />
                                         </div>
-                                        <div class="comfin-single-instruction__text">Sprawdź produkty w&nbsp;domu</div>
+                                        <div class="comfin-single-instruction__text">'.__('Check the products at home', 'comfino').'<!--Sprawdź produkty w domu--></div>
                                     </div>
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
                                             <img src="'.plugins_url('assets/img/icons/wallet.svg', __FILE__).'" alt="" class="single-instruction-img" />
                                         </div>
-                                        <div class="comfin-single-instruction__text">Zapłać za 30 dni</div>
+                                        <div class="comfin-single-instruction__text">'.__('Pay in 30 days', 'comfino').'<!--Zapłać za 30 dni--></div>
                                     </div>
                                 </div>
                             </div>
@@ -294,14 +294,14 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
         $order = wc_get_order($order_id);
         $body = wp_json_encode([
             'returnUrl' => $this->get_return_url($order),
-            'orderId' => (string)$order->get_id(),
+            'orderId' => (string) $order->get_id(),
             'notifyUrl' => add_query_arg('wc-api', 'WC_Comfino_Gateway', home_url('/')),
             'loanParameters' => [
                 'term' => $this->loan_term,
                 'type' => $type,
             ],
             'cart' => [
-                'totalAmount' => (int)$order->get_total() * 100,
+                'totalAmount' => (int) $order->get_total() * 100,
                 'deliveryCost' => 0,
                 'products' => $this->get_products($order->get_items()),
             ],
@@ -371,7 +371,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
         $status = $data['status'];
 
         if ($order) {
-            $order->add_order_note(__("Comfino status: " . $status, 'comfino'));
+            $order->add_order_note(__('Comfino status', 'comfino').": $status");
 
             if (in_array($status, $this->completed_state, true)) {
                 $order->payment_complete();
@@ -430,9 +430,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
                 'ean' => null,
                 'externalId' => (string) $data['product_id'],
                 'price' => (int) $data['total'] * 100,
-                'externalId' => (string)$data['product_id'],
-                'price' => (int)$data['total'] * 100,
-                'loanTerm' => (int)$data['loanTerm'],
+                'loanTerm' => (int) $data['loanTerm'],
             ];
         }
 
