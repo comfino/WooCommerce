@@ -11,7 +11,7 @@
 
 ## Generate language
 
- * install wp-cli on your development machine.
+ * install wp-cli on your development machine (https://github.com/wp-cli/wp-cli)
  * run wp --allow-root i18n make-pot wp-content/plugins/wc-comfino-payment-gateway/
  * rename wc-comfino-payment-gateway to comfino.pot
  * open poedit and edit file and generate mo file
