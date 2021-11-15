@@ -1,3 +1,6 @@
+2.0.0
+ * new layout products
+
 1.2.0
  * remove empty "Representative example"
  * remove "Loan Term"
