@@ -3,19 +3,19 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce - Comfino Payment Gateway 1.0.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/comfino-"
-"woocommerce-payment-gateway\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wc-comfino-"
+"payment-gateway\n"
+"POT-Creation-Date: 2021-11-15T11:13:39+00:00\n"
+"PO-Revision-Date: 2021-11-15 12:33+0100\n"
+"Last-Translator: \n"
 "Language-Team: \n"
+"Language: pl_PL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2021-07-16T10:08:11+00:00\n"
-"PO-Revision-Date: 2021-07-16 15:52+0200\n"
-"X-Generator: Poedit 2.4.2\n"
-"Last-Translator: \n"
-"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n"
-"%100<12 || n%100>14) ? 1 : 2);\n"
-"Language: pl_PL\n"
+"X-Generator: Poedit 3.0\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 "
+"|| n%100>14) ? 1 : 2);\n"
 
 #. Plugin Name of the plugin
 msgid "WooCommerce - Comfino Payment Gateway"
@@ -37,89 +37,125 @@ msgstr ""
 msgid "https://github.com/comfino"
 msgstr ""
 
-#: comfino-payment-gateway.php:67
+#: comfino-payment-gateway.php:69
 msgid ""
 " The minimum PHP version required for Comfino is %s. You are running %s."
 msgstr ""
 
-#: comfino-payment-gateway.php:73
-msgid "WooCommerce needs to be activated."
-msgstr "WooCommerce musi być aktywny."
-
-#: comfino-payment-gateway.php:77
+#: comfino-payment-gateway.php:79
 msgid ""
 "The minimum WooCommerce version required for Comfino is %s. You are running "
 "%s."
 msgstr ""
 
-#: comfino-payment-gateway.php:93
+#: comfino-payment-gateway.php:95
 msgid "Settings"
 msgstr "Ustawienia"
 
-#: includes/wc-comfino-gateway.php:80
+#: includes/wc-comfino-gateway.php:76
 msgid "Comfino Gateway"
 msgstr "Comfino Bramka"
 
-#: includes/wc-comfino-gateway.php:81
+#: includes/wc-comfino-gateway.php:77
 msgid "Comfino payment gateway"
 msgstr "Comfino Bramka Płatności"
 
-#: includes/wc-comfino-gateway.php:119
+#: includes/wc-comfino-gateway.php:116
 msgid "Enable/Disable"
 msgstr "Włączony/Wyłączony"
 
-#: includes/wc-comfino-gateway.php:121
+#: includes/wc-comfino-gateway.php:118
 msgid "Enable Comfino Payment Module."
 msgstr "Włączony Comfino moduł płatności."
 
-#: includes/wc-comfino-gateway.php:123
+#: includes/wc-comfino-gateway.php:120
 msgid "Show in the Payment List as a payment option"
 msgstr "Pokaż na liście płatności"
 
-#: includes/wc-comfino-gateway.php:126
+#: includes/wc-comfino-gateway.php:123
 msgid "Sandbox mode:"
 msgstr "Tryb piaskownicy:"
 
-#: includes/wc-comfino-gateway.php:128
+#: includes/wc-comfino-gateway.php:125
 msgid "Enable Sandbox Mode"
 msgstr "Włączony Tryb piaskownicy"
 
-#: includes/wc-comfino-gateway.php:132
+#: includes/wc-comfino-gateway.php:129
 msgid "Title:"
 msgstr "Tytuł:"
 
-#: includes/wc-comfino-gateway.php:137
+#: includes/wc-comfino-gateway.php:134
 msgid "Sandbox Key"
 msgstr "Klucz piaskownicy"
 
-#: includes/wc-comfino-gateway.php:141
+#: includes/wc-comfino-gateway.php:138
 msgid "Production Key"
 msgstr "Klucz produkcyjny"
 
-#: includes/wc-comfino-gateway.php:150
+#: includes/wc-comfino-gateway.php:142
 msgid "Show Logo"
 msgstr "Wyświetlanie logo"
 
-#: includes/wc-comfino-gateway.php:152
+#: includes/wc-comfino-gateway.php:144
 msgid "Show logo on payment method"
 msgstr "Pokaż logo na metodzie płatności"
 
-#: includes/wc-comfino-gateway.php:181
-msgid "installments"
-msgstr "rat"
+#: includes/wc-comfino-gateway.php:193
+msgid "Choose payment method"
+msgstr "Wybierz sposób płatności"
 
-#: includes/wc-comfino-gateway.php:182
-msgid "Total amount to be repaid"
+#: includes/wc-comfino-gateway.php:198
+msgid "Value of purchase"
+msgstr "Wartość zakupów"
+
+#: includes/wc-comfino-gateway.php:203
+msgid "Choose number of instalments"
+msgstr "Wybierz ilość rat"
+
+#: includes/wc-comfino-gateway.php:207
+msgid "Monthly instalment"
+msgstr "Miesięczna rata"
+
+#: includes/wc-comfino-gateway.php:211
+#| msgid "Total amount to be repaid"
+msgid "Total amount to pay"
 msgstr "Łączna kwota do spłaty"
 
-#: includes/wc-comfino-gateway.php:185
+#: includes/wc-comfino-gateway.php:216
 msgid "Representative example"
 msgstr "Przykład reprezentatywny"
 
-#: includes/wc-comfino-gateway.php:260
+#: includes/wc-comfino-gateway.php:227
+msgid "Buy now, pay in 30 days"
+msgstr "Kup teraz, zapłać za 30 dni"
+
+#: includes/wc-comfino-gateway.php:227
+msgid "How it's working?"
+msgstr "Jak to działa?"
+
+#: includes/wc-comfino-gateway.php:234
+msgid "Put the product in the basket"
+msgstr "Włóż produkt do koszyka"
+
+#: includes/wc-comfino-gateway.php:240
+msgid "Choose Twisto payment"
+msgstr "Wybierz płatność Twisto"
+
+#: includes/wc-comfino-gateway.php:248
+msgid "Check the products at home"
+msgstr "Sprawdź produkty w domu"
+
+#: includes/wc-comfino-gateway.php:254
+msgid "Pay in 30 days"
+msgstr "Zapłać za 30 dni"
+
+#: includes/wc-comfino-gateway.php:321
 msgid "Comfino create order"
 msgstr "Comfino wniosek stworzony"
 
-#: includes/wc-comfino-gateway.php:295
-msgid "Comfino status: "
-msgstr "Comfino status: "
+#: includes/wc-comfino-gateway.php:374
+msgid "Comfino status"
+msgstr "Comfino status"
+
+#~ msgid "WooCommerce needs to be activated."
+#~ msgstr "WooCommerce musi być aktywny."
