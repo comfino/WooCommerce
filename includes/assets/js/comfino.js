@@ -25,10 +25,13 @@ window.Comfino = {
                     Comfino.offerList.elements[Comfino.selectedOffer].dataset.sumamount = loanParams.sumAmount;
                     Comfino.offerList.elements[Comfino.selectedOffer].dataset.term = loanParams.loanTerm;
 
+                    document.getElementById('comfino-loan-term').value = loanParams.loanTerm;
+
                     break;
                 }
             }
         } else {
+            document.getElementById('comfino-loan-term').value = '';
             document.getElementById('comfino-total-payment').innerHTML = Comfino.offerList.data[Comfino.selectedOffer].sumAmount + ' zł';
         }
     },
@@ -53,9 +56,13 @@ window.Comfino = {
                     document.getElementById('comfino-description-box').innerHTML = Comfino.offerList.data[Comfino.selectedOffer].description;
                     document.getElementById('comfino-repr-example').innerHTML = Comfino.offerList.data[Comfino.selectedOffer].representativeExample;
 
+                    document.getElementById('comfino-loan-term').value = term;
+
                     break;
                 }
             }
+        } else {
+            document.getElementById('comfino-loan-term').value = '';
         }
     },
 
@@ -128,6 +135,8 @@ window.Comfino = {
                 comfinoOffer.classList.add('selected');
                 paymentOption.setAttribute('checked', 'checked');
 
+                document.getElementById('comfino-type').value = item.type;
+
                 Comfino.fetchProductDetails(item);
             }
 
@@ -160,6 +169,8 @@ window.Comfino = {
                 });
 
                 item.classList.add('selected');
+
+                document.getElementById('comfino-type').value = Comfino.offerList.data[Comfino.selectedOffer].type;
 
                 Comfino.selectCurrentTerm(loanTermBox, Comfino.offerList.elements[Comfino.selectedOffer].dataset.term);
             });
