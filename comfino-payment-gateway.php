@@ -56,7 +56,7 @@ class WC_ComfinoPaymentGateway
 
         add_filter('woocommerce_payment_gateways', [$this, 'add_gateway']);
         add_filter('plugin_action_links_'.plugin_basename(__FILE__), [$this, 'plugin_action_links']);
-        add_filter('wc_order_statuses', [$this, 'filter_order_status']);
+//        add_filter('wc_order_statuses', [$this, 'filter_order_status']);
         load_plugin_textdomain('comfino', false, basename(__DIR__).'/languages');
     }
 
