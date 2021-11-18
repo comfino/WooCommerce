@@ -471,7 +471,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
         return [
             'Content-Type' => 'application/json',
             'Api-Key' => $this->key,
-            'user-agent' => sprintf('WP Comfino [%s]', WC_ComfinoPaymentGateway::VERSION),
+            'user-agent' => sprintf('WP Comfino [%s], WP [%s], WC [%s], PHP [%s]', WC_ComfinoPaymentGateway::VERSION, WP_VERSION, WC_VERSION, PHP_VERSION),
         ];
     }
 
