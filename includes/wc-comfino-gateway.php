@@ -359,6 +359,25 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
     }
 
     /**
+     * @param string $order_id
+     */
+    public function resign_order($order_id): void
+    {
+        $order = wc_get_order($order_id);
+
+        $args = [
+            'headers' => $this->get_header_request(),
+            'method' => 'PUT'
+        ];
+
+        $response = wp_remote_request($this->host.self::COMFINO_ORDERS_ENDPOINT."/{$order->get_id()}/resign", $args);
+
+        if (is_wp_error($response)) {
+            wc_add_notice('Connection error.', 'error');
+        }
+    }
+
+    /**
      * Webhook notifications
      */
     public function webhook(): void

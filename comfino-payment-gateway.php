@@ -3,7 +3,7 @@
  * Plugin Name: WooCommerce - Comfino Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
  * Description: Comfino (Comperia) - Comfino Payment Gateway for WooCommerce.
- * Version: 2.0.4
+ * Version: 2.1.0
  * Author: Comfino (Comperia)
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
@@ -16,7 +16,7 @@ defined('ABSPATH') or exit;
 
 class WC_ComfinoPaymentGateway
 {
-    public const VERSION = '2.0.4';
+    public const VERSION = '2.1.0';
 
     /**
      * @var WC_ComfinoPaymentGateway
@@ -57,6 +57,9 @@ class WC_ComfinoPaymentGateway
         add_filter('woocommerce_payment_gateways', [$this, 'add_gateway']);
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'plugin_action_links']);
         add_filter('wc_order_statuses', [$this, 'filter_order_status']);
+
+        add_action('woocommerce_order_item_add_action_buttons', [$this, 'order_buttons_callback'], 10, 1);
+
         load_plugin_textdomain('comfino', false, basename(__DIR__) . '/languages');
     }
 
@@ -118,6 +121,15 @@ class WC_ComfinoPaymentGateway
         }
 
         return $statuses;
+    }
+
+    /**
+     * @param $order
+     */
+    public function order_buttons_callback($order): void
+    {
+        echo '<button type="button" class="button cancel-items">'.__('Cancel').'</button>';
+        echo '<button type="button" class="button resign-items">'.__('Resign').'</button>';
     }
 
     /**
