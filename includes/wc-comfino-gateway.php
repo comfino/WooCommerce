@@ -101,7 +101,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
             $this->key = $production_key;
         }
 
-        add_action('woocommerce_update_options_payment_gateways_'.$this->id, [$this, 'process_admin_options']);
+        add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
         add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
         add_action('woocommerce_api_wc_comfino_gateway', [$this, 'webhook']);
         add_action('woocommerce_order_status_cancelled', [$this, 'cancel_order']);
@@ -155,14 +155,14 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
     {
         global $woocommerce;
 
-        $total = (int) round($woocommerce->cart->total) * 100;
+        $total = (int)round($woocommerce->cart->total) * 100;
         $offers = $this->fetch_offers($total);
         $paymentInfos = [];
 
         foreach ($offers as $offer) {
-            $instalmentAmount = ((float) $offer['instalmentAmount']) / 100;
-            $rrso = ((float) $offer['rrso']) * 100;
-            $toPay = ((float) $offer['toPay']) / 100;
+            $instalmentAmount = ((float)$offer['instalmentAmount']) / 100;
+            $rrso = ((float)$offer['rrso']) * 100;
+            $toPay = ((float)$offer['toPay']) / 100;
 
             $paymentInfos[] = [
                 'name' => $offer['name'],
@@ -178,8 +178,8 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
                 'loanParameters' => array_map(static function ($loanParams) use ($total) {
                     return [
                         'loanTerm' => $loanParams['loanTerm'],
-                        'instalmentAmount' => number_format(((float) $loanParams['instalmentAmount']) / 100, 2, ',', ' '),
-                        'toPay' => number_format(((float) $loanParams['toPay']) / 100, 2, ',', ' '),
+                        'instalmentAmount' => number_format(((float)$loanParams['instalmentAmount']) / 100, 2, ',', ' '),
+                        'toPay' => number_format(((float)$loanParams['toPay']) / 100, 2, ',', ' '),
                         'sumAmount' => number_format($total / 100, 2, ',', ' '),
                     ];
                 }, $offer['loanParameters']),
@@ -190,30 +190,30 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
             <div id="comfino-box" class="comfino">
                 <div class="comfino-box">
                     <div class="header">
-                        <div class="comfino-title">'.__('Choose payment method', 'comfino').'</div>
+                        <div class="comfino-title">' . __('Choose payment method', 'comfino') . '</div>
                     </div>
                     <main>
                         <section id="comfino-offer-items" class="comfino-select-payment"></section>
                         <section class="comfino-payment-box">
-                            <div class="comfino-payment-title">'.__('Value of purchase', 'comfino').':</div>
+                            <div class="comfino-payment-title">' . __('Value of purchase', 'comfino') . ':</div>
                             <div id="comfino-total-payment" class="comfino-total-payment"></div>
                         </section>
                         <section id="comfino-installments">
                             <section class="comfino-installments-box">
-                                <div class="comfino-installments-title">'.__('Choose number of instalments', 'comfino').'</div>
+                                <div class="comfino-installments-title">' . __('Choose number of instalments', 'comfino') . '</div>
                                 <div id="comfino-quantity-select" class="comfino-quantity-select"></div>
                             </section>
                             <section class="comfino-monthly-box">
-                                <div class="comfino-monthly-title">'.__('Monthly instalment', 'comfino').':</div>
+                                <div class="comfino-monthly-title">' . __('Monthly instalment', 'comfino') . ':</div>
                                 <div id="comfino-monthly-rate" class="comfino-monthly-rate"></div>
                             </section>
                             <section class="comfino-summary-box">
-                                <div class="comfino-summary-total">'.__('Total amount to pay', 'comfino').': <span id="comfino-summary-total"></span></div>
+                                <div class="comfino-summary-total">' . __('Total amount to pay', 'comfino') . ': <span id="comfino-summary-total"></span></div>
                                 <div class="comfino-rrso">RRSO <span id="comfino-rrso"></span></div>
                                 <div id="comfino-description-box" class="comfino-description-box"></div>
                             </section>
                             <footer>
-                                <a id="comfino-repr-example-link" class="representative comfino-footer-link">'.__('Representative example', 'comfino').'</a>
+                                <a id="comfino-repr-example-link" class="representative comfino-footer-link">' . __('Representative example', 'comfino') . '</a>
                                 <div id="modal-repr-example" class="comfino-modal">
                                     <div class="comfino-modal-bg comfino-modal-exit"></div>
                                     <div class="comfino-modal-container">
@@ -224,34 +224,34 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
                             </footer>
                         </section>
                         <section id="comfino-payment-delay" class="comfino-payment-delay">
-                            <div class="comfino-payment-delay__title">'.__('Buy now, pay in 30 days', 'comfino').' <span>'.__('How it\'s working?', 'comfino').'</span></div>
+                            <div class="comfino-payment-delay__title">' . __('Buy now, pay in 30 days', 'comfino') . ' <span>' . __('How it\'s working?', 'comfino') . '</span></div>
                             <div class="comfino-payment-delay__box">
                                 <div class="comfino-helper-box">
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
-                                            <img src="'.plugins_url('assets/img/icons/cart.svg', __FILE__).'" alt="" class="single-instruction-img" />
+                                            <img src="' . plugins_url('assets/img/icons/cart.svg', __FILE__) . '" alt="" class="single-instruction-img" />
                                         </div>
-                                        <div class="comfin-single-instruction__text">'.__('Put the product in the basket', 'comfino').'</div>
+                                        <div class="comfin-single-instruction__text">' . __('Put the product in the basket', 'comfino') . '</div>
                                     </div>
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
-                                            <img src="'.plugins_url('assets/img/icons/twisto.svg', __FILE__).'" alt="" class="single-instruction-img" />
+                                            <img src="' . plugins_url('assets/img/icons/twisto.svg', __FILE__) . '" alt="" class="single-instruction-img" />
                                         </div>
-                                        <div class="comfin-single-instruction__text">'.__('Choose Twisto payment', 'comfino').'</div>
+                                        <div class="comfin-single-instruction__text">' . __('Choose Twisto payment', 'comfino') . '</div>
                                     </div>
                                 </div>
                                 <div class="comfino-helper-box">
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
-                                            <img src="'.plugins_url('assets/img/icons/check.svg', __FILE__).'" alt="" class="single-instruction-img" />
+                                            <img src="' . plugins_url('assets/img/icons/check.svg', __FILE__) . '" alt="" class="single-instruction-img" />
                                         </div>
-                                        <div class="comfin-single-instruction__text">'.__('Check the products at home', 'comfino').'</div>
+                                        <div class="comfin-single-instruction__text">' . __('Check the products at home', 'comfino') . '</div>
                                     </div>
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
-                                            <img src="'.plugins_url('assets/img/icons/wallet.svg', __FILE__).'" alt="" class="single-instruction-img" />
+                                            <img src="' . plugins_url('assets/img/icons/wallet.svg', __FILE__) . '" alt="" class="single-instruction-img" />
                                         </div>
-                                        <div class="comfin-single-instruction__text">'.__('Pay in 30 days', 'comfino').'</div>
+                                        <div class="comfin-single-instruction__text">' . __('Pay in 30 days', 'comfino') . '</div>
                                     </div>
                                 </div>
                             </div>
@@ -261,7 +261,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
             </div>
             <input id="comfino-loan-term" name="comfino_loan_term" type="hidden" />
             <input id="comfino-type" name="comfino_type" type="hidden" />            
-            <script>Comfino.initPayments('.json_encode($paymentInfos).')</script>
+            <script>Comfino.initPayments(' . json_encode($paymentInfos) . ')</script>
         ';
     }
 
@@ -297,14 +297,14 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
         $order = wc_get_order($order_id);
         $body = wp_json_encode([
             'returnUrl' => $this->get_return_url($order),
-            'orderId' => (string) $order->get_id(),
+            'orderId' => (string)$order->get_id(),
             'notifyUrl' => add_query_arg('wc-api', 'WC_Comfino_Gateway', home_url('/')),
             'loanParameters' => [
-                'term' => $loanTerm,
+                'term' => (int)$loanTerm,
                 'type' => $type,
             ],
             'cart' => [
-                'totalAmount' => (int) $order->get_total() * 100,
+                'totalAmount' => (int)$order->get_total() * 100,
                 'deliveryCost' => 0,
                 'products' => $this->get_products($order->get_items()),
             ],
@@ -316,7 +316,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
             'body' => $body,
         ];
 
-        $response = wp_remote_post($this->host.self::COMFINO_ORDERS_ENDPOINT, $args);
+        $response = wp_remote_post($this->host . self::COMFINO_ORDERS_ENDPOINT, $args);
 
         if (!is_wp_error($response)) {
             $body = json_decode($response['body'], true);
@@ -349,7 +349,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
             'method' => 'PUT'
         ];
 
-        $response = wp_remote_request($this->host.self::COMFINO_ORDERS_ENDPOINT."/{$order->get_id()}/cancel", $args);
+        $response = wp_remote_request($this->host . self::COMFINO_ORDERS_ENDPOINT . "/{$order->get_id()}/cancel", $args);
 
         if (is_wp_error($response)) {
             wc_add_notice('Connection error.', 'error');
@@ -374,7 +374,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
         $status = $data['status'];
 
         if ($order) {
-            $order->add_order_note(__('Comfino status', 'comfino').": $status");
+            $order->add_order_note(__('Comfino status', 'comfino') . ": $status");
 
             if (in_array($status, $this->completed_state, true)) {
                 $order->payment_complete();
@@ -403,7 +403,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
             'loanAmount' => $loanAmount,
         ];
 
-        $response = wp_remote_get($this->host.self::COMFINO_OFFERS_ENDPOINT.'?'.http_build_query($params), $args);
+        $response = wp_remote_get($this->host . self::COMFINO_OFFERS_ENDPOINT . '?' . http_build_query($params), $args);
 
         if (!is_wp_error($response)) {
             return json_decode($response['body'], true);
@@ -426,14 +426,22 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
         foreach ($items as $item) {
             $data = $item->get_data();
 
+            $product = wc_get_product($data['product_id']);
+            $image_id = $product->get_image_id();
+
+            if ($image_id !== '') {
+                $image_url = wp_get_attachment_image_url($image_id, 'full');
+            } else {
+                $image_url = null;
+            }
+
             $products[] = [
                 'name' => $data['name'],
-                'quantity' => (int) $data['quantity'],
-                'photoUrl' => wp_get_attachment_url($item->get_image_id()),
+                'quantity' => (int)$data['quantity'],
+                'photoUrl' => $image_url,
                 'ean' => null,
-                'externalId' => (string) $data['product_id'],
-                'price' => (int) $data['total'] * 100,
-                'loanTerm' => (int) $data['loanTerm'],
+                'externalId' => (string)$data['product_id'],
+                'price' => (int)$data['total'] * 100,
             ];
         }
 
@@ -487,7 +495,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
      */
     private function valid_signature(string $jsonData): bool
     {
-        return $this->get_signature() === hash('sha3-256', $this->key.$jsonData);
+        return $this->get_signature() === hash('sha3-256', $this->key . $jsonData);
     }
 
     /**
@@ -519,7 +527,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
     public function get_icon(): string
     {
         if ($this->show_logo) {
-            $icon = '<img src="'.plugins_url('assets/img/comfino.png', __FILE__).'" alt="Comfino Logo" />';
+            $icon = '<img style="height: 18px; margin: 0 5px;" src="' . plugins_url('assets/img/comfino.png', __FILE__) . '" alt="Comfino Logo" />';
         } else {
             $icon = '';
         }
