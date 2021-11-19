@@ -259,6 +259,8 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
                     </main>
                 </div>
             </div>
+            <input id="comfino-loan-term" name="comfino_loan_term" type="hidden" />
+            <input id="comfino-type" name="comfino_type" type="hidden" />            
             <script>Comfino.initPayments('.json_encode($paymentInfos).')</script>
         ';
     }
@@ -285,6 +287,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
     {
         global $woocommerce;
 
+        $loanTerm = $_POST['comfino_loan_term'];
         $type = $_POST['comfino_type'];
 
         if (!in_array($type, $this->types, true)) {
@@ -297,7 +300,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
             'orderId' => (string) $order->get_id(),
             'notifyUrl' => add_query_arg('wc-api', 'WC_Comfino_Gateway', home_url('/')),
             'loanParameters' => [
-                'term' => $this->loan_term,
+                'term' => $loanTerm,
                 'type' => $type,
             ],
             'cart' => [
@@ -313,7 +316,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
             'body' => $body,
         ];
 
-        $response = wp_remote_post($this->host . self::COMFINO_ORDERS_ENDPOINT, $args);
+        $response = wp_remote_post($this->host.self::COMFINO_ORDERS_ENDPOINT, $args);
 
         if (!is_wp_error($response)) {
             $body = json_decode($response['body'], true);
