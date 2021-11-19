@@ -11,6 +11,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
     private const TYPE_INSTALLMENTS_ZERO_PERCENT = 'INSTALLMENTS_ZERO_PERCENT';
     private const TYPE_CONVENIENT_INSTALLMENTS = 'CONVENIENT_INSTALLMENTS';
     private const TYPE_PAY_LATER = 'PAY_LATER';
+    private const COMPANY_INSTALLMENTS = 'COMPANY_INSTALLMENTS';
     private const TYPE_RENEWABLE_LIMIT = 'RENEWABLE_LIMIT';
 
     /**
@@ -43,6 +44,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
         self::TYPE_INSTALLMENTS_ZERO_PERCENT,
         self::TYPE_CONVENIENT_INSTALLMENTS,
         self::TYPE_PAY_LATER,
+        self::COMPANY_INSTALLMENTS,
         self::TYPE_RENEWABLE_LIMIT,
     ];
 
@@ -85,7 +87,6 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
         $this->init_settings();
         $this->title = $this->get_option('title');
         $this->enabled = $this->get_option('enabled');
-        $this->loan_term = (int) $this->get_option('loan_term');
         $this->show_logo = 'yes' === $this->get_option('show_logo');
 
         $sandbox_mode = 'yes' === $this->get_option('sandbox_mode');
@@ -189,7 +190,6 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
             <div id="comfino-box" class="comfino">
                 <div class="comfino-box">
                     <div class="header">
-                        <img src="'.plugins_url('assets/img/comfino_logo.svg', __FILE__).'" alt="Comfino Logo" class="comfino-logo">
                         <div class="comfino-title">'.__('Choose payment method', 'comfino').'</div>
                     </div>
                     <main>
@@ -426,7 +426,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
             $products[] = [
                 'name' => $data['name'],
                 'quantity' => (int) $data['quantity'],
-                'photoUrl' => null,
+                'photoUrl' => wp_get_attachment_url($item->get_image_id()),
                 'ean' => null,
                 'externalId' => (string) $data['product_id'],
                 'price' => (int) $data['total'] * 100,
@@ -438,7 +438,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
     }
 
     /**
-     * Prepare cumstomer data
+     * Prepare customer data
      *
      * @param $order
      *
@@ -468,10 +468,12 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
      */
     private function get_header_request(): array
     {
+        global $wp_version;
+
         return [
             'Content-Type' => 'application/json',
             'Api-Key' => $this->key,
-            'user-agent' => sprintf('WP Comfino [%s], WP [%s], WC [%s], PHP [%s]', WC_ComfinoPaymentGateway::VERSION, WP_VERSION, WC_VERSION, PHP_VERSION),
+            'user-agent' => sprintf('WP Comfino [%s], WP [%s], WC [%s], PHP [%s]', WC_ComfinoPaymentGateway::VERSION, $wp_version, WC_VERSION, PHP_VERSION),
         ];
     }
 
