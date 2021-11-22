@@ -1,3 +1,11 @@
+2.0.3
+ * fix statuses
+
+2.0.2
+ * fix loan term and product type
+ * fix logo
+ * add image product photo
+
 2.0.1
  * add header info
 
