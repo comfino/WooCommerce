@@ -128,8 +128,13 @@ class WC_ComfinoPaymentGateway
      */
     public function order_buttons_callback($order): void
     {
-        echo '<button type="button" class="button cancel-items">'.__('Cancel').'</button>';
-        echo '<button type="button" class="button resign-items">'.__('Resign').'</button>';
+        if ($order->get_payment_method() === 'comfino' && !($order->has_status(['cancelled', 'resigned', 'rejected']))) {
+            echo '<button type="button" class="button cancel-items" onclick="return confirm(\'' . __('Are you sure you want to cancel?') . '\')">' . __('Cancel') . '<span class="woocommerce-help-tip" data-tip="' . __('Attention: You are cancelling a customer order. Check if you do not have to return the money to Comfino.') . '"></span></button>';
+        }
+
+        if ($order->get_payment_method() === 'comfino' && ($order->has_status(['processing', 'completed']))) {
+            echo '<button type="button" class="button resign-items" onclick="return confirm(\'' . __('Are you sure you want to resign?') . '\')">' . __('Resign') . '<span class="woocommerce-help-tip" data-tip="' . __('Attention: you are initiating a resignation of the Customer\'s contract. Required refund to Comfino.') . '"></span></button>';
+        }
     }
 
     /**

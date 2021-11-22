@@ -1,5 +1,6 @@
 2.1.0
- *
+ * add cancel
+ * add resign
 
 2.0.3
  * fix statuses
