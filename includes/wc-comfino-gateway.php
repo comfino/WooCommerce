@@ -354,6 +354,8 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
         if (is_wp_error($response)) {
             wc_add_notice('Connection error.', 'error');
         }
+
+        $order->add_order_note(__("Send to Comfino canceled order", 'comfino'));
     }
 
     /**

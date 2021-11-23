@@ -3,7 +3,7 @@
  * Plugin Name: WooCommerce - Comfino Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
  * Description: Comfino (Comperia) - Comfino Payment Gateway for WooCommerce.
- * Version: 2.0.3
+ * Version: 2.0.4
  * Author: Comfino (Comperia)
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
@@ -16,7 +16,7 @@ defined('ABSPATH') or exit;
 
 class WC_ComfinoPaymentGateway
 {
-    public const VERSION = '2.0.3';
+    public const VERSION = '2.0.4';
 
     /**
      * @var WC_ComfinoPaymentGateway
@@ -52,12 +52,12 @@ class WC_ComfinoPaymentGateway
             return;
         }
 
-        require_once __DIR__.'/includes/wc-comfino-gateway.php';
+        require_once __DIR__ . '/includes/wc-comfino-gateway.php';
 
         add_filter('woocommerce_payment_gateways', [$this, 'add_gateway']);
-        add_filter('plugin_action_links_'.plugin_basename(__FILE__), [$this, 'plugin_action_links']);
+        add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'plugin_action_links']);
         add_filter('wc_order_statuses', [$this, 'filter_order_status']);
-        load_plugin_textdomain('comfino', false, basename(__DIR__).'/languages');
+        load_plugin_textdomain('comfino', false, basename(__DIR__) . '/languages');
     }
 
     /**
@@ -92,7 +92,7 @@ class WC_ComfinoPaymentGateway
     public function plugin_action_links($links): array
     {
         $plugin_links = [
-            '<a href="'.admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino').'">'.__('Settings', 'comfino').'</a>',
+            '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino') . '">' . __('Settings', 'comfino') . '</a>',
         ];
 
         return array_merge($plugin_links, $links);
