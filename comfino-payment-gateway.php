@@ -8,6 +8,8 @@
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
  * Text Domain: comfino
+ * Requires at least: 5.6
+ * Requires PHP: 7.0
  *
  * @license http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
 */
@@ -57,8 +59,6 @@ class WC_ComfinoPaymentGateway
         add_filter('woocommerce_payment_gateways', [$this, 'add_gateway']);
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'plugin_action_links']);
         add_filter('wc_order_statuses', [$this, 'filter_order_status']);
-
-        add_action('woocommerce_order_item_add_action_buttons', [$this, 'order_buttons_callback'], 10, 1);
 
         load_plugin_textdomain('comfino', false, basename(__DIR__) . '/languages');
     }
@@ -110,10 +110,10 @@ class WC_ComfinoPaymentGateway
     {
         global $post;
 
-        if (isset($post)) {
+        if (isset($post) && 'shop_order' === $post->post_type) {
             $order = wc_get_order($post->ID);
 
-            if ($order && $order->get_payment_method() === 'comfino' && $order->has_status('completed')) {
+            if ($order->get_payment_method() === 'comfino' && $order->has_status('completed')) {
                 if (isset($statuses['wc-cancelled'])) {
                     unset($statuses['wc-cancelled']);
                 }
@@ -121,20 +121,6 @@ class WC_ComfinoPaymentGateway
         }
 
         return $statuses;
-    }
-
-    /**
-     * @param $order
-     */
-    public function order_buttons_callback($order): void
-    {
-        if ($order->get_payment_method() === 'comfino' && !($order->has_status(['cancelled', 'resigned', 'rejected']))) {
-            echo '<button type="button" class="button cancel-items" onclick="return confirm(\'' . __('Are you sure you want to cancel?') . '\')">' . __('Cancel') . '<span class="woocommerce-help-tip" data-tip="' . __('Attention: You are cancelling a customer order. Check if you do not have to return the money to Comfino.') . '"></span></button>';
-        }
-
-        if ($order->get_payment_method() === 'comfino' && ($order->has_status(['processing', 'completed']))) {
-            echo '<button type="button" class="button resign-items" onclick="return confirm(\'' . __('Are you sure you want to resign?') . '\')">' . __('Resign') . '<span class="woocommerce-help-tip" data-tip="' . __('Attention: you are initiating a resignation of the Customer\'s contract. Required refund to Comfino.') . '"></span></button>';
-        }
     }
 
     /**

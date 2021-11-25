@@ -101,10 +101,14 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
             $this->key = $production_key;
         }
 
-        add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
         add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
+        add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
         add_action('woocommerce_api_wc_comfino_gateway', [$this, 'webhook']);
+
         add_action('woocommerce_order_status_cancelled', [$this, 'cancel_order']);
+
+        add_action('woocommerce_order_item_add_action_buttons', [$this, 'order_buttons'], 10, 1);
+        add_action('save_post', [$this, 'update_order'], 10, 3);
     }
 
     /**
@@ -340,7 +344,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
     /**
      * @param string $order_id
      */
-    public function cancel_order($order_id): void
+    public function cancel_order(string $order_id): void
     {
         $order = wc_get_order($order_id);
 
@@ -361,7 +365,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
     /**
      * @param string $order_id
      */
-    public function resign_order($order_id): void
+    public function resign_order(string $order_id): void
     {
         $order = wc_get_order($order_id);
 
@@ -370,7 +374,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
             'method' => 'PUT'
         ];
 
-        $response = wp_remote_request($this->host.self::COMFINO_ORDERS_ENDPOINT."/{$order->get_id()}/resign", $args);
+        $response = wp_remote_request($this->host . self::COMFINO_ORDERS_ENDPOINT . "/{$order->get_id()}/resign", $args);
 
         if (is_wp_error($response)) {
             wc_add_notice('Connection error.', 'error');
@@ -554,5 +558,49 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
         }
 
         return apply_filters('woocommerce_gateway_icon', $icon, $this->id);
+    }
+
+    /**
+     * Show buttons order
+     *
+     * @param $order
+     */
+    public function order_buttons($order): void
+    {
+        echo '<input type="hidden" id="comfino_action" value="" name="comfino_action" />';
+
+        if ($order->get_payment_method() === 'comfino' && !($order->has_status(['cancelled', 'resigned', 'rejected']))) {
+            echo '<button type="button" class="button cancel-items" onclick="if(confirm(\'' . __('Are you sure you want to cancel?', 'comfino') . '\')){document.getElementById(\'comfino_action\').value = \'cancel\'; document.post.submit();}">' . __('Cancel', 'comfino') . wc_help_tip(__('Attention: You are cancelling a customer order. Check if you do not have to return the money to Comfino.', 'comfino')) . '</button>';
+        }
+
+        if ($order->get_payment_method() === 'comfino' && ($order->has_status(['processing', 'completed']))) {
+            echo '<button type="button" class="button cancel-items" onclick="if(confirm(\'' . __('Are you sure you want to resign?', 'comfino') . '\')){document.getElementById(\'comfino_action\').value = \'resign\'; document.post.submit();}">' . __('Resign', 'comfino') . wc_help_tip(__('Attention: you are initiating a resignation of the Customer\'s contract. Required refund to Comfino.', 'comfino')) . '</a>';
+        }
+    }
+
+    /**
+     * @param $post_id
+     * @param $post
+     * @param $update
+     */
+    public function update_order($post_id, $post, $update): void
+    {
+        if (is_admin()) {
+            if ('shop_order' !== $post->post_type) {
+                return;
+            }
+
+            if (isset($_POST['comfino_action']) && $_POST['comfino_action']) {
+                $order = wc_get_order($post->ID);
+
+                if ($_POST['comfino_action'] === 'cancel') {
+                    $this->cancel_order($order->ID);
+                }
+
+                if ($_POST['comfino_action'] === 'resign') {
+                    $this->resign_order($order->ID);
+                }
+            }
+        }
     }
 }
