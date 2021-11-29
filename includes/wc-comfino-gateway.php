@@ -6,6 +6,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
     public const ACCEPTED_STATUS = "ACCEPTED";
     public const REJECTED_STATUS = "REJECTED";
     public const CANCELLED_STATUS = "CANCELLED";
+    public const CANCELLED_BY_SHOP = "CANCELLED_BY_SHOP";
     public const PAID_STATUS = "PAID";
 
     private const TYPE_INSTALLMENTS_ZERO_PERCENT = 'INSTALLMENTS_ZERO_PERCENT';
@@ -22,6 +23,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
     private $rejected_state = [
         self::REJECTED_STATUS,
         self::CANCELLED_STATUS,
+        self::CANCELLED_BY_SHOP,
     ];
 
     /**
@@ -369,8 +371,13 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
     {
         $order = wc_get_order($order_id);
 
+        $body = wp_json_encode([
+            'loanAmount' => (int)$order->get_total() * 100
+        ]);
+
         $args = [
             'headers' => $this->get_header_request(),
+            'body' => $body,
             'method' => 'PUT'
         ];
 
