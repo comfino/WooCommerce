@@ -5,8 +5,8 @@ msgstr ""
 "Project-Id-Version: WooCommerce - Comfino Payment Gateway 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wc-comfino-"
 "payment-gateway\n"
-"POT-Creation-Date: 2021-11-25T14:49:50+00:00\n"
-"PO-Revision-Date: 2021-11-25 15:56+0100\n"
+"POT-Creation-Date: 2021-11-29T12:44:15+00:00\n"
+"PO-Revision-Date: 2021-11-29 13:48+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: pl_PL\n"
@@ -53,123 +53,127 @@ msgstr ""
 msgid "Settings"
 msgstr "Ustawienia"
 
-#: includes/wc-comfino-gateway.php:78
+#: includes/wc-comfino-gateway.php:82
 msgid "Comfino Gateway"
 msgstr "Comfino Bramka"
 
-#: includes/wc-comfino-gateway.php:79
+#: includes/wc-comfino-gateway.php:83
 msgid "Comfino payment gateway"
 msgstr "Comfino Bramka Płatności"
 
-#: includes/wc-comfino-gateway.php:121
+#: includes/wc-comfino-gateway.php:125
 msgid "Enable/Disable"
 msgstr "Włączony/Wyłączony"
 
-#: includes/wc-comfino-gateway.php:123
+#: includes/wc-comfino-gateway.php:127
 msgid "Enable Comfino Payment Module."
 msgstr "Włączony Comfino moduł płatności."
 
-#: includes/wc-comfino-gateway.php:125
+#: includes/wc-comfino-gateway.php:129
 msgid "Show in the Payment List as a payment option"
 msgstr "Pokaż na liście płatności"
 
-#: includes/wc-comfino-gateway.php:128
+#: includes/wc-comfino-gateway.php:132
 msgid "Sandbox mode:"
 msgstr "Tryb piaskownicy:"
 
-#: includes/wc-comfino-gateway.php:130
+#: includes/wc-comfino-gateway.php:134
 msgid "Enable Sandbox Mode"
 msgstr "Włączony Tryb piaskownicy"
 
-#: includes/wc-comfino-gateway.php:134
+#: includes/wc-comfino-gateway.php:138
 msgid "Title:"
 msgstr "Tytuł:"
 
-#: includes/wc-comfino-gateway.php:139
+#: includes/wc-comfino-gateway.php:143
 msgid "Sandbox Key"
 msgstr "Klucz piaskownicy"
 
-#: includes/wc-comfino-gateway.php:143
+#: includes/wc-comfino-gateway.php:147
 msgid "Production Key"
 msgstr "Klucz produkcyjny"
 
-#: includes/wc-comfino-gateway.php:147
+#: includes/wc-comfino-gateway.php:151
 msgid "Show Logo"
 msgstr "Wyświetlanie logo"
 
-#: includes/wc-comfino-gateway.php:149
+#: includes/wc-comfino-gateway.php:153
 msgid "Show logo on payment method"
 msgstr "Pokaż logo na metodzie płatności"
 
-#: includes/wc-comfino-gateway.php:197
+#: includes/wc-comfino-gateway.php:201
 msgid "Choose payment method"
 msgstr "Wybierz sposób płatności"
 
-#: includes/wc-comfino-gateway.php:202
+#: includes/wc-comfino-gateway.php:206
 msgid "Value of purchase"
 msgstr "Wartość zakupów"
 
-#: includes/wc-comfino-gateway.php:207
+#: includes/wc-comfino-gateway.php:211
 msgid "Choose number of instalments"
 msgstr "Wybierz ilość rat"
 
-#: includes/wc-comfino-gateway.php:211
+#: includes/wc-comfino-gateway.php:215
 msgid "Monthly instalment"
 msgstr "Miesięczna rata"
 
-#: includes/wc-comfino-gateway.php:215
+#: includes/wc-comfino-gateway.php:219
 msgid "Total amount to pay"
 msgstr "Łączna kwota do spłaty"
 
-#: includes/wc-comfino-gateway.php:220
+#: includes/wc-comfino-gateway.php:224
 msgid "Representative example"
 msgstr "Przykład reprezentatywny"
 
-#: includes/wc-comfino-gateway.php:231
+#: includes/wc-comfino-gateway.php:235
 msgid "Buy now, pay in 30 days"
 msgstr "Kup teraz, zapłać za 30 dni"
 
-#: includes/wc-comfino-gateway.php:231
+#: includes/wc-comfino-gateway.php:235
 msgid "How it's working?"
 msgstr "Jak to działa?"
 
-#: includes/wc-comfino-gateway.php:238
+#: includes/wc-comfino-gateway.php:242
 msgid "Put the product in the basket"
 msgstr "Włóż produkt do koszyka"
 
-#: includes/wc-comfino-gateway.php:244
+#: includes/wc-comfino-gateway.php:248
 msgid "Choose Twisto payment"
 msgstr "Wybierz płatność Twisto"
 
-#: includes/wc-comfino-gateway.php:252
+#: includes/wc-comfino-gateway.php:256
 msgid "Check the products at home"
 msgstr "Sprawdź produkty w domu"
 
-#: includes/wc-comfino-gateway.php:258
+#: includes/wc-comfino-gateway.php:262
 msgid "Pay in 30 days"
 msgstr "Zapłać za 30 dni"
 
-#: includes/wc-comfino-gateway.php:328
+#: includes/wc-comfino-gateway.php:332
 msgid "Comfino create order"
 msgstr "Comfino wniosek stworzony"
 
-#: includes/wc-comfino-gateway.php:362
+#: includes/wc-comfino-gateway.php:367
 msgid "Send to Comfino canceled order"
-msgstr "Wysłanie do Comfino anulacji wniosku"
+msgstr "Wysłanie do Comfino anulowanie wniosku"
 
-#: includes/wc-comfino-gateway.php:402
+#: includes/wc-comfino-gateway.php:394
+msgid "Send to Comfino resign order"
+msgstr "Wysłanie do Comfino odstąpienia od umowy"
+
+#: includes/wc-comfino-gateway.php:415
 msgid "Comfino status"
 msgstr "Comfino status"
 
-#: includes/wc-comfino-gateway.php:573
+#: includes/wc-comfino-gateway.php:586
 msgid "Are you sure you want to cancel?"
 msgstr "Czy na pewno chcesz anulować?"
 
-#: includes/wc-comfino-gateway.php:573
+#: includes/wc-comfino-gateway.php:586
 msgid "Cancel"
-msgstr "Anulacja"
+msgstr "Anulowanie"
 
-#: includes/wc-comfino-gateway.php:573
+#: includes/wc-comfino-gateway.php:586
 msgid ""
 "Attention: You are cancelling a customer order. Check if you do not have to "
 "return the money to Comfino."
@@ -177,15 +181,15 @@ msgstr ""
 "Uwaga! Anulujesz zamówienie klienta. Sprawdź czy nie musisz zwrócić "
 "pieniędzy do Comfino."
 
-#: includes/wc-comfino-gateway.php:577
+#: includes/wc-comfino-gateway.php:590
 msgid "Are you sure you want to resign?"
-msgstr "Are you sure you want to cancel?"
+msgstr "Czy na pewno chcesz odstąpić od umowy?"
 
-#: includes/wc-comfino-gateway.php:577
+#: includes/wc-comfino-gateway.php:590
 msgid "Resign"
 msgstr "Odstąpienie od umowy"
 
-#: includes/wc-comfino-gateway.php:577
+#: includes/wc-comfino-gateway.php:590
 msgid ""
 "Attention: you are initiating a resignation of the Customer's contract. "
 "Required refund to Comfino."

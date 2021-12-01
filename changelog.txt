@@ -1,6 +1,7 @@
 2.1.0
  * add cancel
  * add resign
+ * fix rsso
 
 2.0.3
  * fix statuses
