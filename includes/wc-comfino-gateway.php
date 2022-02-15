@@ -128,20 +128,10 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
                 'default' => 'no',
                 'description' => __('Show in the Payment List as a payment option', 'comfino')
             ],
-            'sandbox_mode' => [
-                'title' => __('Sandbox mode:', 'comfino'),
-                'type' => 'checkbox',
-                'label' => __('Enable Sandbox Mode', 'comfino'),
-                'default' => 'yes',
-            ],
             'title' => [
                 'title' => __('Title:', 'comfino'),
                 'type' => 'text',
                 'default' => 'Comfino',
-            ],
-            'sandbox_key' => [
-                'title' => __('Sandbox Key', 'comfino'),
-                'type' => 'text'
             ],
             'production_key' => [
                 'title' => __('Production Key', 'comfino'),
@@ -152,6 +142,16 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
                 'type' => 'checkbox',
                 'label' => __('Show logo on payment method', 'comfino'),
                 'default' => 'yes',
+            ],
+            'sandbox_mode' => [
+                'title' => __('Sandbox mode:', 'comfino'),
+                'type' => 'checkbox',
+                'label' => __('Enable Sandbox Mode', 'comfino'),
+                'default' => 'yes',
+            ],
+            'sandbox_key' => [
+                'title' => __('Sandbox Key', 'comfino'),
+                'type' => 'text'
             ],
         ];
     }
