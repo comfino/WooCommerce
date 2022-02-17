@@ -10,8 +10,6 @@ window.Comfino = {
             item.classList.remove('comfino-active');
         });
 
-        console.log(Comfino.offerList.data[Comfino.selectedOffer]);
-
         if (termElement !== null) {
             termElement.classList.add('comfino-active');
 
@@ -185,6 +183,11 @@ window.Comfino = {
         });
 
         document.getElementById('modal-repr-example').querySelector('button.comfino-modal-exit').addEventListener('click', function (event) {
+            event.preventDefault();
+            document.getElementById('modal-repr-example').classList.remove('open');
+        });
+
+        document.getElementById('modal-repr-example').querySelector('div.comfino-modal-exit').addEventListener('click', function (event) {
             event.preventDefault();
             document.getElementById('modal-repr-example').classList.remove('open');
         });
