@@ -230,6 +230,24 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         ];
     }
 
+//    public function process_admin_options() {
+//        $this->init_settings();
+//
+//        $post_data = $this->get_post_data();
+//
+//        foreach ( $this->get_form_fields() as $key => $field ) {
+//            if ( 'title' !== $this->get_field_type( $field ) ) {
+//                try {
+//                    $this->settings[ $key ] = $this->get_field_value( $key, $field, $post_data );
+//                } catch ( Exception $e ) {
+//                    $this->add_error( $e->getMessage() );
+//                }
+//            }
+//        }
+//
+//        return update_option( $this->get_option_key(), apply_filters( 'woocommerce_settings_api_sanitized_fields_' . $this->id, $this->settings ), 'yes' );
+//    }
+//
     /**
      * Show offers
      */

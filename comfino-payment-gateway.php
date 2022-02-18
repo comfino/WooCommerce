@@ -137,7 +137,7 @@ class ComfinoPaymentGateway
         if (is_single()) {
             $cg = new Comfino_Gateway();
 
-            if ($cg->get_option('widget_enabled') && $cg->get_option('widget_key')) {
+            if ($cg->get_option('widget_enabled') && $cg->get_option('widget_key') !== '') {
                 $code = $cg->get_option('widget_js_code');
                 $sandbox_mode = 'yes' === $cg->get_option('sandbox_mode');
 
