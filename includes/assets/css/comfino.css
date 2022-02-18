@@ -291,11 +291,13 @@
 }
 
 .comfino-modal-container {
-    width: 50%;
+    width: 60%;
     border-radius: 10px;
     background: #fff;
     position: relative;
-    padding: 30px;
+    padding: 50px 30px;
+    max-height: 90%;
+    overflow: auto;
 }
 
 .comfino-modal-close {

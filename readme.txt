@@ -11,6 +11,9 @@ Requires PHP: 7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
+2.2.0
+ * fix modal
+
 2.1.1
  * update to WP 5.9.0
  * update to WC 6.2.0
