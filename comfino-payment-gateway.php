@@ -16,19 +16,19 @@
 
 defined('ABSPATH') or exit;
 
-class WC_ComfinoPaymentGateway
+class ComfinoPaymentGateway
 {
     public const VERSION = '2.2.0';
 
     /**
-     * @var WC_ComfinoPaymentGateway
+     * @var ComfinoPaymentGateway
      */
     private static $instance;
 
     /**
-     * @return WC_ComfinoPaymentGateway
+     * @return ComfinoPaymentGateway
      */
-    public static function get_instance(): WC_ComfinoPaymentGateway
+    public static function get_instance(): ComfinoPaymentGateway
     {
         if (null === self::$instance) {
             self::$instance = new self();
@@ -38,7 +38,7 @@ class WC_ComfinoPaymentGateway
     }
 
     /**
-     * WC_ComfinoPaymentGateway constructor.
+     * ComfinoPaymentGateway constructor.
      */
     public function __construct()
     {
@@ -54,11 +54,13 @@ class WC_ComfinoPaymentGateway
             return;
         }
 
-        require_once __DIR__ . '/includes/wc-comfino-gateway.php';
+        require_once __DIR__ . '/includes/comfino-gateway.php';
 
         add_filter('woocommerce_payment_gateways', [$this, 'add_gateway']);
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'plugin_action_links']);
         add_filter('wc_order_statuses', [$this, 'filter_order_status']);
+
+        add_filter('the_content', [$this, 'render_widget']);
 
         load_plugin_textdomain('comfino', false, basename(__DIR__) . '/languages');
     }
@@ -124,6 +126,42 @@ class WC_ComfinoPaymentGateway
     }
 
     /**
+     * Render widget
+     *
+     * @param string $content
+     *
+     * @return string
+     */
+    public function render_widget(string $content): string
+    {
+        if (is_single()) {
+            $cg = new Comfino_Gateway();
+
+            if ($cg->get_option('widget_enabled') && $cg->get_option('widget_key')) {
+                $code = $cg->get_option('widget_js_code');
+                $sandbox_mode = 'yes' === $cg->get_option('sandbox_mode');
+
+                if ($sandbox_mode) {
+                    $code = str_replace('{WIDGET_SCRIPT_URL}', Comfino_Gateway::COMFINO_WIDGET_JS_SANDBOX, $code);
+                } else {
+                    $code = str_replace('{WIDGET_SCRIPT_URL}', Comfino_Gateway::COMFINO_WIDGET_JS_PRODUCTION, $code);
+                }
+
+                $code = str_replace('{WIDGET_KEY}', $cg->get_option('widget_key'), $code);
+                $code = str_replace('{WIDGET_PRICE_SELECTOR}', $cg->get_option('widget_price_selector'), $code);
+                $code = str_replace('{WIDGET_TARGET_SELECTOR}', $cg->get_option('widget_target_selector'), $code);
+                $code = str_replace('{WIDGET_TYPE}', $cg->get_option('widget_type'), $code);
+                $code = str_replace('{OFFER_TYPE}', $cg->get_option('widget_offer_type'), $code);
+                $code = str_replace('{EMBED_METHOD}', $cg->get_option('widget_embed_method'), $code);
+
+                return $content . '<script>' . $code . '</script>';
+            }
+        }
+
+        return $content;
+    }
+
+    /**
      * Add the Comfino Gateway to WooCommerce
      *
      * @param $methods
@@ -132,10 +170,10 @@ class WC_ComfinoPaymentGateway
      */
     public function add_gateway($methods): array
     {
-        $methods[] = 'WC_Comfino_Gateway';
+        $methods[] = 'Comfino_Gateway';
 
         return $methods;
     }
 }
 
-WC_ComfinoPaymentGateway::get_instance();
+ComfinoPaymentGateway::get_instance();

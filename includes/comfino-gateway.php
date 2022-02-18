@@ -1,6 +1,6 @@
 <?php
 
-class WC_Comfino_Gateway extends WC_Payment_Gateway
+class Comfino_Gateway extends WC_Payment_Gateway
 {
     public const WAITING_FOR_PAYMENT_STATUS = "WAITING_FOR_PAYMENT";
     public const ACCEPTED_STATUS = "ACCEPTED";
@@ -71,8 +71,11 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
     private const COMFINO_PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
     private const COMFINO_SANDBOX_HOST = 'https://api-ecommerce.ecraty.pl';
 
+    public const COMFINO_WIDGET_JS_SANDBOX = 'https://widget.craty.pl/comfino.min.js';
+    public const COMFINO_WIDGET_JS_PRODUCTION = 'https://widget.comfino.pl/comfino.min.js';
+
     /**
-     * WC_Comfino_Gateway constructor.
+     * Comfino_Gateway constructor.
      */
     public function __construct()
     {
@@ -152,6 +155,77 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
             'sandbox_key' => [
                 'title' => __('Sandbox Key', 'comfino'),
                 'type' => 'text'
+            ],
+            'widget_enabled' => [
+                'title' => __('Widget Enable', 'comfino'),
+                'type' => 'checkbox',
+                'label' => __('Enable Comfino Widget', 'comfino'),
+                'default' => 'no',
+                'description' => __('Show Widget Comfino in the product', 'comfino')
+            ],
+            'widget_type' => [
+                'title' => __('Widget Type', 'comfino'),
+                'type' => 'select',
+                'options' => [
+                    'simple' => 'Textual widget',
+                    'mixed' => 'Graphical widget with banner',
+                    'with-modal' => 'Graphical widget with installments calculator'
+                ]
+            ],
+            'widget_offer_type' => [
+                'title' => __('Widget Offer Type', 'comfino'),
+                'type' => 'select',
+                'options' => [
+                    'INSTALLMENTS_ZERO_PERCENT' => 'Zero percent installments',
+                    'CONVENIENT_INSTALLMENTS' => 'Convenient installments',
+                ]
+            ],
+            'widget_price_selector' => [
+                'title' => __('Widget Price Selector', 'comfino'),
+                'type' => 'text',
+                'default' => '.woocommerce-Price-amount',
+            ],
+            'widget_target_selector' => [
+                'title' => __('Widget Target Selector', 'comfino'),
+                'type' => 'text',
+                'default' => '.product_meta',
+            ],
+            'widget_embed_method' => [
+                'title' => __('Widget Embed Method', 'comfino'),
+                'type' => 'select',
+                'options' => [
+                    'INSERT_INTO_FIRST' => 'INSERT_INTO_FIRST',
+                    'INSERT_INTO_LAST' => 'INSERT_INTO_LAST',
+                    'INSERT_BEFORE' => 'INSERT_BEFORE',
+                    'INSERT_AFTER' => 'INSERT_AFTER',
+                ]
+            ],
+            'widget_key' => [
+                'title' => __('Widget Key', 'comfino'),
+                'type' => 'text',
+            ],
+            'widget_js_code' => [
+                'title' => __('Widget code', 'comfino'),
+                'type' => 'textarea',
+                'css' => 'width: 800px; height: 400px',
+                'default' => '
+var script = document.createElement(\'script\');
+script.onload = function () {
+    ComfinoProductWidget.init({
+        widgetKey: \'{WIDGET_KEY}\',
+        priceSelector: \'{WIDGET_PRICE_SELECTOR}\',
+        widgetTargetSelector: \'{WIDGET_TARGET_SELECTOR}\',
+        price: null,
+        type: \'{WIDGET_TYPE}\',
+        offerType: \'{OFFER_TYPE}\',
+        embedMethod: \'{EMBED_METHOD}\',
+        callbackBefore: function () {},
+        callbackAfter: function () {}
+    });
+};
+script.src = \'{WIDGET_SCRIPT_URL}\';
+script.async = true;
+document.getElementsByTagName(\'head\')[0].appendChild(script);'
             ],
         ];
     }
@@ -283,8 +357,8 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
             return;
         }
 
-        wp_enqueue_style('woocommerce-comfino', plugins_url('assets/css/comfino.css', __FILE__));
-        wp_enqueue_script('woocommerce-comfino', plugins_url('assets/js/comfino.js', __FILE__));
+        wp_enqueue_style('comfino', plugins_url('assets/css/comfino.css', __FILE__));
+        wp_enqueue_script('comfino', plugins_url('assets/js/comfino.js', __FILE__));
     }
 
     /**
@@ -307,7 +381,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
         $body = wp_json_encode([
             'returnUrl' => $this->get_return_url($order),
             'orderId' => (string)$order->get_id(),
-            'notifyUrl' => add_query_arg('wc-api', 'WC_Comfino_Gateway', home_url('/')),
+            'notifyUrl' => add_query_arg('wc-api', 'Comfino_Gateway', home_url('/')),
             'loanParameters' => [
                 'term' => (int)$loanTerm,
                 'type' => $type,
@@ -523,7 +597,7 @@ class WC_Comfino_Gateway extends WC_Payment_Gateway
         return [
             'Content-Type' => 'application/json',
             'Api-Key' => $this->key,
-            'user-agent' => sprintf('WP Comfino [%s], WP [%s], WC [%s], PHP [%s]', WC_ComfinoPaymentGateway::VERSION, $wp_version, WC_VERSION, PHP_VERSION),
+            'user-agent' => sprintf('WP Comfino [%s], WP [%s], WC [%s], PHP [%s]', ComfinoPaymentGateway::VERSION, $wp_version, WC_VERSION, PHP_VERSION),
         ];
     }
 
