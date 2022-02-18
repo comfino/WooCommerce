@@ -60,7 +60,7 @@ class ComfinoPaymentGateway
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'plugin_action_links']);
         add_filter('wc_order_statuses', [$this, 'filter_order_status']);
 
-        add_filter('the_content', [$this, 'render_widget']);
+        add_action('woocommerce_single_product_summary', [$this, 'render_widget']);
 
         load_plugin_textdomain('comfino', false, basename(__DIR__) . '/languages');
     }
@@ -128,11 +128,9 @@ class ComfinoPaymentGateway
     /**
      * Render widget
      *
-     * @param string $content
-     *
-     * @return string
+     * @return void
      */
-    public function render_widget(string $content): string
+    public function render_widget(): void
     {
         if (is_single()) {
             $cg = new Comfino_Gateway();
@@ -154,11 +152,9 @@ class ComfinoPaymentGateway
                 $code = str_replace('{OFFER_TYPE}', $cg->get_option('widget_offer_type'), $code);
                 $code = str_replace('{EMBED_METHOD}', $cg->get_option('widget_embed_method'), $code);
 
-                return $content . '<script>' . $code . '</script>';
+                echo '<script>' . $code . '</script>';
             }
         }
-
-        return $content;
     }
 
     /**
