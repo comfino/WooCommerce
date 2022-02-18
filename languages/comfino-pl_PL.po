@@ -5,8 +5,8 @@ msgstr ""
 "Project-Id-Version: WooCommerce - Comfino Payment Gateway 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wc-comfino-"
 "payment-gateway\n"
-"POT-Creation-Date: 2022-02-18T08:53:50+00:00\n"
-"PO-Revision-Date: 2022-02-18 10:02+0100\n"
+"POT-Creation-Date: 2022-02-18T09:09:04+00:00\n"
+"PO-Revision-Date: 2022-02-18 10:10+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: pl_PL\n"
@@ -119,9 +119,29 @@ msgstr "Pokazuj Widżet Comfino w produkcie"
 msgid "Widget Type"
 msgstr "Typ Widżetu"
 
+#: includes/comfino-gateway.php:170
+msgid "Textual widget"
+msgstr "Tekstowy"
+
+#: includes/comfino-gateway.php:171
+msgid "Graphical widget with banner"
+msgstr "Graficzny"
+
+#: includes/comfino-gateway.php:172
+msgid "Graphical widget with installments calculator"
+msgstr "Graficzny z kalkulatorem"
+
 #: includes/comfino-gateway.php:176
 msgid "Widget Offer Type"
 msgstr "Typ Oferty Widżetu"
+
+#: includes/comfino-gateway.php:179
+msgid "Zero percent installments"
+msgstr "Raty 0%"
+
+#: includes/comfino-gateway.php:180
+msgid "Convenient installments"
+msgstr "Niskie Raty"
 
 #: includes/comfino-gateway.php:184
 msgid "Widget Price Selector"

@@ -167,17 +167,17 @@ class Comfino_Gateway extends WC_Payment_Gateway
                 'title' => __('Widget Type', 'comfino'),
                 'type' => 'select',
                 'options' => [
-                    'simple' => 'Textual widget',
-                    'mixed' => 'Graphical widget with banner',
-                    'with-modal' => 'Graphical widget with installments calculator'
+                    'simple' => __('Textual widget', 'comfino'),
+                    'mixed' => __('Graphical widget with banner', 'comfino'),
+                    'with-modal' => __('Graphical widget with installments calculator', 'comfino'),
                 ]
             ],
             'widget_offer_type' => [
                 'title' => __('Widget Offer Type', 'comfino'),
                 'type' => 'select',
                 'options' => [
-                    'INSTALLMENTS_ZERO_PERCENT' => 'Zero percent installments',
-                    'CONVENIENT_INSTALLMENTS' => 'Convenient installments',
+                    'INSTALLMENTS_ZERO_PERCENT' => __('Zero percent installments', 'comfino'),
+                    'CONVENIENT_INSTALLMENTS' => __('Convenient installments', 'comfino'),
                 ]
             ],
             'widget_price_selector' => [

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2022-02-18T08:53:50+00:00\n"
+"POT-Creation-Date: 2022-02-18T09:09:04+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.6.0\n"
 "X-Domain: comfino\n"
@@ -110,8 +110,28 @@ msgstr ""
 msgid "Widget Type"
 msgstr ""
 
+#: includes/comfino-gateway.php:170
+msgid "Textual widget"
+msgstr ""
+
+#: includes/comfino-gateway.php:171
+msgid "Graphical widget with banner"
+msgstr ""
+
+#: includes/comfino-gateway.php:172
+msgid "Graphical widget with installments calculator"
+msgstr ""
+
 #: includes/comfino-gateway.php:176
 msgid "Widget Offer Type"
+msgstr ""
+
+#: includes/comfino-gateway.php:179
+msgid "Zero percent installments"
+msgstr ""
+
+#: includes/comfino-gateway.php:180
+msgid "Convenient installments"
 msgstr ""
 
 #: includes/comfino-gateway.php:184
