@@ -4,12 +4,15 @@ Donate link: https://comfino.pl/
 Tags: comfino, woocommerce, gateway, payment, bank
 WC tested up to: 6.2.0
 WC requires at least: 3.0
-Stable tag: 2.2.0
+Stable tag: 2.2.1
 Tested up to: 5.9.0
 Requires at least: 5.0
 Requires PHP: 7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
+
+2.2.1
+ * fix extracting customer phone number from order billing data if phone is stored in order metadata
 
 2.2.0
  * fix modal

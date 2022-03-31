@@ -18,7 +18,7 @@ defined('ABSPATH') or exit;
 
 class ComfinoPaymentGateway
 {
-    public const VERSION = '2.2.0';
+    public const VERSION = '2.2.1';
 
     /**
      * @var ComfinoPaymentGateway
