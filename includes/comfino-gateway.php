@@ -109,7 +109,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
         }
 
         add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
-        add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
+        //add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
         add_action('woocommerce_api_wc_comfino_gateway', [$this, 'webhook']);
 
         add_action('woocommerce_order_status_cancelled', [$this, 'cancel_order']);
@@ -230,24 +230,25 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         ];
     }
 
-//    public function process_admin_options() {
-//        $this->init_settings();
-//
-//        $post_data = $this->get_post_data();
-//
-//        foreach ( $this->get_form_fields() as $key => $field ) {
-//            if ( 'title' !== $this->get_field_type( $field ) ) {
-//                try {
-//                    $this->settings[ $key ] = $this->get_field_value( $key, $field, $post_data );
-//                } catch ( Exception $e ) {
-//                    $this->add_error( $e->getMessage() );
-//                }
-//            }
-//        }
-//
-//        return update_option( $this->get_option_key(), apply_filters( 'woocommerce_settings_api_sanitized_fields_' . $this->id, $this->settings ), 'yes' );
-//    }
-//
+/*  public function process_admin_options()
+    {
+        $this->init_settings();
+
+        $post_data = $this->get_post_data();
+
+        foreach ( $this->get_form_fields() as $key => $field ) {
+            if ( 'title' !== $this->get_field_type( $field ) ) {
+                try {
+                    $this->settings[ $key ] = $this->get_field_value( $key, $field, $post_data );
+                } catch ( Exception $e ) {
+                    $this->add_error( $e->getMessage() );
+                }
+            }
+        }
+
+        return update_option( $this->get_option_key(), apply_filters( 'woocommerce_settings_api_sanitized_fields_' . $this->id, $this->settings ), 'yes' );
+    }*/
+
     /**
      * Show offers
      */
@@ -588,12 +589,33 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
      */
     private function get_customer($order): array
     {
+        $phone_number = $order->get_billing_phone();
+
+        if (empty($phone_number)) {
+            // Try to find phone number in order metadata
+            $order_metadata = $order->get_meta_data();
+
+            foreach ($order_metadata as $meta_data_item) {
+                /** @var WC_Meta_Data $meta_data_item */
+                $meta_data = $meta_data_item->get_data();
+
+                if (stripos($meta_data['key'], 'tel') !== false || stripos($meta_data['key'], 'phone') !== false) {
+                    $metaValue = str_replace(['-', ' ', '(', ')'], '', $meta_data['value']);
+
+                    if (preg_match('/^(?:\+{0,1}\d{1,2})?\d{9}$|^(?:\d{2,3})?\d{7}$/', $metaValue)) {
+                        $phone_number = $metaValue;
+                        break;
+                    }
+                }
+            }
+        }
+
         return [
             'firstName' => $order->get_billing_first_name(),
             'lastName' => $order->get_billing_last_name(),
             'ip' => WC_Geolocation::get_ip_address(),
             'email' => $order->get_billing_email(),
-            'phoneNumber' => $order->get_billing_phone(),
+            'phoneNumber' => $phone_number,
             'address' => [
                 'street' => $order->get_billing_address_1(),
                 'postalCode' => $order->get_billing_postcode(),
