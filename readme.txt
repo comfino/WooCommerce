@@ -2,7 +2,7 @@
 Contributors: Comperia.pl
 Donate link: https://comfino.pl/
 Tags: comfino, woocommerce, gateway, payment, bank
-WC tested up to: 6.2.0
+WC tested up to: 6.3.1
 WC requires at least: 3.0
 Stable tag: 2.2.1
 Tested up to: 5.9.0
