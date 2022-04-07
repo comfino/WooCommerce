@@ -335,3 +335,11 @@ a.representative:hover {
 #comfino-payment-delay {
     display: none;
 }
+
+#comfino-widget-monthly-installment {
+    display: inline;
+}
+
+#comfino-widget-period {
+    display: inline;
+}

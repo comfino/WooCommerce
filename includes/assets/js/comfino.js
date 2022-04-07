@@ -123,7 +123,7 @@ window.Comfino = {
             comfinoOffer.innerHTML = `
                 <div class="comfino-single-payment">
                     <input type="radio" id="` + comfinoOptId + `" class="comfino-input" name="comfino" />
-                    <label for="` + comfinoOptId + `">
+                    <label for="` + comfinoOptId + `" style="display: inline !important">
                         <div class="comfino-icon">` + item.icon + `</div> 
                         <span class="comfino-single-payment__text">` + item.name + `</span>
                     </label>
