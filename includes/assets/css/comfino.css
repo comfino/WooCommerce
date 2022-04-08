@@ -37,9 +37,10 @@
 }
 
 .payment_box.payment_method_comfino .comfino-single-payment label {
-    display: flex;
+    display: flex !important;
     align-items: center;
     width: 100%;
+    margin-bottom: 8px;
 }
 
 .payment_box.payment_method_comfino .comfino-single-payment__text {
@@ -73,6 +74,7 @@
     border: 2px solid #ddd;
     border-radius: 100%;
     background: #fff;
+    box-sizing: border-box;
 }
 
 .payment_box.payment_method_comfino .comfino-input[type="radio"]:checked+label:after, .comfino-input[type="radio"]:not(:checked)+label:after {
@@ -334,12 +336,4 @@ a.representative:hover {
 
 #comfino-payment-delay {
     display: none;
-}
-
-#comfino-widget-monthly-installment {
-    display: inline;
-}
-
-#comfino-widget-period {
-    display: inline;
 }
