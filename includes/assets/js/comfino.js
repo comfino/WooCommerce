@@ -191,5 +191,9 @@ window.Comfino = {
             event.preventDefault();
             document.getElementById('modal-repr-example').classList.remove('open');
         });
+
+        document.getElementById('payment_method_comfino').addEventListener('click', function (event) {
+            document.getElementById('payment').querySelector('div.payment_box.payment_method_comfino').setAttribute('style', 'display: block !important;');
+        });
     }
 }
