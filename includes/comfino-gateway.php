@@ -150,7 +150,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
                 'title' => __('Sandbox mode:', 'comfino'),
                 'type' => 'checkbox',
                 'label' => __('Enable Sandbox Mode', 'comfino'),
-                'default' => 'yes',
+                'default' => 'no',
             ],
             'sandbox_key' => [
                 'title' => __('Sandbox Key', 'comfino'),
