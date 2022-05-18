@@ -8,7 +8,7 @@
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
  * Text Domain: comfino
- * Requires at least: 5.6
+ * Requires at least: 5.4
  * Requires PHP: 7.0
  *
  * @license http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
@@ -18,7 +18,7 @@ defined('ABSPATH') or exit;
 
 class ComfinoPaymentGateway
 {
-    public const VERSION = '2.2.2';
+    public const VERSION = '2.2.3';
 
     /**
      * @var ComfinoPaymentGateway
