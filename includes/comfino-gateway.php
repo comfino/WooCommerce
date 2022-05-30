@@ -178,6 +178,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
                 'options' => [
                     'INSTALLMENTS_ZERO_PERCENT' => __('Zero percent installments', 'comfino'),
                     'CONVENIENT_INSTALLMENTS' => __('Convenient installments', 'comfino'),
+                    'PAY_LATER', 'name' => __('Pay later', 'comfino'),
                 ]
             ],
             'widget_price_selector' => [
