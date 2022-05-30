@@ -150,7 +150,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
                 'title' => __('Sandbox mode:', 'comfino'),
                 'type' => 'checkbox',
                 'label' => __('Enable Sandbox Mode', 'comfino'),
-                'default' => 'yes',
+                'default' => 'no',
             ],
             'sandbox_key' => [
                 'title' => __('Sandbox Key', 'comfino'),
@@ -237,7 +237,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         $post_data = $this->get_post_data();
 
         foreach ($this->get_form_fields() as $key => $field) {
-            if ( 'title' !== $this->get_field_type($field)) {
+            if ('title' !== $this->get_field_type($field)) {
                 try {
                     $this->settings[$key] = $this->get_field_value($key, $field, $post_data);
                 } catch (Exception $e) {
@@ -251,6 +251,24 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             apply_filters('woocommerce_settings_api_sanitized_fields_' . $this->id, $this->settings),
             'yes'
         );
+    }
+
+    public function admin_options()
+    {
+        global $wp_version;
+
+        echo "<h2>$this->method_title</h2>";
+        echo "<p>$this->method_description</p>";
+
+        echo '<p>'.sprintf(
+                __('Do you want to ask about something? Write to us at %s or contact us by phone. We are waiting on the number: %s. We will answer all your questions!', 'comfino'),
+                '<a href="mailto:pomoc@comfino.pl?subject='.sprintf(__('WordPress %s WooCommerce %s Comfino %s - question'), $wp_version, WC_VERSION, ComfinoPaymentGateway::VERSION).
+                '&body='.str_replace(',', '%2C', sprintf(__('WordPress %s WooCommerce %s Comfino %s, PHP %s'), $wp_version, WC_VERSION, ComfinoPaymentGateway::VERSION, PHP_VERSION)).'">pomoc@comfino.pl</a>', '887-106-027'
+            ).'</p>';
+
+        echo '<table class="form-table">';
+        echo $this->generate_settings_html();
+        echo '</table>';
     }
 
     /**
