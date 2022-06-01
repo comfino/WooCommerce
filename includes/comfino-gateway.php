@@ -178,17 +178,18 @@ class Comfino_Gateway extends WC_Payment_Gateway
                 'options' => [
                     'INSTALLMENTS_ZERO_PERCENT' => __('Zero percent installments', 'comfino'),
                     'CONVENIENT_INSTALLMENTS' => __('Convenient installments', 'comfino'),
+                    'PAY_LATER' => __('Pay later', 'comfino'),
                 ]
             ],
             'widget_price_selector' => [
                 'title' => __('Widget Price Selector', 'comfino'),
                 'type' => 'text',
-                'default' => '.woocommerce-Price-amount',
+                'default' => '.price .woocommerce-Price-amount bdi',
             ],
             'widget_target_selector' => [
                 'title' => __('Widget Target Selector', 'comfino'),
                 'type' => 'text',
-                'default' => '.product_meta',
+                'default' => '.summary .product_meta',
             ],
             'widget_embed_method' => [
                 'title' => __('Widget Embed Method', 'comfino'),
