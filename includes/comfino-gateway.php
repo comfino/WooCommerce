@@ -184,12 +184,12 @@ class Comfino_Gateway extends WC_Payment_Gateway
             'widget_price_selector' => [
                 'title' => __('Widget Price Selector', 'comfino'),
                 'type' => 'text',
-                'default' => '.woocommerce-Price-amount',
+                'default' => '.price .woocommerce-Price-amount bdi',
             ],
             'widget_target_selector' => [
                 'title' => __('Widget Target Selector', 'comfino'),
                 'type' => 'text',
-                'default' => '.product_meta',
+                'default' => '.summary .product_meta',
             ],
             'widget_embed_method' => [
                 'title' => __('Widget Embed Method', 'comfino'),
