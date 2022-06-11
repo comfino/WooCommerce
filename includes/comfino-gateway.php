@@ -68,6 +68,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
     private const COMFINO_OFFERS_ENDPOINT = '/v1/financial-products';
     private const COMFINO_ORDERS_ENDPOINT = '/v1/orders';
+    private const COMFINO_WIDGET_KEY_ENDPOINT = '/v1/widget-key';
     private const COMFINO_PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
     private const COMFINO_SANDBOX_HOST = 'https://api-ecommerce.ecraty.pl';
 
@@ -246,6 +247,12 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                 }
             }
         }
+
+        $this->settings['widget_key'] = $this->get_widget_key(
+            $this->settings['sandbox_mode'] === 'yes',
+            $this->settings['sandbox_key'],
+            $this->settings['production_key']
+        );
 
         return update_option(
             $this->get_option_key(),
@@ -565,6 +572,39 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         }
 
         return [];
+    }
+
+    /**
+     * Fetch widget key
+     *
+     * @param $sandbox_mode
+     *
+     * @return string
+     */
+    private function get_widget_key($sandbox_mode, $sandbox_key, $production_key): string
+    {
+        if ($sandbox_mode) {
+            $this->host = self::COMFINO_SANDBOX_HOST;
+            $this->key = $sandbox_key;
+        } else {
+            $this->host = self::COMFINO_PRODUCTION_HOST;
+            $this->key = $production_key;
+        }
+
+        $widget_key = '';
+
+        if (!empty($this->key)) {
+            $response = wp_remote_get(
+                $this->host . self::COMFINO_WIDGET_KEY_ENDPOINT,
+                ['headers' => $this->get_header_request()]
+            );
+
+            if (!is_wp_error($response)) {
+                $widget_key = json_decode($response['body'], true);
+            }
+        }
+
+        return $widget_key;
     }
 
     /**
