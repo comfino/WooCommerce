@@ -13,6 +13,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 2.2.4
  * update contact information (support e-mail and phone number), add a new offer type in Comfino widget: Pay later (PAY_LATER)
+ * link all images (Comfino logo, icons) to the external host to avoid problems with hosting configurations at some websites (403 error)
 
 2.2.3
  * tested WP 5.9.3 or 5.4.2
