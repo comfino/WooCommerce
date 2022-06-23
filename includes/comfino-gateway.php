@@ -68,6 +68,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
     private const COMFINO_OFFERS_ENDPOINT = '/v1/financial-products';
     private const COMFINO_ORDERS_ENDPOINT = '/v1/orders';
+    private const COMFINO_WIDGET_KEY_ENDPOINT = '/v1/widget-key';
     private const COMFINO_PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
     private const COMFINO_SANDBOX_HOST = 'https://api-ecommerce.ecraty.pl';
 
@@ -247,6 +248,12 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             }
         }
 
+        $this->settings['widget_key'] = $this->get_widget_key(
+            $this->settings['sandbox_mode'] === 'yes',
+            $this->settings['sandbox_key'],
+            $this->settings['production_key']
+        );
+
         return update_option(
             $this->get_option_key(),
             apply_filters('woocommerce_settings_api_sanitized_fields_' . $this->id, $this->settings),
@@ -354,13 +361,13 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                                 <div class="comfino-helper-box">
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
-                                            <img src="' . plugins_url('assets/img/icons/cart.svg', __FILE__) . '" alt="" class="single-instruction-img" />
+                                            <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/cart.svg" alt="" class="single-instruction-img" />
                                         </div>
                                         <div class="comfin-single-instruction__text">' . __('Put the product in the basket', 'comfino') . '</div>
                                     </div>
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
-                                            <img src="' . plugins_url('assets/img/icons/twisto.svg', __FILE__) . '" alt="" class="single-instruction-img" />
+                                            <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/twisto.svg" alt="" class="single-instruction-img" />
                                         </div>
                                         <div class="comfin-single-instruction__text">' . __('Choose Twisto payment', 'comfino') . '</div>
                                     </div>
@@ -368,13 +375,13 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                                 <div class="comfino-helper-box">
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
-                                            <img src="' . plugins_url('assets/img/icons/check.svg', __FILE__) . '" alt="" class="single-instruction-img" />
+                                            <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/icons/check.svg" alt="" class="single-instruction-img" />
                                         </div>
                                         <div class="comfin-single-instruction__text">' . __('Check the products at home', 'comfino') . '</div>
                                     </div>
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
-                                            <img src="' . plugins_url('assets/img/icons/wallet.svg', __FILE__) . '" alt="" class="single-instruction-img" />
+                                            <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/icons/wallet.svg" alt="" class="single-instruction-img" />
                                         </div>
                                         <div class="comfin-single-instruction__text">' . __('Pay in 30 days', 'comfino') . '</div>
                                     </div>
@@ -568,6 +575,39 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
     }
 
     /**
+     * Fetch widget key
+     *
+     * @param $sandbox_mode
+     *
+     * @return string
+     */
+    private function get_widget_key($sandbox_mode, $sandbox_key, $production_key): string
+    {
+        if ($sandbox_mode) {
+            $this->host = self::COMFINO_SANDBOX_HOST;
+            $this->key = $sandbox_key;
+        } else {
+            $this->host = self::COMFINO_PRODUCTION_HOST;
+            $this->key = $production_key;
+        }
+
+        $widget_key = '';
+
+        if (!empty($this->key)) {
+            $response = wp_remote_get(
+                $this->host . self::COMFINO_WIDGET_KEY_ENDPOINT,
+                ['headers' => $this->get_header_request()]
+            );
+
+            if (!is_wp_error($response)) {
+                $widget_key = json_decode($response['body'], true);
+            }
+        }
+
+        return $widget_key;
+    }
+
+    /**
      * Prepare product data
      *
      * @param $items
@@ -703,7 +743,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
     public function get_icon(): string
     {
         if ($this->show_logo) {
-            $icon = '<img style="height: 18px; margin: 0 5px;" src="' . plugins_url('assets/img/comfino.png', __FILE__) . '" alt="Comfino Logo" />';
+            $icon = '<img style="height: 18px; margin: 0 5px;" src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/comfino.png" alt="Comfino Logo" />';
         } else {
             $icon = '';
         }
