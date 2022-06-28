@@ -4,12 +4,16 @@ Donate link: https://comfino.pl/
 Tags: comfino, woocommerce, gateway, payment, bank
 WC tested up to: 6.3.1
 WC requires at least: 3.0
-Stable tag: 2.2.4
+Stable tag: 2.2.5
 Tested up to: 5.9.3
 Requires at least: 5.0
 Requires PHP: 7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
+
+2.2.5
+ * improve errors handling
+ * add errors logging and preview of errors log in the plugin settings form
 
 2.2.4
  * update contact information (support e-mail and phone number), add a new offer type in Comfino widget: Pay later (PAY_LATER)

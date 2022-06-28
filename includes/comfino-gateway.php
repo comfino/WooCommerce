@@ -15,7 +15,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
     private const TYPE_PAY_LATER = 'PAY_LATER';
     private const TYPE_COMPANY_INSTALLMENTS = 'COMPANY_INSTALLMENTS';
     private const TYPE_RENEWABLE_LIMIT = 'RENEWABLE_LIMIT';
-    private const ERROR_LOG_NUM_LINES = 20;
+    private const ERROR_LOG_NUM_LINES = 40;
 
     /**
      * Reject status
@@ -267,7 +267,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         global $wp_version;
 
         $errorsLog = '';
-        $logFilePath = _PS_MODULE_DIR_.'comfino/payment_log.log';
+        $logFilePath = dirname(__DIR__).'/payment_log.log';
 
         if (file_exists($logFilePath)) {
             $file = new SplFileObject($logFilePath, 'r');
@@ -293,7 +293,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         echo '<table class="form-table">';
         echo $this->generate_settings_html();
         echo '<tr valign="top"><th scope="row" class="titledesc"><label>'.__('Errors log', 'comfino').'</label></th>';
-        echo '<td><textarea>'.htmlentities($errorsLog).'</textarea></td></tr>';
+        echo '<td><textarea cols="20" rows="3" class="input-text wide-input" style="width: 800px; height: 400px">'.htmlentities($errorsLog).'</textarea></td></tr>';
         echo '</table>';
     }
 
@@ -471,11 +471,10 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         if (!is_wp_error($response)) {
             $decoded = json_decode($response['body'], true);
 
-            if (isset($decoded['errors'])) {
-                file_put_contents(
-                    WP_PLUGIN_DIR.'/comfino/payment_log.log',
-                    '['.date('Y-m-d H:i:s').'] Payment error - response: '.$response['body']."\n",
-                    FILE_APPEND
+            if (!$decoded || isset($decoded['errors']) || empty($decoded['applicationUrl'])) {
+                $this->log_error(
+                    $response['body'],
+                    'Payment error - response ('.$this->host.self::COMFINO_ORDERS_ENDPOINT.')'
                 );
             }
 
@@ -492,12 +491,9 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
 
         $error_id = time();
 
-        file_put_contents(
-            WP_PLUGIN_DIR.'/comfino/payment_log.log',
-            '['.date('Y-m-d H:i:s').'] Communication error ['.$error_id.']: '.
-            implode(', ', $response->get_error_messages()).', '.
-            implode(', ', $response->get_error_codes())."\n",
-            FILE_APPEND
+        $this->log_error(
+            implode(', ', $response->get_error_messages()).', '.implode(', ', $response->get_error_codes())."\n",
+            "Communication error [$error_id]"
         );
 
         wc_add_notice(
@@ -526,12 +522,9 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             if (is_wp_error($response)) {
                 $error_id = time();
 
-                file_put_contents(
-                    WP_PLUGIN_DIR.'/comfino/payment_log.log',
-                    '['.date('Y-m-d H:i:s').'] Communication error ['.$error_id.']: '.
-                    implode(', ', $response->get_error_messages()).', '.
-                    implode(', ', $response->get_error_codes())."\n",
-                    FILE_APPEND
+                $this->log_error(
+                    implode(', ', $response->get_error_messages()).', '.implode(', ', $response->get_error_codes())."\n",
+                    "Communication error [$error_id]"
                 );
 
                 wc_add_notice(
@@ -566,12 +559,10 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         if (is_wp_error($response)) {
             $error_id = time();
 
-            file_put_contents(
-                WP_PLUGIN_DIR.'/comfino/payment_log.log',
-                '['.date('Y-m-d H:i:s').'] Communication error ['.$error_id.']: '.
+            $this->log_error(
                 implode(', ', $response->get_error_messages()).', '.
                 implode(', ', $response->get_error_codes())."\n",
-                FILE_APPEND
+                "Communication error [$error_id]"
             );
 
             wc_add_notice(
@@ -636,22 +627,18 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             $decoded = json_decode($response['body'], true);
 
             if (isset($decoded['errors'])) {
-                file_put_contents(
-                    WP_PLUGIN_DIR.'/comfino/payment_log.log',
-                    '['.date('Y-m-d H:i:s').'] Payment error - response: '.$response['body']."\n",
-                    FILE_APPEND
+                $this->log_error(
+                    $response['body'],
+                    'Payment error - response ('.$this->host . self::COMFINO_OFFERS_ENDPOINT.')'
                 );
             }
 
             return $decoded;
         }
 
-        file_put_contents(
-            WP_PLUGIN_DIR.'/comfino/payment_log.log',
-            '['.date('Y-m-d H:i:s').'] Communication error: '.
-            implode(', ', $response->get_error_messages()).', '.
-            implode(', ', $response->get_error_codes())."\n",
-            FILE_APPEND
+        $this->log_error(
+            implode(', ', $response->get_error_messages()).', '.implode(', ', $response->get_error_codes()),
+            'Communication error'
         );
 
         return [];
@@ -917,5 +904,14 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                 }
             }
         }
+    }
+
+    private function log_error(string $errorMessage, string $messagePrefix = 'Error'): void
+    {
+        file_put_contents(
+            dirname(__DIR__).'/payment_log.log',
+            '['.date('Y-m-d H:i:s')."] $messagePrefix: $errorMessage\n",
+            FILE_APPEND
+        );
     }
 }
