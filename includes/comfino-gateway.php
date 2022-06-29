@@ -489,15 +489,15 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             ];
         }
 
-        $error_id = time();
+        $timestamp = time();
 
         $this->log_error(
             implode(', ', $response->get_error_messages()).', '.implode(', ', $response->get_error_codes())."\n",
-            "Communication error [$error_id]"
+            "Communication error [$timestamp]"
         );
 
         wc_add_notice(
-            'Communication error: '.$error_id.'. Please contact with support and note this error id.',
+            'Communication error: '.$timestamp.'. Please contact with support and note this error id.',
             'error'
         );
 
@@ -520,15 +520,15 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             $response = wp_remote_request($this->host . self::COMFINO_ORDERS_ENDPOINT . "/{$order->get_id()}/cancel", $args);
 
             if (is_wp_error($response)) {
-                $error_id = time();
+                $timestamp = time();
 
                 $this->log_error(
                     implode(', ', $response->get_error_messages()).', '.implode(', ', $response->get_error_codes())."\n",
-                    "Communication error [$error_id]"
+                    "Communication error [$timestamp]"
                 );
 
                 wc_add_notice(
-                    'Communication error: '.$error_id.'. Please contact with support and note this error id.',
+                    'Communication error: '.$timestamp.'. Please contact with support and note this error id.',
                     'error'
                 );
             }
@@ -557,16 +557,16 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         $response = wp_remote_request($this->host . self::COMFINO_ORDERS_ENDPOINT . "/{$order->get_id()}/resign", $args);
 
         if (is_wp_error($response)) {
-            $error_id = time();
+            $timestamp = time();
 
             $this->log_error(
                 implode(', ', $response->get_error_messages()).', '.
                 implode(', ', $response->get_error_codes())."\n",
-                "Communication error [$error_id]"
+                "Communication error [$timestamp]"
             );
 
             wc_add_notice(
-                'Communication error: '.$error_id.'. Please contact with support and note this error id.',
+                'Communication error: '.$timestamp.'. Please contact with support and note this error id.',
                 'error'
             );
         }
