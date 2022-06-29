@@ -13,8 +13,9 @@ class Comfino_Gateway extends WC_Payment_Gateway
     private const TYPE_INSTALLMENTS_ZERO_PERCENT = 'INSTALLMENTS_ZERO_PERCENT';
     private const TYPE_CONVENIENT_INSTALLMENTS = 'CONVENIENT_INSTALLMENTS';
     private const TYPE_PAY_LATER = 'PAY_LATER';
-    private const COMPANY_INSTALLMENTS = 'COMPANY_INSTALLMENTS';
+    private const TYPE_COMPANY_INSTALLMENTS = 'COMPANY_INSTALLMENTS';
     private const TYPE_RENEWABLE_LIMIT = 'RENEWABLE_LIMIT';
+    private const ERROR_LOG_NUM_LINES = 40;
 
     /**
      * Reject status
@@ -48,7 +49,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
         self::TYPE_INSTALLMENTS_ZERO_PERCENT,
         self::TYPE_CONVENIENT_INSTALLMENTS,
         self::TYPE_PAY_LATER,
-        self::COMPANY_INSTALLMENTS,
+        self::TYPE_COMPANY_INSTALLMENTS,
         self::TYPE_RENEWABLE_LIMIT,
     ];
 
@@ -265,17 +266,34 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
     {
         global $wp_version;
 
+        $errorsLog = '';
+        $logFilePath = dirname(__DIR__).'/payment_log.log';
+
+        if (file_exists($logFilePath)) {
+            $file = new SplFileObject($logFilePath, 'r');
+            $file->seek(PHP_INT_MAX);
+            $lastLine = $file->key();
+            $lines = new LimitIterator(
+                $file,
+                $lastLine > self::ERROR_LOG_NUM_LINES ? $lastLine - self::ERROR_LOG_NUM_LINES : 0,
+                $lastLine
+            );
+            $errorsLog = implode('', iterator_to_array($lines));
+        }
+
         echo "<h2>$this->method_title</h2>";
         echo "<p>$this->method_description</p>";
 
         echo '<p>'.sprintf(
                 __('Do you want to ask about something? Write to us at %s or contact us by phone. We are waiting on the number: %s. We will answer all your questions!', 'comfino'),
-                '<a href="mailto:pomoc@comfino.pl?subject='.sprintf(__('WordPress %s WooCommerce %s Comfino %s - question'), $wp_version, WC_VERSION, ComfinoPaymentGateway::VERSION).
-                '&body='.str_replace(',', '%2C', sprintf(__('WordPress %s WooCommerce %s Comfino %s, PHP %s'), $wp_version, WC_VERSION, ComfinoPaymentGateway::VERSION, PHP_VERSION)).'">pomoc@comfino.pl</a>', '887-106-027'
+                '<a href="mailto:pomoc@comfino.pl?subject='.sprintf(__('WordPress %s WooCommerce %s Comfino %s - question', 'comfino'), $wp_version, WC_VERSION, ComfinoPaymentGateway::VERSION).
+                '&body='.str_replace(',', '%2C', sprintf(__('WordPress %s WooCommerce %s Comfino %s, PHP %s', 'comfino'), $wp_version, WC_VERSION, ComfinoPaymentGateway::VERSION, PHP_VERSION)).'">pomoc@comfino.pl</a>', '887-106-027'
             ).'</p>';
 
         echo '<table class="form-table">';
         echo $this->generate_settings_html();
+        echo '<tr valign="top"><th scope="row" class="titledesc"><label>'.__('Errors log', 'comfino').'</label></th>';
+        echo '<td><textarea cols="20" rows="3" class="input-text wide-input" style="width: 800px; height: 400px">'.htmlentities($errorsLog).'</textarea></td></tr>';
         echo '</table>';
     }
 
@@ -451,7 +469,14 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         $response = wp_remote_post($this->host . self::COMFINO_ORDERS_ENDPOINT, $args);
 
         if (!is_wp_error($response)) {
-            $body = json_decode($response['body'], true);
+            $decoded = json_decode($response['body'], true);
+
+            if (!$decoded || isset($decoded['errors']) || empty($decoded['applicationUrl'])) {
+                $this->log_error(
+                    $response['body'],
+                    'Payment error - response ('.$this->host.self::COMFINO_ORDERS_ENDPOINT.')'
+                );
+            }
 
             $order->add_order_note(__("Comfino create order", 'comfino'));
             $order->reduce_order_stock();
@@ -460,11 +485,21 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
 
             return [
                 'result' => 'success',
-                'redirect' => $body['applicationUrl'],
+                'redirect' => $decoded['applicationUrl'],
             ];
         }
 
-        wc_add_notice('Connection error.', 'error');
+        $timestamp = time();
+
+        $this->log_error(
+            implode(', ', $response->get_error_messages()).', '.implode(', ', $response->get_error_codes())."\n",
+            "Communication error [$timestamp]"
+        );
+
+        wc_add_notice(
+            'Communication error: '.$timestamp.'. Please contact with support and note this error id.',
+            'error'
+        );
 
         return [];
     }
@@ -485,7 +520,17 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             $response = wp_remote_request($this->host . self::COMFINO_ORDERS_ENDPOINT . "/{$order->get_id()}/cancel", $args);
 
             if (is_wp_error($response)) {
-                wc_add_notice('Connection error.', 'error');
+                $timestamp = time();
+
+                $this->log_error(
+                    implode(', ', $response->get_error_messages()).', '.implode(', ', $response->get_error_codes())."\n",
+                    "Communication error [$timestamp]"
+                );
+
+                wc_add_notice(
+                    'Communication error: '.$timestamp.'. Please contact with support and note this error id.',
+                    'error'
+                );
             }
 
             $order->add_order_note(__("Send to Comfino canceled order", 'comfino'));
@@ -512,7 +557,18 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         $response = wp_remote_request($this->host . self::COMFINO_ORDERS_ENDPOINT . "/{$order->get_id()}/resign", $args);
 
         if (is_wp_error($response)) {
-            wc_add_notice('Connection error.', 'error');
+            $timestamp = time();
+
+            $this->log_error(
+                implode(', ', $response->get_error_messages()).', '.
+                implode(', ', $response->get_error_codes())."\n",
+                "Communication error [$timestamp]"
+            );
+
+            wc_add_notice(
+                'Communication error: '.$timestamp.'. Please contact with support and note this error id.',
+                'error'
+            );
         }
 
         $order->add_order_note(__("Send to Comfino resign order", 'comfino'));
@@ -568,8 +624,22 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         $response = wp_remote_get($this->host . self::COMFINO_OFFERS_ENDPOINT . '?' . http_build_query($params), $args);
 
         if (!is_wp_error($response)) {
-            return json_decode($response['body'], true);
+            $decoded = json_decode($response['body'], true);
+
+            if (isset($decoded['errors'])) {
+                $this->log_error(
+                    $response['body'],
+                    'Payment error - response ('.$this->host . self::COMFINO_OFFERS_ENDPOINT.')'
+                );
+            }
+
+            return $decoded;
         }
+
+        $this->log_error(
+            implode(', ', $response->get_error_messages()).', '.implode(', ', $response->get_error_codes()),
+            'Communication error'
+        );
 
         return [];
     }
@@ -834,5 +904,14 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                 }
             }
         }
+    }
+
+    private function log_error(string $errorMessage, string $messagePrefix = 'Error'): void
+    {
+        file_put_contents(
+            dirname(__DIR__).'/payment_log.log',
+            '['.date('Y-m-d H:i:s')."] $messagePrefix: $errorMessage\n",
+            FILE_APPEND
+        );
     }
 }

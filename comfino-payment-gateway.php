@@ -3,7 +3,7 @@
  * Plugin Name: Comfino Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
  * Description: Comfino (Comperia) - Comfino Payment Gateway for WooCommerce.
- * Version: 2.2.4
+ * Version: 2.2.5
  * Author: Comfino (Comperia)
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
@@ -18,7 +18,7 @@ defined('ABSPATH') or exit;
 
 class ComfinoPaymentGateway
 {
-    public const VERSION = '2.2.4';
+    public const VERSION = '2.2.5';
 
     /**
      * @var ComfinoPaymentGateway
@@ -60,7 +60,7 @@ class ComfinoPaymentGateway
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'plugin_action_links']);
         add_filter('wc_order_statuses', [$this, 'filter_order_status']);
 
-        add_action('woocommerce_single_product_summary', [$this, 'render_widget']);
+        add_action('wp_head', [$this, 'render_widget']);
 
         load_plugin_textdomain('comfino', false, basename(__DIR__) . '/languages');
     }
@@ -146,13 +146,13 @@ class ComfinoPaymentGateway
                 }
 
                 $code = str_replace('{WIDGET_KEY}', $cg->get_option('widget_key'), $code);
-                $code = str_replace('{WIDGET_PRICE_SELECTOR}', $cg->get_option('widget_price_selector'), $code);
-                $code = str_replace('{WIDGET_TARGET_SELECTOR}', $cg->get_option('widget_target_selector'), $code);
+                $code = str_replace('{WIDGET_PRICE_SELECTOR}', html_entity_decode($cg->get_option('widget_price_selector')), $code);
+                $code = str_replace('{WIDGET_TARGET_SELECTOR}', html_entity_decode($cg->get_option('widget_target_selector')), $code);
                 $code = str_replace('{WIDGET_TYPE}', $cg->get_option('widget_type'), $code);
                 $code = str_replace('{OFFER_TYPE}', $cg->get_option('widget_offer_type'), $code);
                 $code = str_replace('{EMBED_METHOD}', $cg->get_option('widget_embed_method'), $code);
 
-                echo '<script>' . $code . '</script>';
+                echo '<script>'.$code.'</script>';
             }
         }
     }
