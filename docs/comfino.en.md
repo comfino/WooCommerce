@@ -6,9 +6,9 @@ Open page https://github.com/comfino/WooCommerce/releases and download the lates
 
 To install the module, please go to `"Plugins"` tab and then click `"Add new -> Upload plugin"` button, then panel with `"Module file"` input should appear. In this input choose module's file and click `"Send module button"`. If the module was uploaded, then it should be visible on modules list. Then you should just choose the module and click `"Install"` button.
 
-![Installation](images/en/instalation-1.png "Installation")
-![Installation](images/en/instalation-2.png "Installation")
-![Installation](images/en/instalation-3.png "Installation")
+![Installation](images/en/installation-1.png "Installation")
+![Installation](images/en/installation-2.png "Installation")
+![Installation](images/en/installation-3.png "Installation")
 
 ## CONFIGURATION
 
@@ -18,6 +18,7 @@ For the module correct work, activation and configuration is required. You can d
 
 ![Configuration](images/en/configuration-1.png "Configuration")
 ![Configuration](images/en/configuration-2.png "Configuration")
+![Configuration](images/en/configuration-3.png "Configuration")
 
 ## ATTENTION
 
