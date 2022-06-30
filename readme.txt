@@ -14,6 +14,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 2.2.5
  * improve errors handling
  * add errors logging and preview of errors log in the plugin settings form
+ * documentation update
 
 2.2.4
  * update contact information (support e-mail and phone number), add a new offer type in Comfino widget: Pay later (PAY_LATER)

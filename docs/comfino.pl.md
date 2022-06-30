@@ -6,9 +6,9 @@ Otwórz stronę https://github.com/comfino/WooCommerce/releases i pobierz najnow
 
 Aby zainstalować moduł, należy przejść do zakładki `"Wtyczki"` a następnie nacisnąć przycisk `"Dodaj nową -> Wyślij wtyczkę na serwer"`. Należy wybrać odpowiedni plik z modułem. Wtyczka zainstaluje się automatycznie.
 
-![Instalacja](images/pl/instalation-1.png "Instalacja")
-![Instalacja](images/pl/instalation-2.png "Instalacja")
-![Instalacja](images/pl/instalation-3.png "Instalacja")
+![Instalacja](images/pl/installation-1.png "Instalacja")
+![Instalacja](images/pl/installation-2.png "Instalacja")
+![Instalacja](images/pl/installation-3.png "Instalacja")
 
 ## KONFIGURACJA
 
@@ -19,6 +19,7 @@ Kolejnymi polami wartymi uwagi są:
 
 ![Konfiguracja](images/pl/configuration-1.png "Konfiguracja")
 ![Konfiguracja](images/pl/configuration-2.png "Konfiguracja")
+![Konfiguracja](images/pl/configuration-3.png "Konfiguracja")
 
 ## UWAGI
 
