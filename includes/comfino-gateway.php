@@ -648,6 +648,8 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
      * Fetch widget key
      *
      * @param $sandbox_mode
+     * @param $sandbox_key
+     * @param $production_key
      *
      * @return string
      */
@@ -906,6 +908,12 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         }
     }
 
+    /**
+     * @param string $errorMessage
+     * @param string $messagePrefix
+     *
+     * @return void
+     */
     private function log_error(string $errorMessage, string $messagePrefix = 'Error'): void
     {
         file_put_contents(
