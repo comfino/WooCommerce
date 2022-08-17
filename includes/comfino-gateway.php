@@ -87,9 +87,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
         $this->method_title = __('Comfino Gateway', 'comfino');
         $this->method_description = __('Comfino payment gateway', 'comfino');
 
-        $this->supports = [
-            'products'
-        ];
+        $this->supports = ['products'];
 
         $this->init_form_fields();
 
@@ -471,11 +469,16 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         if (!is_wp_error($response)) {
             $decoded = json_decode($response['body'], true);
 
-            if (!$decoded || isset($decoded['errors']) || empty($decoded['applicationUrl'])) {
+            if (!is_array($decoded) || isset($decoded['errors']) || empty($decoded['applicationUrl'])) {
                 $this->log_error(
                     $response['body'],
                     'Payment error - response ('.$this->host.self::COMFINO_ORDERS_ENDPOINT.')'
                 );
+
+                return [
+                    'result' => 'failure',
+                    'redirect' => '',
+                ];
             }
 
             $order->add_order_note(__("Comfino create order", 'comfino'));
@@ -613,24 +616,21 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
      */
     private function fetch_offers(int $loanAmount): array
     {
-        $args = [
-            'headers' => $this->get_header_request(),
-        ];
-
-        $params = [
-            'loanAmount' => $loanAmount,
-        ];
+        $args = ['headers' => $this->get_header_request()];
+        $params = ['loanAmount' => $loanAmount];
 
         $response = wp_remote_get($this->host . self::COMFINO_OFFERS_ENDPOINT . '?' . http_build_query($params), $args);
 
         if (!is_wp_error($response)) {
             $decoded = json_decode($response['body'], true);
 
-            if (isset($decoded['errors'])) {
+            if (!is_array($decoded) || isset($decoded['errors'])) {
                 $this->log_error(
                     $response['body'],
                     'Payment error - response ('.$this->host . self::COMFINO_OFFERS_ENDPOINT.')'
                 );
+
+                $decoded = [];
             }
 
             return $decoded;
@@ -676,7 +676,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             }
         }
 
-        return $widget_key;
+        return $widget_key !== false ? $widget_key : '';
     }
 
     /**

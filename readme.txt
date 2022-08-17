@@ -4,12 +4,15 @@ Donate link: https://comfino.pl/
 Tags: comfino, woocommerce, gateway, payment, bank
 WC tested up to: 6.7.0
 WC requires at least: 3.0
-Stable tag: 2.2.5
+Stable tag: 2.2.7
 Tested up to: 6.0.1
 Requires at least: 5.0
 Requires PHP: 7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
+
+2.2.7
+ * improve errors handling
 
 2.2.6
  * tested up WC 6.7.0
