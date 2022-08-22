@@ -452,8 +452,8 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                 'type' => $type,
             ],
             'cart' => [
-                'totalAmount' => (int)$order->get_total() * 100,
-                'deliveryCost' => 0,
+                'totalAmount' => (int)($order->get_total() * 100),
+                'deliveryCost' => (int)($order->get_shipping_total() * 100),
                 'products' => $this->get_products($order->get_items()),
             ],
             'customer' => $this->get_customer($order),
@@ -708,7 +708,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                 'photoUrl' => $image_url,
                 'ean' => null,
                 'externalId' => (string)$data['product_id'],
-                'price' => (int)$data['total'] * 100,
+                'price' => (int)($data['total'] * 100),
             ];
         }
 
