@@ -454,7 +454,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             'cart' => [
                 'totalAmount' => (int)($order->get_total() * 100),
                 'deliveryCost' => (int)($order->get_shipping_total() * 100),
-                'products' => $this->get_products($order->get_items()),
+                'products' => $this->get_products(),
             ],
             'customer' => $this->get_customer($order),
         ]);
@@ -682,18 +682,15 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
     /**
      * Prepare product data
      *
-     * @param $items
-     *
      * @return array
      */
-    private function get_products($items): array
+    private function get_products(): array
     {
         $products = [];
 
-        foreach ($items as $item) {
-            $data = $item->get_data();
-
-            $product = wc_get_product($data['product_id']);
+        foreach (WC()->cart->get_cart() as $item) {
+            /** @var WC_Product_Simple $product */
+            $product = $item['data'];
             $image_id = $product->get_image_id();
 
             if ($image_id !== '') {
@@ -703,12 +700,12 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             }
 
             $products[] = [
-                'name' => $data['name'],
-                'quantity' => (int)$data['quantity'],
+                'name' => $product->get_name(),
+                'quantity' => (int)$item['quantity'],
                 'photoUrl' => $image_url,
-                'ean' => null,
-                'externalId' => (string)$data['product_id'],
-                'price' => (int)($data['total'] * 100),
+                'ean' => $product->get_sku(),
+                'externalId' => (string)$product->get_id(),
+                'price' => (int)(wc_get_price_including_tax($product) * 100),
             ];
         }
 
