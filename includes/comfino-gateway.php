@@ -63,13 +63,14 @@ class Comfino_Gateway extends WC_Payment_Gateway
     public $title;
     public $enabled;
 
-    private $key;
-    private $host;
-    private $show_logo;
+    private static $key;
+    private static $host;
+    private static $show_logo;
 
     private const COMFINO_OFFERS_ENDPOINT = '/v1/financial-products';
     private const COMFINO_ORDERS_ENDPOINT = '/v1/orders';
     private const COMFINO_WIDGET_KEY_ENDPOINT = '/v1/widget-key';
+    private const COMFINO_ERROR_LOG_ENDPOINT = '/v1/log-plugin-error';
     private const COMFINO_PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
     private const COMFINO_SANDBOX_HOST = 'https://api-ecommerce.ecraty.pl';
 
@@ -101,11 +102,11 @@ class Comfino_Gateway extends WC_Payment_Gateway
         $production_key = $this->get_option('production_key');
 
         if ($sandbox_mode) {
-            $this->host = self::COMFINO_SANDBOX_HOST;
-            $this->key = $sandbox_key;
+            self::$host = self::COMFINO_SANDBOX_HOST;
+            self::$key = $sandbox_key;
         } else {
-            $this->host = self::COMFINO_PRODUCTION_HOST;
-            $this->key = $production_key;
+            self::$host = self::COMFINO_PRODUCTION_HOST;
+            self::$key = $production_key;
         }
 
         add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
@@ -116,6 +117,30 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
         add_action('woocommerce_order_item_add_action_buttons', [$this, 'order_buttons'], 10, 1);
         add_action('save_post', [$this, 'update_order'], 10, 3);
+    }
+
+    /**
+     * @param ShopPluginError $error
+     * @return bool
+     */
+    public static function send_logged_error(ShopPluginError $error): bool
+    {
+        $request = new ShopPluginErrorRequest();
+
+        if (!$request->prepare_request($error, self::get_user_agent_header())) {
+            ErrorLogger::log_error('Error request preparation failed', $error->error_message);
+
+            return false;
+        }
+
+        $args = [
+            'headers' => self::get_header_request(),
+            'body' => wp_json_encode(['error_details' => $request->error_details, 'hash' => $request->hash]),
+        ];
+
+        $response = wp_remote_post(self::$host.self::COMFINO_ERROR_LOG_ENDPOINT, $args);
+
+        return !is_wp_error($response) && strpos(wp_remote_retrieve_body($response), '"errors":') === false;
     }
 
     /**
@@ -459,20 +484,25 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             'customer' => $this->get_customer($order),
         ]);
 
+        $url = self::$host.self::COMFINO_ORDERS_ENDPOINT;
         $args = [
-            'headers' => $this->get_header_request(),
+            'headers' => self::get_header_request(),
             'body' => $body,
         ];
 
-        $response = wp_remote_post($this->host . self::COMFINO_ORDERS_ENDPOINT, $args);
+        $response = wp_remote_post($url, $args);
 
         if (!is_wp_error($response)) {
-            $decoded = json_decode($response['body'], true);
+            $decoded = json_decode(wp_remote_retrieve_body($response), true);
 
             if (!is_array($decoded) || isset($decoded['errors']) || empty($decoded['applicationUrl'])) {
-                $this->log_error(
-                    $response['body'],
-                    'Payment error - response ('.$this->host.self::COMFINO_ORDERS_ENDPOINT.')'
+                ErrorLogger::send_error(
+                    'Payment error',
+                    wp_remote_retrieve_response_code($response),
+                    implode(', ', $decoded['errors']),
+                    $url,
+                    $body,
+                    wp_remote_retrieve_body($response)
                 );
 
                 return [
@@ -494,9 +524,13 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
 
         $timestamp = time();
 
-        $this->log_error(
-            implode(', ', $response->get_error_messages()).', '.implode(', ', $response->get_error_codes())."\n",
-            "Communication error [$timestamp]"
+        ErrorLogger::send_error(
+            "Communication error [$timestamp]",
+            implode(', ', $response->get_error_codes()),
+            implode(', ', $response->get_error_messages()),
+            $url,
+            $body,
+            wp_remote_retrieve_body($response)
         );
 
         wc_add_notice(
@@ -515,19 +549,24 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         if (!$this->getStatusNote($order_id, [self::CANCELLED_BY_SHOP_STATUS, self::RESIGN_STATUS])) {
             $order = wc_get_order($order_id);
 
+            $url = self::$host.self::COMFINO_ORDERS_ENDPOINT."/{$order->get_id()}/cancel";
             $args = [
-                'headers' => $this->get_header_request(),
+                'headers' => self::get_header_request(),
                 'method' => 'PUT'
             ];
 
-            $response = wp_remote_request($this->host . self::COMFINO_ORDERS_ENDPOINT . "/{$order->get_id()}/cancel", $args);
+            $response = wp_remote_request($url, $args);
 
             if (is_wp_error($response)) {
                 $timestamp = time();
 
-                $this->log_error(
-                    implode(', ', $response->get_error_messages()).', '.implode(', ', $response->get_error_codes())."\n",
-                    "Communication error [$timestamp]"
+                ErrorLogger::send_error(
+                    "Communication error [$timestamp]",
+                    implode(', ', $response->get_error_codes()),
+                    implode(', ', $response->get_error_messages()),
+                    $url,
+                    null,
+                    wp_remote_retrieve_body($response)
                 );
 
                 wc_add_notice(
@@ -547,25 +586,27 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
     {
         $order = wc_get_order($order_id);
 
-        $body = wp_json_encode([
-            'amount' => (int)$order->get_total() * 100
-        ]);
+        $body = wp_json_encode(['amount' => (int)$order->get_total() * 100]);
 
+        $url = self::$host.self::COMFINO_ORDERS_ENDPOINT."/{$order->get_id()}/resign";
         $args = [
-            'headers' => $this->get_header_request(),
+            'headers' => self::get_header_request(),
             'body' => $body,
             'method' => 'PUT'
         ];
 
-        $response = wp_remote_request($this->host . self::COMFINO_ORDERS_ENDPOINT . "/{$order->get_id()}/resign", $args);
+        $response = wp_remote_request($url, $args);
 
         if (is_wp_error($response)) {
             $timestamp = time();
 
-            $this->log_error(
-                implode(', ', $response->get_error_messages()).', '.
-                implode(', ', $response->get_error_codes())."\n",
-                "Communication error [$timestamp]"
+            ErrorLogger::send_error(
+                "Communication error [$timestamp]",
+                implode(', ', $response->get_error_codes()),
+                implode(', ', $response->get_error_messages()),
+                $url,
+                $body,
+                wp_remote_retrieve_body($response)
             );
 
             wc_add_notice(
@@ -616,18 +657,22 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
      */
     private function fetch_offers(int $loanAmount): array
     {
-        $args = ['headers' => $this->get_header_request()];
-        $params = ['loanAmount' => $loanAmount];
+        $url = self::$host.self::COMFINO_OFFERS_ENDPOINT.'?'.http_build_query(['loanAmount' => $loanAmount]);
+        $args = ['headers' => self::get_header_request()];
 
-        $response = wp_remote_get($this->host . self::COMFINO_OFFERS_ENDPOINT . '?' . http_build_query($params), $args);
+        $response = wp_remote_get($url, $args);
 
         if (!is_wp_error($response)) {
-            $decoded = json_decode($response['body'], true);
+            $decoded = json_decode(wp_remote_retrieve_body($response), true);
 
             if (!is_array($decoded) || isset($decoded['errors'])) {
-                $this->log_error(
-                    $response['body'],
-                    'Payment error - response ('.$this->host . self::COMFINO_OFFERS_ENDPOINT.')'
+                ErrorLogger::send_error(
+                    'Payment error',
+                    wp_remote_retrieve_response_code($response),
+                    implode(', ', $decoded['errors']),
+                    $url,
+                    null,
+                    wp_remote_retrieve_body($response)
                 );
 
                 $decoded = [];
@@ -636,9 +681,13 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             return $decoded;
         }
 
-        $this->log_error(
-            implode(', ', $response->get_error_messages()).', '.implode(', ', $response->get_error_codes()),
-            'Communication error'
+        ErrorLogger::send_error(
+            'Communication error',
+            implode(', ', $response->get_error_codes()),
+            implode(', ', $response->get_error_messages()),
+            $url,
+            null,
+            wp_remote_retrieve_body($response)
         );
 
         return [];
@@ -656,10 +705,10 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
     private function get_widget_key($sandbox_mode, $sandbox_key, $production_key): string
     {
         if ($sandbox_mode) {
-            $this->host = self::COMFINO_SANDBOX_HOST;
+            self::$host = self::COMFINO_SANDBOX_HOST;
             $this->key = $sandbox_key;
         } else {
-            $this->host = self::COMFINO_PRODUCTION_HOST;
+            self::$host = self::COMFINO_PRODUCTION_HOST;
             $this->key = $production_key;
         }
 
@@ -667,12 +716,12 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
 
         if (!empty($this->key)) {
             $response = wp_remote_get(
-                $this->host . self::COMFINO_WIDGET_KEY_ENDPOINT,
-                ['headers' => $this->get_header_request()]
+                self::$host.self::COMFINO_WIDGET_KEY_ENDPOINT,
+                ['headers' => self::get_header_request()]
             );
 
             if (!is_wp_error($response)) {
-                $widget_key = json_decode($response['body'], true);
+                $widget_key = json_decode(wp_remote_retrieve_body($response), true);
             }
         }
 
@@ -762,15 +811,23 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
      *
      * @return array
      */
-    private function get_header_request(): array
+    private static function get_header_request(): array
+    {
+        return [
+            'Content-Type' => 'application/json',
+            'Api-Key' => self::$key,
+            'User-Agent' => self::get_user_agent_header(),
+        ];
+    }
+
+    /**
+     * @return string
+     */
+    private static function get_user_agent_header(): string
     {
         global $wp_version;
 
-        return [
-            'Content-Type' => 'application/json',
-            'Api-Key' => $this->key,
-            'user-agent' => sprintf('WP Comfino [%s], WP [%s], WC [%s], PHP [%s]', ComfinoPaymentGateway::VERSION, $wp_version, WC_VERSION, PHP_VERSION),
-        ];
+        return sprintf('WP Comfino [%s], WP [%s], WC [%s], PHP [%s]', ComfinoPaymentGateway::VERSION, $wp_version, WC_VERSION, PHP_VERSION);
     }
 
     /**
@@ -903,20 +960,5 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                 }
             }
         }
-    }
-
-    /**
-     * @param string $errorMessage
-     * @param string $messagePrefix
-     *
-     * @return void
-     */
-    private function log_error(string $errorMessage, string $messagePrefix = 'Error'): void
-    {
-        file_put_contents(
-            dirname(__DIR__).'/payment_log.log',
-            '['.date('Y-m-d H:i:s')."] $messagePrefix: $errorMessage\n",
-            FILE_APPEND
-        );
     }
 }
