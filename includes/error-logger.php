@@ -1,6 +1,7 @@
 <?php
 
 require_once 'shop-plugin-error.php';
+require_once 'shop-plugin-error-request.php';
 
 class ErrorLogger
 {
@@ -30,7 +31,7 @@ class ErrorLogger
     public static function log_error(string $error_prefix, string $error_message): void
     {
         @file_put_contents(
-            dirname(__DIR__).'/payment_log.log',
+            __DIR__.'/../payment_log.log',
             "[".date('Y-m-d H:i:s')."] $error_prefix: $error_message\n",
             FILE_APPEND
         );
@@ -58,9 +59,11 @@ class ErrorLogger
     {
         global $wp_version, $wpdb;
 
+        $url_parts = parse_url(get_permalink(wc_get_page_id('shop')));
+
         $error = new ShopPluginError(
-            get_permalink(wc_get_page_id('shop')),
-            'PrestaShop',
+            $url_parts['host'].(isset($url_parts['port']) ? ':'.$url_parts['port'] : ''),
+            'WooCommerce',
             [
                 'plugin_version' => ComfinoPaymentGateway::VERSION,
                 'shop_version' => WC_VERSION,
@@ -113,7 +116,7 @@ class ErrorLogger
     public static function get_error_log(int $num_lines): string
     {
         $errors_log = '';
-        $log_file_path = dirname(__DIR__).'/payment_log.log';
+        $log_file_path = __DIR__.'/../payment_log.log';
 
         if (file_exists($log_file_path)) {
             $file = new SplFileObject($log_file_path, 'r');

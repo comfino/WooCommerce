@@ -289,20 +289,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
     {
         global $wp_version;
 
-        $errorsLog = '';
-        $logFilePath = dirname(__DIR__).'/payment_log.log';
-
-        if (file_exists($logFilePath)) {
-            $file = new SplFileObject($logFilePath, 'r');
-            $file->seek(PHP_INT_MAX);
-            $lastLine = $file->key();
-            $lines = new LimitIterator(
-                $file,
-                $lastLine > self::ERROR_LOG_NUM_LINES ? $lastLine - self::ERROR_LOG_NUM_LINES : 0,
-                $lastLine
-            );
-            $errorsLog = implode('', iterator_to_array($lines));
-        }
+        $errorsLog = ErrorLogger::get_error_log(self::ERROR_LOG_NUM_LINES);
 
         echo "<h2>$this->method_title</h2>";
         echo "<p>$this->method_description</p>";
@@ -363,30 +350,30 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             <div id="comfino-box" class="comfino">
                 <div class="comfino-box">
                     <div class="header">
-                        <div class="comfino-title">' . __('Choose payment method', 'comfino') . '</div>
+                        <div class="comfino-title">'.__('Choose payment method', 'comfino').'</div>
                     </div>
                     <main>
                         <section id="comfino-offer-items" class="comfino-select-payment"></section>
                         <section class="comfino-payment-box">
-                            <div class="comfino-payment-title">' . __('Value of purchase', 'comfino') . ':</div>
+                            <div class="comfino-payment-title">'.__('Value of purchase', 'comfino').':</div>
                             <div id="comfino-total-payment" class="comfino-total-payment"></div>
                         </section>
                         <section id="comfino-installments">
                             <section class="comfino-installments-box">
-                                <div class="comfino-installments-title">' . __('Choose number of instalments', 'comfino') . '</div>
+                                <div class="comfino-installments-title">'.__('Choose number of instalments', 'comfino').'</div>
                                 <div id="comfino-quantity-select" class="comfino-quantity-select"></div>
                             </section>
                             <section class="comfino-monthly-box">
-                                <div class="comfino-monthly-title">' . __('Monthly instalment', 'comfino') . ':</div>
+                                <div class="comfino-monthly-title">'.__('Monthly instalment', 'comfino').':</div>
                                 <div id="comfino-monthly-rate" class="comfino-monthly-rate"></div>
                             </section>
                             <section class="comfino-summary-box">
-                                <div class="comfino-summary-total">' . __('Total amount to pay', 'comfino') . ': <span id="comfino-summary-total"></span></div>
+                                <div class="comfino-summary-total">'.__('Total amount to pay', 'comfino').': <span id="comfino-summary-total"></span></div>
                                 <div class="comfino-rrso">RRSO <span id="comfino-rrso"></span></div>
                                 <div id="comfino-description-box" class="comfino-description-box"></div>
                             </section>
                             <footer>
-                                <a id="comfino-repr-example-link" class="representative comfino-footer-link">' . __('Representative example', 'comfino') . '</a>
+                                <a id="comfino-repr-example-link" class="representative comfino-footer-link">'.__('Representative example', 'comfino').'</a>
                                 <div id="modal-repr-example" class="comfino-modal">
                                     <div class="comfino-modal-bg comfino-modal-exit"></div>
                                     <div class="comfino-modal-container">
@@ -397,20 +384,20 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                             </footer>
                         </section>
                         <section id="comfino-payment-delay" class="comfino-payment-delay">
-                            <div class="comfino-payment-delay__title">' . __('Buy now, pay in 30 days', 'comfino') . ' <span>' . __('How it\'s working?', 'comfino') . '</span></div>
+                            <div class="comfino-payment-delay__title">'.__('Buy now, pay in 30 days', 'comfino').' <span>'.__('How it\'s working?', 'comfino').'</span></div>
                             <div class="comfino-payment-delay__box">
                                 <div class="comfino-helper-box">
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
                                             <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/cart.svg" alt="" class="single-instruction-img" />
                                         </div>
-                                        <div class="comfin-single-instruction__text">' . __('Put the product in the basket', 'comfino') . '</div>
+                                        <div class="comfin-single-instruction__text">'.__('Put the product in the basket', 'comfino').'</div>
                                     </div>
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
                                             <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/twisto.svg" alt="" class="single-instruction-img" />
                                         </div>
-                                        <div class="comfin-single-instruction__text">' . __('Choose Twisto payment', 'comfino') . '</div>
+                                        <div class="comfin-single-instruction__text">'.__('Choose Twisto payment', 'comfino').'</div>
                                     </div>
                                 </div>
                                 <div class="comfino-helper-box">
@@ -418,13 +405,13 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                                         <div class="single-instruction-img__background">
                                             <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/icons/check.svg" alt="" class="single-instruction-img" />
                                         </div>
-                                        <div class="comfin-single-instruction__text">' . __('Check the products at home', 'comfino') . '</div>
+                                        <div class="comfin-single-instruction__text">'.__('Check the products at home', 'comfino').'</div>
                                     </div>
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
                                             <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/icons/wallet.svg" alt="" class="single-instruction-img" />
                                         </div>
-                                        <div class="comfin-single-instruction__text">' . __('Pay in 30 days', 'comfino') . '</div>
+                                        <div class="comfin-single-instruction__text">'.__('Pay in 30 days', 'comfino').'</div>
                                     </div>
                                 </div>
                             </div>
@@ -434,7 +421,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             </div>
             <input id="comfino-loan-term" name="comfino_loan_term" type="hidden" />
             <input id="comfino-type" name="comfino_type" type="hidden" />            
-            <script>Comfino.initPayments(' . json_encode($paymentInfos) . ')</script>
+            <script>Comfino.initPayments(' . json_encode($paymentInfos).')</script>
         ';
     }
 
@@ -887,11 +874,11 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         echo '<input type="hidden" id="comfino_action" value="" name="comfino_action" />';
 
         if ($order->get_payment_method() === 'comfino' && !($order->has_status(['cancelled', 'resigned', 'rejected']))) {
-            echo '<button type="button" class="button cancel-items" onclick="if(confirm(\'' . __('Are you sure you want to cancel?', 'comfino') . '\')){document.getElementById(\'comfino_action\').value = \'cancel\'; document.post.submit();}">' . __('Cancel', 'comfino') . wc_help_tip(__('Attention: You are cancelling a customer order. Check if you do not have to return the money to Comfino.', 'comfino')) . '</button>';
+            echo '<button type="button" class="button cancel-items" onclick="if(confirm(\''.__('Are you sure you want to cancel?', 'comfino').'\')){document.getElementById(\'comfino_action\').value = \'cancel\'; document.post.submit();}">'.__('Cancel', 'comfino') . wc_help_tip(__('Attention: You are cancelling a customer order. Check if you do not have to return the money to Comfino.', 'comfino')).'</button>';
         }
 
         if ($this->isActiveResign($order)) {
-            echo '<button type="button" class="button cancel-items" onclick="if(confirm(\'' . __('Are you sure you want to resign?', 'comfino') . '\')){document.getElementById(\'comfino_action\').value = \'resign\'; document.post.submit();}">' . __('Resign', 'comfino') . wc_help_tip(__('Attention: you are initiating a resignation of the Customer\'s contract. Required refund to Comfino.', 'comfino')) . '</button>';
+            echo '<button type="button" class="button cancel-items" onclick="if(confirm(\''.__('Are you sure you want to resign?', 'comfino').'\')){document.getElementById(\'comfino_action\').value = \'resign\'; document.post.submit();}">'.__('Resign', 'comfino') . wc_help_tip(__('Attention: you are initiating a resignation of the Customer\'s contract. Required refund to Comfino.', 'comfino')).'</button>';
         }
     }
 

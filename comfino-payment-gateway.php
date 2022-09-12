@@ -54,15 +54,18 @@ class ComfinoPaymentGateway
             return;
         }
 
-        require_once __DIR__ . '/includes/comfino-gateway.php';
+        require_once __DIR__.'/includes/error-logger.php';
+        require_once __DIR__.'/includes/comfino-gateway.php';
 
         add_filter('woocommerce_payment_gateways', [$this, 'add_gateway']);
-        add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'plugin_action_links']);
+        add_filter('plugin_action_links_'.plugin_basename(__FILE__), [$this, 'plugin_action_links']);
         add_filter('wc_order_statuses', [$this, 'filter_order_status']);
 
         add_action('wp_head', [$this, 'render_widget']);
 
-        load_plugin_textdomain('comfino', false, basename(__DIR__) . '/languages');
+        load_plugin_textdomain('comfino', false, basename(__DIR__).'/languages');
+
+        ErrorLogger::init();
     }
 
     /**
@@ -97,7 +100,7 @@ class ComfinoPaymentGateway
     public function plugin_action_links($links): array
     {
         $plugin_links = [
-            '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino') . '">' . __('Settings', 'comfino') . '</a>',
+            '<a href="'.admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino').'">'.__('Settings', 'comfino').'</a>',
         ];
 
         return array_merge($plugin_links, $links);

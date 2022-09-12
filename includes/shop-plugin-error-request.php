@@ -1,5 +1,7 @@
 <?php
 
+require_once 'shop-plugin-error.php';
+
 final class ShopPluginErrorRequest
 {
     /**
