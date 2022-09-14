@@ -13,6 +13,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 2.2.9
  * Improve errors handling - automatic errors reporting
+ * Improve input data sanitization, validation and escaping
 
 2.2.8
  * Fix bug in order data initialization - add deliveryCost
