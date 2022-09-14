@@ -700,7 +700,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
 
         $widget_key = '';
 
-        if (!empty($this->key)) {
+        if (!empty(self::$key)) {
             $response = wp_remote_get(
                 self::$host.self::COMFINO_WIDGET_KEY_ENDPOINT,
                 ['headers' => self::get_header_request()]
@@ -823,7 +823,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
      */
     private function valid_signature(string $jsonData): bool
     {
-        return $this->get_signature() === hash('sha3-256', $this->key . $jsonData);
+        return $this->get_signature() === hash('sha3-256', self::$key.$jsonData);
     }
 
     /**
