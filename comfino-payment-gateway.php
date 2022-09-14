@@ -155,7 +155,7 @@ class ComfinoPaymentGateway
                 $code = str_replace('{OFFER_TYPE}', $cg->get_option('widget_offer_type'), $code);
                 $code = str_replace('{EMBED_METHOD}', $cg->get_option('widget_embed_method'), $code);
 
-                echo '<script>'.esc_js($code).'</script>';
+                echo '<script>'.str_replace('&#039;', "'", esc_html($code)).'</script>';
             }
         }
     }
