@@ -63,7 +63,7 @@ class ComfinoPaymentGateway
 
         add_action('wp_head', [$this, 'render_widget']);
 
-        load_plugin_textdomain('comfino', false, basename(__DIR__).'/languages');
+        load_plugin_textdomain('comfino-payment-gateway', false, basename(__DIR__).'/languages');
 
         ErrorLogger::init();
     }
@@ -80,7 +80,7 @@ class ComfinoPaymentGateway
         }
 
         if (!defined('WC_VERSION')) {
-            return __('WooCommerce needs to be activated.', 'woocommerce-comfino');
+            return __('WooCommerce needs to be activated.', 'comfino-payment-gateway');
         }
 
         if (version_compare(WC_VERSION, '3.0.0', '<')) {
