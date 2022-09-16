@@ -7,7 +7,7 @@
  * Author: Comfino (Comperia)
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
- * Text Domain: comfino
+ * Text Domain: comfino-payment-gateway
  * Requires at least: 5.4
  * Requires PHP: 7.0
  *
@@ -54,15 +54,18 @@ class ComfinoPaymentGateway
             return;
         }
 
-        require_once __DIR__ . '/includes/comfino-gateway.php';
+        require_once __DIR__.'/includes/error-logger.php';
+        require_once __DIR__.'/includes/comfino-gateway.php';
 
         add_filter('woocommerce_payment_gateways', [$this, 'add_gateway']);
-        add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'plugin_action_links']);
+        add_filter('plugin_action_links_'.plugin_basename(__FILE__), [$this, 'plugin_action_links']);
         add_filter('wc_order_statuses', [$this, 'filter_order_status']);
 
         add_action('wp_head', [$this, 'render_widget']);
 
-        load_plugin_textdomain('comfino', false, basename(__DIR__) . '/languages');
+        load_plugin_textdomain('comfino-payment-gateway', false, basename(__DIR__).'/languages');
+
+        ErrorLogger::init();
     }
 
     /**
@@ -71,17 +74,17 @@ class ComfinoPaymentGateway
     private function check_environment()
     {
         if (PHP_VERSION_ID < 70100) {
-            $message = __('The minimum PHP version required for Comfino is %s. You are running %s.', 'comfino');
+            $message = __('The minimum PHP version required for Comfino is %s. You are running %s.', 'comfino-payment-gateway');
 
             return sprintf($message, '7.1.0', PHP_VERSION);
         }
 
         if (!defined('WC_VERSION')) {
-            return __('WooCommerce needs to be activated.', 'woocommerce-comfino');
+            return __('WooCommerce needs to be activated.', 'comfino-payment-gateway');
         }
 
         if (version_compare(WC_VERSION, '3.0.0', '<')) {
-            $message = __('The minimum WooCommerce version required for Comfino is %s. You are running %s.', 'comfino');
+            $message = __('The minimum WooCommerce version required for Comfino is %s. You are running %s.', 'comfino-payment-gateway');
 
             return sprintf($message, '3.0.0', WC_VERSION);
         }
@@ -97,7 +100,7 @@ class ComfinoPaymentGateway
     public function plugin_action_links($links): array
     {
         $plugin_links = [
-            '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino') . '">' . __('Settings', 'comfino') . '</a>',
+            '<a href="'.admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino').'">'.__('Settings', 'comfino-payment-gateway').'</a>',
         ];
 
         return array_merge($plugin_links, $links);
@@ -152,7 +155,7 @@ class ComfinoPaymentGateway
                 $code = str_replace('{OFFER_TYPE}', $cg->get_option('widget_offer_type'), $code);
                 $code = str_replace('{EMBED_METHOD}', $cg->get_option('widget_embed_method'), $code);
 
-                echo '<script>'.$code.'</script>';
+                echo '<script>'.str_replace('&#039;', "'", esc_html($code)).'</script>';
             }
         }
     }
