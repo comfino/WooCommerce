@@ -1,5 +1,7 @@
 <?php
 
+namespace Comfino;
+
 final class ShopPluginError
 {
     /**

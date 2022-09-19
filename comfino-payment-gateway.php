@@ -3,7 +3,7 @@
  * Plugin Name: Comfino Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
  * Description: Comfino (Comperia) - Comfino Payment Gateway for WooCommerce.
- * Version: 2.2.8
+ * Version: 2.2.9
  * Author: Comfino (Comperia)
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
@@ -18,7 +18,7 @@ defined('ABSPATH') or exit;
 
 class ComfinoPaymentGateway
 {
-    public const VERSION = '2.2.8';
+    public const VERSION = '2.2.9';
 
     /**
      * @var ComfinoPaymentGateway
@@ -54,7 +54,7 @@ class ComfinoPaymentGateway
             return;
         }
 
-        require_once __DIR__.'/includes/error-logger.php';
+        require_once __DIR__.'/includes/comfino-error-logger.php';
         require_once __DIR__.'/includes/comfino-gateway.php';
 
         add_filter('woocommerce_payment_gateways', [$this, 'add_gateway']);
@@ -65,7 +65,7 @@ class ComfinoPaymentGateway
 
         load_plugin_textdomain('comfino-payment-gateway', false, basename(__DIR__).'/languages');
 
-        ErrorLogger::init();
+        \Comfino\ErrorLogger::init();
     }
 
     /**

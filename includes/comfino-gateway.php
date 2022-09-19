@@ -121,15 +121,15 @@ class Comfino_Gateway extends WC_Payment_Gateway
     }
 
     /**
-     * @param ShopPluginError $error
+     * @param \Comfino\ShopPluginError $error
      * @return bool
      */
-    public static function send_logged_error(ShopPluginError $error): bool
+    public static function send_logged_error(\Comfino\ShopPluginError $error): bool
     {
-        $request = new ShopPluginErrorRequest();
+        $request = new \Comfino\ShopPluginErrorRequest();
 
         if (!$request->prepare_request($error, self::get_user_agent_header())) {
-            ErrorLogger::log_error('Error request preparation failed', $error->error_message);
+            \Comfino\ErrorLogger::log_error('Error request preparation failed', $error->error_message);
 
             return false;
         }
@@ -141,7 +141,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
         $response = wp_remote_post(self::$host.self::COMFINO_ERROR_LOG_ENDPOINT, $args);
 
-        return !is_wp_error($response) && strpos(wp_remote_retrieve_body($response), '"errors":') === false;
+        return !is_wp_error($response) && strpos(wp_remote_retrieve_body($response), '"errors":') === false && wp_remote_retrieve_response_code($response) < 400;
     }
 
     /**
@@ -290,7 +290,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
     {
         global $wp_version;
 
-        $errorsLog = ErrorLogger::get_error_log(self::ERROR_LOG_NUM_LINES);
+        $errorsLog = \Comfino\ErrorLogger::get_error_log(self::ERROR_LOG_NUM_LINES);
 
         echo '<h2>'.esc_html($this->method_title).'</h2>';
         echo '<p>'.esc_html($this->method_description).'</p>';
@@ -304,7 +304,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         echo '<table class="form-table">';
         echo $this->generate_settings_html();
         echo '<tr valign="top"><th scope="row" class="titledesc"><label>'.__('Errors log', 'comfino-payment-gateway').'</label></th>';
-        echo '<td><textarea cols="20" rows="3" class="input-text wide-input" style="width: 800px; height: 400px">'.htmlentities($errorsLog).'</textarea></td></tr>';
+        echo '<td><textarea cols="20" rows="3" class="input-text wide-input" style="width: 800px; height: 400px">'.esc_textarea($errorsLog).'</textarea></td></tr>';
         echo '</table>';
     }
 
@@ -488,10 +488,10 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             $decoded = json_decode(wp_remote_retrieve_body($response), true);
 
             if (!is_array($decoded) || isset($decoded['errors']) || empty($decoded['applicationUrl'])) {
-                ErrorLogger::send_error(
+                \Comfino\ErrorLogger::send_error(
                     'Payment error',
                     wp_remote_retrieve_response_code($response),
-                    implode(', ', $decoded['errors']),
+                    is_array($decoded) && isset($decoded['errors']) ? implode(', ', $decoded['errors']) : 'API call error '.wp_remote_retrieve_response_code($response),
                     $url,
                     $body,
                     wp_remote_retrieve_body($response)
@@ -510,7 +510,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
 
         $timestamp = time();
 
-        ErrorLogger::send_error(
+        \Comfino\ErrorLogger::send_error(
             "Communication error [$timestamp]",
             implode(', ', $response->get_error_codes()),
             implode(', ', $response->get_error_messages()),
@@ -546,7 +546,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             if (is_wp_error($response)) {
                 $timestamp = time();
 
-                ErrorLogger::send_error(
+                \Comfino\ErrorLogger::send_error(
                     "Communication error [$timestamp]",
                     implode(', ', $response->get_error_codes()),
                     implode(', ', $response->get_error_messages()),
@@ -586,7 +586,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         if (is_wp_error($response)) {
             $timestamp = time();
 
-            ErrorLogger::send_error(
+            \Comfino\ErrorLogger::send_error(
                 "Communication error [$timestamp]",
                 implode(', ', $response->get_error_codes()),
                 implode(', ', $response->get_error_messages()),
@@ -652,10 +652,10 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             $decoded = json_decode(wp_remote_retrieve_body($response), true);
 
             if (!is_array($decoded) || isset($decoded['errors'])) {
-                ErrorLogger::send_error(
+                \Comfino\ErrorLogger::send_error(
                     'Payment error',
                     wp_remote_retrieve_response_code($response),
-                    implode(', ', $decoded['errors']),
+                    is_array($decoded) && isset($decoded['errors']) ? implode(', ', $decoded['errors']) : 'API call error '.wp_remote_retrieve_response_code($response),
                     $url,
                     null,
                     wp_remote_retrieve_body($response)
@@ -667,7 +667,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             return $decoded;
         }
 
-        ErrorLogger::send_error(
+        \Comfino\ErrorLogger::send_error(
             'Communication error',
             implode(', ', $response->get_error_codes()),
             implode(', ', $response->get_error_messages()),
@@ -831,17 +831,14 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
      */
     private function get_signature(): string
     {
-        $headers = $_SERVER;
         $signature = '';
 
-        foreach ($headers as $key => $value) {
-            if (0 === strpos($key, 'HTTP_')) {
-                $headers[substr($key, 5)] = sanitize_text_field($value);
-            }
-        }
+        foreach ($_SERVER as $key => $value) {
+            if ($key === 'HTTP_CR_SIGNATURE') {
+                $signature = sanitize_text_field($value);
 
-        if (isset($headers['CR_SIGNATURE'])) {
-            $signature = $headers['CR_SIGNATURE'];
+                break;
+            }
         }
 
         return $signature;

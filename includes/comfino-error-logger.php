@@ -1,7 +1,15 @@
 <?php
 
-require_once 'shop-plugin-error.php';
-require_once 'shop-plugin-error-request.php';
+namespace Comfino;
+
+use Comfino_Gateway;
+use ComfinoPaymentGateway;
+use LimitIterator;
+use SplFileObject;
+use Throwable;
+
+require_once 'comfino-shop-plugin-error.php';
+require_once 'comfino-shop-plugin-error-request.php';
 
 class ErrorLogger
 {
@@ -69,9 +77,9 @@ class ErrorLogger
                 'shop_version' => WC_VERSION,
                 'wordpress_version' => $wp_version,
                 'php_version' => PHP_VERSION,
-                'server_software' => $_SERVER['SERVER_SOFTWARE'],
-                'server_name' => $_SERVER['SERVER_NAME'],
-                'server_addr' => $_SERVER['SERVER_ADDR'],
+                'server_software' => sanitize_text_field($_SERVER['SERVER_SOFTWARE']),
+                'server_name' => sanitize_text_field($_SERVER['SERVER_NAME']),
+                'server_addr' => sanitize_text_field($_SERVER['SERVER_ADDR']),
                 'database_version' => $wpdb->db_version()
             ],
             $error_code,
@@ -166,9 +174,9 @@ class ErrorLogger
         static $initialized = false;
 
         if (!$initialized) {
-            set_error_handler(['ErrorLogger', 'error_handler'], E_ERROR | E_RECOVERABLE_ERROR | E_PARSE);
-            set_exception_handler(['ErrorLogger', 'exception_handler']);
-            register_shutdown_function(['ErrorLogger', 'shutdown']);
+            set_error_handler([__CLASS__, 'error_handler'], E_ERROR | E_RECOVERABLE_ERROR | E_PARSE);
+            set_exception_handler([__CLASS__, 'exception_handler']);
+            register_shutdown_function([__CLASS__, 'shutdown']);
 
             $initialized = true;
         }
