@@ -112,10 +112,8 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
         add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
-        add_action('woocommerce_api_wc_comfino_gateway', [$this, 'webhook']);
-
+        add_action('woocommerce_api_comfino_gateway', [$this, 'webhook']);
         add_action('woocommerce_order_status_cancelled', [$this, 'cancel_order']);
-
         add_action('woocommerce_order_item_add_action_buttons', [$this, 'order_buttons'], 10, 1);
         add_action('save_post', [$this, 'update_order'], 10, 3);
     }
@@ -613,11 +611,10 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
 
         if (!$this->valid_signature($body)) {
             echo json_encode(['status' => 'Invalid signature', 'body' => $body, 'signature' => $this->get_signature()]);
-            exit();
+            exit;
         }
 
         $data = json_decode($body, true);
-
         $order = wc_get_order($data['externalId']);
         $status = $data['status'];
 
