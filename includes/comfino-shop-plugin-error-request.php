@@ -1,6 +1,8 @@
 <?php
 
-require_once 'shop-plugin-error.php';
+namespace Comfino;
+
+require_once 'comfino-shop-plugin-error.php';
 
 final class ShopPluginErrorRequest
 {
