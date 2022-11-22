@@ -71,6 +71,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
     private const COMFINO_ORDERS_ENDPOINT = '/v1/orders';
     private const COMFINO_WIDGET_KEY_ENDPOINT = '/v1/widget-key';
     private const COMFINO_ERROR_LOG_ENDPOINT = '/v1/log-plugin-error';
+    private const COMFINO_USER_IS_ACTIVE_ENDPOINT = '/v1/user/is-active';
     private const COMFINO_PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
     private const COMFINO_SANDBOX_HOST = 'https://api-ecommerce.ecraty.pl';
 
@@ -260,6 +261,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         $this->init_settings();
 
         $post_data = $this->get_post_data();
+        $is_error = false;
 
         foreach ($this->get_form_fields() as $key => $field) {
             if ('title' !== $this->get_field_type($field)) {
@@ -267,19 +269,31 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                     $this->settings[$key] = $this->get_field_value($key, $field, $post_data);
                 } catch (Exception $e) {
                     $this->add_error($e->getMessage());
+
+                    $is_error = true;
                 }
             }
         }
 
-        $this->settings['widget_key'] = $this->get_widget_key(
-            $this->settings['sandbox_mode'] === 'yes',
-            $this->settings['sandbox_key'],
-            $this->settings['production_key']
-        );
+        $is_sandbox = $this->settings['sandbox_mode'] === 'yes';
+        $api_host = $is_sandbox ? self::COMFINO_SANDBOX_HOST : self::COMFINO_PRODUCTION_HOST;
+        $api_key = $is_sandbox ? $this->settings['sandbox_key'] : $this->settings['production_key'];
+
+        if (!$this->is_api_key_valid($api_host, $api_key)) {
+            $this->add_error(sprintf(__('API key %s is not valid.', 'comfino-payment-gateway'), $api_key));
+
+            $is_error = true;
+        }
+
+        if ($is_error) {
+            return false;
+        }
+
+        $this->settings['widget_key'] = $this->get_widget_key($api_host, $api_key);
 
         return update_option(
             $this->get_option_key(),
-            apply_filters('woocommerce_settings_api_sanitized_fields_' . $this->id, $this->settings),
+            apply_filters('woocommerce_settings_api_sanitized_fields_'.$this->id, $this->settings),
             'yes'
         );
     }
@@ -530,7 +544,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
      */
     public function cancel_order(string $order_id): void
     {
-        if (!$this->getStatusNote($order_id, [self::CANCELLED_BY_SHOP_STATUS, self::RESIGN_STATUS])) {
+        if (!$this->get_status_note($order_id, [self::CANCELLED_BY_SHOP_STATUS, self::RESIGN_STATUS])) {
             $order = wc_get_order($order_id);
 
             $url = self::$host.self::COMFINO_ORDERS_ENDPOINT."/{$order->get_id()}/cancel";
@@ -679,21 +693,15 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
     /**
      * Fetch widget key
      *
-     * @param $sandbox_mode
-     * @param $sandbox_key
-     * @param $production_key
+     * @param string $api_host
+     * @param string $api_key
      *
      * @return string
      */
-    private function get_widget_key($sandbox_mode, $sandbox_key, $production_key): string
+    private function get_widget_key(string $api_host, string $api_key): string
     {
-        if ($sandbox_mode) {
-            self::$host = self::COMFINO_SANDBOX_HOST;
-            self::$key = $sandbox_key;
-        } else {
-            self::$host = self::COMFINO_PRODUCTION_HOST;
-            self::$key = $production_key;
-        }
+        self::$host = $api_host;
+        self::$key = $api_key;
 
         $widget_key = '';
 
@@ -709,6 +717,35 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         }
 
         return $widget_key !== false ? $widget_key : '';
+    }
+
+    /**
+     * @param string $api_host
+     * @param string $api_key
+     *
+     * @return bool
+     */
+    private function is_api_key_valid(string $api_host, string $api_key): bool
+    {
+        self::$host = $api_host;
+        self::$key = $api_key;
+
+        $api_key_valid = true;
+
+        if (!empty(self::$key)) {
+            $response = wp_remote_get(
+                self::$host.self::COMFINO_USER_IS_ACTIVE_ENDPOINT,
+                ['headers' => self::get_header_request()]
+            );
+
+            if (!is_wp_error($response)) {
+                $api_key_valid = strpos(wp_remote_retrieve_body($response), 'errors') === false;
+            } else {
+                $api_key_valid = false;
+            }
+        }
+
+        return $api_key_valid;
     }
 
     /**
@@ -870,7 +907,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             echo '<button type="button" class="button cancel-items" onclick="if(confirm(\''.__('Are you sure you want to cancel?', 'comfino-payment-gateway').'\')){document.getElementById(\'comfino_action\').value = \'cancel\'; document.post.submit();}">'.__('Cancel', 'comfino-payment-gateway') . wc_help_tip(__('Attention: You are cancelling a customer order. Check if you do not have to return the money to Comfino.', 'comfino-payment-gateway')).'</button>';
         }
 
-        if ($this->isActiveResign($order)) {
+        if ($this->is_active_resign($order)) {
             echo '<button type="button" class="button cancel-items" onclick="if(confirm(\''.__('Are you sure you want to resign?', 'comfino-payment-gateway').'\')){document.getElementById(\'comfino_action\').value = \'resign\'; document.post.submit();}">'.__('Resign', 'comfino-payment-gateway') . wc_help_tip(__('Attention: you are initiating a resignation of the Customer\'s contract. Required refund to Comfino.', 'comfino-payment-gateway')).'</button>';
         }
     }
@@ -880,13 +917,13 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
      *
      * @return bool
      */
-    private function isActiveResign($order): bool
+    private function is_active_resign($order): bool
     {
         $date = new DateTime();
         $date->sub(new DateInterval('P14D'));
 
         if ($order->get_payment_method() === 'comfino' && $order->has_status(['processing', 'completed'])) {
-            $notes = $this->getStatusNote($order->ID, [self::ACCEPTED_STATUS]);
+            $notes = $this->get_status_note($order->ID, [self::ACCEPTED_STATUS]);
 
             return !(isset($notes[self::ACCEPTED_STATUS]) && $notes[self::ACCEPTED_STATUS]->date_created->getTimestamp() < $date->getTimestamp());
         }
@@ -900,7 +937,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
      *
      * @return array
      */
-    private function getStatusNote(int $order_id, array $statuses): array
+    private function get_status_note(int $order_id, array $statuses): array
     {
         $elements = wc_get_order_notes(['order_id' => $order_id]);
         $notes = [];
