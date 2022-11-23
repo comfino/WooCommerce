@@ -286,6 +286,8 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         }
 
         if ($is_error) {
+            $this->display_errors();
+
             return false;
         }
 
@@ -730,7 +732,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         self::$host = $api_host;
         self::$key = $api_key;
 
-        $api_key_valid = true;
+        $api_key_valid = false;
 
         if (!empty(self::$key)) {
             $response = wp_remote_get(
@@ -738,10 +740,8 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                 ['headers' => self::get_header_request()]
             );
 
-            if (!is_wp_error($response)) {
+            if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
                 $api_key_valid = strpos(wp_remote_retrieve_body($response), 'errors') === false;
-            } else {
-                $api_key_valid = false;
             }
         }
 
