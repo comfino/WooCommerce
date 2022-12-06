@@ -774,9 +774,21 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             }
         }
 
+        $first_name = $order->get_billing_first_name();
+        $last_name = $order->get_billing_last_name();
+
+        if ($last_name === '') {
+            $name = explode(' ', $first_name);
+
+            if (count($name) > 1) {
+                $first_name = $name[0];
+                $last_name = $name[1];
+            }
+        }
+
         return [
-            'firstName' => $order->get_billing_first_name(),
-            'lastName' => $order->get_billing_last_name(),
+            'firstName' => $first_name,
+            'lastName' => $last_name,
             'ip' => WC_Geolocation::get_ip_address(),
             'email' => $order->get_billing_email(),
             'phoneNumber' => $phone_number,
