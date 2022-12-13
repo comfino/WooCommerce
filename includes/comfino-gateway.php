@@ -735,7 +735,6 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                 'name' => $product->get_name(),
                 'quantity' => (int)$item['quantity'],
                 'photoUrl' => $image_url,
-                'ean' => $product->get_sku(),
                 'externalId' => (string)$product->get_id(),
                 'price' => (int)(wc_get_price_including_tax($product) * 100),
             ];
