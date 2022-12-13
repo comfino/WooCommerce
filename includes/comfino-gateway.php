@@ -772,7 +772,6 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                 'name' => $product->get_name(),
                 'quantity' => (int)$item['quantity'],
                 'photoUrl' => $image_url,
-                'ean' => $product->get_sku(),
                 'externalId' => (string)$product->get_id(),
                 'price' => (int)(wc_get_price_including_tax($product) * 100),
             ];
@@ -811,9 +810,21 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             }
         }
 
+        $first_name = $order->get_billing_first_name();
+        $last_name = $order->get_billing_last_name();
+
+        if ($last_name === '') {
+            $name = explode(' ', $first_name);
+
+            if (count($name) > 1) {
+                $first_name = $name[0];
+                $last_name = $name[1];
+            }
+        }
+
         return [
-            'firstName' => $order->get_billing_first_name(),
-            'lastName' => $order->get_billing_last_name(),
+            'firstName' => $first_name,
+            'lastName' => $last_name,
             'ip' => WC_Geolocation::get_ip_address(),
             'email' => $order->get_billing_email(),
             'phoneNumber' => $phone_number,
