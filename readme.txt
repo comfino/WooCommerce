@@ -11,12 +11,15 @@ Requires PHP: 7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
+2.2.12
+ * Fix bug in saving settings with wrong API key - add checking if API key is valid
+
 2.2.11
- * remove SKU
+ * Remove SKU
 
 2.2.10
- * add sync repo
- * fix name
+ * Add sync repo
+ * Fix name
 
 2.2.9
  * Improve input data sanitization, validation and escaping
