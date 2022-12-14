@@ -4,6 +4,7 @@ set -eu
 
 PLUGIN_NAME=comfino-payment-gateway
 GIT_REPO=git@github.com:comfino/WooCommerce.git
+SVN_USER=comfino
 
 for i in "$@"
 do
@@ -56,26 +57,26 @@ stage_and_commit_changes () {
 
   svn add --force --quiet .
 
-  if [ -d "$ASSETS_DIR" ]; then
-    svn del --force --quiet "$ASSETS_DIR"
-  fi
+#  if [ -d "$ASSETS_DIR" ]; then
+#    svn del --force --quiet "$ASSETS_DIR"
+#  fi
 
   find . -type f -name "*.png" \
     | awk '{print $0 "@"}' \
     | xargs svn propset --quiet --force svn:mime-type image/png
 
-  find . -type f -name "*.jpg" \
-    | awk '{print $0 "@"}' \
-    | xargs svn propset --quiet --force svn:mime-type image/jpeg
+#  find . -type f -name "*.jpg" \
+#    | awk '{print $0 "@"}' \
+#    | xargs svn propset --quiet --force svn:mime-type image/jpeg
 
   # Untrack files that have been deleted.
   # We add an at symbol to every name.
   # See http://stackoverflow.com/questions/1985203/why-subversion-skips-files-which-contain-the-symbol#1985366
-  svn status \
-    | grep -v "^[ \t]*\..*" \
-    | grep "^\!" \
-    | awk '{print $2 "@"}' \
-    | xargs svn del --force --quiet
+#  svn status \
+#    | grep -v "^[ \t]*\..*" \
+#    | grep "^\!" \
+#    | awk '{print $2 "@"}' \
+#    | xargs svn del --force --quiet
 
 	changes=$(svn status -q)
 	if [[ $changes ]]; then
@@ -112,8 +113,8 @@ sync_tag () {
 	mkdir "$SVN_DIR/tags/$tag"
   sync_files . "$SVN_DIR/tags/$tag"
 
-#	cd "$SVN_DIR/tags/$tag" || exit
-#	stage_and_commit_changes "Release tag $tag"
+	cd "$SVN_DIR/tags/$tag" || exit
+	stage_and_commit_changes "Release tag $tag"
 }
 
 sync_all_tags () {
@@ -154,6 +155,6 @@ fetch_svn_repo
 fetch_git_repo
 #sync_assets
 sync_all_tags
-#sync_trunk
+sync_trunk
 
 exit 0
