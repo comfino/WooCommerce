@@ -3,7 +3,7 @@
  * Plugin Name: Comfino Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
  * Description: Comfino (Comperia) - Comfino Payment Gateway for WooCommerce.
- * Version: 2.2.11
+ * Version: 2.2.12
  * Author: Comfino (Comperia)
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
@@ -18,7 +18,7 @@ defined('ABSPATH') or exit;
 
 class ComfinoPaymentGateway
 {
-    public const VERSION = '2.2.11';
+    public const VERSION = '2.2.12';
 
     /**
      * @var ComfinoPaymentGateway
@@ -154,8 +154,9 @@ class ComfinoPaymentGateway
                 $code = str_replace('{WIDGET_TYPE}', $cg->get_option('widget_type'), $code);
                 $code = str_replace('{OFFER_TYPE}', $cg->get_option('widget_offer_type'), $code);
                 $code = str_replace('{EMBED_METHOD}', $cg->get_option('widget_embed_method'), $code);
+                $code = str_replace('{PRICE_OBSERVER_LEVEL}', $cg->get_option('widget_price_observer_level'), $code);
 
-                echo '<script>'.str_replace('&#039;', "'", esc_html($code)).'</script>';
+                echo '<script>'.str_replace(['&#039;', '&gt;'], ["'", '>'], esc_html($code)).'</script>';
             }
         }
     }

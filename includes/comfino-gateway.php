@@ -154,42 +154,42 @@ class Comfino_Gateway extends WC_Payment_Gateway
                 'type' => 'checkbox',
                 'label' => __('Enable Comfino Payment Module.', 'comfino-payment-gateway'),
                 'default' => 'no',
-                'description' => __('Show in the Payment List as a payment option', 'comfino-payment-gateway')
+                'description' => __('Show in the Payment List as a payment option.', 'comfino-payment-gateway')
             ],
             'title' => [
-                'title' => __('Title:', 'comfino-payment-gateway'),
+                'title' => __('Title', 'comfino-payment-gateway'),
                 'type' => 'text',
                 'default' => 'Comfino',
             ],
             'production_key' => [
-                'title' => __('Production Key', 'comfino-payment-gateway'),
+                'title' => __('Production key', 'comfino-payment-gateway'),
                 'type' => 'text'
             ],
             'show_logo' => [
-                'title' => __('Show Logo', 'comfino-payment-gateway'),
+                'title' => __('Show logo', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
                 'label' => __('Show logo on payment method', 'comfino-payment-gateway'),
                 'default' => 'yes',
             ],
             'sandbox_mode' => [
-                'title' => __('Sandbox mode:', 'comfino-payment-gateway'),
+                'title' => __('Sandbox mode', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
-                'label' => __('Enable Sandbox Mode', 'comfino-payment-gateway'),
+                'label' => __('Enable sandbox mode', 'comfino-payment-gateway'),
                 'default' => 'no',
             ],
             'sandbox_key' => [
-                'title' => __('Sandbox Key', 'comfino-payment-gateway'),
+                'title' => __('Sandbox key', 'comfino-payment-gateway'),
                 'type' => 'text'
             ],
             'widget_enabled' => [
-                'title' => __('Widget Enable', 'comfino-payment-gateway'),
+                'title' => __('Widget enable', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
-                'label' => __('Enable Comfino Widget', 'comfino-payment-gateway'),
+                'label' => __('Enable Comfino widget', 'comfino-payment-gateway'),
                 'default' => 'no',
-                'description' => __('Show Widget Comfino in the product', 'comfino-payment-gateway')
+                'description' => __('Show Comfino widget in the product.', 'comfino-payment-gateway')
             ],
             'widget_type' => [
-                'title' => __('Widget Type', 'comfino-payment-gateway'),
+                'title' => __('Widget type', 'comfino-payment-gateway'),
                 'type' => 'select',
                 'options' => [
                     'simple' => __('Textual widget', 'comfino-payment-gateway'),
@@ -198,7 +198,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
                 ]
             ],
             'widget_offer_type' => [
-                'title' => __('Widget Offer Type', 'comfino-payment-gateway'),
+                'title' => __('Widget offer type', 'comfino-payment-gateway'),
                 'type' => 'select',
                 'options' => [
                     'INSTALLMENTS_ZERO_PERCENT' => __('Zero percent installments', 'comfino-payment-gateway'),
@@ -206,18 +206,8 @@ class Comfino_Gateway extends WC_Payment_Gateway
                     'PAY_LATER' => __('Pay later', 'comfino-payment-gateway'),
                 ]
             ],
-            'widget_price_selector' => [
-                'title' => __('Widget Price Selector', 'comfino-payment-gateway'),
-                'type' => 'text',
-                'default' => '.price .woocommerce-Price-amount bdi',
-            ],
-            'widget_target_selector' => [
-                'title' => __('Widget Target Selector', 'comfino-payment-gateway'),
-                'type' => 'text',
-                'default' => '.summary .product_meta',
-            ],
             'widget_embed_method' => [
-                'title' => __('Widget Embed Method', 'comfino-payment-gateway'),
+                'title' => __('Widget embed method', 'comfino-payment-gateway'),
                 'type' => 'select',
                 'options' => [
                     'INSERT_INTO_FIRST' => 'INSERT_INTO_FIRST',
@@ -226,8 +216,27 @@ class Comfino_Gateway extends WC_Payment_Gateway
                     'INSERT_AFTER' => 'INSERT_AFTER',
                 ]
             ],
+            'widget_price_selector' => [
+                'title' => __('Widget price selector', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'default' => '.price .woocommerce-Price-amount bdi',
+            ],
+            'widget_target_selector' => [
+                'title' => __('Widget target selector', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'default' => '.summary .product_meta',
+            ],
+            'widget_price_observer_level' => [
+                'title' => __('Price change detection level', 'comfino-payment-gateway'),
+                'type' => 'number',
+                'default' => 0,
+                'description' => __(
+                    'Hierarchy level of observed parent element relative to the price element.',
+                    'comfino-payment-gateway'
+                )
+            ],
             'widget_key' => [
-                'title' => __('Widget Key', 'comfino-payment-gateway'),
+                'title' => __('Widget key', 'comfino-payment-gateway'),
                 'type' => 'text',
             ],
             'widget_js_code' => [
@@ -240,11 +249,12 @@ script.onload = function () {
     ComfinoProductWidget.init({
         widgetKey: \'{WIDGET_KEY}\',
         priceSelector: \'{WIDGET_PRICE_SELECTOR}\',
-        widgetTargetSelector: \'{WIDGET_TARGET_SELECTOR}\',
+        widgetTargetSelector: \'{WIDGET_TARGET_SELECTOR}\',        
         price: null,
         type: \'{WIDGET_TYPE}\',
         offerType: \'{OFFER_TYPE}\',
         embedMethod: \'{EMBED_METHOD}\',
+        priceObserverLevel: \'{PRICE_OBSERVER_LEVEL}\',
         callbackBefore: function () {},
         callbackAfter: function () {}
     });
