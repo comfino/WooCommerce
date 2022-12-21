@@ -13,6 +13,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 2.2.12
  * Fix bug in saving settings with wrong API key - add checking if API key is valid
+ * Update translations, add a new configuration option "priceObserverLevel" for widget in settings form
 
 2.2.11
  * Remove SKU
