@@ -249,7 +249,7 @@ script.onload = function () {
     ComfinoProductWidget.init({
         widgetKey: \'{WIDGET_KEY}\',
         priceSelector: \'{WIDGET_PRICE_SELECTOR}\',
-        widgetTargetSelector: \'{WIDGET_TARGET_SELECTOR}\',        
+        widgetTargetSelector: \'{WIDGET_TARGET_SELECTOR}\',
         price: null,
         type: \'{WIDGET_TYPE}\',
         offerType: \'{OFFER_TYPE}\',
