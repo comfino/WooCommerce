@@ -3,7 +3,7 @@
 namespace Comfino;
 
 use Comfino_Gateway;
-use ComfinoPaymentGateway;
+use Comfino_Payment_Gateway;
 use LimitIterator;
 use SplFileObject;
 use Throwable;
@@ -73,7 +73,7 @@ class ErrorLogger
             $url_parts['host'].(isset($url_parts['port']) ? ':'.$url_parts['port'] : ''),
             'WooCommerce',
             [
-                'plugin_version' => ComfinoPaymentGateway::VERSION,
+                'plugin_version' => Comfino_Payment_Gateway::VERSION,
                 'shop_version' => WC_VERSION,
                 'wordpress_version' => $wp_version,
                 'php_version' => PHP_VERSION,

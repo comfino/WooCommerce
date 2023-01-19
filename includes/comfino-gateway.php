@@ -1,5 +1,7 @@
 <?php
 
+use Comfino\Api_Client;
+
 class Comfino_Gateway extends WC_Payment_Gateway
 {
     public const WAITING_FOR_PAYMENT_STATUS = "WAITING_FOR_PAYMENT";
@@ -79,8 +81,10 @@ class Comfino_Gateway extends WC_Payment_Gateway
     public const COMFINO_WIDGET_JS_PRODUCTION = 'https://widget.comfino.pl/comfino.min.js';
 
     /**
-     * Comfino_Gateway constructor.
+     * @var Api_Client
      */
+    private $api_client;
+
     public function __construct()
     {
         $this->id = 'comfino';
@@ -92,14 +96,14 @@ class Comfino_Gateway extends WC_Payment_Gateway
         $this->supports = ['products'];
 
         $this->init_form_fields();
-
         $this->init_settings();
+
         $this->title = $this->get_option('title');
         $this->enabled = $this->get_option('enabled');
 
-        self::$show_logo = 'yes' === $this->get_option('show_logo');
+        self::$show_logo = ($this->get_option('show_logo') === 'yes');
 
-        $sandbox_mode = 'yes' === $this->get_option('sandbox_mode');
+        $sandbox_mode = ($this->get_option('sandbox_mode') === 'yes');
         $sandbox_key = $this->get_option('sandbox_key');
         $production_key = $this->get_option('production_key');
 
@@ -111,6 +115,12 @@ class Comfino_Gateway extends WC_Payment_Gateway
             self::$key = $production_key;
         }
 
+        $this->api_client = new Api_Client(
+            $this->get_option('sandbox_mode') === 'yes',
+            $this->get_option('sandbox_key'),
+            $this->get_option('production_key')
+        );
+
         add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
         add_action('woocommerce_api_comfino_gateway', [$this, 'webhook']);
@@ -119,10 +129,6 @@ class Comfino_Gateway extends WC_Payment_Gateway
         add_action('save_post', [$this, 'update_order'], 10, 3);
     }
 
-    /**
-     * @param \Comfino\ShopPluginError $error
-     * @return bool
-     */
     public static function send_logged_error(\Comfino\ShopPluginError $error): bool
     {
         $request = new \Comfino\ShopPluginErrorRequest();
@@ -140,7 +146,9 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
         $response = wp_remote_post(self::$host.self::COMFINO_ERROR_LOG_ENDPOINT, $args);
 
-        return !is_wp_error($response) && strpos(wp_remote_retrieve_body($response), '"errors":') === false && wp_remote_retrieve_response_code($response) < 400;
+        return !is_wp_error($response) &&
+            strpos(wp_remote_retrieve_body($response), '"errors":') === false &&
+            wp_remote_retrieve_response_code($response) < 400;
     }
 
     /**
@@ -254,7 +262,7 @@ script.onload = function () {
         type: \'{WIDGET_TYPE}\',
         offerType: \'{OFFER_TYPE}\',
         embedMethod: \'{EMBED_METHOD}\',
-        priceObserverLevel: \'{PRICE_OBSERVER_LEVEL}\',
+        priceObserverLevel: {PRICE_OBSERVER_LEVEL},
         callbackBefore: function () {},
         callbackAfter: function () {}
     });
@@ -321,8 +329,8 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
 
         echo '<p>'.sprintf(
                 __('Do you want to ask about something? Write to us at %s or contact us by phone. We are waiting on the number: %s. We will answer all your questions!', 'comfino-payment-gateway'),
-                '<a href="mailto:pomoc@comfino.pl?subject='.sprintf(__('WordPress %s WooCommerce %s Comfino %s - question', 'comfino-payment-gateway'), $wp_version, WC_VERSION, ComfinoPaymentGateway::VERSION).
-                '&body='.str_replace(',', '%2C', sprintf(__('WordPress %s WooCommerce %s Comfino %s, PHP %s', 'comfino-payment-gateway'), $wp_version, WC_VERSION, ComfinoPaymentGateway::VERSION, PHP_VERSION)).'">pomoc@comfino.pl</a>', '887-106-027'
+                '<a href="mailto:pomoc@comfino.pl?subject='.sprintf(__('WordPress %s WooCommerce %s Comfino %s - question', 'comfino-payment-gateway'), $wp_version, WC_VERSION, Comfino_Payment_Gateway::VERSION).
+                '&body='.str_replace(',', '%2C', sprintf(__('WordPress %s WooCommerce %s Comfino %s, PHP %s', 'comfino-payment-gateway'), $wp_version, WC_VERSION, Comfino_Payment_Gateway::VERSION, PHP_VERSION)).'">pomoc@comfino.pl</a>', '887-106-027'
             ).'</p>';
 
         echo '<table class="form-table">';
@@ -340,7 +348,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         global $woocommerce;
 
         $total = (int)round($woocommerce->cart->total) * 100;
-        $offers = $this->fetch_offers($total);
+        $offers = $this->api_client->get_offers($total);
         $paymentInfos = [];
 
         foreach ($offers as $offer) {
@@ -463,92 +471,18 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         wp_enqueue_script('comfino', plugins_url('assets/js/comfino.js', __FILE__));
     }
 
-    /**
-     * @param $order_id
-     *
-     * @return array
-     */
     public function process_payment($order_id): array
     {
-        global $woocommerce;
-
-        $loanTerm = sanitize_text_field($_POST['comfino_loan_term']);
+        $loan_term = sanitize_text_field($_POST['comfino_loan_term']);
         $type = sanitize_text_field($_POST['comfino_type']);
 
-        if (!ctype_digit($loanTerm)) {
+        if (!ctype_digit($loan_term)) {
             return ['result' => 'failure', 'redirect' => ''];
         }
 
-        if (!in_array($type, $this->types, true)) {
-            $type = null;
-        }
-
         $order = wc_get_order($order_id);
-        $body = wp_json_encode([
-            'returnUrl' => $this->get_return_url($order),
-            'orderId' => (string)$order->get_id(),
-            'notifyUrl' => add_query_arg('wc-api', 'Comfino_Gateway', home_url('/')),
-            'loanParameters' => [
-                'term' => (int)$loanTerm,
-                'type' => $type,
-            ],
-            'cart' => [
-                'totalAmount' => (int)($order->get_total() * 100),
-                'deliveryCost' => (int)($order->get_shipping_total() * 100),
-                'products' => $this->get_products(),
-            ],
-            'customer' => $this->get_customer($order),
-        ]);
 
-        $url = self::$host.self::COMFINO_ORDERS_ENDPOINT;
-        $args = [
-            'headers' => self::get_header_request(),
-            'body' => $body,
-        ];
-
-        $response = wp_remote_post($url, $args);
-
-        if (!is_wp_error($response)) {
-            $decoded = json_decode(wp_remote_retrieve_body($response), true);
-
-            if (!is_array($decoded) || isset($decoded['errors']) || empty($decoded['applicationUrl'])) {
-                \Comfino\ErrorLogger::send_error(
-                    'Payment error',
-                    wp_remote_retrieve_response_code($response),
-                    is_array($decoded) && isset($decoded['errors']) ? implode(', ', $decoded['errors']) : 'API call error '.wp_remote_retrieve_response_code($response),
-                    $url,
-                    $body,
-                    wp_remote_retrieve_body($response)
-                );
-
-                return ['result' => 'failure', 'redirect' => ''];
-            }
-
-            $order->add_order_note(__("Comfino create order", 'comfino-payment-gateway'));
-            $order->reduce_order_stock();
-
-            $woocommerce->cart->empty_cart();
-
-            return ['result' => 'success', 'redirect' => $decoded['applicationUrl']];
-        }
-
-        $timestamp = time();
-
-        \Comfino\ErrorLogger::send_error(
-            "Communication error [$timestamp]",
-            implode(', ', $response->get_error_codes()),
-            implode(', ', $response->get_error_messages()),
-            $url,
-            $body,
-            wp_remote_retrieve_body($response)
-        );
-
-        wc_add_notice(
-            'Communication error: '.$timestamp.'. Please contact with support and note this error id.',
-            'error'
-        );
-
-        return [];
+        return $this->api_client->create_order(WC()->cart, $order, $this->get_return_url($order), $loan_term, $type);
     }
 
     /**
@@ -629,7 +563,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
     }
 
     /**
-     * Webhook notifications
+     * Webhook notifications.
      */
     public function webhook(): void
     {
@@ -655,51 +589,6 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                 $order->cancel_order();
             }
         }
-    }
-
-    /**
-     * Fetch products
-     *
-     * @param int $loanAmount
-     *
-     * @return array
-     */
-    private function fetch_offers(int $loanAmount): array
-    {
-        $url = self::$host.self::COMFINO_OFFERS_ENDPOINT.'?'.http_build_query(['loanAmount' => $loanAmount]);
-        $args = ['headers' => self::get_header_request()];
-
-        $response = wp_remote_get($url, $args);
-
-        if (!is_wp_error($response)) {
-            $decoded = json_decode(wp_remote_retrieve_body($response), true);
-
-            if (!is_array($decoded) || isset($decoded['errors'])) {
-                \Comfino\ErrorLogger::send_error(
-                    'Payment error',
-                    wp_remote_retrieve_response_code($response),
-                    is_array($decoded) && isset($decoded['errors']) ? implode(', ', $decoded['errors']) : 'API call error '.wp_remote_retrieve_response_code($response),
-                    $url,
-                    null,
-                    wp_remote_retrieve_body($response)
-                );
-
-                $decoded = [];
-            }
-
-            return $decoded;
-        }
-
-        \Comfino\ErrorLogger::send_error(
-            'Communication error',
-            implode(', ', $response->get_error_codes()),
-            implode(', ', $response->get_error_messages()),
-            $url,
-            null,
-            wp_remote_retrieve_body($response)
-        );
-
-        return [];
     }
 
     /**
@@ -868,7 +757,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
     {
         global $wp_version;
 
-        return sprintf('WP Comfino [%s], WP [%s], WC [%s], PHP [%s]', ComfinoPaymentGateway::VERSION, $wp_version, WC_VERSION, PHP_VERSION);
+        return sprintf('WP Comfino [%s], WP [%s], WC [%s], PHP [%s]', Comfino_Payment_Gateway::VERSION, $wp_version, WC_VERSION, PHP_VERSION);
     }
 
     /**

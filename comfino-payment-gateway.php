@@ -3,7 +3,7 @@
  * Plugin Name: Comfino Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
  * Description: Comfino (Comperia) - Comfino Payment Gateway for WooCommerce.
- * Version: 2.2.12
+ * Version: 2.3.0
  * Author: Comfino (Comperia)
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
@@ -16,38 +16,29 @@
 
 defined('ABSPATH') or exit;
 
-class ComfinoPaymentGateway
+class Comfino_Payment_Gateway
 {
-    public const VERSION = '2.2.12';
+    public const VERSION = '2.3.0';
 
     /**
-     * @var ComfinoPaymentGateway
+     * @var Comfino_Payment_Gateway
      */
     private static $instance;
 
-    /**
-     * @return ComfinoPaymentGateway
-     */
-    public static function get_instance(): ComfinoPaymentGateway
+    public static function get_instance(): Comfino_Payment_Gateway
     {
-        if (null === self::$instance) {
+        if (self::$instance === null) {
             self::$instance = new self();
         }
 
         return self::$instance;
     }
 
-    /**
-     * ComfinoPaymentGateway constructor.
-     */
     public function __construct()
     {
         add_action('plugins_loaded', [$this, 'init']);
     }
 
-    /**
-     * Init
-     */
     public function init(): void
     {
         if ($this->check_environment()) {
@@ -136,25 +127,34 @@ class ComfinoPaymentGateway
     public function render_widget(): void
     {
         if (is_single()) {
-            $cg = new Comfino_Gateway();
+            $comfino_gateway = new Comfino_Gateway();
 
-            if ($cg->get_option('widget_enabled') === 'yes' && $cg->get_option('widget_key') !== '') {
-                $code = $cg->get_option('widget_js_code');
-                $sandbox_mode = 'yes' === $cg->get_option('sandbox_mode');
-
-                if ($sandbox_mode) {
-                    $code = str_replace('{WIDGET_SCRIPT_URL}', Comfino_Gateway::COMFINO_WIDGET_JS_SANDBOX, $code);
-                } else {
-                    $code = str_replace('{WIDGET_SCRIPT_URL}', Comfino_Gateway::COMFINO_WIDGET_JS_PRODUCTION, $code);
-                }
-
-                $code = str_replace('{WIDGET_KEY}', $cg->get_option('widget_key'), $code);
-                $code = str_replace('{WIDGET_PRICE_SELECTOR}', html_entity_decode($cg->get_option('widget_price_selector')), $code);
-                $code = str_replace('{WIDGET_TARGET_SELECTOR}', html_entity_decode($cg->get_option('widget_target_selector')), $code);
-                $code = str_replace('{WIDGET_TYPE}', $cg->get_option('widget_type'), $code);
-                $code = str_replace('{OFFER_TYPE}', $cg->get_option('widget_offer_type'), $code);
-                $code = str_replace('{EMBED_METHOD}', $cg->get_option('widget_embed_method'), $code);
-                $code = str_replace('{PRICE_OBSERVER_LEVEL}', $cg->get_option('widget_price_observer_level'), $code);
+            if ($comfino_gateway->get_option('widget_enabled') === 'yes' && $comfino_gateway->get_option('widget_key') !== '') {
+                $code = str_replace(
+                    [
+                        '{WIDGET_KEY}',
+                        '{WIDGET_PRICE_SELECTOR}',
+                        '{WIDGET_TARGET_SELECTOR}',
+                        '{WIDGET_TYPE}',
+                        '{OFFER_TYPE}',
+                        '{EMBED_METHOD}',
+                        '{PRICE_OBSERVER_LEVEL}',
+                        '{WIDGET_SCRIPT_URL}',
+                    ],
+                    [
+                        $comfino_gateway->get_option('widget_key'),
+                        html_entity_decode($comfino_gateway->get_option('widget_price_selector')),
+                        html_entity_decode($comfino_gateway->get_option('widget_target_selector')),
+                        $comfino_gateway->get_option('widget_type'),
+                        $comfino_gateway->get_option('widget_offer_type'),
+                        $comfino_gateway->get_option('widget_embed_method'),
+                        $comfino_gateway->get_option('widget_price_observer_level'),
+                        $comfino_gateway->get_option('sandbox_mode') === 'yes'
+                            ? Comfino_Gateway::COMFINO_WIDGET_JS_SANDBOX
+                            : Comfino_Gateway::COMFINO_WIDGET_JS_PRODUCTION,
+                    ],
+                    $comfino_gateway->get_option('widget_js_code')
+                );
 
                 echo '<script>'.str_replace(['&#039;', '&gt;'], ["'", '>'], esc_html($code)).'</script>';
             }
@@ -176,4 +176,4 @@ class ComfinoPaymentGateway
     }
 }
 
-ComfinoPaymentGateway::get_instance();
+Comfino_Payment_Gateway::get_instance();
