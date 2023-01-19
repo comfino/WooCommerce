@@ -9,7 +9,7 @@
  * Domain Path: /languages
  * Text Domain: comfino-payment-gateway
  * Requires at least: 5.4
- * Requires PHP: 7.0
+ * Requires PHP: 7.1
  *
  * @license http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
 */
@@ -86,7 +86,7 @@ class Comfino_Payment_Gateway
     /**
      * @param $links
      *
-     * @return array|string[]
+     * @return string[]
      */
     public function plugin_action_links($links): array
     {
@@ -97,11 +97,6 @@ class Comfino_Payment_Gateway
         return array_merge($plugin_links, $links);
     }
 
-    /**
-     * @param array $statuses
-     *
-     * @return array
-     */
     public function filter_order_status(array $statuses): array
     {
         global $post;
@@ -119,11 +114,6 @@ class Comfino_Payment_Gateway
         return $statuses;
     }
 
-    /**
-     * Render widget
-     *
-     * @return void
-     */
     public function render_widget(): void
     {
         if (is_single()) {

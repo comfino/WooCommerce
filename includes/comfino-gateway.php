@@ -69,20 +69,13 @@ class Comfino_Gateway extends WC_Payment_Gateway
     private static $host;
     private static $show_logo;
 
-    private const COMFINO_OFFERS_ENDPOINT = '/v1/financial-products';
-    private const COMFINO_ORDERS_ENDPOINT = '/v1/orders';
-    private const COMFINO_WIDGET_KEY_ENDPOINT = '/v1/widget-key';
-    private const COMFINO_ERROR_LOG_ENDPOINT = '/v1/log-plugin-error';
-    private const COMFINO_USER_IS_ACTIVE_ENDPOINT = '/v1/user/is-active';
     private const COMFINO_PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
     private const COMFINO_SANDBOX_HOST = 'https://api-ecommerce.ecraty.pl';
 
     public const COMFINO_WIDGET_JS_SANDBOX = 'https://widget.craty.pl/comfino.min.js';
     public const COMFINO_WIDGET_JS_PRODUCTION = 'https://widget.comfino.pl/comfino.min.js';
 
-    /**
-     * @var Api_Client
-     */
+    /** @var Api_Client */
     private $api_client;
 
     public function __construct()
@@ -121,34 +114,14 @@ class Comfino_Gateway extends WC_Payment_Gateway
             $this->get_option('production_key')
         );
 
+        \Comfino\ErrorLogger::set_api_client($this->api_client);
+
         add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
         add_action('woocommerce_api_comfino_gateway', [$this, 'webhook']);
-        add_action('woocommerce_order_status_cancelled', [$this, 'cancel_order']);
+        add_action('woocommerce_order_status_cancelled', [$this->api_client, 'cancel_order']);
         add_action('woocommerce_order_item_add_action_buttons', [$this, 'order_buttons'], 10, 1);
         add_action('save_post', [$this, 'update_order'], 10, 3);
-    }
-
-    public static function send_logged_error(\Comfino\ShopPluginError $error): bool
-    {
-        $request = new \Comfino\ShopPluginErrorRequest();
-
-        if (!$request->prepare_request($error, self::get_user_agent_header())) {
-            \Comfino\ErrorLogger::log_error('Error request preparation failed', $error->error_message);
-
-            return false;
-        }
-
-        $args = [
-            'headers' => self::get_header_request(),
-            'body' => wp_json_encode(['error_details' => $request->error_details, 'hash' => $request->hash]),
-        ];
-
-        $response = wp_remote_post(self::$host.self::COMFINO_ERROR_LOG_ENDPOINT, $args);
-
-        return !is_wp_error($response) &&
-            strpos(wp_remote_retrieve_body($response), '"errors":') === false &&
-            wp_remote_retrieve_response_code($response) < 400;
     }
 
     /**
@@ -297,7 +270,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         $api_host = $is_sandbox ? self::COMFINO_SANDBOX_HOST : self::COMFINO_PRODUCTION_HOST;
         $api_key = $is_sandbox ? $this->settings['sandbox_key'] : $this->settings['production_key'];
 
-        if (!$this->is_api_key_valid($api_host, $api_key)) {
+        if (!$this->api_client->is_api_key_valid($api_host, $api_key)) {
             $this->add_error(sprintf(__('API key %s is not valid.', 'comfino-payment-gateway'), $api_key));
 
             $is_error = true;
@@ -309,7 +282,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             return false;
         }
 
-        $this->settings['widget_key'] = $this->get_widget_key($api_host, $api_key);
+        $this->settings['widget_key'] = $this->api_client->get_widget_key($api_host, $api_key);
 
         return update_option(
             $this->get_option_key(),
@@ -486,83 +459,6 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
     }
 
     /**
-     * @param string $order_id
-     */
-    public function cancel_order(string $order_id): void
-    {
-        if (!$this->get_status_note($order_id, [self::CANCELLED_BY_SHOP_STATUS, self::RESIGN_STATUS])) {
-            $order = wc_get_order($order_id);
-
-            $url = self::$host.self::COMFINO_ORDERS_ENDPOINT."/{$order->get_id()}/cancel";
-            $args = [
-                'headers' => self::get_header_request(),
-                'method' => 'PUT'
-            ];
-
-            $response = wp_remote_request($url, $args);
-
-            if (is_wp_error($response)) {
-                $timestamp = time();
-
-                \Comfino\ErrorLogger::send_error(
-                    "Communication error [$timestamp]",
-                    implode(', ', $response->get_error_codes()),
-                    implode(', ', $response->get_error_messages()),
-                    $url,
-                    null,
-                    wp_remote_retrieve_body($response)
-                );
-
-                wc_add_notice(
-                    'Communication error: '.$timestamp.'. Please contact with support and note this error id.',
-                    'error'
-                );
-            }
-
-            $order->add_order_note(__("Send to Comfino canceled order", 'comfino-payment-gateway'));
-        }
-    }
-
-    /**
-     * @param string $order_id
-     */
-    public function resign_order(string $order_id): void
-    {
-        $order = wc_get_order($order_id);
-
-        $body = wp_json_encode(['amount' => (int)$order->get_total() * 100]);
-
-        $url = self::$host.self::COMFINO_ORDERS_ENDPOINT."/{$order->get_id()}/resign";
-        $args = [
-            'headers' => self::get_header_request(),
-            'body' => $body,
-            'method' => 'PUT'
-        ];
-
-        $response = wp_remote_request($url, $args);
-
-        if (is_wp_error($response)) {
-            $timestamp = time();
-
-            \Comfino\ErrorLogger::send_error(
-                "Communication error [$timestamp]",
-                implode(', ', $response->get_error_codes()),
-                implode(', ', $response->get_error_messages()),
-                $url,
-                $body,
-                wp_remote_retrieve_body($response)
-            );
-
-            wc_add_notice(
-                'Communication error: '.$timestamp.'. Please contact with support and note this error id.',
-                'error'
-            );
-        }
-
-        $order->add_order_note(__("Send to Comfino resign order", 'comfino-payment-gateway'));
-    }
-
-    /**
      * Webhook notifications.
      */
     public function webhook(): void
@@ -589,175 +485,6 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                 $order->cancel_order();
             }
         }
-    }
-
-    /**
-     * Fetch widget key
-     *
-     * @param string $api_host
-     * @param string $api_key
-     *
-     * @return string
-     */
-    private function get_widget_key(string $api_host, string $api_key): string
-    {
-        self::$host = $api_host;
-        self::$key = $api_key;
-
-        $widget_key = '';
-
-        if (!empty(self::$key)) {
-            $response = wp_remote_get(
-                self::$host.self::COMFINO_WIDGET_KEY_ENDPOINT,
-                ['headers' => self::get_header_request()]
-            );
-
-            if (!is_wp_error($response)) {
-                $widget_key = json_decode(wp_remote_retrieve_body($response), true);
-            }
-        }
-
-        return $widget_key !== false ? $widget_key : '';
-    }
-
-    /**
-     * @param string $api_host
-     * @param string $api_key
-     *
-     * @return bool
-     */
-    private function is_api_key_valid(string $api_host, string $api_key): bool
-    {
-        self::$host = $api_host;
-        self::$key = $api_key;
-
-        $api_key_valid = false;
-
-        if (!empty(self::$key)) {
-            $response = wp_remote_get(
-                self::$host.self::COMFINO_USER_IS_ACTIVE_ENDPOINT,
-                ['headers' => self::get_header_request()]
-            );
-
-            if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
-                $api_key_valid = strpos(wp_remote_retrieve_body($response), 'errors') === false;
-            }
-        }
-
-        return $api_key_valid;
-    }
-
-    /**
-     * Prepare product data
-     *
-     * @return array
-     */
-    private function get_products(): array
-    {
-        $products = [];
-
-        foreach (WC()->cart->get_cart() as $item) {
-            /** @var WC_Product_Simple $product */
-            $product = $item['data'];
-            $image_id = $product->get_image_id();
-
-            if ($image_id !== '') {
-                $image_url = wp_get_attachment_image_url($image_id, 'full');
-            } else {
-                $image_url = null;
-            }
-
-            $products[] = [
-                'name' => $product->get_name(),
-                'quantity' => (int)$item['quantity'],
-                'photoUrl' => $image_url,
-                'externalId' => (string)$product->get_id(),
-                'price' => (int)(wc_get_price_including_tax($product) * 100),
-            ];
-        }
-
-        return $products;
-    }
-
-    /**
-     * Prepare customer data
-     *
-     * @param $order
-     *
-     * @return array
-     */
-    private function get_customer($order): array
-    {
-        $phone_number = $order->get_billing_phone();
-
-        if (empty($phone_number)) {
-            // Try to find phone number in order metadata
-            $order_metadata = $order->get_meta_data();
-
-            foreach ($order_metadata as $meta_data_item) {
-                /** @var WC_Meta_Data $meta_data_item */
-                $meta_data = $meta_data_item->get_data();
-
-                if (stripos($meta_data['key'], 'tel') !== false || stripos($meta_data['key'], 'phone') !== false) {
-                    $metaValue = str_replace(['-', ' ', '(', ')'], '', $meta_data['value']);
-
-                    if (preg_match('/^(?:\+{0,1}\d{1,2})?\d{9}$|^(?:\d{2,3})?\d{7}$/', $metaValue)) {
-                        $phone_number = $metaValue;
-                        break;
-                    }
-                }
-            }
-        }
-
-        $first_name = $order->get_billing_first_name();
-        $last_name = $order->get_billing_last_name();
-
-        if ($last_name === '') {
-            $name = explode(' ', $first_name);
-
-            if (count($name) > 1) {
-                $first_name = $name[0];
-                $last_name = $name[1];
-            }
-        }
-
-        return [
-            'firstName' => $first_name,
-            'lastName' => $last_name,
-            'ip' => WC_Geolocation::get_ip_address(),
-            'email' => $order->get_billing_email(),
-            'phoneNumber' => $phone_number,
-            'address' => [
-                'street' => $order->get_billing_address_1(),
-                'postalCode' => $order->get_billing_postcode(),
-                'city' => $order->get_billing_city(),
-                'countryCode' => $order->get_billing_country(),
-            ],
-        ];
-    }
-
-    /**
-     * Prepare request headers
-     *
-     * @return array
-     */
-    private static function get_header_request(): array
-    {
-        return [
-            'Content-Type' => 'application/json',
-            'Api-Key' => self::$key,
-            'User-Agent' => self::get_user_agent_header(),
-        ];
-    }
-
-    /**
-     * @return string
-     */
-    private static function get_user_agent_header(): string
-    {
-        global $wp_version;
-
-        return sprintf('WP Comfino [%s], WP [%s], WC [%s], PHP [%s]', Comfino_Payment_Gateway::VERSION, $wp_version, WC_VERSION, PHP_VERSION);
     }
 
     /**
@@ -863,11 +590,6 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         return $notes;
     }
 
-    /**
-     * @param $post_id
-     * @param $post
-     * @param $update
-     */
     public function update_order($post_id, $post, $update): void
     {
         if (is_admin()) {
@@ -880,9 +602,9 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                 $action = sanitize_text_field($_POST['comfino_action']);
 
                 if ($action === 'cancel') {
-                    $this->cancel_order($order->ID);
+                    $this->api_client->cancel_order($order->ID);
                 } elseif ($action === 'resign') {
-                    $this->resign_order($order->ID);
+                    $this->api_client->resign_order($order->ID);
                 }
             }
         }

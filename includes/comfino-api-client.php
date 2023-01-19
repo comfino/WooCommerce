@@ -294,6 +294,88 @@ class Api_Client
         $order->add_order_note(__("Send to Comfino resign order", 'comfino-payment-gateway'));
     }
 
+    public function get_widget_key(string $api_host, string $api_key): string
+    {
+        $this->api_host = $api_host;
+        $this->api_key = $api_key;
+
+        $widget_key = '';
+
+        if (!empty($this->api_key)) {
+            $response = wp_remote_get(
+                $this->api_host.'/v1/widget-key',
+                ['headers' => $this->get_header_request()]
+            );
+
+            if (!is_wp_error($response)) {
+                $widget_key = json_decode(wp_remote_retrieve_body($response), true);
+            }
+        }
+
+        return $widget_key !== false ? $widget_key : '';
+    }
+
+    public function is_api_key_valid(string $api_host, string $api_key): bool
+    {
+        $this->api_host = $api_host;
+        $this->api_key = $api_key;
+
+        $api_key_valid = false;
+
+        if (!empty($this->api_key)) {
+            $response = wp_remote_get(
+                $this->api_host.'/v1/user/is-active',
+                ['headers' => $this->get_header_request()]
+            );
+
+            if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
+                $api_key_valid = strpos(wp_remote_retrieve_body($response), 'errors') === false;
+            }
+        }
+
+        return $api_key_valid;
+    }
+
+    public function get_api_key(): string
+    {
+        if (empty($this->api_key)) {
+            return $this->sandbox_mode ? $this->sandbox_key : $this->production_key;
+        }
+
+        return $this->api_key;
+    }
+
+    public function send_logged_error(ShopPluginError $error): bool
+    {
+        $request = new ShopPluginErrorRequest();
+
+        if (!$request->prepare_request($error, $this->get_user_agent_header())) {
+            ErrorLogger::log_error('Error request preparation failed', $error->error_message);
+
+            return false;
+        }
+
+        $args = [
+            'headers' => $this->get_user_agent_header(),
+            'body' => wp_json_encode(['error_details' => $request->error_details, 'hash' => $request->hash]),
+        ];
+
+        $response = wp_remote_post($this->get_api_host().'/v1/log-plugin-error', $args);
+
+        return !is_wp_error($response) &&
+            strpos(wp_remote_retrieve_body($response), '"errors":') === false &&
+            wp_remote_retrieve_response_code($response) < 400;
+    }
+
+    private function get_api_host(): string
+    {
+        if (empty($this->api_host)) {
+            return $this->sandbox_mode ? self::COMFINO_SANDBOX_HOST : self::COMFINO_PRODUCTION_HOST;
+        }
+
+        return $this->api_host;
+    }
+
     private function get_status_note(int $order_id, array $statuses): array
     {
         $elements = wc_get_order_notes(['order_id' => $order_id]);
@@ -308,24 +390,6 @@ class Api_Client
         }
 
         return $notes;
-    }
-
-    public function get_api_key(): string
-    {
-        if (empty($this->api_key)) {
-            return $this->sandbox_mode ? $this->sandbox_key : $this->production_key;
-        }
-
-        return $this->api_key;
-    }
-
-    private function get_api_host(): string
-    {
-        if (empty($this->api_host)) {
-            return $this->sandbox_mode ? self::COMFINO_SANDBOX_HOST : self::COMFINO_PRODUCTION_HOST;
-        }
-
-        return $this->api_host;
     }
 
     private function get_header_request(): array

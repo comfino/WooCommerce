@@ -2,7 +2,6 @@
 
 namespace Comfino;
 
-use Comfino_Gateway;
 use Comfino_Payment_Gateway;
 use LimitIterator;
 use SplFileObject;
@@ -30,6 +29,14 @@ class ErrorLogger
         E_DEPRECATED => 'E_DEPRECATED',
         E_USER_DEPRECATED => 'E_USER_DEPRECATED'
     ];
+
+    /** @var Api_Client */
+    private static $api_client;
+
+    public static function set_api_client(Api_Client $api_client): void
+    {
+        self::$api_client = $api_client;
+    }
 
     /**
      * @param string $error_prefix
@@ -90,7 +97,7 @@ class ErrorLogger
             $stack_trace
         );
 
-        if (!Comfino_Gateway::send_logged_error($error)) {
+        if (self::$api_client === null || !self::$api_client->send_logged_error($error)) {
             $request_info = [];
 
             if ($api_request_url !== null) {
