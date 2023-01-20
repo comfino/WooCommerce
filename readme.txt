@@ -12,7 +12,8 @@ License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 2.3.0
- *
+ * Added ability to register in Comfino directly from plugin configuration panel
+ * Code clean up and refactoring
 
 2.2.12
  * Fix bug in saving settings with wrong API key - add checking if API key is valid

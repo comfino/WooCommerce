@@ -66,6 +66,8 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
         self::$show_logo = ($this->get_option('show_logo') === 'yes');
 
+        require_once __DIR__.'/comfino-api-client.php';
+
         $this->api_client = new Api_Client(
             $this->get_option('sandbox_mode') === 'yes',
             $this->get_option('sandbox_key'),
