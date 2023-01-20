@@ -37,6 +37,15 @@ class Api_Client
         $this->production_key = $production_key;
     }
 
+    public function get_api_key(): string
+    {
+        if (empty($this->api_key)) {
+            return $this->sandbox_mode ? $this->sandbox_key : $this->production_key;
+        }
+
+        return $this->api_key;
+    }
+
     public function get_offers(int $loan_amount): array
     {
         $url = $this->get_api_host().'/v1/financial-products?'.http_build_query(['loanAmount' => $loan_amount]);
@@ -336,13 +345,123 @@ class Api_Client
         return $api_key_valid;
     }
 
-    public function get_api_key(): string
+    /**
+     * @return array|bool
+     */
+    public function register_shop_account(string $name, string $url, string $contact_name, string $email, string $phone, array $agreements)
     {
-        if (empty($this->api_key)) {
-            return $this->sandbox_mode ? $this->sandbox_key : $this->production_key;
+        $data = [
+            'name' => $name,
+            'webSiteUrl' => $url,
+            'contactName' => $contact_name,
+            'contactEmail' => $email,
+            'contactPhone' => $phone,
+            'platformId' => 11,
+            'agreements' => $agreements,
+        ];
+
+        $url = $this->get_api_host().'/v1/user';
+        $body = wp_json_encode($data);
+        $args = [
+            'headers' => $this->get_header_request(),
+            'body' => $body,
+        ];
+
+        $response = wp_remote_post($url, $args);
+
+        if (!is_wp_error($response)) {
+            $decoded = json_decode(wp_remote_retrieve_body($response), true);
+
+            if (!is_array($decoded) || isset($decoded['errors'])) {
+                ErrorLogger::send_error(
+                    'Registration error',
+                    wp_remote_retrieve_response_code($response),
+                    is_array($decoded) && isset($decoded['errors'])
+                        ? implode(', ', $decoded['errors'])
+                        : 'API call error '.wp_remote_retrieve_response_code($response),
+                    $url,
+                    $body,
+                    wp_remote_retrieve_body($response)
+                );
+
+                return false;
+            }
+
+            return $decoded;
         }
 
-        return $this->api_key;
+        $timestamp = time();
+
+        ErrorLogger::send_error(
+            "Communication error [$timestamp]",
+            implode(', ', $response->get_error_codes()),
+            implode(', ', $response->get_error_messages()),
+            $url,
+            null,
+            wp_remote_retrieve_body($response)
+        );
+
+        wc_add_notice(
+            'Communication error: '.$timestamp.'. Please contact with support and note this error id.',
+            'error'
+        );
+
+        return false;
+    }
+
+    /**
+     * @return array|bool
+     */
+    public function get_shop_account_agreements()
+    {
+        $agreements = false;
+
+        $url = $this->get_api_host().'/v1/fetch-agreements';
+        $args = ['headers' => $this->get_header_request()];
+
+        $response = wp_remote_get($url, $args);
+
+        if (is_wp_error($response)) {
+            ErrorLogger::send_error(
+                'Communication error',
+                implode(', ', $response->get_error_codes()),
+                implode(', ', $response->get_error_messages()),
+                $url,
+                null,
+                wp_remote_retrieve_body($response)
+            );
+        } else {
+            $agreements = json_decode(wp_remote_retrieve_body($response), true);
+        }
+
+        return $agreements;
+    }
+
+    public function is_shop_account_active(): bool
+    {
+        $account_active = false;
+
+        $url = $this->get_api_host().'/v1/user/is-active';
+        $args = ['headers' => $this->get_header_request()];
+
+        $response = wp_remote_get($url, $args);
+
+        if (!empty($this->get_api_key())) {
+            if (is_wp_error($response)) {
+                ErrorLogger::send_error(
+                    'Communication error',
+                    implode(', ', $response->get_error_codes()),
+                    implode(', ', $response->get_error_messages()),
+                    $url,
+                    null,
+                    wp_remote_retrieve_body($response)
+                );
+            } else {
+                $account_active = json_decode(wp_remote_retrieve_body($response), true);
+            }
+        }
+
+        return $account_active;
     }
 
     public function send_logged_error(ShopPluginError $error): bool
