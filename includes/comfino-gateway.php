@@ -4,26 +4,16 @@ use Comfino\Api_Client;
 
 class Comfino_Gateway extends WC_Payment_Gateway
 {
-    public const WAITING_FOR_PAYMENT_STATUS = "WAITING_FOR_PAYMENT";
-    public const ACCEPTED_STATUS = "ACCEPTED";
-    public const REJECTED_STATUS = "REJECTED";
-    public const CANCELLED_STATUS = "CANCELLED";
-    public const CANCELLED_BY_SHOP_STATUS = "CANCELLED_BY_SHOP";
-    public const PAID_STATUS = "PAID";
-    public const RESIGN_STATUS = "RESIGN";
-
-    private const TYPE_INSTALLMENTS_ZERO_PERCENT = 'INSTALLMENTS_ZERO_PERCENT';
-    private const TYPE_CONVENIENT_INSTALLMENTS = 'CONVENIENT_INSTALLMENTS';
-    private const TYPE_PAY_LATER = 'PAY_LATER';
-    private const TYPE_COMPANY_INSTALLMENTS = 'COMPANY_INSTALLMENTS';
-    private const TYPE_RENEWABLE_LIMIT = 'RENEWABLE_LIMIT';
+    private const WAITING_FOR_PAYMENT_STATUS = "WAITING_FOR_PAYMENT";
+    private const ACCEPTED_STATUS = "ACCEPTED";
+    private const REJECTED_STATUS = "REJECTED";
+    private const CANCELLED_STATUS = "CANCELLED";
+    private const CANCELLED_BY_SHOP_STATUS = "CANCELLED_BY_SHOP";
+    private const PAID_STATUS = "PAID";
+    private const RESIGN_STATUS = "RESIGN";
     private const ERROR_LOG_NUM_LINES = 40;
 
-    /**
-     * Reject status
-     *
-     * @var array
-     */
+    /** @var string[] */
     private $rejected_state = [
         self::REJECTED_STATUS,
         self::CANCELLED_STATUS,
@@ -31,28 +21,11 @@ class Comfino_Gateway extends WC_Payment_Gateway
         self::RESIGN_STATUS,
     ];
 
-    /**
-     * Positive status
-     *
-     * @var array
-     */
+    /** @var string[] */
     private $completed_state = [
         self::ACCEPTED_STATUS,
         self::PAID_STATUS,
         self::WAITING_FOR_PAYMENT_STATUS,
-    ];
-
-    /**
-     * Product type
-     *
-     * @var string[]
-     */
-    private $types = [
-        self::TYPE_INSTALLMENTS_ZERO_PERCENT,
-        self::TYPE_CONVENIENT_INSTALLMENTS,
-        self::TYPE_PAY_LATER,
-        self::TYPE_COMPANY_INSTALLMENTS,
-        self::TYPE_RENEWABLE_LIMIT,
     ];
 
     public $id;
@@ -64,9 +37,6 @@ class Comfino_Gateway extends WC_Payment_Gateway
     public $supports;
     public $title;
     public $enabled;
-
-    private static $key;
-    private static $host;
     private static $show_logo;
 
     private const COMFINO_PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
@@ -95,18 +65,6 @@ class Comfino_Gateway extends WC_Payment_Gateway
         $this->enabled = $this->get_option('enabled');
 
         self::$show_logo = ($this->get_option('show_logo') === 'yes');
-
-        $sandbox_mode = ($this->get_option('sandbox_mode') === 'yes');
-        $sandbox_key = $this->get_option('sandbox_key');
-        $production_key = $this->get_option('production_key');
-
-        if ($sandbox_mode) {
-            self::$host = self::COMFINO_SANDBOX_HOST;
-            self::$key = $sandbox_key;
-        } else {
-            self::$host = self::COMFINO_PRODUCTION_HOST;
-            self::$key = $production_key;
-        }
 
         $this->api_client = new Api_Client(
             $this->get_option('sandbox_mode') === 'yes',
@@ -494,7 +452,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
      */
     private function valid_signature(string $jsonData): bool
     {
-        return $this->get_signature() === hash('sha3-256', self::$key.$jsonData);
+        return $this->get_signature() === hash('sha3-256', $this->api_client->get_api_key().$jsonData);
     }
 
     /**
