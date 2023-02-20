@@ -103,7 +103,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
                 'default' => 'Comfino',
             ],
             'production_key' => [
-                'title' => __('Production key', 'comfino-payment-gateway'),
+                'title' => __('Production environment API key', 'comfino-payment-gateway'),
                 'type' => 'text'
             ],
             'show_logo' => [
@@ -113,13 +113,13 @@ class Comfino_Gateway extends WC_Payment_Gateway
                 'default' => 'yes',
             ],
             'sandbox_mode' => [
-                'title' => __('Sandbox mode', 'comfino-payment-gateway'),
+                'title' => __('Test environment', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
-                'label' => __('Enable sandbox mode', 'comfino-payment-gateway'),
+                'label' => __('Use test environment', 'comfino-payment-gateway'),
                 'default' => 'no',
             ],
             'sandbox_key' => [
-                'title' => __('Sandbox key', 'comfino-payment-gateway'),
+                'title' => __('Test environment API key', 'comfino-payment-gateway'),
                 'type' => 'text'
             ],
             'widget_enabled' => [
@@ -259,6 +259,8 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
 
         echo '<h2>'.esc_html($this->method_title).'</h2>';
         echo '<p>'.esc_html($this->method_description).'</p>';
+
+        echo '<img style="width: 300px" src="'.esc_url($this->api_client->get_logo_url()).'" alt="Comfino logo"> <span style="font-weight: bold; font-size: 16px; vertical-align: bottom">'.Comfino_Payment_Gateway::VERSION.'</span>';
 
         echo '<p>'.sprintf(
                 __('Do you want to ask about something? Write to us at %s or contact us by phone. We are waiting on the number: %s. We will answer all your questions!', 'comfino-payment-gateway'),

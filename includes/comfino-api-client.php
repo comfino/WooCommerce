@@ -345,6 +345,11 @@ class Api_Client
         return $api_key_valid;
     }
 
+    public function get_logo_url(): string
+    {
+        return $this->get_api_host().'/v1/get-logo-url';
+    }
+
     /**
      * @return array|bool
      */
