@@ -724,7 +724,44 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             );
 
             if (!is_wp_error($response)) {
-                $widget_key = json_decode(wp_remote_retrieve_body($response), true);
+                $jsonResponse = wp_remote_retrieve_body($response);
+
+                if (strpos($jsonResponse, 'errors') === false) {
+                    $widget_key = json_decode($jsonResponse, true);
+                } else {
+                    $timestamp = time();
+                    $errors = json_decode($jsonResponse, true)['errors'];
+
+                    \Comfino\ErrorLogger::send_error(
+                        "Widget key retrieving error [$timestamp]",
+                        wp_remote_retrieve_response_code($response),
+                        implode(', ', $errors),
+                        self::$host.self::COMFINO_WIDGET_KEY_ENDPOINT,
+                        null,
+                        $jsonResponse
+                    );
+
+                    wc_add_notice(
+                        'Widget key retrieving error: '.$timestamp.'. Please contact with support and note this error id.',
+                        'error'
+                    );
+                }
+            } else {
+                $timestamp = time();
+
+                \Comfino\ErrorLogger::send_error(
+                    "Widget key retrieving error [$timestamp]",
+                    implode(', ', $response->get_error_codes()),
+                    implode(', ', $response->get_error_messages()),
+                    self::$host.self::COMFINO_WIDGET_KEY_ENDPOINT,
+                    null,
+                    wp_remote_retrieve_body($response)
+                );
+
+                wc_add_notice(
+                    'Widget key retrieving error: '.$timestamp.'. Please contact with support and note this error id.',
+                    'error'
+                );
             }
         }
 
