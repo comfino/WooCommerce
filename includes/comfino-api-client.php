@@ -311,13 +311,47 @@ class Api_Client
         $widget_key = '';
 
         if (!empty($this->api_key)) {
-            $response = wp_remote_get(
-                $this->api_host.'/v1/widget-key',
-                ['headers' => $this->get_header_request()]
-            );
+            $response = wp_remote_get($this->api_host.'/v1/widget-key', ['headers' => $this->get_header_request()]);
 
             if (!is_wp_error($response)) {
-                $widget_key = json_decode(wp_remote_retrieve_body($response), true);
+                $jsonResponse = wp_remote_retrieve_body($response);
+
+                if (strpos($jsonResponse, 'errors') === false) {
+                    $widget_key = json_decode($jsonResponse, true);
+                } else {
+                    $timestamp = time();
+                    $errors = json_decode($jsonResponse, true)['errors'];
+
+                    ErrorLogger::send_error(
+                        "Widget key retrieving error [$timestamp]",
+                        wp_remote_retrieve_response_code($response),
+                        implode(', ', $errors),
+                        $this->api_host.'/v1/widget-key',
+                        null,
+                        $jsonResponse
+                    );
+
+                    wc_add_notice(
+                        'Widget key retrieving error: '.$timestamp.'. Please contact with support and note this error id.',
+                        'error'
+                    );
+                }
+            } else {
+                $timestamp = time();
+
+                ErrorLogger::send_error(
+                    "Widget key retrieving error [$timestamp]",
+                    implode(', ', $response->get_error_codes()),
+                    implode(', ', $response->get_error_messages()),
+                    $this->api_host.'/v1/widget-key',
+                    null,
+                    wp_remote_retrieve_body($response)
+                );
+
+                wc_add_notice(
+                    'Widget key retrieving error: '.$timestamp.'. Please contact with support and note this error id.',
+                    'error'
+                );
             }
         }
 
