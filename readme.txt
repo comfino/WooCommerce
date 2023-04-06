@@ -2,14 +2,20 @@
 Contributors: Comperia.pl
 Donate link: https://comfino.pl/
 Tags: comfino, woocommerce, gateway, payment, bank
-WC tested up to: 6.7.0
+WC tested up to: 7.5.1
 WC requires at least: 3.0
-Stable tag: 2.2.11
-Tested up to: 6.0.2
+Stable tag: 2.3.0
+Tested up to: 6.2
 Requires at least: 5.0
 Requires PHP: 7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
+
+2.3.0
+ * Fix product type
+ * Add get and verify algos
+ * Tested up WC 7.5.1
+ * Tested up WP 6.2
 
 2.2.12
  * Fix bug in saving settings with wrong API key - add checking if API key is valid
