@@ -10,11 +10,6 @@ class Comfino_Gateway extends WC_Payment_Gateway
     public const PAID_STATUS = "PAID";
     public const RESIGN_STATUS = "RESIGN";
 
-    private const TYPE_INSTALLMENTS_ZERO_PERCENT = 'INSTALLMENTS_ZERO_PERCENT';
-    private const TYPE_CONVENIENT_INSTALLMENTS = 'CONVENIENT_INSTALLMENTS';
-    private const TYPE_PAY_LATER = 'PAY_LATER';
-    private const TYPE_COMPANY_INSTALLMENTS = 'COMPANY_INSTALLMENTS';
-    private const TYPE_RENEWABLE_LIMIT = 'RENEWABLE_LIMIT';
     private const ERROR_LOG_NUM_LINES = 40;
 
     /**
@@ -38,19 +33,6 @@ class Comfino_Gateway extends WC_Payment_Gateway
         self::ACCEPTED_STATUS,
         self::PAID_STATUS,
         self::WAITING_FOR_PAYMENT_STATUS,
-    ];
-
-    /**
-     * Product type
-     *
-     * @var string[]
-     */
-    private $types = [
-        self::TYPE_INSTALLMENTS_ZERO_PERCENT,
-        self::TYPE_CONVENIENT_INSTALLMENTS,
-        self::TYPE_PAY_LATER,
-        self::TYPE_COMPANY_INSTALLMENTS,
-        self::TYPE_RENEWABLE_LIMIT,
     ];
 
     public $id;
@@ -138,7 +120,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
             'body' => wp_json_encode(['error_details' => $request->error_details, 'hash' => $request->hash]),
         ];
 
-        $response = wp_remote_post(self::$host.self::COMFINO_ERROR_LOG_ENDPOINT, $args);
+        $response = wp_remote_post(self::$host . self::COMFINO_ERROR_LOG_ENDPOINT, $args);
 
         return !is_wp_error($response) && strpos(wp_remote_retrieve_body($response), '"errors":') === false && wp_remote_retrieve_response_code($response) < 400;
     }
@@ -305,7 +287,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
 
         return update_option(
             $this->get_option_key(),
-            apply_filters('woocommerce_settings_api_sanitized_fields_'.$this->id, $this->settings),
+            apply_filters('woocommerce_settings_api_sanitized_fields_' . $this->id, $this->settings),
             'yes'
         );
     }
@@ -316,19 +298,19 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
 
         $errorsLog = \Comfino\ErrorLogger::get_error_log(self::ERROR_LOG_NUM_LINES);
 
-        echo '<h2>'.esc_html($this->method_title).'</h2>';
-        echo '<p>'.esc_html($this->method_description).'</p>';
+        echo '<h2>' . esc_html($this->method_title) . '</h2>';
+        echo '<p>' . esc_html($this->method_description) . '</p>';
 
-        echo '<p>'.sprintf(
+        echo '<p>' . sprintf(
                 __('Do you want to ask about something? Write to us at %s or contact us by phone. We are waiting on the number: %s. We will answer all your questions!', 'comfino-payment-gateway'),
-                '<a href="mailto:pomoc@comfino.pl?subject='.sprintf(__('WordPress %s WooCommerce %s Comfino %s - question', 'comfino-payment-gateway'), $wp_version, WC_VERSION, ComfinoPaymentGateway::VERSION).
-                '&body='.str_replace(',', '%2C', sprintf(__('WordPress %s WooCommerce %s Comfino %s, PHP %s', 'comfino-payment-gateway'), $wp_version, WC_VERSION, ComfinoPaymentGateway::VERSION, PHP_VERSION)).'">pomoc@comfino.pl</a>', '887-106-027'
-            ).'</p>';
+                '<a href="mailto:pomoc@comfino.pl?subject=' . sprintf(__('WordPress %s WooCommerce %s Comfino %s - question', 'comfino-payment-gateway'), $wp_version, WC_VERSION, ComfinoPaymentGateway::VERSION) .
+                '&body=' . str_replace(',', '%2C', sprintf(__('WordPress %s WooCommerce %s Comfino %s, PHP %s', 'comfino-payment-gateway'), $wp_version, WC_VERSION, ComfinoPaymentGateway::VERSION, PHP_VERSION)) . '">pomoc@comfino.pl</a>', '887-106-027'
+            ) . '</p>';
 
         echo '<table class="form-table">';
         echo $this->generate_settings_html();
-        echo '<tr valign="top"><th scope="row" class="titledesc"><label>'.__('Errors log', 'comfino-payment-gateway').'</label></th>';
-        echo '<td><textarea cols="20" rows="3" class="input-text wide-input" style="width: 800px; height: 400px">'.esc_textarea($errorsLog).'</textarea></td></tr>';
+        echo '<tr valign="top"><th scope="row" class="titledesc"><label>' . __('Errors log', 'comfino-payment-gateway') . '</label></th>';
+        echo '<td><textarea cols="20" rows="3" class="input-text wide-input" style="width: 800px; height: 400px">' . esc_textarea($errorsLog) . '</textarea></td></tr>';
         echo '</table>';
     }
 
@@ -375,30 +357,30 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             <div id="comfino-box" class="comfino">
                 <div class="comfino-box">
                     <div class="header">
-                        <div class="comfino-title">'.__('Choose payment method', 'comfino-payment-gateway').'</div>
+                        <div class="comfino-title">' . __('Choose payment method', 'comfino-payment-gateway') . '</div>
                     </div>
                     <main>
                         <section id="comfino-offer-items" class="comfino-select-payment"></section>
                         <section class="comfino-payment-box">
-                            <div class="comfino-payment-title">'.__('Value of purchase', 'comfino-payment-gateway').':</div>
+                            <div class="comfino-payment-title">' . __('Value of purchase', 'comfino-payment-gateway') . ':</div>
                             <div id="comfino-total-payment" class="comfino-total-payment"></div>
                         </section>
                         <section id="comfino-installments">
                             <section class="comfino-installments-box">
-                                <div class="comfino-installments-title">'.__('Choose number of instalments', 'comfino-payment-gateway').'</div>
+                                <div class="comfino-installments-title">' . __('Choose number of instalments', 'comfino-payment-gateway') . '</div>
                                 <div id="comfino-quantity-select" class="comfino-quantity-select"></div>
                             </section>
                             <section class="comfino-monthly-box">
-                                <div class="comfino-monthly-title">'.__('Monthly instalment', 'comfino-payment-gateway').':</div>
+                                <div class="comfino-monthly-title">' . __('Monthly instalment', 'comfino-payment-gateway') . ':</div>
                                 <div id="comfino-monthly-rate" class="comfino-monthly-rate"></div>
                             </section>
                             <section class="comfino-summary-box">
-                                <div class="comfino-summary-total">'.__('Total amount to pay', 'comfino-payment-gateway').': <span id="comfino-summary-total"></span></div>
+                                <div class="comfino-summary-total">' . __('Total amount to pay', 'comfino-payment-gateway') . ': <span id="comfino-summary-total"></span></div>
                                 <div class="comfino-rrso">RRSO <span id="comfino-rrso"></span></div>
                                 <div id="comfino-description-box" class="comfino-description-box"></div>
                             </section>
                             <footer>
-                                <a id="comfino-repr-example-link" class="representative comfino-footer-link">'.__('Representative example', 'comfino-payment-gateway').'</a>
+                                <a id="comfino-repr-example-link" class="representative comfino-footer-link">' . __('Representative example', 'comfino-payment-gateway') . '</a>
                                 <div id="modal-repr-example" class="comfino-modal">
                                     <div class="comfino-modal-bg comfino-modal-exit"></div>
                                     <div class="comfino-modal-container">
@@ -409,20 +391,20 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                             </footer>
                         </section>
                         <section id="comfino-payment-delay" class="comfino-payment-delay">
-                            <div class="comfino-payment-delay__title">'.__('Buy now, pay in 30 days', 'comfino-payment-gateway').' <span>'.__('How it\'s working?', 'comfino-payment-gateway').'</span></div>
+                            <div class="comfino-payment-delay__title">' . __('Buy now, pay in 30 days', 'comfino-payment-gateway') . ' <span>' . __('How it\'s working?', 'comfino-payment-gateway') . '</span></div>
                             <div class="comfino-payment-delay__box">
                                 <div class="comfino-helper-box">
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
                                             <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/cart.svg" alt="" class="single-instruction-img" />
                                         </div>
-                                        <div class="comfin-single-instruction__text">'.__('Put the product in the basket', 'comfino-payment-gateway').'</div>
+                                        <div class="comfin-single-instruction__text">' . __('Put the product in the basket', 'comfino-payment-gateway') . '</div>
                                     </div>
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
                                             <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/twisto.svg" alt="" class="single-instruction-img" />
                                         </div>
-                                        <div class="comfin-single-instruction__text">'.__('Choose Twisto payment', 'comfino-payment-gateway').'</div>
+                                        <div class="comfin-single-instruction__text">' . __('Choose Twisto payment', 'comfino-payment-gateway') . '</div>
                                     </div>
                                 </div>
                                 <div class="comfino-helper-box">
@@ -430,13 +412,13 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                                         <div class="single-instruction-img__background">
                                             <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/icons/check.svg" alt="" class="single-instruction-img" />
                                         </div>
-                                        <div class="comfin-single-instruction__text">'.__('Check the products at home', 'comfino-payment-gateway').'</div>
+                                        <div class="comfin-single-instruction__text">' . __('Check the products at home', 'comfino-payment-gateway') . '</div>
                                     </div>
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
                                             <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/icons/wallet.svg" alt="" class="single-instruction-img" />
                                         </div>
-                                        <div class="comfin-single-instruction__text">'.__('Pay in 30 days', 'comfino-payment-gateway').'</div>
+                                        <div class="comfin-single-instruction__text">' . __('Pay in 30 days', 'comfino-payment-gateway') . '</div>
                                     </div>
                                 </div>
                             </div>
@@ -446,7 +428,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             </div>
             <input id="comfino-loan-term" name="comfino_loan_term" type="hidden" />
             <input id="comfino-type" name="comfino_type" type="hidden" />            
-            <script>Comfino.initPayments(' . json_encode($paymentInfos).')</script>
+            <script>Comfino.initPayments(' . json_encode($paymentInfos) . ')</script>
         ';
     }
 
@@ -477,10 +459,6 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
 
         if (!ctype_digit($loanTerm)) {
             return ['result' => 'failure', 'redirect' => ''];
-        }
-
-        if (!in_array($type, $this->types, true)) {
-            $type = null;
         }
 
         $order = wc_get_order($order_id);
@@ -515,7 +493,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                 \Comfino\ErrorLogger::send_error(
                     'Payment error',
                     wp_remote_retrieve_response_code($response),
-                    is_array($decoded) && isset($decoded['errors']) ? implode(', ', $decoded['errors']) : 'API call error '.wp_remote_retrieve_response_code($response),
+                    is_array($decoded) && isset($decoded['errors']) ? implode(', ', $decoded['errors']) : 'API call error ' . wp_remote_retrieve_response_code($response),
                     $url,
                     $body,
                     wp_remote_retrieve_body($response)
@@ -544,7 +522,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         );
 
         wc_add_notice(
-            'Communication error: '.$timestamp.'. Please contact with support and note this error id.',
+            'Communication error: ' . $timestamp . '. Please contact with support and note this error id.',
             'error'
         );
 
@@ -559,7 +537,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         if (!$this->get_status_note($order_id, [self::CANCELLED_BY_SHOP_STATUS, self::RESIGN_STATUS])) {
             $order = wc_get_order($order_id);
 
-            $url = self::$host.self::COMFINO_ORDERS_ENDPOINT."/{$order->get_id()}/cancel";
+            $url = self::$host . self::COMFINO_ORDERS_ENDPOINT . "/{$order->get_id()}/cancel";
             $args = [
                 'headers' => self::get_header_request(),
                 'method' => 'PUT'
@@ -580,7 +558,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                 );
 
                 wc_add_notice(
-                    'Communication error: '.$timestamp.'. Please contact with support and note this error id.',
+                    'Communication error: ' . $timestamp . '. Please contact with support and note this error id.',
                     'error'
                 );
             }
@@ -598,7 +576,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
 
         $body = wp_json_encode(['amount' => (int)$order->get_total() * 100]);
 
-        $url = self::$host.self::COMFINO_ORDERS_ENDPOINT."/{$order->get_id()}/resign";
+        $url = self::$host . self::COMFINO_ORDERS_ENDPOINT . "/{$order->get_id()}/resign";
         $args = [
             'headers' => self::get_header_request(),
             'body' => $body,
@@ -620,7 +598,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             );
 
             wc_add_notice(
-                'Communication error: '.$timestamp.'. Please contact with support and note this error id.',
+                'Communication error: ' . $timestamp . '. Please contact with support and note this error id.',
                 'error'
             );
         }
@@ -666,7 +644,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
      */
     private function fetch_offers(int $loanAmount): array
     {
-        $url = self::$host.self::COMFINO_OFFERS_ENDPOINT.'?'.http_build_query(['loanAmount' => $loanAmount]);
+        $url = self::$host . self::COMFINO_OFFERS_ENDPOINT . '?' . http_build_query(['loanAmount' => $loanAmount]);
         $args = ['headers' => self::get_header_request()];
 
         $response = wp_remote_get($url, $args);
@@ -678,7 +656,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
                 \Comfino\ErrorLogger::send_error(
                     'Payment error',
                     wp_remote_retrieve_response_code($response),
-                    is_array($decoded) && isset($decoded['errors']) ? implode(', ', $decoded['errors']) : 'API call error '.wp_remote_retrieve_response_code($response),
+                    is_array($decoded) && isset($decoded['errors']) ? implode(', ', $decoded['errors']) : 'API call error ' . wp_remote_retrieve_response_code($response),
                     $url,
                     null,
                     wp_remote_retrieve_body($response)
@@ -719,7 +697,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
 
         if (!empty(self::$key)) {
             $response = wp_remote_get(
-                self::$host.self::COMFINO_WIDGET_KEY_ENDPOINT,
+                self::$host . self::COMFINO_WIDGET_KEY_ENDPOINT,
                 ['headers' => self::get_header_request()]
             );
 
@@ -746,7 +724,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
 
         if (!empty(self::$key)) {
             $response = wp_remote_get(
-                self::$host.self::COMFINO_USER_IS_ACTIVE_ENDPOINT,
+                self::$host . self::COMFINO_USER_IS_ACTIVE_ENDPOINT,
                 ['headers' => self::get_header_request()]
             );
 
@@ -858,6 +836,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             'Content-Type' => 'application/json',
             'Api-Key' => self::$key,
             'User-Agent' => self::get_user_agent_header(),
+            'CR-Signature-Algos: ' . implode(',', hash_algos()),
         ];
     }
 
@@ -878,7 +857,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
      */
     private function valid_signature(string $jsonData): bool
     {
-        return $this->get_signature() === hash('sha3-256', self::$key.$jsonData);
+        return $this->get_signature() === hash($this->get_signature_algo(), self::$key . $jsonData);
     }
 
     /**
@@ -886,17 +865,36 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
      */
     private function get_signature(): string
     {
-        $signature = '';
+        return $this->get_header_by_name('CR_SIGNATURE');
+    }
+
+    /**
+     * @return string
+     */
+    private function get_signature_algo(): string
+    {
+        $algo = $this->get_header_by_name('CR_SIGNATURE_ALGO');
+
+        return $algo != '' ? $algo : 'sha3-256';
+    }
+
+    /**
+     * @param string $name
+     * @return string
+     */
+    private function get_header_by_name(string $name): string
+    {
+        $header = '';
 
         foreach ($_SERVER as $key => $value) {
-            if ($key === 'HTTP_CR_SIGNATURE') {
-                $signature = sanitize_text_field($value);
+            if ($key === 'HTTP_' . strtoupper($name)) {
+                $header = sanitize_text_field($value);
 
                 break;
             }
         }
 
-        return $signature;
+        return $header;
     }
 
     /**
@@ -925,11 +923,11 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         echo '<input type="hidden" id="comfino_action" value="" name="comfino_action" />';
 
         if ($order->get_payment_method() === 'comfino' && !($order->has_status(['cancelled', 'resigned', 'rejected']))) {
-            echo '<button type="button" class="button cancel-items" onclick="if(confirm(\''.__('Are you sure you want to cancel?', 'comfino-payment-gateway').'\')){document.getElementById(\'comfino_action\').value = \'cancel\'; document.post.submit();}">'.__('Cancel', 'comfino-payment-gateway') . wc_help_tip(__('Attention: You are cancelling a customer order. Check if you do not have to return the money to Comfino.', 'comfino-payment-gateway')).'</button>';
+            echo '<button type="button" class="button cancel-items" onclick="if(confirm(\'' . __('Are you sure you want to cancel?', 'comfino-payment-gateway') . '\')){document.getElementById(\'comfino_action\').value = \'cancel\'; document.post.submit();}">' . __('Cancel', 'comfino-payment-gateway') . wc_help_tip(__('Attention: You are cancelling a customer order. Check if you do not have to return the money to Comfino.', 'comfino-payment-gateway')) . '</button>';
         }
 
         if ($this->is_active_resign($order)) {
-            echo '<button type="button" class="button cancel-items" onclick="if(confirm(\''.__('Are you sure you want to resign?', 'comfino-payment-gateway').'\')){document.getElementById(\'comfino_action\').value = \'resign\'; document.post.submit();}">'.__('Resign', 'comfino-payment-gateway') . wc_help_tip(__('Attention: you are initiating a resignation of the Customer\'s contract. Required refund to Comfino.', 'comfino-payment-gateway')).'</button>';
+            echo '<button type="button" class="button cancel-items" onclick="if(confirm(\'' . __('Are you sure you want to resign?', 'comfino-payment-gateway') . '\')){document.getElementById(\'comfino_action\').value = \'resign\'; document.post.submit();}">' . __('Resign', 'comfino-payment-gateway') . wc_help_tip(__('Attention: you are initiating a resignation of the Customer\'s contract. Required refund to Comfino.', 'comfino-payment-gateway')) . '</button>';
         }
     }
 
@@ -953,7 +951,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
     }
 
     /**
-     * @param int   $order_id
+     * @param int $order_id
      * @param array $statuses
      *
      * @return array
