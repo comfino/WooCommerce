@@ -16,6 +16,5 @@
    * curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
    * chmod +x wp-cli.phar
    * ./wp-cli.phar --allow-root i18n make-pot wp-content/plugins/comfino-payment-gateway/
- * rename comfino-payment-gateway to comfino.pot
  * open poedit and edit file and generate mo file
  
