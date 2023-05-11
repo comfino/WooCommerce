@@ -478,7 +478,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             'customer' => $this->get_customer($order),
         ]);
 
-        $url = self::$host.self::COMFINO_ORDERS_ENDPOINT;
+        $url = self::$host . self::COMFINO_ORDERS_ENDPOINT;
         $args = [
             'headers' => self::get_header_request(),
             'body' => $body,
@@ -623,7 +623,9 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
         $status = $data['status'];
 
         if ($order) {
-            $order->add_order_note(__('Comfino status', 'comfino-payment-gateway') . ": $status");
+            if (in_array($status, [self::ACCEPTED_STATUS, self::CANCELLED_STATUS, self::CANCELLED_BY_SHOP_STATUS, self::REJECTED_STATUS, self::RESIGN_STATUS])) {
+                $order->add_order_note(__('Comfino status', 'comfino-payment-gateway') . ": " . __($status, 'comfino-payment-gateway'));
+            }
 
             if (in_array($status, $this->completed_state, true)) {
                 $order->payment_complete();
@@ -836,7 +838,6 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
             'Content-Type' => 'application/json',
             'Api-Key' => self::$key,
             'User-Agent' => self::get_user_agent_header(),
-            'CR-Signature-Algos: ' . implode(',', hash_algos()),
         ];
     }
 
@@ -857,7 +858,7 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
      */
     private function valid_signature(string $jsonData): bool
     {
-        return $this->get_signature() === hash($this->get_signature_algo(), self::$key . $jsonData);
+        return $this->get_signature() === hash('sha3-256', self::$key . $jsonData);
     }
 
     /**
@@ -866,16 +867,6 @@ document.getElementsByTagName(\'head\')[0].appendChild(script);'
     private function get_signature(): string
     {
         return $this->get_header_by_name('CR_SIGNATURE');
-    }
-
-    /**
-     * @return string
-     */
-    private function get_signature_algo(): string
-    {
-        $algo = $this->get_header_by_name('CR_SIGNATURE_ALGO');
-
-        return $algo != '' ? $algo : 'sha3-256';
     }
 
     /**
