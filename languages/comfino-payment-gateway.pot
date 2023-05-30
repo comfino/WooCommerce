@@ -277,3 +277,18 @@ msgstr ""
 #: includes/comfino-gateway.php:932
 msgid "Attention: you are initiating a resignation of the Customer's contract. Required refund to Comfino."
 msgstr ""
+
+msgid "ACCEPTED"
+msgstr ""
+
+msgid "CANCELLED"
+msgstr ""
+
+msgid "CANCELLED_BY_SHOP"
+msgstr ""
+
+msgid "REJECTED"
+msgstr ""
+
+msgid "RESIGN"
+msgstr ""
