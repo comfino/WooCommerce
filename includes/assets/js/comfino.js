@@ -140,7 +140,24 @@ window.Comfino = {
             });
 
             document.getElementById('comfino-payment-delay').style.display = 'none';
-            document.getElementById('comfino-installments').style.display = 'block';
+
+            let installmentsElement = document.getElementById('comfino-installments');
+
+            installmentsElement.style.display = 'block';
+
+            if (offerData.type === 'BLIK') {
+                installmentsElement.querySelector('section.comfino-installments-box').style.display = 'none';
+                installmentsElement.querySelector('section.comfino-monthly-box').style.display = 'none';
+                installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-summary-total').style.display = 'none';
+                installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-rrso').style.display = 'none';
+                installmentsElement.querySelector('footer').style.display = 'none';
+            } else {
+                installmentsElement.querySelector('section.comfino-installments-box').style.display = 'flex';
+                installmentsElement.querySelector('section.comfino-monthly-box').style.display = 'flex';
+                installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-summary-total').style.display = 'block';
+                installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-rrso').style.display = 'block';
+                installmentsElement.querySelector('footer').style.display = 'block';
+            }
         }
     },
 
