@@ -3,7 +3,7 @@
  * Plugin Name: Comfino Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
  * Description: Comfino (Comperia) - Comfino Payment Gateway for WooCommerce.
- * Version: 2.3.1
+ * Version: 2.3.2
  * Author: Comfino (Comperia)
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
@@ -18,7 +18,7 @@ defined('ABSPATH') or exit;
 
 class ComfinoPaymentGateway
 {
-    public const VERSION = '2.3.1';
+    public const VERSION = '2.3.2';
 
     /**
      * @var ComfinoPaymentGateway
@@ -148,15 +148,29 @@ class ComfinoPaymentGateway
                     $code = str_replace('{WIDGET_SCRIPT_URL}', Comfino_Gateway::COMFINO_WIDGET_JS_PRODUCTION, $code);
                 }
 
-                $code = str_replace('{WIDGET_KEY}', $cg->get_option('widget_key'), $code);
-                $code = str_replace('{WIDGET_PRICE_SELECTOR}', html_entity_decode($cg->get_option('widget_price_selector')), $code);
-                $code = str_replace('{WIDGET_TARGET_SELECTOR}', html_entity_decode($cg->get_option('widget_target_selector')), $code);
-                $code = str_replace('{WIDGET_TYPE}', $cg->get_option('widget_type'), $code);
-                $code = str_replace('{OFFER_TYPE}', $cg->get_option('widget_offer_type'), $code);
-                $code = str_replace('{EMBED_METHOD}', $cg->get_option('widget_embed_method'), $code);
-                $code = str_replace('{PRICE_OBSERVER_LEVEL}', $cg->get_option('widget_price_observer_level'), $code);
+                $code = str_replace(
+                    [
+                        '{WIDGET_KEY}',
+                        '{WIDGET_PRICE_SELECTOR}',
+                        '{WIDGET_TARGET_SELECTOR}',
+                        '{WIDGET_TYPE}',
+                        '{OFFER_TYPE}',
+                        '{EMBED_METHOD}',
+                        '{WIDGET_PRICE_OBSERVER_LEVEL}',
+                    ],
+                    [
+                        $cg->get_option('widget_key'),
+                        html_entity_decode($cg->get_option('widget_price_selector')),
+                        html_entity_decode($cg->get_option('widget_target_selector')),
+                        $cg->get_option('widget_type'),
+                        $cg->get_option('widget_offer_type'),
+                        $cg->get_option('widget_embed_method'),
+                        $cg->get_option('widget_price_observer_level'),
+                    ],
+                    $code
+                );
 
-                echo '<script>'.str_replace(['&#039;', '&gt;'], ["'", '>'], esc_html($code)).'</script>';
+                echo '<script>' . str_replace(['&#039;', '&gt;'], ["'", '>'], esc_html($code)) . '</script>';
             }
         }
     }

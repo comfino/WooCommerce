@@ -225,25 +225,30 @@ class Comfino_Gateway extends WC_Payment_Gateway
                 'title' => __('Widget code', 'comfino-payment-gateway'),
                 'type' => 'textarea',
                 'css' => 'width: 800px; height: 400px',
-                'default' => '
-var script = document.createElement(\'script\');
+                'default' => "
+var script = document.createElement('script');
 script.onload = function () {
     ComfinoProductWidget.init({
-        widgetKey: \'{WIDGET_KEY}\',
-        priceSelector: \'{WIDGET_PRICE_SELECTOR}\',
-        widgetTargetSelector: \'{WIDGET_TARGET_SELECTOR}\',
+        widgetKey: '{WIDGET_KEY}',
+        priceSelector: '{WIDGET_PRICE_SELECTOR}',
+        widgetTargetSelector: '{WIDGET_TARGET_SELECTOR}',
+        priceObserverSelector: '{WIDGET_PRICE_OBSERVER_SELECTOR}',
+        priceObserverLevel: {WIDGET_PRICE_OBSERVER_LEVEL},
+        type: '{WIDGET_TYPE}',
+        offerType: '{OFFER_TYPE}',
+        embedMethod: '{EMBED_METHOD}',
+        numOfInstallments: 0,        
         price: null,
-        type: \'{WIDGET_TYPE}\',
-        offerType: \'{OFFER_TYPE}\',
-        embedMethod: \'{EMBED_METHOD}\',
-        priceObserverLevel: \'{PRICE_OBSERVER_LEVEL}\',
         callbackBefore: function () {},
-        callbackAfter: function () {}
+        callbackAfter: function () {},
+        onOfferRendered: function (jsonResponse, widgetTarget, widgetNode) { },
+        onGetPriceElement: function (priceSelector, priceObserverSelector) { return null; },
+        debugMode: window.location.hash && window.location.hash.substring(1) === 'comfino_debug'
     });
 };
-script.src = \'{WIDGET_SCRIPT_URL}\';
+script.src = '{WIDGET_SCRIPT_URL}';
 script.async = true;
-document.getElementsByTagName(\'head\')[0].appendChild(script);'
+document.getElementsByTagName('head')[0].appendChild(script);"
             ],
         ];
     }
