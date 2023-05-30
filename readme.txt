@@ -11,6 +11,9 @@ Requires PHP: 7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
+2.2.13
+ * Improve errors handling in Comfino_Gateway::get_widget_key()
+
 2.3.1
  * Update language
  * Fix verify algos
