@@ -2,7 +2,7 @@
 
 namespace Comfino;
 
-final class ShopPluginError
+final class Shop_Plugin_Error
 {
     /**
      * @var string

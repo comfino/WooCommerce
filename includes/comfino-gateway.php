@@ -93,6 +93,26 @@ class Comfino_Gateway extends WC_Payment_Gateway
             self::$key = $production_key;
         }
 
+        add_action('rest_api_init', function () {
+            register_rest_route('comfino', '/notification', [
+                [
+                    'methods' => WP_REST_Server::EDITABLE,
+                    'callback' => [$this, 'api_notification_callback'],
+                ],
+            ]);
+
+            register_rest_route('comfino', '/configuration', [
+                [
+                    'methods' => WP_REST_Server::READABLE,
+                    'callback' => [$this, 'api_configuration_get_callback'],
+                ],
+                [
+                    'methods' => WP_REST_Server::EDITABLE,
+                    'callback' => [$this, 'api_configuration_update_callback'],
+                ],
+            ]);
+        });
+
         add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
         add_action('woocommerce_api_comfino_gateway', [$this, 'webhook']);
@@ -102,15 +122,15 @@ class Comfino_Gateway extends WC_Payment_Gateway
     }
 
     /**
-     * @param \Comfino\ShopPluginError $error
+     * @param \Comfino\Shop_Plugin_Error $error
      * @return bool
      */
-    public static function send_logged_error(\Comfino\ShopPluginError $error): bool
+    public static function send_logged_error(\Comfino\Shop_Plugin_Error $error): bool
     {
-        $request = new \Comfino\ShopPluginErrorRequest();
+        $request = new \Comfino\Shop_Plugin_Error_Request();
 
         if (!$request->prepare_request($error, self::get_user_agent_header())) {
-            \Comfino\ErrorLogger::log_error('Error request preparation failed', $error->error_message);
+            \Comfino\Error_Logger::log_error('Error request preparation failed', $error->error_message);
 
             return false;
         }
@@ -301,15 +321,15 @@ document.getElementsByTagName('head')[0].appendChild(script);"
     {
         global $wp_version;
 
-        $errorsLog = \Comfino\ErrorLogger::get_error_log(self::ERROR_LOG_NUM_LINES);
+        $errorsLog = \Comfino\Error_Logger::get_error_log(self::ERROR_LOG_NUM_LINES);
 
         echo '<h2>' . esc_html($this->method_title) . '</h2>';
         echo '<p>' . esc_html($this->method_description) . '</p>';
 
         echo '<p>' . sprintf(
                 __('Do you want to ask about something? Write to us at %s or contact us by phone. We are waiting on the number: %s. We will answer all your questions!', 'comfino-payment-gateway'),
-                '<a href="mailto:pomoc@comfino.pl?subject=' . sprintf(__('WordPress %s WooCommerce %s Comfino %s - question', 'comfino-payment-gateway'), $wp_version, WC_VERSION, ComfinoPaymentGateway::VERSION) .
-                '&body=' . str_replace(',', '%2C', sprintf(__('WordPress %s WooCommerce %s Comfino %s, PHP %s', 'comfino-payment-gateway'), $wp_version, WC_VERSION, ComfinoPaymentGateway::VERSION, PHP_VERSION)) . '">pomoc@comfino.pl</a>', '887-106-027'
+                '<a href="mailto:pomoc@comfino.pl?subject=' . sprintf(__('WordPress %s WooCommerce %s Comfino %s - question', 'comfino-payment-gateway'), $wp_version, WC_VERSION, Comfino_Payment_Gateway::VERSION) .
+                '&body=' . str_replace(',', '%2C', sprintf(__('WordPress %s WooCommerce %s Comfino %s, PHP %s', 'comfino-payment-gateway'), $wp_version, WC_VERSION, Comfino_Payment_Gateway::VERSION, PHP_VERSION)) . '">pomoc@comfino.pl</a>', '887-106-027'
             ) . '</p>';
 
         echo '<table class="form-table">';
@@ -459,6 +479,8 @@ document.getElementsByTagName('head')[0].appendChild(script);"
     {
         global $woocommerce;
 
+        $apiClient = new \Comfino\Api_Client();
+
         $loanTerm = sanitize_text_field($_POST['comfino_loan_term']);
         $type = sanitize_text_field($_POST['comfino_type']);
 
@@ -470,7 +492,7 @@ document.getElementsByTagName('head')[0].appendChild(script);"
         $body = wp_json_encode([
             'returnUrl' => $this->get_return_url($order),
             'orderId' => (string)$order->get_id(),
-            'notifyUrl' => add_query_arg('wc-api', 'Comfino_Gateway', home_url('/')),
+            'notifyUrl' => $apiClient->getNotifyUrl(), //add_query_arg('wc-api', 'Comfino_Gateway', home_url('/')),
             'loanParameters' => [
                 'term' => (int)$loanTerm,
                 'type' => $type,
@@ -495,7 +517,7 @@ document.getElementsByTagName('head')[0].appendChild(script);"
             $decoded = json_decode(wp_remote_retrieve_body($response), true);
 
             if (!is_array($decoded) || isset($decoded['errors']) || empty($decoded['applicationUrl'])) {
-                \Comfino\ErrorLogger::send_error(
+                \Comfino\Error_Logger::send_error(
                     'Payment error',
                     wp_remote_retrieve_response_code($response),
                     is_array($decoded) && isset($decoded['errors']) ? implode(', ', $decoded['errors']) : 'API call error ' . wp_remote_retrieve_response_code($response),
@@ -517,7 +539,7 @@ document.getElementsByTagName('head')[0].appendChild(script);"
 
         $timestamp = time();
 
-        \Comfino\ErrorLogger::send_error(
+        \Comfino\Error_Logger::send_error(
             "Communication error [$timestamp]",
             implode(', ', $response->get_error_codes()),
             implode(', ', $response->get_error_messages()),
@@ -553,7 +575,7 @@ document.getElementsByTagName('head')[0].appendChild(script);"
             if (is_wp_error($response)) {
                 $timestamp = time();
 
-                \Comfino\ErrorLogger::send_error(
+                \Comfino\Error_Logger::send_error(
                     "Communication error [$timestamp]",
                     implode(', ', $response->get_error_codes()),
                     implode(', ', $response->get_error_messages()),
@@ -593,7 +615,7 @@ document.getElementsByTagName('head')[0].appendChild(script);"
         if (is_wp_error($response)) {
             $timestamp = time();
 
-            \Comfino\ErrorLogger::send_error(
+            \Comfino\Error_Logger::send_error(
                 "Communication error [$timestamp]",
                 implode(', ', $response->get_error_codes()),
                 implode(', ', $response->get_error_messages()),
@@ -609,6 +631,21 @@ document.getElementsByTagName('head')[0].appendChild(script);"
         }
 
         $order->add_order_note(__("Send to Comfino resign order", 'comfino-payment-gateway'));
+    }
+
+    public function api_notification_callback(WP_REST_Request $request): WP_REST_Response
+    {
+        return new WP_REST_Response();
+    }
+
+    public function api_configuration_get_callback(WP_REST_Request $request): WP_REST_Response
+    {
+        return new WP_REST_Response();
+    }
+
+    public function api_configuration_update_callback(WP_REST_Request $request): WP_REST_Response
+    {
+        return new WP_REST_Response();
     }
 
     /**
@@ -628,7 +665,7 @@ document.getElementsByTagName('head')[0].appendChild(script);"
         $status = $data['status'];
 
         if ($order) {
-            if (in_array($status, [self::ACCEPTED_STATUS, self::CANCELLED_STATUS, self::CANCELLED_BY_SHOP_STATUS, self::REJECTED_STATUS, self::RESIGN_STATUS])) {
+            if (in_array($status, [self::ACCEPTED_STATUS, self::CANCELLED_STATUS, self::CANCELLED_BY_SHOP_STATUS, self::REJECTED_STATUS, self::RESIGN_STATUS], true)) {
                 $order->add_order_note(__('Comfino status', 'comfino-payment-gateway') . ": " . __($status, 'comfino-payment-gateway'));
             }
 
@@ -660,7 +697,7 @@ document.getElementsByTagName('head')[0].appendChild(script);"
             $decoded = json_decode(wp_remote_retrieve_body($response), true);
 
             if (!is_array($decoded) || isset($decoded['errors'])) {
-                \Comfino\ErrorLogger::send_error(
+                \Comfino\Error_Logger::send_error(
                     'Payment error',
                     wp_remote_retrieve_response_code($response),
                     is_array($decoded) && isset($decoded['errors']) ? implode(', ', $decoded['errors']) : 'API call error ' . wp_remote_retrieve_response_code($response),
@@ -675,7 +712,7 @@ document.getElementsByTagName('head')[0].appendChild(script);"
             return $decoded;
         }
 
-        \Comfino\ErrorLogger::send_error(
+        \Comfino\Error_Logger::send_error(
             'Communication error',
             implode(', ', $response->get_error_codes()),
             implode(', ', $response->get_error_messages()),
@@ -717,7 +754,7 @@ document.getElementsByTagName('head')[0].appendChild(script);"
                     $timestamp = time();
                     $errors = json_decode($jsonResponse, true)['errors'];
 
-                    \Comfino\ErrorLogger::send_error(
+                    \Comfino\Error_Logger::send_error(
                         "Widget key retrieving error [$timestamp]",
                         wp_remote_retrieve_response_code($response),
                         implode(', ', $errors),
@@ -727,14 +764,14 @@ document.getElementsByTagName('head')[0].appendChild(script);"
                     );
 
                     wc_add_notice(
-                        'Widget key retrieving error: '.$timestamp.'. Please contact with support and note this error id.',
+                        'Widget key retrieving error: ' . $timestamp . '. Please contact with support and note this error id.',
                         'error'
                     );
                 }
             } else {
                 $timestamp = time();
 
-                \Comfino\ErrorLogger::send_error(
+                \Comfino\Error_Logger::send_error(
                     "Widget key retrieving error [$timestamp]",
                     implode(', ', $response->get_error_codes()),
                     implode(', ', $response->get_error_messages()),
@@ -744,7 +781,7 @@ document.getElementsByTagName('head')[0].appendChild(script);"
                 );
 
                 wc_add_notice(
-                    'Widget key retrieving error: '.$timestamp.'. Please contact with support and note this error id.',
+                    'Widget key retrieving error: ' . $timestamp . '. Please contact with support and note this error id.',
                     'error'
                 );
             }
@@ -890,7 +927,7 @@ document.getElementsByTagName('head')[0].appendChild(script);"
     {
         global $wp_version;
 
-        return sprintf('WP Comfino [%s], WP [%s], WC [%s], PHP [%s]', ComfinoPaymentGateway::VERSION, $wp_version, WC_VERSION, PHP_VERSION);
+        return sprintf('WP Comfino [%s], WP [%s], WC [%s], PHP [%s]', Comfino_Payment_Gateway::VERSION, $wp_version, WC_VERSION, PHP_VERSION);
     }
 
     /**

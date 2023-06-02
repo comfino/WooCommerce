@@ -3,7 +3,7 @@
 namespace Comfino;
 
 use Comfino_Gateway;
-use ComfinoPaymentGateway;
+use Comfino_Payment_Gateway;
 use LimitIterator;
 use SplFileObject;
 use Throwable;
@@ -11,7 +11,7 @@ use Throwable;
 require_once 'comfino-shop-plugin-error.php';
 require_once 'comfino-shop-plugin-error-request.php';
 
-class ErrorLogger
+class Error_Logger
 {
     private const ERROR_TYPES = [
         E_ERROR => 'E_ERROR',
@@ -69,11 +69,11 @@ class ErrorLogger
 
         $url_parts = parse_url(get_permalink(wc_get_page_id('shop')));
 
-        $error = new ShopPluginError(
+        $error = new Shop_Plugin_Error(
             $url_parts['host'].(isset($url_parts['port']) ? ':'.$url_parts['port'] : ''),
             'WooCommerce',
             [
-                'plugin_version' => ComfinoPaymentGateway::VERSION,
+                'plugin_version' => Comfino_Payment_Gateway::VERSION,
                 'shop_version' => WC_VERSION,
                 'wordpress_version' => $wp_version,
                 'php_version' => PHP_VERSION,
