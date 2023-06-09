@@ -12,7 +12,10 @@ License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 2.4.0
- *
+ * Remove unnecessary elements from paywall for BLIK payment option.
+ * Add new classes (Api_Client, Config_Manager), change REST API endpoint for notifications, add new endpoints for remote configuration management.
+ * Complete rewrite of plugin configuration management.
+ * Add a new widget initialization script, add debug mode for plugin frontend.
 
 2.3.1
  * Update language

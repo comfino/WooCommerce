@@ -14,20 +14,19 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
 */
 
+use Comfino\Core;
+
 defined('ABSPATH') or exit;
 
 class Comfino_Payment_Gateway
 {
-    public const VERSION = '2.4.0';
+    const VERSION = '2.4.0';
 
     /**
      * @var Comfino_Payment_Gateway
      */
     private static $instance;
 
-    /**
-     * @return Comfino_Payment_Gateway
-     */
     public static function get_instance(): Comfino_Payment_Gateway
     {
         if (null === self::$instance) {
@@ -37,33 +36,51 @@ class Comfino_Payment_Gateway
         return self::$instance;
     }
 
-    /**
-     * ComfinoPaymentGateway constructor.
-     */
     public function __construct()
     {
         add_action('plugins_loaded', [$this, 'init']);
     }
 
     /**
-     * Init
+     * Plugin initialization.
      */
-    public function init(): void
+    public function init()
     {
         if ($this->check_environment()) {
             return;
         }
 
-        require_once __DIR__.'/includes/comfino-error-logger.php';
-        require_once __DIR__.'/includes/comfino-gateway.php';
+        require_once __DIR__ . '/includes/comfino-error-logger.php';
+        require_once __DIR__ . '/includes/comfino-core.php';
+        require_once __DIR__ . '/includes/comfino-gateway.php';
 
         add_filter('woocommerce_payment_gateways', [$this, 'add_gateway']);
-        add_filter('plugin_action_links_'.plugin_basename(__FILE__), [$this, 'plugin_action_links']);
+        add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'plugin_action_links']);
         add_filter('wc_order_statuses', [$this, 'filter_order_status']);
 
         add_action('wp_head', [$this, 'render_widget']);
 
-        load_plugin_textdomain('comfino-payment-gateway', false, basename(__DIR__).'/languages');
+        add_action('rest_api_init', static function () {
+            register_rest_route('comfino', '/notification', [
+                [
+                    'methods' => WP_REST_Server::EDITABLE,
+                    'callback' => [Core::class, 'process_notification'],
+                ],
+            ]);
+
+            register_rest_route('comfino', '/configuration', [
+                [
+                    'methods' => WP_REST_Server::READABLE,
+                    'callback' => [Core::class, 'get_configuration'],
+                ],
+                [
+                    'methods' => WP_REST_Server::EDITABLE,
+                    'callback' => [Core::class, 'update_configuration'],
+                ]
+            ]);
+        });
+
+        load_plugin_textdomain('comfino-payment-gateway', false, basename(__DIR__) . '/languages');
 
         \Comfino\Error_Logger::init();
     }
@@ -73,10 +90,10 @@ class Comfino_Payment_Gateway
      */
     private function check_environment()
     {
-        if (PHP_VERSION_ID < 70100) {
+        if (PHP_VERSION_ID < 70000) {
             $message = __('The minimum PHP version required for Comfino is %s. You are running %s.', 'comfino-payment-gateway');
 
-            return sprintf($message, '7.1.0', PHP_VERSION);
+            return sprintf($message, '7.0.0', PHP_VERSION);
         }
 
         if (!defined('WC_VERSION')) {
@@ -93,23 +110,19 @@ class Comfino_Payment_Gateway
     }
 
     /**
-     * @param $links
-     *
-     * @return array|string[]
+     * @return string[]
      */
-    public function plugin_action_links($links): array
+    public function plugin_action_links(array $links): array
     {
         $plugin_links = [
-            '<a href="'.admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino').'">'.__('Settings', 'comfino-payment-gateway').'</a>',
+            '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino') . '">'.__('Settings', 'comfino-payment-gateway') . '</a>',
         ];
 
         return array_merge($plugin_links, $links);
     }
 
     /**
-     * @param array $statuses
-     *
-     * @return array
+     * @return string[]
      */
     public function filter_order_status(array $statuses): array
     {
@@ -129,11 +142,11 @@ class Comfino_Payment_Gateway
     }
 
     /**
-     * Render widget
+     * Render widget.
      *
      * @return void
      */
-    public function render_widget(): void
+    public function render_widget()
     {
         if (is_single()) {
             $cg = new Comfino_Gateway();
