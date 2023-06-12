@@ -65,21 +65,24 @@ class Core
         return get_rest_url(null, 'comfino/configuration');
     }
 
-    /**
-     * @return string[]|null
-     */
-    public static function process_notification(string $json_request_body)
+    public static function process_notification(\WP_REST_Request $request): \WP_REST_Response
     {
-        $signature = self::get_header_by_name('CR_SIGNATURE');
-
-        if (!self::valid_signature($signature, $json_request_body)) {
-            return null;
+        if (!self::valid_signature(self::get_signature(), $request->get_body())) {
+            return \WP_REST_Response('Failed comparison of CR-Signature and shop hash.', 400);
         }
 
-        $data = json_decode($json_request_body, true);
+        $data = json_decode( $request->get_body(), true);
 
-        if ($data === null || !isset($data['externalId'], $data['status'])) {
-            return [];
+        if ($data === null) {
+            return new \WP_REST_Response('Wrong input data.', 400);
+        }
+
+        if (!isset($data['externalId'])) {
+            return new \WP_REST_Response('External ID must be set.', 400);
+        }
+
+        if (!isset($data['status'])) {
+            return new \WP_REST_Response('External ID must be set.', 400);
         }
 
         $order = wc_get_order($data['externalId']);
@@ -99,12 +102,12 @@ class Core
             }
         }
 
-        return ['status' => 'OK'];
+        return new \WP_REST_Response('OK', 200);
     }
 
     public static function get_configuration(\WP_REST_Request $request): \WP_REST_Response
     {
-        $config_manager = new \Config_Manager();
+        $config_manager = new Config_Manager();
 
         $signature = self::get_header_by_name('CR_SIGNATURE');
         $json_request_body = $request->get_body();
@@ -118,17 +121,20 @@ class Core
         if (is_array($configuration_options)) {
             $config_manager->update_configuration($configuration_options);
 
-            exit($this->setResponse(204, ''));
+            return new \WP_REST_Response(null, 204);
         }
 
-        exit($this->setResponse(400, 'Wrong input data.'));
-
-        return \WP_REST_Response(['status' => 'OK']);
+        return new \WP_REST_Response('Wrong input data.', 400);
     }
 
     public static function update_configuration(\WP_REST_Request $request): \WP_REST_Response
     {
         return \WP_REST_Response(['status' => 'OK']);
+    }
+
+    public static function get_signature(): string
+    {
+        return self::get_header_by_name('CR_SIGNATURE');
     }
 
     private static function valid_signature(string $signature, string $json_data): bool

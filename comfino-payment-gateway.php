@@ -170,6 +170,7 @@ class Comfino_Payment_Gateway
                         '{OFFER_TYPE}',
                         '{EMBED_METHOD}',
                         '{WIDGET_PRICE_OBSERVER_LEVEL}',
+                        '{WIDGET_PRICE_OBSERVER_SELECTOR}',
                     ],
                     [
                         $cg->get_option('widget_key'),
@@ -179,6 +180,7 @@ class Comfino_Payment_Gateway
                         $cg->get_option('widget_offer_type'),
                         $cg->get_option('widget_embed_method'),
                         $cg->get_option('widget_price_observer_level'),
+                        $cg->get_option('widget_price_observer_selector'),
                     ],
                     $code
                 );

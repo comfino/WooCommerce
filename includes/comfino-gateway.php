@@ -251,71 +251,22 @@ class Comfino_Gateway extends WC_Payment_Gateway
     }
 
     /**
-     * Webhook notifications.
+     * Webhook notifications - replaced with \Comfino\Core::process_notification(), left for backwards compatibility.
      */
     public function webhook()
     {
         $body = file_get_contents('php://input');
 
-        if (!$this->valid_signature($body)) {
-            echo json_encode(['status' => 'Invalid signature', 'body' => $body, 'signature' => $this->get_signature()]);
+        $request = new WP_REST_Request('POST');
+        $request->set_body($body);
+
+        $response = \Comfino\Core::process_notification($request);
+
+        if ($response->status === 400) {
+            echo json_encode(['status' => $response->data, 'body' => $body, 'signature' =>  \Comfino\Core::get_signature()]);
+
             exit;
         }
-
-        $data = json_decode($body, true);
-        $order = wc_get_order($data['externalId']);
-        $status = $data['status'];
-
-        if ($order) {
-            if (in_array($status, [\Comfino\Core::ACCEPTED_STATUS, \Comfino\Core::CANCELLED_STATUS, \Comfino\Core::CANCELLED_BY_SHOP_STATUS, \Comfino\Core::REJECTED_STATUS, \Comfino\Core::RESIGN_STATUS], true)) {
-                $order->add_order_note(__('Comfino status', 'comfino-payment-gateway') . ": " . __($status, 'comfino-payment-gateway'));
-            }
-
-            if (in_array($status, $this->completed_state, true)) {
-                $order->payment_complete();
-            }
-
-            if (in_array($status, $this->rejected_state, true)) {
-                $order->cancel_order();
-            }
-        }
-    }
-
-    /**
-     * @param string $jsonData
-     *
-     * @return bool
-     */
-    private function valid_signature(string $jsonData): bool
-    {
-        return $this->get_signature() === hash('sha3-256', \Comfino\Api_Client::$key . $jsonData);
-    }
-
-    /**
-     * @return string
-     */
-    private function get_signature(): string
-    {
-        return $this->get_header_by_name('CR_SIGNATURE');
-    }
-
-    /**
-     * @param string $name
-     * @return string
-     */
-    private function get_header_by_name(string $name): string
-    {
-        $header = '';
-
-        foreach ($_SERVER as $key => $value) {
-            if ($key === 'HTTP_' . strtoupper($name)) {
-                $header = sanitize_text_field($value);
-
-                break;
-            }
-        }
-
-        return $header;
     }
 
     /**
@@ -353,47 +304,6 @@ class Comfino_Gateway extends WC_Payment_Gateway
     }
 
     /**
-     * @param $order
-     *
-     * @return bool
-     */
-    private function is_active_resign($order): bool
-    {
-        $date = new DateTime();
-        $date->sub(new DateInterval('P14D'));
-
-        if ($order->get_payment_method() === 'comfino' && $order->has_status(['processing', 'completed'])) {
-            $notes = $this->get_status_note($order->ID, [\Comfino\Core::ACCEPTED_STATUS]);
-
-            return !(isset($notes[\Comfino\Core::ACCEPTED_STATUS]) && $notes[\Comfino\Core::ACCEPTED_STATUS]->date_created->getTimestamp() < $date->getTimestamp());
-        }
-
-        return false;
-    }
-
-    /**
-     * @param int $order_id
-     * @param array $statuses
-     *
-     * @return array
-     */
-    private function get_status_note(int $order_id, array $statuses): array
-    {
-        $elements = wc_get_order_notes(['order_id' => $order_id]);
-        $notes = [];
-
-        foreach ($elements as $element) {
-            foreach ($statuses as $status) {
-                if ($element->added_by === 'system' && $element->content === "Comfino status: $status") {
-                    $notes[$status] = $element;
-                }
-            }
-        }
-
-        return $notes;
-    }
-
-    /**
      * @param $post_id
      * @param $post
      * @param $update
@@ -416,5 +326,35 @@ class Comfino_Gateway extends WC_Payment_Gateway
                 }
             }
         }
+    }
+
+    private function is_active_resign(\WC_Abstract_Order$order): bool
+    {
+        $date = new DateTime();
+        $date->sub(new DateInterval('P14D'));
+
+        if ($order->get_payment_method() === 'comfino' && $order->has_status(['processing', 'completed'])) {
+            $notes = $this->get_status_note($order->ID, [\Comfino\Core::ACCEPTED_STATUS]);
+
+            return !(isset($notes[\Comfino\Core::ACCEPTED_STATUS]) && $notes[\Comfino\Core::ACCEPTED_STATUS]->date_created->getTimestamp() < $date->getTimestamp());
+        }
+
+        return false;
+    }
+
+    private function get_status_note(int $order_id, array $statuses): array
+    {
+        $elements = wc_get_order_notes(['order_id' => $order_id]);
+        $notes = [];
+
+        foreach ($elements as $element) {
+            foreach ($statuses as $status) {
+                if ($element->added_by === 'system' && $element->content === "Comfino status: $status") {
+                    $notes[$status] = $element;
+                }
+            }
+        }
+
+        return $notes;
     }
 }
