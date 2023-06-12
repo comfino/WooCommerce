@@ -76,12 +76,12 @@ class Api_Client
             'cart' => [
                 'totalAmount' => (int)($order->get_total() * 100),
                 'deliveryCost' => (int)($order->get_shipping_total() * 100),
-                'products' => $this->get_products(),
+                'products' => self::get_products(),
             ],
-            'customer' => $this->get_customer($order),
+            'customer' => self::get_customer($order),
         ]);
 
-        $url = \Comfino\Api_Client::$host. self::COMFINO_ORDERS_ENDPOINT;
+        $url = \Comfino\Api_Client::$host . '/v1/orders';
         $args = [
             'headers' => self::get_header_request(),
             'body' => $body,
@@ -221,38 +221,32 @@ class Api_Client
         return $api_key_valid;
     }
 
-    public static function cancel_order(string $order_id)
+    public static function cancel_order(\WC_Abstract_Order $order)
     {
-        if (!$this->get_status_note($order_id, [\Comfino\Core::CANCELLED_BY_SHOP_STATUS, \Comfino\Core::RESIGN_STATUS])) {
-            $order = wc_get_order($order_id);
+        $url = self::$host . "/v1/orders/{$order->get_id()}/cancel";
+        $args = [
+            'headers' => self::get_header_request(),
+            'method' => 'PUT'
+        ];
 
-            $url = self::$host . "/v1/orders/{$order->get_id()}/cancel";
-            $args = [
-                'headers' => self::get_header_request(),
-                'method' => 'PUT'
-            ];
+        $response = wp_remote_request($url, $args);
 
-            $response = wp_remote_request($url, $args);
+        if (is_wp_error($response)) {
+            $timestamp = time();
 
-            if (is_wp_error($response)) {
-                $timestamp = time();
+            Error_Logger::send_error(
+                "Communication error [$timestamp]",
+                implode(', ', $response->get_error_codes()),
+                implode(', ', $response->get_error_messages()),
+                $url,
+                null,
+                wp_remote_retrieve_body($response)
+            );
 
-                Error_Logger::send_error(
-                    "Communication error [$timestamp]",
-                    implode(', ', $response->get_error_codes()),
-                    implode(', ', $response->get_error_messages()),
-                    $url,
-                    null,
-                    wp_remote_retrieve_body($response)
-                );
-
-                wc_add_notice(
-                    'Communication error: ' . $timestamp . '. Please contact with support and note this error id.',
-                    'error'
-                );
-            }
-
-            $order->add_order_note(__("Send to Comfino canceled order", 'comfino-payment-gateway'));
+            wc_add_notice(
+                'Communication error: ' . $timestamp . '. Please contact with support and note this error id.',
+                'error'
+            );
         }
     }
 
@@ -314,6 +308,92 @@ class Api_Client
 
         return !is_wp_error($response) && strpos(wp_remote_retrieve_body($response), '"errors":') === false &&
             wp_remote_retrieve_response_code($response) < 400;
+    }
+
+    /**
+     * Prepare product data.
+     *
+     * @return array
+     */
+    private static function get_products(): array
+    {
+        $products = [];
+
+        foreach (WC()->cart->get_cart() as $item) {
+            /** @var \WC_Product_Simple $product */
+            $product = $item['data'];
+            $image_id = $product->get_image_id();
+
+            if ($image_id !== '') {
+                $image_url = wp_get_attachment_image_url($image_id, 'full');
+            } else {
+                $image_url = null;
+            }
+
+            $products[] = [
+                'name' => $product->get_name(),
+                'quantity' => (int)$item['quantity'],
+                'photoUrl' => $image_url,
+                'externalId' => (string)$product->get_id(),
+                'price' => (int)(wc_get_price_including_tax($product) * 100),
+            ];
+        }
+
+        return $products;
+    }
+
+    /**
+     * Prepare customer data.
+     */
+    private static function get_customer(\WC_Abstract_Order $order): array
+    {
+        $phone_number = $order->get_billing_phone();
+
+        if (empty($phone_number)) {
+            // Try to find phone number in order metadata
+            $order_metadata = $order->get_meta_data();
+
+            foreach ($order_metadata as $meta_data_item) {
+                /** @var \WC_Meta_Data $meta_data_item */
+                $meta_data = $meta_data_item->get_data();
+
+                if (stripos($meta_data['key'], 'tel') !== false || stripos($meta_data['key'], 'phone') !== false) {
+                    $meta_value = str_replace(['-', ' ', '(', ')'], '', $meta_data['value']);
+
+                    if (preg_match('/^(?:\+{0,1}\d{1,2})?\d{9}$|^(?:\d{2,3})?\d{7}$/', $meta_value)) {
+                        $phone_number = $meta_value;
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        $first_name = $order->get_billing_first_name();
+        $last_name = $order->get_billing_last_name();
+
+        if ($last_name === '') {
+            $name = explode(' ', $first_name);
+
+            if (count($name) > 1) {
+                $first_name = $name[0];
+                $last_name = $name[1];
+            }
+        }
+
+        return [
+            'firstName' => $first_name,
+            'lastName' => $last_name,
+            'ip' => \WC_Geolocation::get_ip_address(),
+            'email' => $order->get_billing_email(),
+            'phoneNumber' => $phone_number,
+            'address' => [
+                'street' => $order->get_billing_address_1(),
+                'postalCode' => $order->get_billing_postcode(),
+                'city' => $order->get_billing_city(),
+                'countryCode' => $order->get_billing_country(),
+            ],
+        ];
     }
 
     /**

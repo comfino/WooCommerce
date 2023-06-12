@@ -5,22 +5,22 @@ namespace Comfino;
 class Config_Manager extends \WC_Settings_API
 {
     const CONFIG_OPTIONS_MAP = [
-        'COMFINO_API_KEY' => '',
-        'COMFINO_PAYMENT_PRESENTATION' => '',
-        'COMFINO_PAYMENT_TEXT' => '',
+        'COMFINO_API_KEY' => 'production_key',
+        'COMFINO_PAYMENT_PRESENTATION' => 'show_logo',
+        'COMFINO_PAYMENT_TEXT' => 'title',
         'COMFINO_MINIMAL_CART_AMOUNT' => '',
-        'COMFINO_IS_SANDBOX' => '',
-        'COMFINO_SANDBOX_API_KEY' => '',
-        'COMFINO_WIDGET_ENABLED' => '',
-        'COMFINO_WIDGET_KEY' => '',
-        'COMFINO_WIDGET_PRICE_SELECTOR' => '',
-        'COMFINO_WIDGET_TARGET_SELECTOR' => '',
+        'COMFINO_IS_SANDBOX' => 'sandbox_mode',
+        'COMFINO_SANDBOX_API_KEY' => 'sandbox_key',
+        'COMFINO_WIDGET_ENABLED' => 'widget_enabled',
+        'COMFINO_WIDGET_KEY' => 'widget_key',
+        'COMFINO_WIDGET_PRICE_SELECTOR' => 'widget_price_selector',
+        'COMFINO_WIDGET_TARGET_SELECTOR' => 'widget_target_selector',
         'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR' => '',
-        'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL' => '',
-        'COMFINO_WIDGET_TYPE' => '',
+        'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL' => 'widget_price_observer_level',
+        'COMFINO_WIDGET_TYPE' => 'widget_type',
         'COMFINO_WIDGET_OFFER_TYPE' => '',
         'COMFINO_WIDGET_EMBED_METHOD' => '',
-        'COMFINO_WIDGET_CODE' => '',
+        'COMFINO_WIDGET_CODE' => 'widget_js_code',
     ];
 
     const ACCESSIBLE_CONFIG_OPTIONS = [

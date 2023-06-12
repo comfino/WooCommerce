@@ -218,7 +218,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
     }
 
     /**
-     * Include CSS and JS
+     * Include CSS and JavaScript.
      */
     public function payment_scripts()
     {
@@ -230,16 +230,24 @@ class Comfino_Gateway extends WC_Payment_Gateway
         wp_enqueue_script('comfino', plugins_url('assets/js/comfino.js', __FILE__));
     }
 
-    /**
-     * @param $order_id
-     *
-     * @return array
-     */
     public function process_payment($order_id): array
     {
-        $order = wc_get_order($order_id);
+        return \Comfino\Api_Client::process_payment(
+            $order = wc_get_order($order_id),
+            $this->get_return_url($order),
+            \Comfino\Core::get_notify_url()
+        );
+    }
 
-        return \Comfino\Api_Client::process_payment($order, $this->get_return_url($order), \Comfino\Core::get_notify_url());
+    public function cancel_order(string $order_id)
+    {
+        if (!$this->get_status_note($order_id, [\Comfino\Core::CANCELLED_BY_SHOP_STATUS, \Comfino\Core::RESIGN_STATUS])) {
+            $order = wc_get_order($order_id);
+
+            \Comfino\Api_Client::cancel_order($order);
+
+            $order->add_order_note(__("Send to Comfino canceled order", 'comfino-payment-gateway'));
+        }
     }
 
     /**
@@ -271,114 +279,6 @@ class Comfino_Gateway extends WC_Payment_Gateway
                 $order->cancel_order();
             }
         }
-    }
-
-    /**
-     * Prepare product data
-     *
-     * @return array
-     */
-    private function get_products(): array
-    {
-        $products = [];
-
-        foreach (WC()->cart->get_cart() as $item) {
-            /** @var WC_Product_Simple $product */
-            $product = $item['data'];
-            $image_id = $product->get_image_id();
-
-            if ($image_id !== '') {
-                $image_url = wp_get_attachment_image_url($image_id, 'full');
-            } else {
-                $image_url = null;
-            }
-
-            $products[] = [
-                'name' => $product->get_name(),
-                'quantity' => (int)$item['quantity'],
-                'photoUrl' => $image_url,
-                'externalId' => (string)$product->get_id(),
-                'price' => (int)(wc_get_price_including_tax($product) * 100),
-            ];
-        }
-
-        return $products;
-    }
-
-    /**
-     * Prepare customer data
-     *
-     * @param $order
-     *
-     * @return array
-     */
-    private function get_customer($order): array
-    {
-        $phone_number = $order->get_billing_phone();
-
-        if (empty($phone_number)) {
-            // Try to find phone number in order metadata
-            $order_metadata = $order->get_meta_data();
-
-            foreach ($order_metadata as $meta_data_item) {
-                /** @var WC_Meta_Data $meta_data_item */
-                $meta_data = $meta_data_item->get_data();
-
-                if (stripos($meta_data['key'], 'tel') !== false || stripos($meta_data['key'], 'phone') !== false) {
-                    $metaValue = str_replace(['-', ' ', '(', ')'], '', $meta_data['value']);
-
-                    if (preg_match('/^(?:\+{0,1}\d{1,2})?\d{9}$|^(?:\d{2,3})?\d{7}$/', $metaValue)) {
-                        $phone_number = $metaValue;
-                        break;
-                    }
-                }
-            }
-        }
-
-        $first_name = $order->get_billing_first_name();
-        $last_name = $order->get_billing_last_name();
-
-        if ($last_name === '') {
-            $name = explode(' ', $first_name);
-
-            if (count($name) > 1) {
-                $first_name = $name[0];
-                $last_name = $name[1];
-            }
-        }
-
-        return [
-            'firstName' => $first_name,
-            'lastName' => $last_name,
-            'ip' => WC_Geolocation::get_ip_address(),
-            'email' => $order->get_billing_email(),
-            'phoneNumber' => $phone_number,
-            'address' => [
-                'street' => $order->get_billing_address_1(),
-                'postalCode' => $order->get_billing_postcode(),
-                'city' => $order->get_billing_city(),
-                'countryCode' => $order->get_billing_country(),
-            ],
-        ];
-    }
-
-    /**
-     * Prepare request headers.
-     */
-    private static function get_header_request(): array
-    {
-        return [
-            'Content-Type' => 'application/json',
-            'Api-Key' => \Comfino\Api_Client::$key,
-            'User-Agent' => self::get_user_agent_header(),
-        ];
-    }
-
-    private static function get_user_agent_header(): string
-    {
-        global $wp_version;
-
-        return sprintf('WP Comfino [%s], WP [%s], WC [%s], PHP [%s]', Comfino_Payment_Gateway::VERSION, $wp_version, WC_VERSION, PHP_VERSION);
     }
 
     /**
