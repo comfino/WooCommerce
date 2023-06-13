@@ -107,6 +107,37 @@ class Core
 
     public static function get_configuration(\WP_REST_Request $request): \WP_REST_Response
     {
+        global $wp_version, $wpdb;
+
+        $config_manager = new Config_Manager();
+
+        if (empty($verification_key = $request->get_query_params()['vkey'] ?? '')) {
+            return new \WP_REST_Response('Access not allowed.', 403);
+        }
+
+        if (!self::valid_signature(self::get_header_by_name('CR_SIGNATURE'), $verification_key)) {
+            return new \WP_REST_Response(['status' => 'Failed comparison of CR-Signature and shop hash.'], 400);
+        }
+
+        $response = [
+            'shop_info' => [
+                'plugin_version' => \Comfino_Payment_Gateway::VERSION,
+                'shop_version' => WC_VERSION,
+                'wordpress_version' => $wp_version,
+                'php_version' => PHP_VERSION,
+                'server_software' => sanitize_text_field($_SERVER['SERVER_SOFTWARE']),
+                'server_name' => sanitize_text_field($_SERVER['SERVER_NAME']),
+                'server_addr' => sanitize_text_field($_SERVER['SERVER_ADDR']),
+                'database_version' => $wpdb->db_version(),
+            ],
+            'shop_configuration' => $config_manager->return_configuration_options(),
+        ];
+
+        return new \WP_REST_Response($response, 200);
+    }
+
+    public static function update_configuration(\WP_REST_Request $request): \WP_REST_Response
+    {
         $config_manager = new Config_Manager();
 
         $signature = self::get_header_by_name('CR_SIGNATURE');
@@ -127,19 +158,14 @@ class Core
         return new \WP_REST_Response('Wrong input data.', 400);
     }
 
-    public static function update_configuration(\WP_REST_Request $request): \WP_REST_Response
-    {
-        return \WP_REST_Response(['status' => 'OK']);
-    }
-
     public static function get_signature(): string
     {
         return self::get_header_by_name('CR_SIGNATURE');
     }
 
-    private static function valid_signature(string $signature, string $json_data): bool
+    private static function valid_signature(string $signature, string $request_data): bool
     {
-        return hash_equals(hash('sha3-256', \Comfino\Api_Client::$key . $json_data), $signature);
+        return hash_equals(hash('sha3-256', \Comfino\Api_Client::$key . $request_data), $signature);
     }
 
     private static function get_header_by_name(string $name): string

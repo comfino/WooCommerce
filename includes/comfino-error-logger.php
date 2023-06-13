@@ -79,7 +79,7 @@ class Error_Logger
                 'server_software' => sanitize_text_field($_SERVER['SERVER_SOFTWARE']),
                 'server_name' => sanitize_text_field($_SERVER['SERVER_NAME']),
                 'server_addr' => sanitize_text_field($_SERVER['SERVER_ADDR']),
-                'database_version' => $wpdb->db_version()
+                'database_version' => $wpdb->db_version(),
             ],
             $error_code,
             "$error_prefix: $error_message",

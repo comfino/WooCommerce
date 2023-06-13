@@ -23,7 +23,7 @@ class Config_Manager extends \WC_Settings_API
     ];
 
     const ACCESSIBLE_CONFIG_OPTIONS = [
-        'COMFINO_PAYMENT_PRESENTATION',
+        'COMFINO_SHOW_LOGO',
         'COMFINO_PAYMENT_TEXT',
         'COMFINO_IS_SANDBOX',
         'COMFINO_WIDGET_ENABLED',
@@ -163,7 +163,7 @@ class Config_Manager extends \WC_Settings_API
         $configuration_options = [];
 
         foreach (self::ACCESSIBLE_CONFIG_OPTIONS as $opt_name) {
-            $configuration_options[$opt_name] = $this->get_option($opt_name);
+            $configuration_options[$opt_name] = $this->get_option(self::CONFIG_OPTIONS_MAP[$opt_name]);
 
             if (array_key_exists($opt_name, self::CONFIG_OPTIONS_TYPES)) {
                 switch (self::CONFIG_OPTIONS_TYPES[$opt_name]) {
