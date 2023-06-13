@@ -150,9 +150,14 @@ class Core
         $configuration_options = $request->get_json_params();
 
         if (is_array($configuration_options)) {
-            $config_manager->update_configuration($configuration_options);
+            if ($config_manager->update_configuration(
+                $config_manager->prepare_configuration_options($configuration_options),
+                true
+            )) {
+                return new \WP_REST_Response(null, 204);
+            }
 
-            return new \WP_REST_Response(null, 204);
+            return new \WP_REST_Response('Wrong input data.', 400);
         }
 
         return new \WP_REST_Response('Wrong input data.', 400);

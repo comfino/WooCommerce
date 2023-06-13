@@ -185,7 +185,7 @@ class Config_Manager extends \WC_Settings_API
         return $configuration_options;
     }
 
-    public function update_configuration(array $configuration_options, bool $only_accessible_options = true): bool
+    public function update_configuration(array $configuration_options, bool $remote_request): bool
     {
         $this->init_settings();
 
@@ -203,30 +203,28 @@ class Config_Manager extends \WC_Settings_API
             }
         }
 
-        $is_sandbox = $this->settings['sandbox_mode'] === 'yes';
-        $api_host = $is_sandbox ? Core::COMFINO_SANDBOX_HOST : Core::COMFINO_PRODUCTION_HOST;
-        $api_key = $is_sandbox ? $this->settings['sandbox_key'] : $this->settings['production_key'];
+        if ($remote_request) {
+            if ($is_error) {
+                return false;
+            }
+        } else {
+            $is_sandbox = $this->settings['sandbox_mode'] === 'yes';
+            $api_host = $is_sandbox ? Core::COMFINO_SANDBOX_HOST : Core::COMFINO_PRODUCTION_HOST;
+            $api_key = $is_sandbox ? $this->settings['sandbox_key'] : $this->settings['production_key'];
 
-        if (!Api_Client::is_api_key_valid($api_host, $api_key)) {
-            $this->add_error(sprintf(__('API key %s is not valid.', 'comfino-payment-gateway'), $api_key));
+            if (!Api_Client::is_api_key_valid($api_host, $api_key)) {
+                $this->add_error(sprintf(__('API key %s is not valid.', 'comfino-payment-gateway'), $api_key));
 
-            $is_error = true;
-        }
-
-        if ($is_error) {
-            $this->display_errors();
-
-            return false;
-        }
-
-        $this->settings['widget_key'] = Api_Client::get_widget_key($api_host, $api_key);
-
-        foreach ($configuration_options as $opt_name => $opt_value) {
-            if ($only_accessible_options && !in_array($opt_name, self::ACCESSIBLE_CONFIG_OPTIONS, true)) {
-                continue;
+                $is_error = true;
             }
 
-            Configuration::updateValue($opt_name, $opt_value);
+            if ($is_error) {
+                $this->display_errors();
+
+                return false;
+            }
+
+            $this->settings['widget_key'] = Api_Client::get_widget_key($api_host, $api_key);
         }
 
         return update_option(
@@ -234,6 +232,21 @@ class Config_Manager extends \WC_Settings_API
             apply_filters('woocommerce_settings_api_sanitized_fields_' . $this->id, $this->settings),
             'yes'
         );
+    }
+
+    public function prepare_configuration_options(array $configuration_options): array
+    {
+        $prepared_config_options = [];
+
+        foreach ($configuration_options as $opt_name => $opt_value) {
+            if (!in_array($opt_name, self::ACCESSIBLE_CONFIG_OPTIONS, true)) {
+                continue;
+            }
+
+            $prepared_config_options[self::CONFIG_OPTIONS_MAP[$opt_name]] = $opt_value;
+        }
+
+        return $prepared_config_options;
     }
 
     private function get_initial_widget_code(): string
