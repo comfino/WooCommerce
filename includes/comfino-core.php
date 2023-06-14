@@ -71,7 +71,7 @@ class Core
             return \WP_REST_Response('Failed comparison of CR-Signature and shop hash.', 400);
         }
 
-        $data = json_decode( $request->get_body(), true);
+        $data = json_decode($request->get_body(), true);
 
         if ($data === null) {
             return new \WP_REST_Response('Wrong input data.', 400);
