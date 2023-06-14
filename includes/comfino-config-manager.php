@@ -168,7 +168,7 @@ class Config_Manager extends \WC_Settings_API
             if (array_key_exists($opt_name, self::CONFIG_OPTIONS_TYPES)) {
                 switch (self::CONFIG_OPTIONS_TYPES[$opt_name]) {
                     case 'bool':
-                        $configuration_options[$opt_name] = (bool)$configuration_options[$opt_name];
+                        $configuration_options[$opt_name] = ($configuration_options[$opt_name] === 'yes');
                         break;
 
                     case 'int':
@@ -192,7 +192,7 @@ class Config_Manager extends \WC_Settings_API
         $is_error = false;
 
         foreach ($this->get_form_fields() as $key => $field) {
-            if ('title' !== $this->get_field_type($field)) {
+            if (array_key_exists($this->get_field_key($key), $configuration_options) && $this->get_field_type($field) !== 'title') {
                 try {
                     $this->settings[$key] = $this->get_field_value($key, $field, $configuration_options);
                 } catch (\Exception $e) {
@@ -243,7 +243,13 @@ class Config_Manager extends \WC_Settings_API
                 continue;
             }
 
-            $prepared_config_options[self::CONFIG_OPTIONS_MAP[$opt_name]] = $opt_value;
+            if ($opt_value === true) {
+                $opt_value = 'yes';
+            } elseif ($opt_value === false) {
+                $opt_value = 'no';
+            }
+
+            $prepared_config_options[$this->get_field_key(self::CONFIG_OPTIONS_MAP[$opt_name])] = $opt_value;
         }
 
         return $prepared_config_options;
