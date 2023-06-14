@@ -186,7 +186,7 @@ class Comfino_Payment_Gateway
                     $code
                 );
 
-                echo '<script>' . str_replace(['&#039;', '&gt;'], ["'", '>'], esc_html($code)) . '</script>';
+                echo '<script>' . str_replace(['&#039;', '&gt;', '&amp;'], ["'", '>', '&'], esc_html($code)) . '</script>';
             }
         }
     }
