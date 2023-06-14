@@ -50,6 +50,7 @@ class Comfino_Payment_Gateway
             return;
         }
 
+        require_once __DIR__ . '/includes/comfino-config-manager.php';
         require_once __DIR__ . '/includes/comfino-error-logger.php';
         require_once __DIR__ . '/includes/comfino-core.php';
         require_once __DIR__ . '/includes/comfino-gateway.php';

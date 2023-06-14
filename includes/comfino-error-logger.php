@@ -7,6 +7,7 @@ use LimitIterator;
 use SplFileObject;
 use Throwable;
 
+require_once 'comfino-api-client.php';
 require_once 'comfino-shop-plugin-error.php';
 require_once 'comfino-shop-plugin-error-request.php';
 
