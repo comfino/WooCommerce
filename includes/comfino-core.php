@@ -48,12 +48,10 @@ class Core
         self::WAITING_FOR_PAYMENT_STATUS,
     ];
 
-    private static $key;
-
-    public static function set_key(string $key)
-    {
-        \Comfino\Api_Client::$key = $key;
-    }
+    /**
+     * @var Config_Manager
+     */
+    private static $config_manager;
 
     public static function get_notify_url(): string
     {
@@ -67,6 +65,8 @@ class Core
 
     public static function process_notification(\WP_REST_Request $request): \WP_REST_Response
     {
+        self::init();
+
         if (!self::valid_signature(self::get_signature(), $request->get_body())) {
             return new \WP_REST_Response('Failed comparison of CR-Signature and shop hash.', 400);
         }
@@ -109,7 +109,7 @@ class Core
     {
         global $wp_version, $wpdb;
 
-        $config_manager = new Config_Manager();
+        self::init();
 
         if (empty($verification_key = $request->get_query_params()['vkey'] ?? '')) {
             return new \WP_REST_Response('Access not allowed.', 403);
@@ -130,7 +130,7 @@ class Core
                 'server_addr' => sanitize_text_field($_SERVER['SERVER_ADDR']),
                 'database_version' => $wpdb->db_version(),
             ],
-            'shop_configuration' => $config_manager->return_configuration_options(),
+            'shop_configuration' => self::$config_manager->return_configuration_options(),
         ];
 
         return new \WP_REST_Response($response, 200);
@@ -138,7 +138,7 @@ class Core
 
     public static function update_configuration(\WP_REST_Request $request): \WP_REST_Response
     {
-        $config_manager = new Config_Manager();
+        self::init();
 
         $signature = self::get_header_by_name('CR_SIGNATURE');
         $json_request_body = $request->get_body();
@@ -150,8 +150,8 @@ class Core
         $configuration_options = $request->get_json_params();
 
         if (is_array($configuration_options)) {
-            if ($config_manager->update_configuration(
-                $config_manager->prepare_configuration_options($configuration_options),
+            if (self::$config_manager->update_configuration(
+                self::$config_manager->prepare_configuration_options($configuration_options),
                 true
             )) {
                 return new \WP_REST_Response(null, 204);
@@ -168,9 +168,24 @@ class Core
         return self::get_header_by_name('CR_SIGNATURE');
     }
 
+    private static function init()
+    {
+        if (self::$config_manager === null) {
+            self::$config_manager = new Config_Manager();
+        }
+
+        if (self::$config_manager->get_option('sandbox_mode') === 'yes') {
+            Api_Client::$host = Core::COMFINO_SANDBOX_HOST;
+            Api_Client::$key = self::$config_manager->get_option('sandbox_key');
+        } else {
+            Api_Client::$host = Core::COMFINO_PRODUCTION_HOST;
+            Api_Client::$key = self::$config_manager->get_option('production_key');
+        }
+    }
+
     private static function valid_signature(string $signature, string $request_data): bool
     {
-        return hash_equals(hash('sha3-256', \Comfino\Api_Client::$key . $request_data), $signature);
+        return hash_equals(hash('sha3-256', Api_Client::$key . $request_data), $signature);
     }
 
     private static function get_header_by_name(string $name): string

@@ -42,18 +42,14 @@ class Comfino_Gateway extends WC_Payment_Gateway
         $this->title = $this->get_option('title');
         $this->enabled = $this->get_option('enabled');
 
-        self::$show_logo = 'yes' === $this->get_option('show_logo');
+        self::$show_logo = ($this->get_option('show_logo') === 'yes');
 
-        $sandbox_mode = 'yes' === $this->get_option('sandbox_mode');
-        $sandbox_key = $this->get_option('sandbox_key');
-        $production_key = $this->get_option('production_key');
-
-        if ($sandbox_mode) {
-            \Comfino\Api_Client::$host= \Comfino\Core::COMFINO_SANDBOX_HOST;
-            \Comfino\Api_Client::$key = $sandbox_key;
+        if ($this->get_option('sandbox_mode') === 'yes') {
+            \Comfino\Api_Client::$host = \Comfino\Core::COMFINO_SANDBOX_HOST;
+            \Comfino\Api_Client::$key = $this->get_option('sandbox_key');
         } else {
-            \Comfino\Api_Client::$host= \Comfino\Core::COMFINO_PRODUCTION_HOST;
-            \Comfino\Api_Client::$key = $production_key;
+            \Comfino\Api_Client::$host = \Comfino\Core::COMFINO_PRODUCTION_HOST;
+            \Comfino\Api_Client::$key = $this->get_option('production_key');
         }
 
         add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);

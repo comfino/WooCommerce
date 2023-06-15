@@ -208,7 +208,7 @@ class Config_Manager extends \WC_Settings_API
                 return false;
             }
         } else {
-            $is_sandbox = $this->settings['sandbox_mode'] === 'yes';
+            $is_sandbox = ($this->settings['sandbox_mode'] === 'yes');
             $api_host = $is_sandbox ? Core::COMFINO_SANDBOX_HOST : Core::COMFINO_PRODUCTION_HOST;
             $api_key = $is_sandbox ? $this->settings['sandbox_key'] : $this->settings['production_key'];
 

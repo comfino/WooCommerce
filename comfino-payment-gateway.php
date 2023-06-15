@@ -154,7 +154,7 @@ class Comfino_Payment_Gateway
 
             if ($cg->get_option('widget_enabled') === 'yes' && $cg->get_option('widget_key') !== '') {
                 $code = $cg->get_option('widget_js_code');
-                $sandbox_mode = 'yes' === $cg->get_option('sandbox_mode');
+                $sandbox_mode = ($cg->get_option('sandbox_mode') === 'yes');
 
                 if ($sandbox_mode) {
                     $code = str_replace('{WIDGET_SCRIPT_URL}', Comfino_Gateway::COMFINO_WIDGET_JS_SANDBOX, $code);
