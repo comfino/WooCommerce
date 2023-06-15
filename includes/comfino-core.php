@@ -68,7 +68,7 @@ class Core
     public static function process_notification(\WP_REST_Request $request): \WP_REST_Response
     {
         if (!self::valid_signature(self::get_signature(), $request->get_body())) {
-            return \WP_REST_Response('Failed comparison of CR-Signature and shop hash.', 400);
+            return new \WP_REST_Response('Failed comparison of CR-Signature and shop hash.', 400);
         }
 
         $data = json_decode($request->get_body(), true);
