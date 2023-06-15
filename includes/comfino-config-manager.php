@@ -181,6 +181,14 @@ class Config_Manager extends \WC_Settings_API
                     $configuration_options[$opt_name] = (float)$configuration_options[$opt_name];
                     break;
             }
+
+            if ($opt_name === 'COMFINO_WIDGET_CODE') {
+                $configuration_options[$opt_name] = str_replace(
+                    ['&#039;', '&gt;', '&amp;'],
+                    ["'", '>', '&'],
+                    $configuration_options[$opt_name]
+                );
+            }
         }
 
         return $configuration_options;
