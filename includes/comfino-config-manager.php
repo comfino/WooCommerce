@@ -5,6 +5,7 @@ namespace Comfino;
 class Config_Manager extends \WC_Settings_API
 {
     const CONFIG_OPTIONS_MAP = [
+        'COMFINO_ENABLED' => 'enabled',
         'COMFINO_API_KEY' => 'production_key',
         'COMFINO_SHOW_LOGO' => 'show_logo',
         'COMFINO_PAYMENT_TEXT' => 'title',
@@ -23,6 +24,7 @@ class Config_Manager extends \WC_Settings_API
     ];
 
     const ACCESSIBLE_CONFIG_OPTIONS = [
+        'COMFINO_ENABLED',
         'COMFINO_SHOW_LOGO',
         'COMFINO_PAYMENT_TEXT',
         'COMFINO_IS_SANDBOX',
@@ -39,6 +41,7 @@ class Config_Manager extends \WC_Settings_API
     ];
 
     const CONFIG_OPTIONS_TYPES = [
+        'COMFINO_ENABLED' => 'bool',
         'COMFINO_SHOW_LOGO' => 'bool',
         'COMFINO_IS_SANDBOX' => 'bool',
         'COMFINO_WIDGET_ENABLED' => 'bool',
@@ -165,20 +168,18 @@ class Config_Manager extends \WC_Settings_API
         foreach (self::ACCESSIBLE_CONFIG_OPTIONS as $opt_name) {
             $configuration_options[$opt_name] = $this->get_option(self::CONFIG_OPTIONS_MAP[$opt_name]);
 
-            if (array_key_exists($opt_name, self::CONFIG_OPTIONS_TYPES)) {
-                switch (self::CONFIG_OPTIONS_TYPES[$opt_name]) {
-                    case 'bool':
-                        $configuration_options[$opt_name] = ($configuration_options[$opt_name] === 'yes');
-                        break;
+            switch ($this->get_option_type($opt_name)) {
+                case 'bool':
+                    $configuration_options[$opt_name] = ($configuration_options[$opt_name] === 'yes');
+                    break;
 
-                    case 'int':
-                        $configuration_options[$opt_name] = (int)$configuration_options[$opt_name];
-                        break;
+                case 'int':
+                    $configuration_options[$opt_name] = (int)$configuration_options[$opt_name];
+                    break;
 
-                    case 'float':
-                        $configuration_options[$opt_name] = (float)$configuration_options[$opt_name];
-                        break;
-                }
+                case 'float':
+                    $configuration_options[$opt_name] = (float)$configuration_options[$opt_name];
+                    break;
             }
         }
 
@@ -189,12 +190,27 @@ class Config_Manager extends \WC_Settings_API
     {
         $this->init_settings();
 
+        $options_map = array_flip(self::CONFIG_OPTIONS_MAP);
         $is_error = false;
 
         foreach ($this->get_form_fields() as $key => $field) {
-            if (array_key_exists($this->get_field_key($key), $configuration_options) && $this->get_field_type($field) !== 'title') {
+            $field_key = $this->get_field_key($key);
+
+            if (isset($options_map[$key]) && $this->get_option_type($options_map[$key]) === 'bool') {
+                if (isset($configuration_options[$field_key])) {
+                    $configuration_options[$field_key] = 'yes';
+                } else {
+                    $configuration_options[$field_key] = 'no';
+                }
+            }
+
+            if (array_key_exists($field_key, $configuration_options) && $this->get_field_type($field) !== 'title') {
                 try {
-                    $this->settings[$key] = $this->get_field_value($key, $field, $configuration_options);
+                    if ($configuration_options[$field_key] === 'yes' || $configuration_options[$field_key] === 'no') {
+                        $this->settings[$key] = $configuration_options[$field_key];
+                    } else {
+                        $this->settings[$key] = $this->get_field_value($key, $field, $configuration_options);
+                    }
                 } catch (\Exception $e) {
                     $this->add_error($e->getMessage());
 
@@ -253,6 +269,11 @@ class Config_Manager extends \WC_Settings_API
         }
 
         return $prepared_config_options;
+    }
+
+    private function get_option_type(string $opt_name): string
+    {
+        return self::CONFIG_OPTIONS_TYPES[$opt_name] ?? 'string';
     }
 
     private function get_initial_widget_code(): string
