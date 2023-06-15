@@ -100,6 +100,8 @@ class Core
             if (in_array($status, self::$rejected_states, true)) {
                 $order->cancel_order();
             }
+        } else {
+            return new \WP_REST_Response('Order not found.', 404);
         }
 
         return new \WP_REST_Response('OK', 200);
