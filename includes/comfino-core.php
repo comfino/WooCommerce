@@ -95,9 +95,7 @@ class Core
 
             if (in_array($status, self::$completed_states, true)) {
                 $order->payment_complete();
-            }
-
-            if (in_array($status, self::$rejected_states, true)) {
+            } elseif (in_array($status, self::$rejected_states, true)) {
                 $order->cancel_order();
             }
         } else {
