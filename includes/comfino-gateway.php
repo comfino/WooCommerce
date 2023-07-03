@@ -191,13 +191,13 @@ class Comfino_Gateway extends WC_Payment_Gateway
                                 <div class="comfino-helper-box">
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
-                                            <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/icons/check.svg" alt="" class="single-instruction-img" />
+                                            <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/check.svg" alt="" class="single-instruction-img" />
                                         </div>
                                         <div class="comfin-single-instruction__text">' . __('Check the products at home', 'comfino-payment-gateway') . '</div>
                                     </div>
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
-                                            <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/icons/wallet.svg" alt="" class="single-instruction-img" />
+                                            <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/wallet.svg" alt="" class="single-instruction-img" />
                                         </div>
                                         <div class="comfin-single-instruction__text">' . __('Pay in 30 days', 'comfino-payment-gateway') . '</div>
                                     </div>
