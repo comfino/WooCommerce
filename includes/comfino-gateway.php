@@ -183,9 +183,9 @@ class Comfino_Gateway extends WC_Payment_Gateway
                                     </div>
                                     <div class="comfino-payment-delay__single-instruction">
                                         <div class="single-instruction-img__background">
-                                            <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/twisto.svg" alt="" class="single-instruction-img" />
+                                            <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/comfino.svg" alt="" class="single-instruction-img" />
                                         </div>
-                                        <div class="comfin-single-instruction__text">' . __('Choose Twisto payment', 'comfino-payment-gateway') . '</div>
+                                        <div class="comfin-single-instruction__text">' . __('Choose Comfino payment', 'comfino-payment-gateway') . '</div>
                                     </div>
                                 </div>
                                 <div class="comfino-helper-box">
