@@ -29,7 +29,7 @@ class Comfino_Payment_Gateway
 
     public static function get_instance(): Comfino_Payment_Gateway
     {
-        if (null === self::$instance) {
+        if (self::$instance === null) {
             self::$instance = new self();
         }
 
@@ -184,6 +184,32 @@ class Comfino_Payment_Gateway
                         $cg->get_option('widget_price_observer_selector'),
                     ],
                     $code
+                );
+            if ($comfino_gateway->get_option('widget_enabled') === 'yes' && $comfino_gateway->get_option('widget_key') !== '') {
+                $code = str_replace(
+                    [
+                        '{WIDGET_KEY}',
+                        '{WIDGET_PRICE_SELECTOR}',
+                        '{WIDGET_TARGET_SELECTOR}',
+                        '{WIDGET_TYPE}',
+                        '{OFFER_TYPE}',
+                        '{EMBED_METHOD}',
+                        '{PRICE_OBSERVER_LEVEL}',
+                        '{WIDGET_SCRIPT_URL}',
+                    ],
+                    [
+                        $comfino_gateway->get_option('widget_key'),
+                        html_entity_decode($comfino_gateway->get_option('widget_price_selector')),
+                        html_entity_decode($comfino_gateway->get_option('widget_target_selector')),
+                        $comfino_gateway->get_option('widget_type'),
+                        $comfino_gateway->get_option('widget_offer_type'),
+                        $comfino_gateway->get_option('widget_embed_method'),
+                        $comfino_gateway->get_option('widget_price_observer_level'),
+                        $comfino_gateway->get_option('sandbox_mode') === 'yes'
+                            ? Comfino_Gateway::COMFINO_WIDGET_JS_SANDBOX
+                            : Comfino_Gateway::COMFINO_WIDGET_JS_PRODUCTION,
+                    ],
+                    $comfino_gateway->get_option('widget_js_code')
                 );
 
                 echo '<script>' . str_replace(['&#039;', '&gt;', '&amp;'], ["'", '>', '&'], esc_html($code)) . '</script>';

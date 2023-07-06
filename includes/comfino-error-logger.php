@@ -31,6 +31,14 @@ class Error_Logger
         E_USER_DEPRECATED => 'E_USER_DEPRECATED'
     ];
 
+    /** @var Api_Client */
+    private static $api_client;
+
+    public static function set_api_client(Api_Client $api_client): void
+    {
+        self::$api_client = $api_client;
+    }
+
     /**
      * @param string $error_prefix
      * @param string $error_message
@@ -91,6 +99,7 @@ class Error_Logger
         );
 
         if (!Api_Client::send_logged_error($error)) {
+        if (self::$api_client === null || !self::$api_client->send_logged_error($error)) {
             $request_info = [];
 
             if ($api_request_url !== null) {

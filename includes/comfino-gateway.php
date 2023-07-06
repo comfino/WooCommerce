@@ -1,5 +1,7 @@
 <?php
 
+use Comfino\Api_Client;
+
 class Comfino_Gateway extends WC_Payment_Gateway
 {
     /**
@@ -21,9 +23,9 @@ class Comfino_Gateway extends WC_Payment_Gateway
     const COMFINO_WIDGET_JS_SANDBOX = 'https://widget.craty.pl/comfino.min.js';
     const COMFINO_WIDGET_JS_PRODUCTION = 'https://widget.comfino.pl/comfino.min.js';
 
-    /**
-     * Comfino_Gateway constructor.
-     */
+    /** @var Api_Client */
+    private $api_client;
+
     public function __construct()
     {
         $this->id = 'comfino';
@@ -51,11 +53,20 @@ class Comfino_Gateway extends WC_Payment_Gateway
             \Comfino\Api_Client::$host = \Comfino\Core::COMFINO_PRODUCTION_HOST;
             \Comfino\Api_Client::$key = $this->get_option('production_key');
         }
+        require_once __DIR__.'/comfino-api-client.php';
+
+        $this->api_client = new Api_Client(
+            $this->get_option('sandbox_mode') === 'yes',
+            $this->get_option('sandbox_key'),
+            $this->get_option('production_key')
+        );
+
+        \Comfino\ErrorLogger::set_api_client($this->api_client);
 
         add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
         add_action('woocommerce_api_comfino_gateway', [$this, 'webhook']);
-        add_action('woocommerce_order_status_cancelled', [$this, 'cancel_order']);
+        add_action('woocommerce_order_status_cancelled', [$this->api_client, 'cancel_order']);
         add_action('woocommerce_order_item_add_action_buttons', [$this, 'order_buttons'], 10, 1);
         add_action('save_post', [$this, 'update_order'], 10, 3);
     }
@@ -69,8 +80,172 @@ class Comfino_Gateway extends WC_Payment_Gateway
     }
 
     public function process_admin_options(): bool
+    /**
+     * Plugin options
+     */
+    public function init_form_fields(): void
     {
         return $this->config_manager->update_configuration($this->get_post_data(), false);
+        $this->form_fields = [
+            'enabled' => [
+                'title' => __('Enable/Disable', 'comfino-payment-gateway'),
+                'type' => 'checkbox',
+                'label' => __('Enable Comfino Payment Module.', 'comfino-payment-gateway'),
+                'default' => 'no',
+                'description' => __('Show in the Payment List as a payment option.', 'comfino-payment-gateway')
+            ],
+            'title' => [
+                'title' => __('Title', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'default' => 'Comfino',
+            ],
+            'production_key' => [
+                'title' => __('Production environment API key', 'comfino-payment-gateway'),
+                'type' => 'text'
+            ],
+            'show_logo' => [
+                'title' => __('Show logo', 'comfino-payment-gateway'),
+                'type' => 'checkbox',
+                'label' => __('Show logo on payment method', 'comfino-payment-gateway'),
+                'default' => 'yes',
+            ],
+            'sandbox_mode' => [
+                'title' => __('Test environment', 'comfino-payment-gateway'),
+                'type' => 'checkbox',
+                'label' => __('Use test environment', 'comfino-payment-gateway'),
+                'default' => 'no',
+            ],
+            'sandbox_key' => [
+                'title' => __('Test environment API key', 'comfino-payment-gateway'),
+                'type' => 'text'
+            ],
+            'widget_enabled' => [
+                'title' => __('Widget enable', 'comfino-payment-gateway'),
+                'type' => 'checkbox',
+                'label' => __('Enable Comfino widget', 'comfino-payment-gateway'),
+                'default' => 'no',
+                'description' => __('Show Comfino widget in the product.', 'comfino-payment-gateway')
+            ],
+            'widget_type' => [
+                'title' => __('Widget type', 'comfino-payment-gateway'),
+                'type' => 'select',
+                'options' => [
+                    'simple' => __('Textual widget', 'comfino-payment-gateway'),
+                    'mixed' => __('Graphical widget with banner', 'comfino-payment-gateway'),
+                    'with-modal' => __('Graphical widget with installments calculator', 'comfino-payment-gateway'),
+                ]
+            ],
+            'widget_offer_type' => [
+                'title' => __('Widget offer type', 'comfino-payment-gateway'),
+                'type' => 'select',
+                'options' => [
+                    'INSTALLMENTS_ZERO_PERCENT' => __('Zero percent installments', 'comfino-payment-gateway'),
+                    'CONVENIENT_INSTALLMENTS' => __('Convenient installments', 'comfino-payment-gateway'),
+                    'PAY_LATER' => __('Pay later', 'comfino-payment-gateway'),
+                ]
+            ],
+            'widget_embed_method' => [
+                'title' => __('Widget embed method', 'comfino-payment-gateway'),
+                'type' => 'select',
+                'options' => [
+                    'INSERT_INTO_FIRST' => 'INSERT_INTO_FIRST',
+                    'INSERT_INTO_LAST' => 'INSERT_INTO_LAST',
+                    'INSERT_BEFORE' => 'INSERT_BEFORE',
+                    'INSERT_AFTER' => 'INSERT_AFTER',
+                ]
+            ],
+            'widget_price_selector' => [
+                'title' => __('Widget price selector', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'default' => '.price .woocommerce-Price-amount bdi',
+            ],
+            'widget_target_selector' => [
+                'title' => __('Widget target selector', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'default' => '.summary .product_meta',
+            ],
+            'widget_price_observer_level' => [
+                'title' => __('Price change detection level', 'comfino-payment-gateway'),
+                'type' => 'number',
+                'default' => 0,
+                'description' => __(
+                    'Hierarchy level of observed parent element relative to the price element.',
+                    'comfino-payment-gateway'
+                )
+            ],
+            'widget_key' => [
+                'title' => __('Widget key', 'comfino-payment-gateway'),
+                'type' => 'text',
+            ],
+            'widget_js_code' => [
+                'title' => __('Widget code', 'comfino-payment-gateway'),
+                'type' => 'textarea',
+                'css' => 'width: 800px; height: 400px',
+                'default' => '
+var script = document.createElement(\'script\');
+script.onload = function () {
+    ComfinoProductWidget.init({
+        widgetKey: \'{WIDGET_KEY}\',
+        priceSelector: \'{WIDGET_PRICE_SELECTOR}\',
+        widgetTargetSelector: \'{WIDGET_TARGET_SELECTOR}\',
+        price: null,
+        type: \'{WIDGET_TYPE}\',
+        offerType: \'{OFFER_TYPE}\',
+        embedMethod: \'{EMBED_METHOD}\',
+        priceObserverLevel: {PRICE_OBSERVER_LEVEL},
+        callbackBefore: function () {},
+        callbackAfter: function () {}
+    });
+};
+script.src = \'{WIDGET_SCRIPT_URL}\';
+script.async = true;
+document.getElementsByTagName(\'head\')[0].appendChild(script);'
+            ],
+        ];
+    }
+
+    public function process_admin_options()
+    {
+        $this->init_settings();
+
+        $post_data = $this->get_post_data();
+        $is_error = false;
+
+        foreach ($this->get_form_fields() as $key => $field) {
+            if ('title' !== $this->get_field_type($field)) {
+                try {
+                    $this->settings[$key] = $this->get_field_value($key, $field, $post_data);
+                } catch (Exception $e) {
+                    $this->add_error($e->getMessage());
+
+                    $is_error = true;
+                }
+            }
+        }
+
+        $is_sandbox = $this->settings['sandbox_mode'] === 'yes';
+        $api_host = $is_sandbox ? self::COMFINO_SANDBOX_HOST : self::COMFINO_PRODUCTION_HOST;
+        $api_key = $is_sandbox ? $this->settings['sandbox_key'] : $this->settings['production_key'];
+
+        if (!$this->api_client->is_api_key_valid($api_host, $api_key)) {
+            $this->add_error(sprintf(__('API key %s is not valid.', 'comfino-payment-gateway'), $api_key));
+
+            $is_error = true;
+        }
+
+        if ($is_error) {
+            $this->display_errors();
+
+            return false;
+        }
+
+        $this->settings['widget_key'] = $this->api_client->get_widget_key($api_host, $api_key);
+
+        return update_option(
+            $this->get_option_key(),
+            apply_filters('woocommerce_settings_api_sanitized_fields_'.$this->id, $this->settings),
+            'yes'
+        );
     }
 
     public function admin_options()
@@ -81,6 +256,8 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
         echo '<h2>' . esc_html($this->method_title) . '</h2>';
         echo '<p>' . esc_html($this->method_description) . '</p>';
+
+        echo '<img style="width: 300px" src="'.esc_url($this->api_client->get_logo_url()).'" alt="Comfino logo"> <span style="font-weight: bold; font-size: 16px; vertical-align: bottom">'.Comfino_Payment_Gateway::VERSION.'</span>';
 
         echo '<p>' . sprintf(
                 __('Do you want to ask about something? Write to us at %s or contact us by phone. We are waiting on the number: %s. We will answer all your questions!', 'comfino-payment-gateway'),
@@ -105,6 +282,8 @@ class Comfino_Gateway extends WC_Payment_Gateway
         $total = (int)round($woocommerce->cart->total) * 100;
         $offers = \Comfino\Api_Client::fetch_offers($total);
         $payment_infos = [];
+        $offers = $this->api_client->get_offers($total);
+        $paymentInfos = [];
 
         foreach ($offers as $offer) {
             $instalmentAmount = ((float)$offer['instalmentAmount']) / 100;
@@ -226,6 +405,11 @@ class Comfino_Gateway extends WC_Payment_Gateway
         wp_enqueue_script('comfino', plugins_url('assets/js/comfino.js', __FILE__));
     }
 
+    /**
+     * @param $order_id
+     *
+     * @return array
+     */
     public function process_payment($order_id): array
     {
         return \Comfino\Api_Client::process_payment(
@@ -233,6 +417,16 @@ class Comfino_Gateway extends WC_Payment_Gateway
             $this->get_return_url($order),
             \Comfino\Core::get_notify_url()
         );
+        $loan_term = sanitize_text_field($_POST['comfino_loan_term']);
+        $type = sanitize_text_field($_POST['comfino_type']);
+
+        if (!ctype_digit($loan_term)) {
+            return ['result' => 'failure', 'redirect' => ''];
+        }
+
+        $order = wc_get_order($order_id);
+
+        return $this->api_client->create_order(WC()->cart, $order, $this->get_return_url($order), $loan_term, $type);
     }
 
     public function cancel_order(string $order_id)
@@ -250,6 +444,10 @@ class Comfino_Gateway extends WC_Payment_Gateway
      * Webhook notifications - replaced with \Comfino\Core::process_notification(), left for backwards compatibility.
      */
     public function webhook()
+    /**
+     * Webhook notifications.
+     */
+    public function webhook(): void
     {
         $body = file_get_contents('php://input');
 
@@ -263,6 +461,50 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
             exit;
         }
+
+        $data = json_decode($body, true);
+        $order = wc_get_order($data['externalId']);
+        $status = $data['status'];
+
+        if ($order) {
+            $order->add_order_note(__('Comfino status', 'comfino-payment-gateway') . ": $status");
+
+            if (in_array($status, $this->completed_state, true)) {
+                $order->payment_complete();
+            }
+
+            if (in_array($status, $this->rejected_state, true)) {
+                $order->cancel_order();
+            }
+        }
+    }
+
+    /**
+     * @param string $jsonData
+     *
+     * @return bool
+     */
+    private function valid_signature(string $jsonData): bool
+    {
+        return $this->get_signature() === hash('sha3-256', $this->api_client->get_api_key().$jsonData);
+    }
+
+    /**
+     * @return string
+     */
+    private function get_signature(): string
+    {
+        $signature = '';
+
+        foreach ($_SERVER as $key => $value) {
+            if ($key === 'HTTP_CR_SIGNATURE') {
+                $signature = sanitize_text_field($value);
+
+                break;
+            }
+        }
+
+        return $signature;
     }
 
     /**
@@ -352,5 +594,25 @@ class Comfino_Gateway extends WC_Payment_Gateway
         }
 
         return $notes;
+    }
+
+    public function update_order($post_id, $post, $update): void
+    {
+        if (is_admin()) {
+            if ('shop_order' !== $post->post_type) {
+                return;
+            }
+
+            if (isset($_POST['comfino_action']) && $_POST['comfino_action']) {
+                $order = wc_get_order($post->ID);
+                $action = sanitize_text_field($_POST['comfino_action']);
+
+                if ($action === 'cancel') {
+                    $this->api_client->cancel_order($order->ID);
+                } elseif ($action === 'resign') {
+                    $this->api_client->resign_order($order->ID);
+                }
+            }
+        }
     }
 }
