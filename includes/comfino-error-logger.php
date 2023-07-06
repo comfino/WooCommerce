@@ -2,18 +2,18 @@
 
 namespace Comfino;
 
-use Comfino_Gateway;
-use ComfinoPaymentGateway;
+use Comfino_Payment_Gateway;
 use LimitIterator;
 use SplFileObject;
 use Throwable;
 
+require_once 'comfino-api-client.php';
 require_once 'comfino-shop-plugin-error.php';
 require_once 'comfino-shop-plugin-error-request.php';
 
-class ErrorLogger
+class Error_Logger
 {
-    private const ERROR_TYPES = [
+    const ERROR_TYPES = [
         E_ERROR => 'E_ERROR',
         E_WARNING => 'E_WARNING',
         E_PARSE => 'E_PARSE',
@@ -36,11 +36,11 @@ class ErrorLogger
      * @param string $error_message
      * @return void
      */
-    public static function log_error(string $error_prefix, string $error_message): void
+    public static function log_error(string $error_prefix, string $error_message)
     {
         @file_put_contents(
-            __DIR__.'/../payment_log.log',
-            "[".date('Y-m-d H:i:s')."] $error_prefix: $error_message\n",
+            __DIR__ . '/../payment_log.log',
+            "[" . date('Y-m-d H:i:s') . "] $error_prefix: $error_message\n",
             FILE_APPEND
         );
     }
@@ -59,28 +59,28 @@ class ErrorLogger
         string  $error_prefix,
         string  $error_code,
         string  $error_message,
-        ?string $api_request_url = null,
-        ?string $api_request = null,
-        ?string $api_response = null,
-        ?string $stack_trace = null
-    ): void
+        $api_request_url = null,
+        $api_request = null,
+        $api_response = null,
+        $stack_trace = null
+    )
     {
         global $wp_version, $wpdb;
 
         $url_parts = parse_url(get_permalink(wc_get_page_id('shop')));
 
-        $error = new ShopPluginError(
-            $url_parts['host'].(isset($url_parts['port']) ? ':'.$url_parts['port'] : ''),
+        $error = new Shop_Plugin_Error(
+            $url_parts['host'] . (isset($url_parts['port']) ? ':' . $url_parts['port'] : ''),
             'WooCommerce',
             [
-                'plugin_version' => ComfinoPaymentGateway::VERSION,
+                'plugin_version' => Comfino_Payment_Gateway::VERSION,
                 'shop_version' => WC_VERSION,
                 'wordpress_version' => $wp_version,
                 'php_version' => PHP_VERSION,
                 'server_software' => sanitize_text_field($_SERVER['SERVER_SOFTWARE']),
                 'server_name' => sanitize_text_field($_SERVER['SERVER_NAME']),
                 'server_addr' => sanitize_text_field($_SERVER['SERVER_ADDR']),
-                'database_version' => $wpdb->db_version()
+                'database_version' => $wpdb->db_version(),
             ],
             $error_code,
             "$error_prefix: $error_message",
@@ -90,7 +90,7 @@ class ErrorLogger
             $stack_trace
         );
 
-        if (!Comfino_Gateway::send_logged_error($error)) {
+        if (!Api_Client::send_logged_error($error)) {
             $request_info = [];
 
             if ($api_request_url !== null) {
@@ -106,7 +106,7 @@ class ErrorLogger
             }
 
             if (count($request_info)) {
-                $error_message .= "\n".implode("\n", $request_info);
+                $error_message .= "\n" . implode("\n", $request_info);
             }
 
             if ($stack_trace !== null) {
@@ -124,7 +124,7 @@ class ErrorLogger
     public static function get_error_log(int $num_lines): string
     {
         $errors_log = '';
-        $log_file_path = __DIR__.'/../payment_log.log';
+        $log_file_path = __DIR__ . '/../payment_log.log';
 
         if (file_exists($log_file_path)) {
             $file = new SplFileObject($log_file_path, 'r');
@@ -160,16 +160,16 @@ class ErrorLogger
      * @param Throwable $exception
      * @return void
      */
-    public static function exception_handler(Throwable $exception): void
+    public static function exception_handler(Throwable $exception)
     {
         self::send_error(
-            "Exception ".get_class($exception)." in {$exception->getFile()}:{$exception->getLine()}",
+            "Exception " . get_class($exception) . " in {$exception->getFile()}:{$exception->getLine()}",
             $exception->getCode(), $exception->getMessage(),
             null, null, null, $exception->getTraceAsString()
         );
     }
 
-    public static function init(): void
+    public static function init()
     {
         static $initialized = false;
 
@@ -182,7 +182,7 @@ class ErrorLogger
         }
     }
 
-    public static function shutdown(): void
+    public static function shutdown()
     {
         if (($error = error_get_last()) !== null && ($error['type'] & (E_ERROR | E_RECOVERABLE_ERROR | E_PARSE))) {
             $errorType = self::get_error_type_name($error['type']);

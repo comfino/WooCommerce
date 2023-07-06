@@ -3,6 +3,46 @@
 window.Comfino = {
     offerList: { elements: null, data: null },
     selectedOffer: 0,
+    debugMode: false,
+
+    consoleMsg(message, level)
+    {
+        let callArgs = [];
+
+        if (level !== 'error' && level !== 'warn') {
+            callArgs.push('%cComfino plugin:%c ' + message);
+            callArgs.push('color: white; background-color: #227b34; font-weight: bold; line-height: 18px');
+            callArgs.push('color: black; background-color: #cae8c9; font-weight: normal; line-height: 18px');
+        } else {
+            callArgs.push('Comfino plugin: ' + message);
+        }
+
+        if (arguments.length > 2) {
+            callArgs.push(...Array.from(arguments).slice(2, arguments.length));
+        }
+
+        switch (level) {
+            case 'error':
+                console.error(...callArgs);
+                break;
+
+            case 'warn':
+                console.warn(...callArgs);
+                break;
+
+            case 'info':
+                console.info(...callArgs);
+                break;
+
+            case 'debug':
+                console.debug(...callArgs);
+                break;
+
+            case 'log':
+            default:
+                console.log(...callArgs);
+        }
+    },
 
     selectTerm(loanTermBox, termElement)
     {
@@ -100,7 +140,24 @@ window.Comfino = {
             });
 
             document.getElementById('comfino-payment-delay').style.display = 'none';
-            document.getElementById('comfino-installments').style.display = 'block';
+
+            let installmentsElement = document.getElementById('comfino-installments');
+
+            installmentsElement.style.display = 'block';
+
+            if (offerData.type === 'BLIK') {
+                installmentsElement.querySelector('section.comfino-installments-box').style.display = 'none';
+                installmentsElement.querySelector('section.comfino-monthly-box').style.display = 'none';
+                installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-summary-total').style.display = 'none';
+                installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-rrso').style.display = 'none';
+                installmentsElement.querySelector('footer').style.display = 'none';
+            } else {
+                installmentsElement.querySelector('section.comfino-installments-box').style.display = 'flex';
+                installmentsElement.querySelector('section.comfino-monthly-box').style.display = 'flex';
+                installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-summary-total').style.display = 'block';
+                installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-rrso').style.display = 'block';
+                installmentsElement.querySelector('footer').style.display = 'block';
+            }
         }
     },
 
@@ -153,6 +210,13 @@ window.Comfino = {
      */
     initPayments(data)
     {
+        if (window.location.hash && window.location.hash.substring(1) === 'comfino_debug') {
+            Comfino.debugMode = true;
+
+            Comfino.consoleMsg('Debug mode activated.', 'info');
+            Comfino.consoleMsg('Offer fetched.', 'debug', data);
+        }
+
         let loanTermBox = document.getElementById('comfino-quantity-select');
 
         Comfino.offerList = Comfino.putDataIntoSection(data);
@@ -162,6 +226,10 @@ window.Comfino = {
         Comfino.offerList.elements.forEach(function (item, index) {
             item.querySelector('label').addEventListener('click', function () {
                 Comfino.selectedOffer = index;
+
+                if (Comfino.debugMode) {
+                    Comfino.consoleMsg('comfinoPaywallItem[click]', 'debug');
+                }
 
                 Comfino.fetchProductDetails(Comfino.offerList.data[Comfino.selectedOffer]);
 

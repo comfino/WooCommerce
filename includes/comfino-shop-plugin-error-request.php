@@ -4,7 +4,7 @@ namespace Comfino;
 
 require_once 'comfino-shop-plugin-error.php';
 
-final class ShopPluginErrorRequest
+final class Shop_Plugin_Error_Request
 {
     /**
      * @var string
@@ -17,11 +17,11 @@ final class ShopPluginErrorRequest
     public $hash;
 
     /**
-     * @param ShopPluginError $shop_plugin_error
+     * @param Shop_Plugin_Error $shop_plugin_error
      * @param string $hash_key
      * @return bool
      */
-    public function prepare_request(ShopPluginError $shop_plugin_error, string $hash_key): bool
+    public function prepare_request(Shop_Plugin_Error $shop_plugin_error, string $hash_key): bool
     {
         $error_details_array = [
             'host' => $shop_plugin_error->host,

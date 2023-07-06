@@ -4,15 +4,18 @@ Donate link: https://comfino.pl/
 Tags: comfino, woocommerce, gateway, payment, bank
 WC tested up to: 7.5.1
 WC requires at least: 3.0
-Stable tag: 2.3.1
+Stable tag: 2.4.0
 Tested up to: 6.2
 Requires at least: 5.0
-Requires PHP: 7.1
+Requires PHP: 7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-2.2.13
- * Improve errors handling in Comfino_Gateway::get_widget_key()
+2.4.0
+ * Remove unnecessary elements from paywall for BLIK payment option.
+ * Add new classes (Api_Client, Config_Manager), change REST API endpoint for notifications, add new endpoints for remote configuration management.
+ * Complete rewrite of plugin configuration management.
+ * Add a new widget initialization script, add debug mode for plugin frontend.
 
 2.3.1
  * Update language
@@ -23,6 +26,9 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
  * Add get and verify algos
  * Tested up WC 7.5.1
  * Tested up WP 6.2
+
+2.2.13
+ * Improve errors handling in Comfino_Gateway::get_widget_key()
 
 2.2.12
  * Fix bug in saving settings with wrong API key - add checking if API key is valid

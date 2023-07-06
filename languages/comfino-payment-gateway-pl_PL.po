@@ -240,8 +240,8 @@ msgid "Put the product in the basket"
 msgstr "Włóż produkt do koszyka"
 
 #: includes/comfino-gateway.php:425
-msgid "Choose Twisto payment"
-msgstr "Wybierz płatność Twisto"
+msgid "Choose Comfino payment"
+msgstr "Wybierz płatność Comfino"
 
 #: includes/comfino-gateway.php:433
 msgid "Check the products at home"
