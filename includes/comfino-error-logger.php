@@ -2,11 +2,6 @@
 
 namespace Comfino;
 
-use Comfino_Payment_Gateway;
-use LimitIterator;
-use SplFileObject;
-use Throwable;
-
 require_once 'comfino-api-client.php';
 require_once 'comfino-shop-plugin-error.php';
 require_once 'comfino-shop-plugin-error-request.php';
@@ -30,14 +25,6 @@ class Error_Logger
         E_DEPRECATED => 'E_DEPRECATED',
         E_USER_DEPRECATED => 'E_USER_DEPRECATED'
     ];
-
-    /** @var Api_Client */
-    private static $api_client;
-
-    public static function set_api_client(Api_Client $api_client): void
-    {
-        self::$api_client = $api_client;
-    }
 
     /**
      * @param string $error_prefix
@@ -81,7 +68,7 @@ class Error_Logger
             $url_parts['host'] . (isset($url_parts['port']) ? ':' . $url_parts['port'] : ''),
             'WooCommerce',
             [
-                'plugin_version' => Comfino_Payment_Gateway::VERSION,
+                'plugin_version' => \Comfino_Payment_Gateway::VERSION,
                 'shop_version' => WC_VERSION,
                 'wordpress_version' => $wp_version,
                 'php_version' => PHP_VERSION,
@@ -99,7 +86,6 @@ class Error_Logger
         );
 
         if (!Api_Client::send_logged_error($error)) {
-        if (self::$api_client === null || !self::$api_client->send_logged_error($error)) {
             $request_info = [];
 
             if ($api_request_url !== null) {
@@ -136,10 +122,10 @@ class Error_Logger
         $log_file_path = __DIR__ . '/../payment_log.log';
 
         if (file_exists($log_file_path)) {
-            $file = new SplFileObject($log_file_path, 'r');
+            $file = new \SplFileObject($log_file_path, 'r');
             $file->seek(PHP_INT_MAX);
             $last_line = $file->key();
-            $lines = new LimitIterator(
+            $lines = new \LimitIterator(
                 $file,
                 $last_line > $num_lines ? $last_line - $num_lines : 0,
                 $last_line
@@ -166,10 +152,10 @@ class Error_Logger
     }
 
     /**
-     * @param Throwable $exception
+     * @param \Throwable $exception
      * @return void
      */
-    public static function exception_handler(Throwable $exception)
+    public static function exception_handler(\Throwable $exception)
     {
         self::send_error(
             "Exception " . get_class($exception) . " in {$exception->getFile()}:{$exception->getLine()}",
