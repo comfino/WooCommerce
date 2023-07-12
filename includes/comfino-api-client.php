@@ -220,6 +220,11 @@ class Api_Client
         return $api_key_valid;
     }
 
+    public static function get_logo_url(): string
+    {
+        return self::$host . '/v1/get-logo-url';
+    }
+
     public static function cancel_order(\WC_Abstract_Order $order)
     {
         $url = self::$host . "/v1/orders/{$order->get_id()}/cancel";
