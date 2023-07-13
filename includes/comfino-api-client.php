@@ -345,7 +345,7 @@ class Api_Client
             }
         }
 
-        return self::get_api_host();
+        return self::$host;
     }
 
     /**
