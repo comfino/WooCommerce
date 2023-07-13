@@ -4,8 +4,14 @@ namespace Comfino;
 
 class Api_Client
 {
+    /** @var string */
     public static $host;
+
+    /** @var string */
     public static $key;
+
+    /** @var string */
+    public static $widget_script_url;
 
     /**
      * Fetch products.
@@ -80,7 +86,7 @@ class Api_Client
             'customer' => self::get_customer($order),
         ]);
 
-        $url = \Comfino\Api_Client::$host . '/v1/orders';
+        $url = self::$host . '/v1/orders';
         $args = [
             'headers' => self::get_header_request(),
             'body' => $body,
@@ -92,7 +98,7 @@ class Api_Client
             $decoded = json_decode(wp_remote_retrieve_body($response), true);
 
             if (!is_array($decoded) || isset($decoded['errors']) || empty($decoded['applicationUrl'])) {
-                \Comfino\Error_Logger::send_error(
+                Error_Logger::send_error(
                     'Payment error',
                     wp_remote_retrieve_response_code($response),
                     is_array($decoded) && isset($decoded['errors'])
@@ -116,7 +122,7 @@ class Api_Client
 
         $timestamp = time();
 
-        \Comfino\Error_Logger::send_error(
+        Error_Logger::send_error(
             "Communication error [$timestamp]",
             implode(', ', $response->get_error_codes()),
             implode(', ', $response->get_error_messages()),
@@ -222,7 +228,7 @@ class Api_Client
 
     public static function get_logo_url(): string
     {
-        return self::$host . '/v1/get-logo-url';
+        return self::get_api_host(true) . '/v1/get-logo-url';
     }
 
     public static function cancel_order(\WC_Abstract_Order $order)
@@ -293,6 +299,17 @@ class Api_Client
         $order->add_order_note(__("Send to Comfino resign order", 'comfino-payment-gateway'));
     }
 
+    public static function get_widget_script_url(): string
+    {
+        if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV_WIDGET_SCRIPT_URL') &&
+            getenv('COMFINO_DEV') === 'WC_' . WC_VERSION . '_' . Core::get_shop_domain()
+        ) {
+            return getenv('COMFINO_DEV_WIDGET_SCRIPT_URL');
+        }
+
+        return self::$widget_script_url;
+    }
+
     public static function send_logged_error(Shop_Plugin_Error $error): bool
     {
         $request = new Shop_Plugin_Error_Request();
@@ -312,6 +329,23 @@ class Api_Client
 
         return !is_wp_error($response) && strpos(wp_remote_retrieve_body($response), '"errors":') === false &&
             wp_remote_retrieve_response_code($response) < 400;
+    }
+
+    private static function get_api_host($frontend_host = false)
+    {
+        if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV') === 'WC_' . WC_VERSION . '_' . Core::get_shop_domain()) {
+            if ($frontend_host) {
+                if (getenv('COMFINO_DEV_API_HOST_FRONTEND')) {
+                    return getenv('COMFINO_DEV_API_HOST_FRONTEND');
+                }
+            } else {
+                if (getenv('COMFINO_DEV_API_HOST_BACKEND')) {
+                    return getenv('COMFINO_DEV_API_HOST_BACKEND');
+                }
+            }
+        }
+
+        return self::$host;
     }
 
     /**

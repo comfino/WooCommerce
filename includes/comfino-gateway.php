@@ -23,9 +23,6 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
     private static $show_logo;
 
-    const COMFINO_WIDGET_JS_SANDBOX = 'https://widget.craty.pl/comfino.min.js';
-    const COMFINO_WIDGET_JS_PRODUCTION = 'https://widget.comfino.pl/comfino.min.js';
-
     /**
      * Comfino_Gateway constructor.
      */
@@ -87,7 +84,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
         echo '<h2>' . esc_html($this->method_title) . '</h2>';
         echo '<p>' . esc_html($this->method_description) . '</p>';
 
-        echo '<img style="width: 300px" src="' . esc_url(Api_Client::get_logo_url()) . '" alt="Comfino logo"> <span style="font-weight: bold; font-size: 16px; vertical-align: bottom">'.Comfino_Payment_Gateway::VERSION.'</span>';
+        echo '<img style="width: 300px" src="' . esc_url(Api_Client::get_logo_url()) . '" alt="Comfino logo"> <span style="font-weight: bold; font-size: 16px; vertical-align: bottom">' . Comfino_Payment_Gateway::VERSION . '</span>';
 
         echo '<p>' . sprintf(
                 __('Do you want to ask about something? Write to us at %s or contact us by phone. We are waiting on the number: %s. We will answer all your questions!', 'comfino-payment-gateway'),

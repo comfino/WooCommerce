@@ -3,6 +3,7 @@
 namespace Comfino;
 
 require_once 'comfino-api-client.php';
+require_once 'comfino-core.php';
 require_once 'comfino-shop-plugin-error.php';
 require_once 'comfino-shop-plugin-error-request.php';
 
@@ -62,10 +63,8 @@ class Error_Logger
     {
         global $wp_version, $wpdb;
 
-        $url_parts = parse_url(get_permalink(wc_get_page_id('shop')));
-
         $error = new Shop_Plugin_Error(
-            $url_parts['host'] . (isset($url_parts['port']) ? ':' . $url_parts['port'] : ''),
+            Core::get_shop_url(),
             'WooCommerce',
             [
                 'plugin_version' => \Comfino_Payment_Gateway::VERSION,

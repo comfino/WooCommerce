@@ -2,10 +2,15 @@
 
 namespace Comfino;
 
+use Comfino_Gateway;
+
 class Core
 {
     const COMFINO_PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
     const COMFINO_SANDBOX_HOST = 'https://api-ecommerce.ecraty.pl';
+
+    const COMFINO_WIDGET_JS_SANDBOX = 'https://widget.craty.pl/comfino.min.js';
+    const COMFINO_WIDGET_JS_PRODUCTION = 'https://widget.comfino.pl/comfino.min.js';
 
     const WAITING_FOR_PAYMENT_STATUS = "WAITING_FOR_PAYMENT";
     const ACCEPTED_STATUS = "ACCEPTED";
@@ -52,6 +57,20 @@ class Core
      * @var Config_Manager
      */
     private static $config_manager;
+
+    public static function get_shop_domain(): string
+    {
+        $url_parts = parse_url(get_permalink(wc_get_page_id('shop')));
+
+        return $url_parts['host'];
+    }
+
+    public static function get_shop_url(): string
+    {
+        $url_parts = parse_url(get_permalink(wc_get_page_id('shop')));
+
+        return $url_parts['host'] . (isset($url_parts['port']) ? ':' . $url_parts['port'] : '');
+    }
 
     public static function get_notify_url(): string
     {
@@ -168,6 +187,39 @@ class Core
         return self::get_header_by_name('CR_SIGNATURE');
     }
 
+    public static function get_widget_init_code(Comfino_Gateway $comfino_gateway): string
+    {
+        self::init();
+
+        $code = str_replace(
+            [
+                '{WIDGET_KEY}',
+                '{WIDGET_PRICE_SELECTOR}',
+                '{WIDGET_TARGET_SELECTOR}',
+                '{WIDGET_TYPE}',
+                '{OFFER_TYPE}',
+                '{EMBED_METHOD}',
+                '{WIDGET_PRICE_OBSERVER_LEVEL}',
+                '{WIDGET_PRICE_OBSERVER_SELECTOR}',
+                '{WIDGET_SCRIPT_URL}',
+            ],
+            [
+                $comfino_gateway->get_option('widget_key'),
+                html_entity_decode($comfino_gateway->get_option('widget_price_selector')),
+                html_entity_decode($comfino_gateway->get_option('widget_target_selector')),
+                $comfino_gateway->get_option('widget_type'),
+                $comfino_gateway->get_option('widget_offer_type'),
+                $comfino_gateway->get_option('widget_embed_method'),
+                $comfino_gateway->get_option('widget_price_observer_level'),
+                $comfino_gateway->get_option('widget_price_observer_selector'),
+                Api_Client::get_widget_script_url(),
+            ],
+            $comfino_gateway->get_option('widget_js_code')
+        );
+
+        return '<script>' . str_replace(['&#039;', '&gt;', '&amp;'], ["'", '>', '&'], esc_html($code)) . '</script>';
+    }
+
     private static function init()
     {
         if (self::$config_manager === null) {
@@ -175,11 +227,13 @@ class Core
         }
 
         if (self::$config_manager->get_option('sandbox_mode') === 'yes') {
-            Api_Client::$host = Core::COMFINO_SANDBOX_HOST;
+            Api_Client::$host = self::COMFINO_SANDBOX_HOST;
             Api_Client::$key = self::$config_manager->get_option('sandbox_key');
+            Api_Client::$widget_script_url = self::COMFINO_WIDGET_JS_SANDBOX;
         } else {
-            Api_Client::$host = Core::COMFINO_PRODUCTION_HOST;
+            Api_Client::$host = self::COMFINO_PRODUCTION_HOST;
             Api_Client::$key = self::$config_manager->get_option('production_key');
+            Api_Client::$widget_script_url = self::COMFINO_WIDGET_JS_PRODUCTION;
         }
     }
 

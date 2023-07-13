@@ -12,7 +12,7 @@
  * Requires PHP: 7.0
  *
  * @license http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
-*/
+ */
 
 use Comfino\Core;
 use Comfino\Error_Logger;
@@ -117,7 +117,8 @@ class Comfino_Payment_Gateway
     public function plugin_action_links(array $links): array
     {
         $plugin_links = [
-            '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino') . '">'.__('Settings', 'comfino-payment-gateway') . '</a>',
+            '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino') . '">' .
+            __('Settings', 'comfino-payment-gateway') . '</a>',
         ];
 
         return array_merge($plugin_links, $links);
@@ -133,10 +134,8 @@ class Comfino_Payment_Gateway
         if (isset($post) && 'shop_order' === $post->post_type) {
             $order = wc_get_order($post->ID);
 
-            if ($order->get_payment_method() === 'comfino' && $order->has_status('completed')) {
-                if (isset($statuses['wc-cancelled'])) {
-                    unset($statuses['wc-cancelled']);
-                }
+            if (isset($statuses['wc-cancelled']) && $order->get_payment_method() === 'comfino' && $order->has_status('completed')) {
+                unset($statuses['wc-cancelled']);
             }
         }
 
@@ -154,40 +153,7 @@ class Comfino_Payment_Gateway
             $comfino = new Comfino_Gateway();
 
             if ($comfino->get_option('widget_enabled') === 'yes' && $comfino->get_option('widget_key') !== '') {
-                $code = $comfino->get_option('widget_js_code');
-                $sandbox_mode = ($comfino->get_option('sandbox_mode') === 'yes');
-
-                if ($sandbox_mode) {
-                    $code = str_replace('{WIDGET_SCRIPT_URL}', Comfino_Gateway::COMFINO_WIDGET_JS_SANDBOX, $code);
-                } else {
-                    $code = str_replace('{WIDGET_SCRIPT_URL}', Comfino_Gateway::COMFINO_WIDGET_JS_PRODUCTION, $code);
-                }
-
-                $code = str_replace(
-                    [
-                        '{WIDGET_KEY}',
-                        '{WIDGET_PRICE_SELECTOR}',
-                        '{WIDGET_TARGET_SELECTOR}',
-                        '{WIDGET_TYPE}',
-                        '{OFFER_TYPE}',
-                        '{EMBED_METHOD}',
-                        '{WIDGET_PRICE_OBSERVER_LEVEL}',
-                        '{WIDGET_PRICE_OBSERVER_SELECTOR}',
-                    ],
-                    [
-                        $comfino->get_option('widget_key'),
-                        html_entity_decode($comfino->get_option('widget_price_selector')),
-                        html_entity_decode($comfino->get_option('widget_target_selector')),
-                        $comfino->get_option('widget_type'),
-                        $comfino->get_option('widget_offer_type'),
-                        $comfino->get_option('widget_embed_method'),
-                        $comfino->get_option('widget_price_observer_level'),
-                        $comfino->get_option('widget_price_observer_selector'),
-                    ],
-                    $code
-                );
-
-                echo '<script>' . str_replace(['&#039;', '&gt;', '&amp;'], ["'", '>', '&'], esc_html($code)) . '</script>';
+                echo Core::get_widget_init_code($comfino);
             }
         }
     }
