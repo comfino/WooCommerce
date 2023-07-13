@@ -21,7 +21,7 @@ class Api_Client
      */
     public static function fetch_offers(int $loanAmount): array
     {
-        $url = self::$host . '/v1/financial-products' . '?' . http_build_query(['loanAmount' => $loanAmount]);
+        $url = self::get_api_host() . '/v1/financial-products' . '?' . http_build_query(['loanAmount' => $loanAmount]);
         $args = ['headers' => self::get_header_request()];
 
         $response = wp_remote_get($url, $args);
@@ -86,7 +86,7 @@ class Api_Client
             'customer' => self::get_customer($order),
         ]);
 
-        $url = self::$host . '/v1/orders';
+        $url = self::get_api_host() . '/v1/orders';
         $args = [
             'headers' => self::get_header_request(),
             'body' => $body,
@@ -149,14 +149,14 @@ class Api_Client
      */
     public static function get_widget_key(string $api_host, string $api_key): string
     {
-        self::$host= $api_host;
+        self::$host = $api_host;
         self::$key = $api_key;
 
         $widget_key = '';
 
         if (!empty(self::$key)) {
             $response = wp_remote_get(
-                self::$host . '/v1/widget-key',
+                self::get_api_host() . '/v1/widget-key',
                 ['headers' => self::get_header_request()]
             );
 
@@ -173,7 +173,7 @@ class Api_Client
                         "Widget key retrieving error [$timestamp]",
                         wp_remote_retrieve_response_code($response),
                         implode(', ', $errors),
-                        self::$host . '/v1/widget-key',
+                        self::get_api_host() . '/v1/widget-key',
                         null,
                         $json_response
                     );
@@ -190,7 +190,7 @@ class Api_Client
                     "Widget key retrieving error [$timestamp]",
                     implode(', ', $response->get_error_codes()),
                     implode(', ', $response->get_error_messages()),
-                    self::$host . '/v1/widget-key',
+                    self::get_api_host() . '/v1/widget-key',
                     null,
                     wp_remote_retrieve_body($response)
                 );
@@ -214,7 +214,7 @@ class Api_Client
 
         if (!empty(self::$key)) {
             $response = wp_remote_get(
-                self::$host . '/v1/user/is-active',
+                self::get_api_host() . '/v1/user/is-active',
                 ['headers' => self::get_header_request()]
             );
 
@@ -233,7 +233,7 @@ class Api_Client
 
     public static function cancel_order(\WC_Abstract_Order $order)
     {
-        $url = self::$host . "/v1/orders/{$order->get_id()}/cancel";
+        $url = self::get_api_host() . "/v1/orders/{$order->get_id()}/cancel";
         $args = [
             'headers' => self::get_header_request(),
             'method' => 'PUT'
@@ -269,7 +269,7 @@ class Api_Client
 
         $body = wp_json_encode(['amount' => (int)$order->get_total() * 100]);
 
-        $url = self::$host . "/v1/orders/{$order->get_id()}/resign";
+        $url = self::get_api_host() . "/v1/orders/{$order->get_id()}/resign";
         $args = [
             'headers' => self::get_header_request(),
             'body' => $body,
@@ -325,7 +325,7 @@ class Api_Client
             'body' => wp_json_encode(['error_details' => $request->error_details, 'hash' => $request->hash]),
         ];
 
-        $response = wp_remote_post(self::$host . '/v1/log-plugin-error', $args);
+        $response = wp_remote_post(self::get_api_host() . '/v1/log-plugin-error', $args);
 
         return !is_wp_error($response) && strpos(wp_remote_retrieve_body($response), '"errors":') === false &&
             wp_remote_retrieve_response_code($response) < 400;
@@ -345,7 +345,7 @@ class Api_Client
             }
         }
 
-        return self::$host;
+        return self::get_api_host();
     }
 
     /**
