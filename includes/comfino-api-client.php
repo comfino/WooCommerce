@@ -302,7 +302,7 @@ class Api_Client
     public static function get_widget_script_url(): string
     {
         if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV_WIDGET_SCRIPT_URL') &&
-            getenv('COMFINO_DEV') === 'WC_' . WC_VERSION . '_' . Core::get_shop_domain()
+            getenv('COMFINO_DEV') === 'WC_' . WC_VERSION . '_' . Core::get_shop_url()
         ) {
             return getenv('COMFINO_DEV_WIDGET_SCRIPT_URL');
         }
@@ -333,7 +333,7 @@ class Api_Client
 
     private static function get_api_host($frontend_host = false)
     {
-        if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV') === 'WC_' . WC_VERSION . '_' . Core::get_shop_domain()) {
+        if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV') === 'WC_' . WC_VERSION . '_' . Core::get_shop_url()) {
             if ($frontend_host) {
                 if (getenv('COMFINO_DEV_API_HOST_FRONTEND')) {
                     return getenv('COMFINO_DEV_API_HOST_FRONTEND');
