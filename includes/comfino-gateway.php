@@ -77,9 +77,10 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
     public function admin_options()
     {
-        global $wp_version;
+        global $wp, $wp_version;
 
-        $errorsLog = Error_Logger::get_error_log(Core::ERROR_LOG_NUM_LINES);
+        $errors_log = Error_Logger::get_error_log(Core::ERROR_LOG_NUM_LINES);
+        $subsection = $this->get_subsection();
 
         echo '<h2>' . esc_html($this->method_title) . '</h2>';
         echo '<p>' . esc_html($this->method_description) . '</p>';
@@ -92,10 +93,28 @@ class Comfino_Gateway extends WC_Payment_Gateway
                 '&body=' . str_replace(',', '%2C', sprintf(__('WordPress %s WooCommerce %s Comfino %s, PHP %s', 'comfino-payment-gateway'), $wp_version, WC_VERSION, Comfino_Payment_Gateway::VERSION, PHP_VERSION)) . '">pomoc@comfino.pl</a>', '887-106-027'
             ) . '</p>';
 
+        echo '<nav class="nav-tab-wrapper woo-nav-tab-wrapper">';
+        echo '<a href="' . home_url(add_query_arg($wp->request, ['subsection' => 'payment_settings'])) . '" class="nav-tab' . ($subsection === 'payment_settings' ? ' nav-tab-active' : '') . '">' . __('Payment settings') . '</a>';
+        echo '<a href="' . home_url(add_query_arg($wp->request, ['subsection' => 'widget_settings'])) . '" class="nav-tab' . ($subsection === 'widget_settings' ? ' nav-tab-active' : '') . '">' . __('Widget settings') . '</a>';
+        echo '<a href="' . home_url(add_query_arg($wp->request, ['subsection' => 'developer_settings'])) . '" class="nav-tab' . ($subsection === 'developer_settings' ? ' nav-tab-active' : '') . '">' . __('Developer settings') . '</a>';
+        echo '<a href="' . home_url(add_query_arg($wp->request, ['subsection' => 'plugin_diagnostics'])) . '" class="nav-tab' . ($subsection === 'plugin_diagnostics' ? ' nav-tab-active' : '') . '">' . __('Plugin diagnostics') . '</a>';
+        echo '</nav>';
+
         echo '<table class="form-table">';
-        echo $this->generate_settings_html();
-        echo '<tr valign="top"><th scope="row" class="titledesc"><label>' . __('Errors log', 'comfino-payment-gateway') . '</label></th>';
-        echo '<td><textarea cols="20" rows="3" class="input-text wide-input" style="width: 800px; height: 400px">' . esc_textarea($errorsLog) . '</textarea></td></tr>';
+
+        switch ($subsection) {
+            case 'payment_settings':
+            case 'widget_settings':
+            case 'developer_settings':
+                echo $this->generate_settings_html($this->config_manager->get_form_fields($subsection));
+                break;
+
+            case 'plugin_diagnostics':
+                echo '<tr valign="top"><th scope="row" class="titledesc"><label>' . __('Errors log', 'comfino-payment-gateway') . '</label></th>';
+                echo '<td><textarea cols="20" rows="3" class="input-text wide-input" style="width: 800px; height: 400px">' . esc_textarea($errors_log) . '</textarea></td></tr>';
+                break;
+        }
+
         echo '</table>';
     }
 
@@ -356,5 +375,16 @@ class Comfino_Gateway extends WC_Payment_Gateway
         }
 
         return $notes;
+    }
+
+    private function get_subsection(): string
+    {
+        $subsection = $_GET['subsection'] ?? 'payment_settings';
+
+        if (!in_array($subsection, ['payment_settings', 'widget_settings', 'developer_settings', 'plugin_diagnostics'], true)) {
+            $subsection = 'payment_settings';
+        }
+
+        return $subsection;
     }
 }

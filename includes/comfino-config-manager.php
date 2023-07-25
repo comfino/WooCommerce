@@ -156,9 +156,42 @@ class Config_Manager extends \WC_Settings_API
         ];
     }
 
-    public function get_form_fields(): array
+    public function get_form_fields($subsection = null): array
     {
-        return $this->form_fields;
+        if (empty($subsection)) {
+            return $this->form_fields;
+        }
+
+        $form_fields = [];
+
+        switch ($subsection) {
+            case 'payment_settings':
+                $form_fields = array_intersect_key(
+                    $this->form_fields,
+                    array_flip(['enabled', 'title', 'production_key', 'show_logo'])
+                );
+                break;
+
+            case 'widget_settings':
+                $form_fields = array_intersect_key(
+                    $this->form_fields,
+                    array_flip([
+                        'widget_enabled', 'widget_type', 'widget_offer_type', 'widget_embed_method',
+                        'widget_price_selector', 'widget_target_selector', 'widget_price_observer_selector',
+                        'widget_price_observer_level', 'widget_key', 'widget_js_code'
+                    ])
+                );
+                break;
+
+            case 'developer_settings':
+                $form_fields = array_intersect_key(
+                    $this->form_fields,
+                    array_flip(['sandbox_mode', 'sandbox_key'])
+                );
+                break;
+        }
+
+        return $form_fields;
     }
 
     public function return_configuration_options(): array
