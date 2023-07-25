@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comfino Payment Gateway 2.2.8\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/comfino\n"
-"POT-Creation-Date: 2023-07-25T14:48:21+00:00\n"
-"PO-Revision-Date: 2023-07-25 16:56+0200\n"
+"POT-Creation-Date: 2023-07-25T15:05:11+00:00\n"
+"PO-Revision-Date: 2023-07-25 17:10+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: pl_PL\n"
@@ -218,6 +218,22 @@ msgstr "WordPress %s WooCommerce %s Comfino %s - pytanie"
 #: includes/comfino-gateway.php:93
 msgid "WordPress %s WooCommerce %s Comfino %s, PHP %s"
 msgstr "WordPress %s WooCommerce %s Comfino %s, PHP %s"
+
+#: includes/comfino-gateway.php:97
+msgid "Payment settings"
+msgstr "Ustawienia płatności"
+
+#: includes/comfino-gateway.php:98
+msgid "Widget settings"
+msgstr "Ustawienia widgetu"
+
+#: includes/comfino-gateway.php:99
+msgid "Developer settings"
+msgstr "Ustawienia deweloperskie"
+
+#: includes/comfino-gateway.php:100
+msgid "Plugin diagnostics"
+msgstr "Diagnostyka wtyczki"
 
 #: includes/comfino-gateway.php:113
 msgid "Errors log"
