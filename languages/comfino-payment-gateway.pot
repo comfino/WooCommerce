@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2023-07-25T15:05:11+00:00\n"
+"POT-Creation-Date: 2023-07-25T15:45:23+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.8.1\n"
 "X-Domain: comfino-payment-gateway\n"
@@ -63,11 +63,11 @@ msgid "Enable/Disable"
 msgstr ""
 
 #: includes/comfino-config-manager.php:58
-msgid "Enable Comfino Payment Module."
+msgid "Enable Comfino payment module"
 msgstr ""
 
 #: includes/comfino-config-manager.php:60
-msgid "Show in the Payment List as a payment option."
+msgid "Shows Comfino payment option at the payment list."
 msgstr ""
 
 #: includes/comfino-config-manager.php:63
@@ -75,110 +75,134 @@ msgid "Title"
 msgstr ""
 
 #: includes/comfino-config-manager.php:68
-msgid "Production key"
+msgid "Production environment API key"
 msgstr ""
 
-#: includes/comfino-config-manager.php:72
+#: includes/comfino-config-manager.php:70
+msgid "Please enter the key provided during registration"
+msgstr ""
+
+#: includes/comfino-config-manager.php:73
 msgid "Show logo"
 msgstr ""
 
-#: includes/comfino-config-manager.php:74
+#: includes/comfino-config-manager.php:75
 msgid "Show logo on payment method"
 msgstr ""
 
-#: includes/comfino-config-manager.php:78
-msgid "Sandbox mode"
+#: includes/comfino-config-manager.php:79
+msgid "Test environment"
 msgstr ""
 
-#: includes/comfino-config-manager.php:80
-msgid "Enable sandbox mode"
+#: includes/comfino-config-manager.php:81
+msgid "Use test environment"
 msgstr ""
 
-#: includes/comfino-config-manager.php:84
-msgid "Sandbox key"
-msgstr ""
-
-#: includes/comfino-config-manager.php:88
-msgid "Widget enable"
-msgstr ""
-
-#: includes/comfino-config-manager.php:90
-msgid "Enable Comfino widget"
+#: includes/comfino-config-manager.php:83
+msgid "The test environment allows the store owner to get acquainted with the functionality of the Comfino module. This is a Comfino simulator, thanks to which you can get to know all the advantages of this payment method. The use of the test mode is free (there are also no charges for orders)."
 msgstr ""
 
 #: includes/comfino-config-manager.php:92
+msgid "Test environment API key"
+msgstr ""
+
+#: includes/comfino-config-manager.php:94
+msgid "Ask the supervisor for access to the test environment (key, login, password, link). Remember, the test key is different from the production key."
+msgstr ""
+
+#: includes/comfino-config-manager.php:97
+msgid "Basic settings"
+msgstr ""
+
+#: includes/comfino-config-manager.php:101
+msgid "Widget enable"
+msgstr ""
+
+#: includes/comfino-config-manager.php:103
+msgid "Enable Comfino widget"
+msgstr ""
+
+#: includes/comfino-config-manager.php:105
 msgid "Show Comfino widget in the product."
 msgstr ""
 
-#: includes/comfino-config-manager.php:95
-msgid "Widget type"
-msgstr ""
-
-#: includes/comfino-config-manager.php:98
-msgid "Textual widget"
-msgstr ""
-
-#: includes/comfino-config-manager.php:99
-msgid "Graphical widget with banner"
-msgstr ""
-
-#: includes/comfino-config-manager.php:100
-msgid "Graphical widget with installments calculator"
-msgstr ""
-
-#: includes/comfino-config-manager.php:104
-msgid "Widget offer type"
-msgstr ""
-
-#: includes/comfino-config-manager.php:107
-msgid "Zero percent installments"
-msgstr ""
-
 #: includes/comfino-config-manager.php:108
-msgid "Convenient installments"
-msgstr ""
-
-#: includes/comfino-config-manager.php:109
-msgid "Pay later"
-msgstr ""
-
-#: includes/comfino-config-manager.php:113
-msgid "Widget embed method"
-msgstr ""
-
-#: includes/comfino-config-manager.php:123
-msgid "Widget price selector"
-msgstr ""
-
-#: includes/comfino-config-manager.php:128
-msgid "Widget target selector"
-msgstr ""
-
-#: includes/comfino-config-manager.php:133
-msgid "Price change detection - container selector"
-msgstr ""
-
-#: includes/comfino-config-manager.php:135
-msgid "Selector of observed parent element which contains price element."
-msgstr ""
-
-#: includes/comfino-config-manager.php:141
-msgid "Price change detection - container hierarchy level"
-msgstr ""
-
-#: includes/comfino-config-manager.php:144
-msgid "Hierarchy level of observed parent element relative to the price element."
-msgstr ""
-
-#: includes/comfino-config-manager.php:150
 msgid "Widget key"
 msgstr ""
 
-#: includes/comfino-config-manager.php:154
+#: includes/comfino-config-manager.php:112
+msgid "Widget type"
+msgstr ""
+
+#: includes/comfino-config-manager.php:115
+msgid "Textual widget"
+msgstr ""
+
+#: includes/comfino-config-manager.php:116
+msgid "Graphical widget with banner"
+msgstr ""
+
+#: includes/comfino-config-manager.php:117
+msgid "Graphical widget with installments calculator"
+msgstr ""
+
+#: includes/comfino-config-manager.php:121
+msgid "Widget offer type"
+msgstr ""
+
+#: includes/comfino-config-manager.php:124
+msgid "Zero percent installments"
+msgstr ""
+
+#: includes/comfino-config-manager.php:125
+msgid "Convenient installments"
+msgstr ""
+
+#: includes/comfino-config-manager.php:126
+msgid "Pay later"
+msgstr ""
+
+#: includes/comfino-config-manager.php:128
+msgid "Other payment methods (Installments 0%, Buy now, pay later, Installments for Companies) available after consulting a Comfino advisor (kontakt@comfino.pl)."
+msgstr ""
+
+#: includes/comfino-config-manager.php:131
+msgid "Advanced settings"
+msgstr ""
+
+#: includes/comfino-config-manager.php:135
+msgid "Widget price selector"
+msgstr ""
+
+#: includes/comfino-config-manager.php:140
+msgid "Widget target selector"
+msgstr ""
+
+#: includes/comfino-config-manager.php:145
+msgid "Price change detection - container selector"
+msgstr ""
+
+#: includes/comfino-config-manager.php:147
+msgid "Selector of observed parent element which contains price element."
+msgstr ""
+
+#: includes/comfino-config-manager.php:153
+msgid "Price change detection - container hierarchy level"
+msgstr ""
+
+#: includes/comfino-config-manager.php:156
+msgid "Hierarchy level of observed parent element relative to the price element."
+msgstr ""
+
+#: includes/comfino-config-manager.php:162
+msgid "Widget embed method"
+msgstr ""
+
+#: includes/comfino-config-manager.php:172
 msgid "Widget code"
 msgstr ""
 
-#: includes/comfino-config-manager.php:276
+#: includes/comfino-config-manager.php:296
 msgid "API key %s is not valid."
 msgstr ""
 

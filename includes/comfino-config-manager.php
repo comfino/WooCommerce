@@ -55,9 +55,9 @@ class Config_Manager extends \WC_Settings_API
             'enabled' => [
                 'title' => __('Enable/Disable', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
-                'label' => __('Enable Comfino Payment Module.', 'comfino-payment-gateway'),
+                'label' => __('Enable Comfino payment module', 'comfino-payment-gateway'),
                 'default' => 'no',
-                'description' => __('Show in the Payment List as a payment option.', 'comfino-payment-gateway')
+                'description' => __('Shows Comfino payment option at the payment list.', 'comfino-payment-gateway')
             ],
             'title' => [
                 'title' => __('Title', 'comfino-payment-gateway'),
@@ -65,8 +65,9 @@ class Config_Manager extends \WC_Settings_API
                 'default' => 'Comfino',
             ],
             'production_key' => [
-                'title' => __('Production key', 'comfino-payment-gateway'),
-                'type' => 'text'
+                'title' => __('Production environment API key', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'placeholder' => __('Please enter the key provided during registration', 'comfino-payment-gateway'),
             ],
             'show_logo' => [
                 'title' => __('Show logo', 'comfino-payment-gateway'),
@@ -75,14 +76,26 @@ class Config_Manager extends \WC_Settings_API
                 'default' => 'yes',
             ],
             'sandbox_mode' => [
-                'title' => __('Sandbox mode', 'comfino-payment-gateway'),
+                'title' => __('Test environment', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
-                'label' => __('Enable sandbox mode', 'comfino-payment-gateway'),
+                'label' => __('Use test environment', 'comfino-payment-gateway'),
                 'default' => 'no',
+                'description' => __(
+                    'The test environment allows the store owner to get acquainted with the ' .
+                    'functionality of the Comfino module. This is a Comfino simulator, thanks ' .
+                    'to which you can get to know all the advantages of this payment method. ' .
+                    'The use of the test mode is free (there are also no charges for orders).',
+                    'comfino-payment-gateway'
+                ),
             ],
             'sandbox_key' => [
-                'title' => __('Sandbox key', 'comfino-payment-gateway'),
-                'type' => 'text'
+                'title' => __('Test environment API key', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'description' => __('Ask the supervisor for access to the test environment (key, login, password, link). Remember, the test key is different from the production key.', 'comfino-payment-gateway'),
+            ],
+            'widget_settings_basic' => [
+                'title' => __('Basic settings', 'comfino-payment-gateway'),
+                'type' => 'title'
             ],
             'widget_enabled' => [
                 'title' => __('Widget enable', 'comfino-payment-gateway'),
@@ -90,6 +103,10 @@ class Config_Manager extends \WC_Settings_API
                 'label' => __('Enable Comfino widget', 'comfino-payment-gateway'),
                 'default' => 'no',
                 'description' => __('Show Comfino widget in the product.', 'comfino-payment-gateway')
+            ],
+            'widget_key' => [
+                'title' => __('Widget key', 'comfino-payment-gateway'),
+                'type' => 'text',
             ],
             'widget_type' => [
                 'title' => __('Widget type', 'comfino-payment-gateway'),
@@ -107,17 +124,12 @@ class Config_Manager extends \WC_Settings_API
                     'INSTALLMENTS_ZERO_PERCENT' => __('Zero percent installments', 'comfino-payment-gateway'),
                     'CONVENIENT_INSTALLMENTS' => __('Convenient installments', 'comfino-payment-gateway'),
                     'PAY_LATER' => __('Pay later', 'comfino-payment-gateway'),
-                ]
+                ],
+                'description' => __('Other payment methods (Installments 0%, Buy now, pay later, Installments for Companies) available after consulting a Comfino advisor (kontakt@comfino.pl).', 'comfino-payment-gateway'),
             ],
-            'widget_embed_method' => [
-                'title' => __('Widget embed method', 'comfino-payment-gateway'),
-                'type' => 'select',
-                'options' => [
-                    'INSERT_INTO_FIRST' => 'INSERT_INTO_FIRST',
-                    'INSERT_INTO_LAST' => 'INSERT_INTO_LAST',
-                    'INSERT_BEFORE' => 'INSERT_BEFORE',
-                    'INSERT_AFTER' => 'INSERT_AFTER',
-                ]
+            'widget_settings_advanced' => [
+                'title' => __('Advanced settings', 'comfino-payment-gateway'),
+                'type' => 'title'
             ],
             'widget_price_selector' => [
                 'title' => __('Widget price selector', 'comfino-payment-gateway'),
@@ -146,9 +158,15 @@ class Config_Manager extends \WC_Settings_API
                     'comfino-payment-gateway'
                 )
             ],
-            'widget_key' => [
-                'title' => __('Widget key', 'comfino-payment-gateway'),
-                'type' => 'text',
+            'widget_embed_method' => [
+                'title' => __('Widget embed method', 'comfino-payment-gateway'),
+                'type' => 'select',
+                'options' => [
+                    'INSERT_INTO_FIRST' => 'INSERT_INTO_FIRST',
+                    'INSERT_INTO_LAST' => 'INSERT_INTO_LAST',
+                    'INSERT_BEFORE' => 'INSERT_BEFORE',
+                    'INSERT_AFTER' => 'INSERT_AFTER',
+                ]
             ],
             'widget_js_code' => [
                 'title' => __('Widget code', 'comfino-payment-gateway'),
@@ -179,9 +197,11 @@ class Config_Manager extends \WC_Settings_API
                 $form_fields = array_intersect_key(
                     $this->form_fields,
                     array_flip([
-                        'widget_enabled', 'widget_type', 'widget_offer_type', 'widget_embed_method',
+                        'widget_settings_basic',
+                        'widget_enabled', 'widget_key', 'widget_type', 'widget_offer_type',
+                        'widget_settings_advanced',
                         'widget_price_selector', 'widget_target_selector', 'widget_price_observer_selector',
-                        'widget_price_observer_level', 'widget_key', 'widget_js_code'
+                        'widget_price_observer_level', 'widget_embed_method', 'widget_js_code',
                     ])
                 );
                 break;
