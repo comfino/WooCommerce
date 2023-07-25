@@ -130,12 +130,15 @@ class Config_Manager extends \WC_Settings_API
                 'default' => '.summary .product_meta',
             ],
             'widget_price_observer_selector' => [
-                'title' => __('Widget price observer selector', 'comfino-payment-gateway'),
+                'title' => __('Price change detection - container selector', 'comfino-payment-gateway'),
                 'type' => 'text',
-                'default' => '',
+                'default' => __(
+                    'Selector of observed parent element which contains price element.',
+                    'comfino-payment-gateway'
+                )
             ],
             'widget_price_observer_level' => [
-                'title' => __('Price change detection level', 'comfino-payment-gateway'),
+                'title' => __('Price change detection - container hierarchy level', 'comfino-payment-gateway'),
                 'type' => 'number',
                 'default' => 0,
                 'description' => __(
