@@ -72,7 +72,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
     public function process_admin_options(): bool
     {
-        return $this->config_manager->update_configuration($this->get_post_data(), false);
+        return $this->config_manager->update_configuration($this->get_subsection(), $this->get_post_data(), false);
     }
 
     public function admin_options()

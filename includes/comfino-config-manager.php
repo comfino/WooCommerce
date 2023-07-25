@@ -230,14 +230,14 @@ class Config_Manager extends \WC_Settings_API
         return $configuration_options;
     }
 
-    public function update_configuration(array $configuration_options, bool $remote_request): bool
+    public function update_configuration(string $subsection, array $configuration_options, bool $remote_request): bool
     {
         $this->init_settings();
 
         $options_map = array_flip(self::CONFIG_OPTIONS_MAP);
         $is_error = false;
 
-        foreach ($this->get_form_fields() as $key => $field) {
+        foreach ($this->get_form_fields($subsection) as $key => $field) {
             $field_key = $this->get_field_key($key);
 
             if (isset($options_map[$key]) && $this->get_option_type($options_map[$key]) === 'bool') {
