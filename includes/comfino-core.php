@@ -170,6 +170,7 @@ class Core
 
         if (is_array($configuration_options)) {
             if (self::$config_manager->update_configuration(
+                '',
                 self::$config_manager->prepare_configuration_options($configuration_options),
                 true
             )) {
