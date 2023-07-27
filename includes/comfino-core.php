@@ -134,7 +134,7 @@ class Core
             return new \WP_REST_Response('Access not allowed.', 403);
         }
 
-        if (!self::valid_signature(self::get_header_by_name('CR_SIGNATURE'), $verification_key)) {
+        if (!self::valid_signature(self::get_signature(), $verification_key)) {
             return new \WP_REST_Response(['status' => 'Failed comparison of CR-Signature and shop hash.'], 400);
         }
 
@@ -159,10 +159,7 @@ class Core
     {
         self::init();
 
-        $signature = self::get_header_by_name('CR_SIGNATURE');
-        $json_request_body = $request->get_body();
-
-        if (!self::valid_signature($signature, $json_request_body)) {
+        if (!self::valid_signature(self::get_signature(), $request->get_body())) {
             return new \WP_REST_Response(['status' => 'Failed comparison of CR-Signature and shop hash.'], 400);
         }
 
@@ -185,7 +182,13 @@ class Core
 
     public static function get_signature(): string
     {
-        return self::get_header_by_name('CR_SIGNATURE');
+        $signature = self::get_header_by_name('CR_SIGNATURE');
+
+        if ($signature !== '') {
+            return $signature;
+        }
+
+        return self::get_header_by_name('X_CR_SIGNATURE');
     }
 
     public static function get_widget_init_code(Comfino_Gateway $comfino_gateway): string
@@ -218,7 +221,11 @@ class Core
             $comfino_gateway->get_option('widget_js_code')
         );
 
-        return '<script>' . str_replace(['&#039;', '&gt;', '&amp;'], ["'", '>', '&'], esc_html($code)) . '</script>';
+        return '<script>' . str_replace(
+                   ['&#039;', '&gt;', '&amp;', '&quot;', '&#34;'],
+                   ["'", '>', '&', '"', '"'],
+                   esc_html($code)
+               ) . '</script>';
     }
 
     private static function init()
