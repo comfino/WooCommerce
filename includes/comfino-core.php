@@ -166,15 +166,22 @@ class Core
         $configuration_options = $request->get_json_params();
 
         if (is_array($configuration_options)) {
+            $current_options = self::$config_manager->return_configuration_options(true);
+            $input_options = self::$config_manager->filter_configuration_options($configuration_options);
+
             if (self::$config_manager->update_configuration(
                 '',
-                self::$config_manager->prepare_configuration_options($configuration_options),
+                self::$config_manager->prepare_configuration_options(array_merge($current_options, $input_options)),
                 true
             )) {
                 return new \WP_REST_Response(null, 204);
             }
 
-            return new \WP_REST_Response('Wrong input data.', 400);
+            if (count(self::$config_manager->get_errors())) {
+                return new \WP_REST_Response('Wrong input data.', 400);
+            }
+
+            return new \WP_REST_Response(null, 204);
         }
 
         return new \WP_REST_Response('Wrong input data.', 400);

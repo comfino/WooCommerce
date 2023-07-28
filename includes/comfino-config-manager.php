@@ -217,11 +217,11 @@ class Config_Manager extends \WC_Settings_API
         return $form_fields;
     }
 
-    public function return_configuration_options(): array
+    public function return_configuration_options(bool $all_options = false): array
     {
         $configuration_options = [];
 
-        foreach (self::ACCESSIBLE_CONFIG_OPTIONS as $opt_name) {
+        foreach ($all_options ? array_keys(self::CONFIG_OPTIONS_MAP) : self::ACCESSIBLE_CONFIG_OPTIONS as $opt_name) {
             $configuration_options[$opt_name] = $this->get_option(self::CONFIG_OPTIONS_MAP[$opt_name]);
 
             switch ($this->get_option_type($opt_name)) {
@@ -314,6 +314,19 @@ class Config_Manager extends \WC_Settings_API
         );
     }
 
+    public function filter_configuration_options(array $configuration_options): array
+    {
+        $filtered_config_options = [];
+
+        foreach ($configuration_options as $opt_name => $opt_value) {
+            if (in_array($opt_name, self::ACCESSIBLE_CONFIG_OPTIONS, true)) {
+                $filtered_config_options[$opt_name] = $opt_value;
+            }
+        }
+
+        return $filtered_config_options;
+    }
+
     public function prepare_configuration_options(array $configuration_options): array
     {
         $prepared_config_options = [];
@@ -325,11 +338,11 @@ class Config_Manager extends \WC_Settings_API
 
             if ($opt_value === true) {
                 $opt_value = 'yes';
-            } elseif ($opt_value === false) {
-                $opt_value = 'no';
             }
 
-            $prepared_config_options[$this->get_field_key(self::CONFIG_OPTIONS_MAP[$opt_name])] = $opt_value;
+            if ($opt_value !== false) {
+                $prepared_config_options[$this->get_field_key(self::CONFIG_OPTIONS_MAP[$opt_name])] = $opt_value;
+            }
         }
 
         return $prepared_config_options;
