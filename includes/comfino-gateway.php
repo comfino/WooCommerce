@@ -263,9 +263,12 @@ class Comfino_Gateway extends WC_Payment_Gateway
         if (!$this->get_status_note($order_id, [Core::CANCELLED_BY_SHOP_STATUS, Core::RESIGN_STATUS])) {
             $order = wc_get_order($order_id);
 
-            Api_Client::cancel_order($order);
+            if (stripos($order->get_payment_method(), 'comfino') !== false) {
+                // Process orders paid by Comfino only.
+                Api_Client::cancel_order($order);
 
-            $order->add_order_note(__("Send to Comfino canceled order", 'comfino-payment-gateway'));
+                $order->add_order_note(__("Send to Comfino canceled order", 'comfino-payment-gateway'));
+            }
         }
     }
 
