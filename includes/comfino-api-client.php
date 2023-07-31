@@ -451,8 +451,8 @@ class Api_Client
         global $wp_version;
 
         return sprintf(
-            'WP Comfino [%s], WP [%s], WC [%s], PHP [%s]',
-            \Comfino_Payment_Gateway::VERSION, $wp_version, WC_VERSION, PHP_VERSION
+            'WP Comfino [%s], WP [%s], WC [%s], PHP [%s], %s',
+            \Comfino_Payment_Gateway::VERSION, $wp_version, WC_VERSION, PHP_VERSION, Core::get_shop_domain()
         );
     }
 }
