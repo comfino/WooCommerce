@@ -12,23 +12,25 @@ Przejdź do zakładki `"Wtyczki"`, następnie kliknij przycisk `"Dodaj nową -> 
 ![Instalacja](images/pl/installation-2.png "Instalacja")
 ![Instalacja](images/pl/installation-3.png "Instalacja")
 
+![Konfiguracja](images/pl/configuration-1.png "Konfiguracja")
+
 ## KONFIGURACJA
-Parametry konfiguracyjne modułu są pogrupowane kategoriami odpowiadającymi zakładkom panelu konfiguracyjnego: `"USTAWIENIA PŁATNOŚCI"`, `"USTAWIENIA WIDGETU"`, `"USTAWIENIA DEWELOPERSKIE"`.
-Ostatnia zakładka `"DIAGNOSTYKA WTYCZKI"` nie zawiera żadnych parametrów do ustawienia i pełni funkcję informacyjno-diagnostyczną. Zawiera między innymi lokalny dziennik błędów (log błędów).
+Parametry konfiguracyjne modułu są pogrupowane kategoriami odpowiadającymi zakładkom panelu konfiguracyjnego: `"Ustawienia płatności"`, `"Ustawienia widgetu"`, `"Ustawienia deweloperskie"`.
+Ostatnia zakładka `"Diagnostyka wtyczki"` nie zawiera żadnych parametrów do ustawienia i pełni funkcję informacyjno-diagnostyczną. Zawiera między innymi lokalny dziennik błędów (log błędów).
 
 Przed użyciem płatności Comfino, moduł musi zostać skonfigurowany. Możesz to zrobić, klikając `"Konfiguruj"` w panelu informacyjnym modułu.
 
-Najważniejsze pole, które musi być uzupełnione, to pole `"Klucz API środowiska produkcyjnego"` z zakładki `"USTAWIENIA PŁATNOŚCI"`.
-W zakładce `"USTAWIENIA DEWELOPERSKIE"` znajduje się pole drugiego klucza - `"Klucz API środowiska testowego"`.
+Najważniejsze pole, które musi być uzupełnione, to pole `"Klucz API środowiska produkcyjnego"` z zakładki `"Ustawienia płatności"`.
+W zakładce `"Ustawienia deweloperskie"` znajduje się pole drugiego klucza - `"Klucz API środowiska testowego"`.
 
 Pola parametrów konfiguracyjnych:
 
 **USTAWIENIA PŁATNOŚCI**
 
+* **Włączony/Wyłączony** — status aktywności modułu Comfino (widoczność na liście metod płatności w koszyku)
+* **Tytuł** — tekst wyświetlany na liście metod płatności (domyślnie `"Comfino"`)
 * **Klucz API środowiska produkcyjnego** — unikalny klucz dostępowy umożliwiający komunikację modułu z API Comfino (otrzymasz go od przedstawiciela Comfino)
-* **Prezentacja płatności** — sposób prezentacji Comfino na liście metod płatności [`Tylko ikona`, `Tylko tekst`, `Ikona i tekst`]
-* **Tekst płatności** — tekst wyświetlany na liście metod płatności (domyślnie `"(Raty | Kup Teraz, Zapłać Póżniej | Finansowanie dla Firm)"`)
-* **Minimalna kwota w koszyku** — wartość koszyka, od której dostępna jest płatność Comfino (domyślnie: 30 zł)
+* **Wyświetlanie logo** — status widoczności logo Comfino obok tytułu na liście metod płatności (domyślnie: włączone)
 
 ![Konfiguracja](images/pl/configuration1.png "Konfiguracja")
 
@@ -36,9 +38,10 @@ Pola parametrów konfiguracyjnych:
 
 **Ustawienia podstawowe**
 
-* **Widget włączony?** — przełącznik aktywacji/deaktywacji widgetu promocyjnego na stronie produktu
+* **Widget włączony** — przełącznik aktywacji/deaktywacji widgetu promocyjnego na stronie produktu
+* **Klucz widgetu** — unikalny klucz dostępowy umożliwiający komunikację widgetu z API Comfino (ustawiany automatycznie przy zapisie konfiguracji z poprawnym kluczem API)
 * **Typ widgetu** — sposób prezentacji widgetu [`Widget tekstowy`, `Widget graficzny z banerem`, `Widget graficzny z kalkulatorem rat`]
-* **Typ oferty** — typ promowanej oferty finansowania [`Raty zero procent`, `Niskie raty`, `Zapłać później`]
+* **Typ oferty widgetu** — typ promowanej oferty finansowania [`Raty zero procent`, `Niskie raty`, `Zapłać później`]
 
 **Ustawienia zaawansowane**
 
@@ -49,13 +52,13 @@ Pola parametrów konfiguracyjnych:
 * **Metoda osadzania** — sposób orientacji widgetu względem elementu kontenera [`INSERT_INTO_FIRST`, `INSERT_INTO_LAST`, `INSERT_BEFORE`, `INSERT_AFTER`]
 * **Kod inicjalizacji widgetu** — skrypt JavaScript inicjalizujący widget na stronie produktu (wprowadzanie zmian niezalecane dla niezaawansowanych użytkowników bez znajomości JavaScript)
 
-Szczegółowe informacje o działaniu widgetu i jego opcjach konfiguracyjnych znajdziesz w osobnej [dokumentacji widgetu Comfino](https://comfino.pl/widgets/comfino-prestashop/pl).
+Szczegółowe informacje o działaniu widgetu i jego opcjach konfiguracyjnych znajdziesz w osobnej [dokumentacji widgetu Comfino](https://comfino.pl/widgets/comfino-woocommerce/pl).
 
 ![Konfiguracja](images/pl/configuration2.png "Konfiguracja")
 
 **USTAWIENIA DEWELOPERSKIE**
 
-* **Użyj środowiska testowego** — przełącznik aktywacji/deaktywacji trybu deweloperskiego
+* **Środowisko testowe** — przełącznik aktywacji/deaktywacji trybu deweloperskiego
 * **Klucz API środowiska testowego** — unikalny klucz dostępowy umożliwiający komunikację modułu z testowym API Comfino
 
 ![Konfiguracja](images/pl/configuration3.png "Konfiguracja")
@@ -70,11 +73,6 @@ Zakładka zawiera informacje techniczne o wtyczce i środowisku (wersja wtyczki,
 Zawiera też listę ostatnich błędów wraz z podglądem lokalnego dziennika błędów (log błędów).
 
 ![Konfiguracja](images/pl/configuration4.png "Konfiguracja")
-
-Informacja o aktywności trybu deweloperskiego jest wyświetlana w zakładkach `"USTAWIENIA PŁATNOŚCI"` i `"DIAGNOSTYKA WTYCZKI"`.
-W trybie tym wtyczka używa klucza z zakładki `"USTAWIENIA DEWELOPERSKIE"` do komunikacji z testowym API Comfino. Klucz środowiska testowego również otrzymasz od przedstawiciela Comfino.
-
-![Konfiguracja](images/pl/configuration5.png "Konfiguracja")
 
 ## UWAGI
 
