@@ -72,7 +72,7 @@ window.Comfino = {
                 }
             }
         } else {
-            document.getElementById('comfino-loan-term').value = '';
+            document.getElementById('comfino-loan-term').value = '1';
             document.getElementById('comfino-total-payment').innerHTML = Comfino.offerList.data[Comfino.selectedOffer].sumAmount + ' zł';
         }
     },
