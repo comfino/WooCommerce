@@ -18,7 +18,7 @@ Przejdź do zakładki `"Wtyczki"`, następnie kliknij przycisk `"Dodaj nową -> 
 Parametry konfiguracyjne modułu są pogrupowane kategoriami odpowiadającymi zakładkom panelu konfiguracyjnego: `"Ustawienia płatności"`, `"Ustawienia widgetu"`, `"Ustawienia deweloperskie"`.
 Ostatnia zakładka `"Diagnostyka wtyczki"` nie zawiera żadnych parametrów do ustawienia i pełni funkcję informacyjno-diagnostyczną. Zawiera między innymi lokalny dziennik błędów (log błędów).
 
-Przed użyciem płatności Comfino, moduł musi zostać skonfigurowany. Możesz to zrobić, klikając `"Konfiguruj"` w panelu informacyjnym modułu.
+Przed użyciem płatności Comfino, moduł musi zostać skonfigurowany. Możesz to zrobić, klikając `"Ustawienia"` w panelu informacyjnym modułu.
 
 Najważniejsze pole, które musi być uzupełnione, to pole `"Klucz API środowiska produkcyjnego"` z zakładki `"Ustawienia płatności"`.
 W zakładce `"Ustawienia deweloperskie"` znajduje się pole drugiego klucza - `"Klucz API środowiska testowego"`.
