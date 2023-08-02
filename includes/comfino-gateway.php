@@ -77,7 +77,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
     public function admin_options()
     {
-        global $wp, $wp_version;
+        global $wp, $wp_version, $wpdb;
 
         $errors_log = Error_Logger::get_error_log(Core::ERROR_LOG_NUM_LINES);
         $subsection = $this->get_subsection();
@@ -110,6 +110,17 @@ class Comfino_Gateway extends WC_Payment_Gateway
                 break;
 
             case 'plugin_diagnostics':
+                $shop_info = sprintf(
+                    'WooCommerce Comfino %s, WordPress %s, WooCommerce %s, PHP %s, web server %s, database %s',
+                    \Comfino_Payment_Gateway::VERSION,
+                    $wp_version,
+                    WC_VERSION,
+                    PHP_VERSION,
+                    $_SERVER['SERVER_SOFTWARE'],
+                    $wpdb->db_version()
+                );
+
+                echo '<tr valign="top"><th scope="row" class="titledesc"></th><td>' . $shop_info . '</td>';
                 echo '<tr valign="top"><th scope="row" class="titledesc"><label>' . __('Errors log', 'comfino-payment-gateway') . '</label></th>';
                 echo '<td><textarea cols="20" rows="3" class="input-text wide-input" style="width: 800px; height: 400px">' . esc_textarea($errors_log) . '</textarea></td></tr>';
                 break;
