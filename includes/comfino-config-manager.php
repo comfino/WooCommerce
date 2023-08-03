@@ -55,9 +55,9 @@ class Config_Manager extends \WC_Settings_API
             'enabled' => [
                 'title' => __('Enable/Disable', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
-                'label' => __('Enable Comfino Payment Module.', 'comfino-payment-gateway'),
+                'label' => __('Enable Comfino payment module', 'comfino-payment-gateway'),
                 'default' => 'no',
-                'description' => __('Show in the Payment List as a payment option.', 'comfino-payment-gateway')
+                'description' => __('Shows Comfino payment option at the payment list.', 'comfino-payment-gateway')
             ],
             'title' => [
                 'title' => __('Title', 'comfino-payment-gateway'),
@@ -65,8 +65,9 @@ class Config_Manager extends \WC_Settings_API
                 'default' => 'Comfino',
             ],
             'production_key' => [
-                'title' => __('Production key', 'comfino-payment-gateway'),
-                'type' => 'text'
+                'title' => __('Production environment API key', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'placeholder' => __('Please enter the key provided during registration', 'comfino-payment-gateway'),
             ],
             'show_logo' => [
                 'title' => __('Show logo', 'comfino-payment-gateway'),
@@ -75,14 +76,26 @@ class Config_Manager extends \WC_Settings_API
                 'default' => 'yes',
             ],
             'sandbox_mode' => [
-                'title' => __('Sandbox mode', 'comfino-payment-gateway'),
+                'title' => __('Test environment', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
-                'label' => __('Enable sandbox mode', 'comfino-payment-gateway'),
+                'label' => __('Use test environment', 'comfino-payment-gateway'),
                 'default' => 'no',
+                'description' => __(
+                    'The test environment allows the store owner to get acquainted with the ' .
+                    'functionality of the Comfino module. This is a Comfino simulator, thanks ' .
+                    'to which you can get to know all the advantages of this payment method. ' .
+                    'The use of the test mode is free (there are also no charges for orders).',
+                    'comfino-payment-gateway'
+                ),
             ],
             'sandbox_key' => [
-                'title' => __('Sandbox key', 'comfino-payment-gateway'),
-                'type' => 'text'
+                'title' => __('Test environment API key', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'description' => __('Ask the supervisor for access to the test environment (key, login, password, link). Remember, the test key is different from the production key.', 'comfino-payment-gateway'),
+            ],
+            'widget_settings_basic' => [
+                'title' => __('Basic settings', 'comfino-payment-gateway'),
+                'type' => 'title'
             ],
             'widget_enabled' => [
                 'title' => __('Widget enable', 'comfino-payment-gateway'),
@@ -90,6 +103,10 @@ class Config_Manager extends \WC_Settings_API
                 'label' => __('Enable Comfino widget', 'comfino-payment-gateway'),
                 'default' => 'no',
                 'description' => __('Show Comfino widget in the product.', 'comfino-payment-gateway')
+            ],
+            'widget_key' => [
+                'title' => __('Widget key', 'comfino-payment-gateway'),
+                'type' => 'text',
             ],
             'widget_type' => [
                 'title' => __('Widget type', 'comfino-payment-gateway'),
@@ -107,17 +124,12 @@ class Config_Manager extends \WC_Settings_API
                     'INSTALLMENTS_ZERO_PERCENT' => __('Zero percent installments', 'comfino-payment-gateway'),
                     'CONVENIENT_INSTALLMENTS' => __('Convenient installments', 'comfino-payment-gateway'),
                     'PAY_LATER' => __('Pay later', 'comfino-payment-gateway'),
-                ]
+                ],
+                'description' => __('Other payment methods (Installments 0%, Buy now, pay later, Installments for Companies) available after consulting a Comfino advisor (kontakt@comfino.pl).', 'comfino-payment-gateway'),
             ],
-            'widget_embed_method' => [
-                'title' => __('Widget embed method', 'comfino-payment-gateway'),
-                'type' => 'select',
-                'options' => [
-                    'INSERT_INTO_FIRST' => 'INSERT_INTO_FIRST',
-                    'INSERT_INTO_LAST' => 'INSERT_INTO_LAST',
-                    'INSERT_BEFORE' => 'INSERT_BEFORE',
-                    'INSERT_AFTER' => 'INSERT_AFTER',
-                ]
+            'widget_settings_advanced' => [
+                'title' => __('Advanced settings', 'comfino-payment-gateway'),
+                'type' => 'title'
             ],
             'widget_price_selector' => [
                 'title' => __('Widget price selector', 'comfino-payment-gateway'),
@@ -130,12 +142,15 @@ class Config_Manager extends \WC_Settings_API
                 'default' => '.summary .product_meta',
             ],
             'widget_price_observer_selector' => [
-                'title' => __('Widget price observer selector', 'comfino-payment-gateway'),
+                'title' => __('Price change detection - container selector', 'comfino-payment-gateway'),
                 'type' => 'text',
-                'default' => '',
+                'description' => __(
+                    'Selector of observed parent element which contains price element.',
+                    'comfino-payment-gateway'
+                )
             ],
             'widget_price_observer_level' => [
-                'title' => __('Price change detection level', 'comfino-payment-gateway'),
+                'title' => __('Price change detection - container hierarchy level', 'comfino-payment-gateway'),
                 'type' => 'number',
                 'default' => 0,
                 'description' => __(
@@ -143,9 +158,15 @@ class Config_Manager extends \WC_Settings_API
                     'comfino-payment-gateway'
                 )
             ],
-            'widget_key' => [
-                'title' => __('Widget key', 'comfino-payment-gateway'),
-                'type' => 'text',
+            'widget_embed_method' => [
+                'title' => __('Widget embed method', 'comfino-payment-gateway'),
+                'type' => 'select',
+                'options' => [
+                    'INSERT_INTO_FIRST' => 'INSERT_INTO_FIRST',
+                    'INSERT_INTO_LAST' => 'INSERT_INTO_LAST',
+                    'INSERT_BEFORE' => 'INSERT_BEFORE',
+                    'INSERT_AFTER' => 'INSERT_AFTER',
+                ]
             ],
             'widget_js_code' => [
                 'title' => __('Widget code', 'comfino-payment-gateway'),
@@ -156,16 +177,51 @@ class Config_Manager extends \WC_Settings_API
         ];
     }
 
-    public function get_form_fields(): array
+    public function get_form_fields($subsection = null): array
     {
-        return $this->form_fields;
+        if (empty($subsection)) {
+            return $this->form_fields;
+        }
+
+        $form_fields = [];
+
+        switch ($subsection) {
+            case 'payment_settings':
+                $form_fields = array_intersect_key(
+                    $this->form_fields,
+                    array_flip(['enabled', 'title', 'production_key', 'show_logo'])
+                );
+                break;
+
+            case 'widget_settings':
+                $form_fields = array_intersect_key(
+                    $this->form_fields,
+                    array_flip([
+                        'widget_settings_basic',
+                        'widget_enabled', 'widget_key', 'widget_type', 'widget_offer_type',
+                        'widget_settings_advanced',
+                        'widget_price_selector', 'widget_target_selector', 'widget_price_observer_selector',
+                        'widget_price_observer_level', 'widget_embed_method', 'widget_js_code',
+                    ])
+                );
+                break;
+
+            case 'developer_settings':
+                $form_fields = array_intersect_key(
+                    $this->form_fields,
+                    array_flip(['sandbox_mode', 'sandbox_key'])
+                );
+                break;
+        }
+
+        return $form_fields;
     }
 
-    public function return_configuration_options(): array
+    public function return_configuration_options(bool $all_options = false): array
     {
         $configuration_options = [];
 
-        foreach (self::ACCESSIBLE_CONFIG_OPTIONS as $opt_name) {
+        foreach ($all_options ? array_keys(self::CONFIG_OPTIONS_MAP) : self::ACCESSIBLE_CONFIG_OPTIONS as $opt_name) {
             $configuration_options[$opt_name] = $this->get_option(self::CONFIG_OPTIONS_MAP[$opt_name]);
 
             switch ($this->get_option_type($opt_name)) {
@@ -184,8 +240,8 @@ class Config_Manager extends \WC_Settings_API
 
             if ($opt_name === 'COMFINO_WIDGET_CODE') {
                 $configuration_options[$opt_name] = str_replace(
-                    ['&#039;', '&gt;', '&amp;'],
-                    ["'", '>', '&'],
+                    ['&#039;', '&gt;', '&amp;', '&quot;', '&#34;'],
+                    ["'", '>', '&', '"', '"'],
                     $configuration_options[$opt_name]
                 );
             }
@@ -194,14 +250,14 @@ class Config_Manager extends \WC_Settings_API
         return $configuration_options;
     }
 
-    public function update_configuration(array $configuration_options, bool $remote_request): bool
+    public function update_configuration(string $subsection, array $configuration_options, bool $remote_request): bool
     {
         $this->init_settings();
 
         $options_map = array_flip(self::CONFIG_OPTIONS_MAP);
         $is_error = false;
 
-        foreach ($this->get_form_fields() as $key => $field) {
+        foreach ($this->get_form_fields($subsection) as $key => $field) {
             $field_key = $this->get_field_key($key);
 
             if (isset($options_map[$key]) && $this->get_option_type($options_map[$key]) === 'bool') {
@@ -258,6 +314,19 @@ class Config_Manager extends \WC_Settings_API
         );
     }
 
+    public function filter_configuration_options(array $configuration_options): array
+    {
+        $filtered_config_options = [];
+
+        foreach ($configuration_options as $opt_name => $opt_value) {
+            if (in_array($opt_name, self::ACCESSIBLE_CONFIG_OPTIONS, true)) {
+                $filtered_config_options[$opt_name] = $opt_value;
+            }
+        }
+
+        return $filtered_config_options;
+    }
+
     public function prepare_configuration_options(array $configuration_options): array
     {
         $prepared_config_options = [];
@@ -269,11 +338,11 @@ class Config_Manager extends \WC_Settings_API
 
             if ($opt_value === true) {
                 $opt_value = 'yes';
-            } elseif ($opt_value === false) {
-                $opt_value = 'no';
             }
 
-            $prepared_config_options[$this->get_field_key(self::CONFIG_OPTIONS_MAP[$opt_name])] = $opt_value;
+            if ($opt_value !== false) {
+                $prepared_config_options[$this->get_field_key(self::CONFIG_OPTIONS_MAP[$opt_name])] = $opt_value;
+            }
         }
 
         return $prepared_config_options;

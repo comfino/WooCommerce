@@ -103,7 +103,7 @@ window.Comfino = {
                 }
             }
         } else {
-            document.getElementById('comfino-loan-term').value = '';
+            document.getElementById('comfino-loan-term').value = '1';
         }
     },
 

@@ -2,10 +2,15 @@
 
 namespace Comfino;
 
+use Comfino_Gateway;
+
 class Core
 {
     const COMFINO_PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
     const COMFINO_SANDBOX_HOST = 'https://api-ecommerce.ecraty.pl';
+
+    const COMFINO_WIDGET_JS_SANDBOX = 'https://widget.craty.pl/comfino.min.js';
+    const COMFINO_WIDGET_JS_PRODUCTION = 'https://widget.comfino.pl/comfino.min.js';
 
     const WAITING_FOR_PAYMENT_STATUS = "WAITING_FOR_PAYMENT";
     const ACCEPTED_STATUS = "ACCEPTED";
@@ -52,6 +57,20 @@ class Core
      * @var Config_Manager
      */
     private static $config_manager;
+
+    public static function get_shop_domain(): string
+    {
+        $url_parts = parse_url(get_permalink(wc_get_page_id('shop')));
+
+        return $url_parts['host'];
+    }
+
+    public static function get_shop_url(): string
+    {
+        $url_parts = parse_url(get_permalink(wc_get_page_id('shop')));
+
+        return $url_parts['host'] . (isset($url_parts['port']) ? ':' . $url_parts['port'] : '');
+    }
 
     public static function get_notify_url(): string
     {
@@ -115,7 +134,7 @@ class Core
             return new \WP_REST_Response('Access not allowed.', 403);
         }
 
-        if (!self::valid_signature(self::get_header_by_name('CR_SIGNATURE'), $verification_key)) {
+        if (!self::valid_signature(self::get_signature(), $verification_key)) {
             return new \WP_REST_Response(['status' => 'Failed comparison of CR-Signature and shop hash.'], 400);
         }
 
@@ -140,24 +159,29 @@ class Core
     {
         self::init();
 
-        $signature = self::get_header_by_name('CR_SIGNATURE');
-        $json_request_body = $request->get_body();
-
-        if (!self::valid_signature($signature, $json_request_body)) {
+        if (!self::valid_signature(self::get_signature(), $request->get_body())) {
             return new \WP_REST_Response(['status' => 'Failed comparison of CR-Signature and shop hash.'], 400);
         }
 
         $configuration_options = $request->get_json_params();
 
         if (is_array($configuration_options)) {
+            $current_options = self::$config_manager->return_configuration_options(true);
+            $input_options = self::$config_manager->filter_configuration_options($configuration_options);
+
             if (self::$config_manager->update_configuration(
-                self::$config_manager->prepare_configuration_options($configuration_options),
+                '',
+                self::$config_manager->prepare_configuration_options(array_merge($current_options, $input_options)),
                 true
             )) {
                 return new \WP_REST_Response(null, 204);
             }
 
-            return new \WP_REST_Response('Wrong input data.', 400);
+            if (count(self::$config_manager->get_errors())) {
+                return new \WP_REST_Response('Wrong input data.', 400);
+            }
+
+            return new \WP_REST_Response(null, 204);
         }
 
         return new \WP_REST_Response('Wrong input data.', 400);
@@ -165,7 +189,50 @@ class Core
 
     public static function get_signature(): string
     {
-        return self::get_header_by_name('CR_SIGNATURE');
+        $signature = self::get_header_by_name('CR_SIGNATURE');
+
+        if ($signature !== '') {
+            return $signature;
+        }
+
+        return self::get_header_by_name('X_CR_SIGNATURE');
+    }
+
+    public static function get_widget_init_code(Comfino_Gateway $comfino_gateway): string
+    {
+        self::init();
+
+        $code = str_replace(
+            [
+                '{WIDGET_KEY}',
+                '{WIDGET_PRICE_SELECTOR}',
+                '{WIDGET_TARGET_SELECTOR}',
+                '{WIDGET_TYPE}',
+                '{OFFER_TYPE}',
+                '{EMBED_METHOD}',
+                '{WIDGET_PRICE_OBSERVER_LEVEL}',
+                '{WIDGET_PRICE_OBSERVER_SELECTOR}',
+                '{WIDGET_SCRIPT_URL}',
+            ],
+            [
+                $comfino_gateway->get_option('widget_key'),
+                html_entity_decode($comfino_gateway->get_option('widget_price_selector')),
+                html_entity_decode($comfino_gateway->get_option('widget_target_selector')),
+                $comfino_gateway->get_option('widget_type'),
+                $comfino_gateway->get_option('widget_offer_type'),
+                $comfino_gateway->get_option('widget_embed_method'),
+                $comfino_gateway->get_option('widget_price_observer_level'),
+                $comfino_gateway->get_option('widget_price_observer_selector'),
+                Api_Client::get_widget_script_url(),
+            ],
+            $comfino_gateway->get_option('widget_js_code')
+        );
+
+        return '<script>' . str_replace(
+                   ['&#039;', '&gt;', '&amp;', '&quot;', '&#34;'],
+                   ["'", '>', '&', '"', '"'],
+                   esc_html($code)
+               ) . '</script>';
     }
 
     private static function init()
@@ -175,11 +242,13 @@ class Core
         }
 
         if (self::$config_manager->get_option('sandbox_mode') === 'yes') {
-            Api_Client::$host = Core::COMFINO_SANDBOX_HOST;
+            Api_Client::$host = self::COMFINO_SANDBOX_HOST;
             Api_Client::$key = self::$config_manager->get_option('sandbox_key');
+            Api_Client::$widget_script_url = self::COMFINO_WIDGET_JS_SANDBOX;
         } else {
-            Api_Client::$host = Core::COMFINO_PRODUCTION_HOST;
+            Api_Client::$host = self::COMFINO_PRODUCTION_HOST;
             Api_Client::$key = self::$config_manager->get_option('production_key');
+            Api_Client::$widget_script_url = self::COMFINO_WIDGET_JS_PRODUCTION;
         }
     }
 

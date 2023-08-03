@@ -1,9 +1,14 @@
 <?php
 
+use Comfino\Api_Client;
+use Comfino\Config_Manager;
+use Comfino\Core;
+use Comfino\Error_Logger;
+
 class Comfino_Gateway extends WC_Payment_Gateway
 {
     /**
-     * @var \Comfino\Config_Manager
+     * @var Config_Manager
      */
     private $config_manager;
 
@@ -18,9 +23,6 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
     private static $show_logo;
 
-    const COMFINO_WIDGET_JS_SANDBOX = 'https://widget.craty.pl/comfino.min.js';
-    const COMFINO_WIDGET_JS_PRODUCTION = 'https://widget.comfino.pl/comfino.min.js';
-
     /**
      * Comfino_Gateway constructor.
      */
@@ -34,7 +36,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
         $this->supports = ['products'];
 
-        $this->config_manager = new \Comfino\Config_Manager();
+        $this->config_manager = new Config_Manager();
 
         $this->init_form_fields();
         $this->init_settings();
@@ -45,11 +47,11 @@ class Comfino_Gateway extends WC_Payment_Gateway
         self::$show_logo = ($this->get_option('show_logo') === 'yes');
 
         if ($this->get_option('sandbox_mode') === 'yes') {
-            \Comfino\Api_Client::$host = \Comfino\Core::COMFINO_SANDBOX_HOST;
-            \Comfino\Api_Client::$key = $this->get_option('sandbox_key');
+            Api_Client::$host = Core::COMFINO_SANDBOX_HOST;
+            Api_Client::$key = $this->get_option('sandbox_key');
         } else {
-            \Comfino\Api_Client::$host = \Comfino\Core::COMFINO_PRODUCTION_HOST;
-            \Comfino\Api_Client::$key = $this->get_option('production_key');
+            Api_Client::$host = Core::COMFINO_PRODUCTION_HOST;
+            Api_Client::$key = $this->get_option('production_key');
         }
 
         add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
@@ -70,17 +72,20 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
     public function process_admin_options(): bool
     {
-        return $this->config_manager->update_configuration($this->get_post_data(), false);
+        return $this->config_manager->update_configuration($this->get_subsection(), $this->get_post_data(), false);
     }
 
     public function admin_options()
     {
-        global $wp_version;
+        global $wp, $wp_version, $wpdb;
 
-        $errorsLog = \Comfino\Error_Logger::get_error_log(\Comfino\Core::ERROR_LOG_NUM_LINES);
+        $errors_log = Error_Logger::get_error_log(Core::ERROR_LOG_NUM_LINES);
+        $subsection = $this->get_subsection();
 
         echo '<h2>' . esc_html($this->method_title) . '</h2>';
         echo '<p>' . esc_html($this->method_description) . '</p>';
+
+        echo '<img style="width: 300px" src="' . esc_url(Api_Client::get_logo_url()) . '" alt="Comfino logo"> <span style="font-weight: bold; font-size: 16px; vertical-align: bottom">' . Comfino_Payment_Gateway::VERSION . '</span>';
 
         echo '<p>' . sprintf(
                 __('Do you want to ask about something? Write to us at %s or contact us by phone. We are waiting on the number: %s. We will answer all your questions!', 'comfino-payment-gateway'),
@@ -88,10 +93,39 @@ class Comfino_Gateway extends WC_Payment_Gateway
                 '&body=' . str_replace(',', '%2C', sprintf(__('WordPress %s WooCommerce %s Comfino %s, PHP %s', 'comfino-payment-gateway'), $wp_version, WC_VERSION, Comfino_Payment_Gateway::VERSION, PHP_VERSION)) . '">pomoc@comfino.pl</a>', '887-106-027'
             ) . '</p>';
 
+        echo '<nav class="nav-tab-wrapper woo-nav-tab-wrapper">';
+        echo '<a href="' . home_url(add_query_arg($wp->request, ['subsection' => 'payment_settings'])) . '" class="nav-tab' . ($subsection === 'payment_settings' ? ' nav-tab-active' : '') . '">' . __('Payment settings', 'comfino-payment-gateway') . '</a>';
+        echo '<a href="' . home_url(add_query_arg($wp->request, ['subsection' => 'widget_settings'])) . '" class="nav-tab' . ($subsection === 'widget_settings' ? ' nav-tab-active' : '') . '">' . __('Widget settings', 'comfino-payment-gateway') . '</a>';
+        echo '<a href="' . home_url(add_query_arg($wp->request, ['subsection' => 'developer_settings'])) . '" class="nav-tab' . ($subsection === 'developer_settings' ? ' nav-tab-active' : '') . '">' . __('Developer settings', 'comfino-payment-gateway') . '</a>';
+        echo '<a href="' . home_url(add_query_arg($wp->request, ['subsection' => 'plugin_diagnostics'])) . '" class="nav-tab' . ($subsection === 'plugin_diagnostics' ? ' nav-tab-active' : '') . '">' . __('Plugin diagnostics', 'comfino-payment-gateway') . '</a>';
+        echo '</nav>';
+
         echo '<table class="form-table">';
-        echo $this->generate_settings_html();
-        echo '<tr valign="top"><th scope="row" class="titledesc"><label>' . __('Errors log', 'comfino-payment-gateway') . '</label></th>';
-        echo '<td><textarea cols="20" rows="3" class="input-text wide-input" style="width: 800px; height: 400px">' . esc_textarea($errorsLog) . '</textarea></td></tr>';
+
+        switch ($subsection) {
+            case 'payment_settings':
+            case 'widget_settings':
+            case 'developer_settings':
+                echo $this->generate_settings_html($this->config_manager->get_form_fields($subsection));
+                break;
+
+            case 'plugin_diagnostics':
+                $shop_info = sprintf(
+                    'WooCommerce Comfino %s, WordPress %s, WooCommerce %s, PHP %s, web server %s, database %s',
+                    \Comfino_Payment_Gateway::VERSION,
+                    $wp_version,
+                    WC_VERSION,
+                    PHP_VERSION,
+                    $_SERVER['SERVER_SOFTWARE'],
+                    $wpdb->db_version()
+                );
+
+                echo '<tr valign="top"><th scope="row" class="titledesc"></th><td>' . $shop_info . '</td></tr>';
+                echo '<tr valign="top"><th scope="row" class="titledesc"><label>' . __('Errors log', 'comfino-payment-gateway') . '</label></th>';
+                echo '<td><textarea cols="20" rows="3" class="input-text wide-input" style="width: 800px; height: 400px">' . esc_textarea($errors_log) . '</textarea></td></tr>';
+                break;
+        }
+
         echo '</table>';
     }
 
@@ -103,7 +137,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
         global $woocommerce;
 
         $total = (int)round($woocommerce->cart->total) * 100;
-        $offers = \Comfino\Api_Client::fetch_offers($total);
+        $offers = Api_Client::fetch_offers($total);
         $payment_infos = [];
 
         foreach ($offers as $offer) {
@@ -228,21 +262,24 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
     public function process_payment($order_id): array
     {
-        return \Comfino\Api_Client::process_payment(
+        return Api_Client::process_payment(
             $order = wc_get_order($order_id),
             $this->get_return_url($order),
-            \Comfino\Core::get_notify_url()
+            Core::get_notify_url()
         );
     }
 
     public function cancel_order(string $order_id)
     {
-        if (!$this->get_status_note($order_id, [\Comfino\Core::CANCELLED_BY_SHOP_STATUS, \Comfino\Core::RESIGN_STATUS])) {
+        if (!$this->get_status_note($order_id, [Core::CANCELLED_BY_SHOP_STATUS, Core::RESIGN_STATUS])) {
             $order = wc_get_order($order_id);
 
-            \Comfino\Api_Client::cancel_order($order);
+            if (stripos($order->get_payment_method(), 'comfino') !== false) {
+                // Process orders paid by Comfino only.
+                Api_Client::cancel_order($order);
 
-            $order->add_order_note(__("Send to Comfino canceled order", 'comfino-payment-gateway'));
+                $order->add_order_note(__("Send to Comfino canceled order", 'comfino-payment-gateway'));
+            }
         }
     }
 
@@ -256,10 +293,10 @@ class Comfino_Gateway extends WC_Payment_Gateway
         $request = new WP_REST_Request('POST');
         $request->set_body($body);
 
-        $response = \Comfino\Core::process_notification($request);
+        $response = Core::process_notification($request);
 
         if ($response->status === 400) {
-            echo json_encode(['status' => $response->data, 'body' => $body, 'signature' =>  \Comfino\Core::get_signature()]);
+            echo json_encode(['status' => $response->data, 'body' => $body, 'signature' =>  Core::get_signature()]);
 
             exit;
         }
@@ -318,7 +355,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
                 if ($action === 'cancel') {
                     $this->cancel_order($order->ID);
                 } elseif ($action === 'resign') {
-                    \Comfino\Api_Client::resign_order($order->ID);
+                    Api_Client::resign_order($order->ID);
                 }
             }
         }
@@ -330,9 +367,9 @@ class Comfino_Gateway extends WC_Payment_Gateway
         $date->sub(new DateInterval('P14D'));
 
         if ($order->get_payment_method() === 'comfino' && $order->has_status(['processing', 'completed'])) {
-            $notes = $this->get_status_note($order->ID, [\Comfino\Core::ACCEPTED_STATUS]);
+            $notes = $this->get_status_note($order->ID, [Core::ACCEPTED_STATUS]);
 
-            return !(isset($notes[\Comfino\Core::ACCEPTED_STATUS]) && $notes[\Comfino\Core::ACCEPTED_STATUS]->date_created->getTimestamp() < $date->getTimestamp());
+            return !(isset($notes[Core::ACCEPTED_STATUS]) && $notes[Core::ACCEPTED_STATUS]->date_created->getTimestamp() < $date->getTimestamp());
         }
 
         return false;
@@ -352,5 +389,16 @@ class Comfino_Gateway extends WC_Payment_Gateway
         }
 
         return $notes;
+    }
+
+    private function get_subsection(): string
+    {
+        $subsection = $_GET['subsection'] ?? 'payment_settings';
+
+        if (!in_array($subsection, ['payment_settings', 'widget_settings', 'developer_settings', 'plugin_diagnostics'], true)) {
+            $subsection = 'payment_settings';
+        }
+
+        return $subsection;
     }
 }

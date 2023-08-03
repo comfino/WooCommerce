@@ -3,7 +3,7 @@
  * Plugin Name: Comfino Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
  * Description: Comfino (Comperia) - Comfino Payment Gateway for WooCommerce.
- * Version: 2.4.0
+ * Version: 3.0.0
  * Author: Comfino (Comperia)
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
@@ -12,15 +12,16 @@
  * Requires PHP: 7.0
  *
  * @license http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
-*/
+ */
 
 use Comfino\Core;
+use Comfino\Error_Logger;
 
 defined('ABSPATH') or exit;
 
 class Comfino_Payment_Gateway
 {
-    const VERSION = '2.4.0';
+    const VERSION = '3.0.0';
 
     /**
      * @var Comfino_Payment_Gateway
@@ -29,7 +30,7 @@ class Comfino_Payment_Gateway
 
     public static function get_instance(): Comfino_Payment_Gateway
     {
-        if (null === self::$instance) {
+        if (self::$instance === null) {
             self::$instance = new self();
         }
 
@@ -83,7 +84,7 @@ class Comfino_Payment_Gateway
 
         load_plugin_textdomain('comfino-payment-gateway', false, basename(__DIR__) . '/languages');
 
-        \Comfino\Error_Logger::init();
+        Error_Logger::init();
     }
 
     /**
@@ -116,7 +117,8 @@ class Comfino_Payment_Gateway
     public function plugin_action_links(array $links): array
     {
         $plugin_links = [
-            '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino') . '">'.__('Settings', 'comfino-payment-gateway') . '</a>',
+            '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino') . '">' .
+            __('Settings', 'comfino-payment-gateway') . '</a>',
         ];
 
         return array_merge($plugin_links, $links);
@@ -132,10 +134,8 @@ class Comfino_Payment_Gateway
         if (isset($post) && 'shop_order' === $post->post_type) {
             $order = wc_get_order($post->ID);
 
-            if ($order->get_payment_method() === 'comfino' && $order->has_status('completed')) {
-                if (isset($statuses['wc-cancelled'])) {
-                    unset($statuses['wc-cancelled']);
-                }
+            if (isset($statuses['wc-cancelled']) && $order->get_payment_method() === 'comfino' && $order->has_status('completed')) {
+                unset($statuses['wc-cancelled']);
             }
         }
 
@@ -150,43 +150,10 @@ class Comfino_Payment_Gateway
     public function render_widget()
     {
         if (is_single()) {
-            $cg = new Comfino_Gateway();
+            $comfino = new Comfino_Gateway();
 
-            if ($cg->get_option('widget_enabled') === 'yes' && $cg->get_option('widget_key') !== '') {
-                $code = $cg->get_option('widget_js_code');
-                $sandbox_mode = ($cg->get_option('sandbox_mode') === 'yes');
-
-                if ($sandbox_mode) {
-                    $code = str_replace('{WIDGET_SCRIPT_URL}', Comfino_Gateway::COMFINO_WIDGET_JS_SANDBOX, $code);
-                } else {
-                    $code = str_replace('{WIDGET_SCRIPT_URL}', Comfino_Gateway::COMFINO_WIDGET_JS_PRODUCTION, $code);
-                }
-
-                $code = str_replace(
-                    [
-                        '{WIDGET_KEY}',
-                        '{WIDGET_PRICE_SELECTOR}',
-                        '{WIDGET_TARGET_SELECTOR}',
-                        '{WIDGET_TYPE}',
-                        '{OFFER_TYPE}',
-                        '{EMBED_METHOD}',
-                        '{WIDGET_PRICE_OBSERVER_LEVEL}',
-                        '{WIDGET_PRICE_OBSERVER_SELECTOR}',
-                    ],
-                    [
-                        $cg->get_option('widget_key'),
-                        html_entity_decode($cg->get_option('widget_price_selector')),
-                        html_entity_decode($cg->get_option('widget_target_selector')),
-                        $cg->get_option('widget_type'),
-                        $cg->get_option('widget_offer_type'),
-                        $cg->get_option('widget_embed_method'),
-                        $cg->get_option('widget_price_observer_level'),
-                        $cg->get_option('widget_price_observer_selector'),
-                    ],
-                    $code
-                );
-
-                echo '<script>' . str_replace(['&#039;', '&gt;', '&amp;'], ["'", '>', '&'], esc_html($code)) . '</script>';
+            if ($comfino->get_option('widget_enabled') === 'yes' && $comfino->get_option('widget_key') !== '') {
+                echo Core::get_widget_init_code($comfino);
             }
         }
     }
