@@ -61,6 +61,7 @@ window.Comfino = {
                     document.getElementById('comfino-rrso').innerHTML = loanParams.rrso + '%';
                     document.getElementById('comfino-description-box').innerHTML = Comfino.offerList.data[Comfino.selectedOffer].description;
                     document.getElementById('comfino-repr-example').innerHTML = Comfino.offerList.data[Comfino.selectedOffer].representativeExample;
+                    document.getElementById('comfino-operator-commission').innerHTML = loanParams.commission;
 
                     Comfino.offerList.elements[Comfino.selectedOffer].dataset.sumamount = loanParams.sumAmount;
                     Comfino.offerList.elements[Comfino.selectedOffer].dataset.term = loanParams.loanTerm;
@@ -96,6 +97,7 @@ window.Comfino = {
                     document.getElementById('comfino-rrso').innerHTML = loanParams.rrso + '%';
                     document.getElementById('comfino-description-box').innerHTML = Comfino.offerList.data[Comfino.selectedOffer].description;
                     document.getElementById('comfino-repr-example').innerHTML = Comfino.offerList.data[Comfino.selectedOffer].representativeExample;
+                    document.getElementById('comfino-operator-commission').innerHTML = loanParams.commission;
 
                     document.getElementById('comfino-loan-term').value = term;
 
@@ -145,18 +147,39 @@ window.Comfino = {
 
             installmentsElement.style.display = 'block';
 
-            if (offerData.type === 'BLIK') {
-                installmentsElement.querySelector('section.comfino-installments-box').style.display = 'none';
-                installmentsElement.querySelector('section.comfino-monthly-box').style.display = 'none';
-                installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-summary-total').style.display = 'none';
-                installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-rrso').style.display = 'none';
-                installmentsElement.querySelector('footer').style.display = 'none';
-            } else {
-                installmentsElement.querySelector('section.comfino-installments-box').style.display = 'flex';
-                installmentsElement.querySelector('section.comfino-monthly-box').style.display = 'flex';
-                installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-summary-total').style.display = 'block';
-                installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-rrso').style.display = 'block';
-                installmentsElement.querySelector('footer').style.display = 'block';
+            switch (offerData.type) {
+                case 'BLIK':
+                    installmentsElement.querySelector('section.comfino-installments-box').style.display = 'none';
+                    installmentsElement.querySelector('section.comfino-monthly-box').style.display = 'none';
+                    installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-summary-total').style.display = 'none';
+                    installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-summary-total-bnpl').style.display = 'none';
+                    installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-rrso').style.display = 'none';
+                    installmentsElement.querySelector('footer').style.display = 'none';
+                    installmentsElement.querySelector('#comfino-operator-commission-container').style.display = 'none';
+                    break;
+
+                case 'COMPANY_BNPL':
+                    installmentsElement.querySelector('section.comfino-installments-box').style.display = 'flex';
+                    installmentsElement.querySelector('section.comfino-monthly-box').style.display = 'none';
+                    installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-summary-total').style.display = 'none';
+                    installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-summary-total-bnpl').style.display = 'block';
+                    installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-rrso').style.display = 'none';
+                    installmentsElement.querySelector('footer').style.display = 'none';
+                    installmentsElement.querySelector('#comfino-installments-num').style.display = 'none';
+                    installmentsElement.querySelector('#comfino-delay-days-num').style.display = 'inline';
+                    installmentsElement.querySelector('#comfino-operator-commission-container').style.display = 'block';
+                    break;
+
+                default:
+                    installmentsElement.querySelector('section.comfino-installments-box').style.display = 'flex';
+                    installmentsElement.querySelector('section.comfino-monthly-box').style.display = 'flex';
+                    installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-summary-total').style.display = 'block';
+                    installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-summary-total-bnpl').style.display = 'none';
+                    installmentsElement.querySelector('section.comfino-summary-box').querySelector('div.comfino-rrso').style.display = 'block';
+                    installmentsElement.querySelector('footer').style.display = 'block';
+                    installmentsElement.querySelector('#comfino-installments-num').style.display = 'inline';
+                    installmentsElement.querySelector('#comfino-delay-days-num').style.display = 'none';
+                    installmentsElement.querySelector('#comfino-operator-commission-container').style.display = 'none';
             }
         }
     },

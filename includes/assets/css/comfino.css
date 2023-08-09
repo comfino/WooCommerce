@@ -241,7 +241,7 @@
     align-items: center;
 }
 
-.payment_box.payment_method_comfino .comfin-single-instruction__text {
+.payment_box.payment_method_comfino .comfino-single-instruction__text {
     text-align: center;
     font-size: .9rem;
     padding-top: 1rem;
@@ -336,4 +336,21 @@ a.representative:hover {
 
 #comfino-payment-delay {
     display: none;
+}
+
+div#comfino-box.comfino div.comfino-box main.comfino-subbox .comfino-summary-box .comfino-description-box {
+    margin-top: 10px;
+}
+
+div#comfino-box.comfino div.comfino-box main.comfino-subbox .comfino-summary-box .comfino-summary-total-bnpl {
+    color: #fff;
+    background-color: #599e33;
+    font-weight: normal;
+    font-size: 1.2rem;
+    padding: 10px;
+    display: block;
+}
+
+div#comfino-box.comfino div.comfino-box main.comfino-subbox .comfino-summary-box .comfino-operator-commission {
+    margin-top: 20px;
 }

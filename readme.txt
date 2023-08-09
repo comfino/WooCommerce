@@ -4,12 +4,15 @@ Donate link: https://comfino.pl/
 Tags: comfino, woocommerce, gateway, payment, bank
 WC tested up to: 7.8.2
 WC requires at least: 3.0
-Stable tag: 3.0.0
+Stable tag: 3.1.0
 Tested up to: 6.2.2
 Requires at least: 5.0
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
+
+3.1.0
+* Add support for a new payment method - pay later for companies (COMPANY_BNPL).
 
 3.0.0
  * Complete plugin refactoring: new admin GUI design.
