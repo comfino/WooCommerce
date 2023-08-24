@@ -134,22 +134,29 @@ class Comfino_Gateway extends WC_Payment_Gateway
      */
     public function payment_fields()
     {
+        global $woocommerce;
+
         $options = [
             'platform' => 'woocommerce',
             'platformVersion' => WC_VERSION,
             'platformDomain' => Core::get_shop_domain(),
             'pluginVersion' => \Comfino_Payment_Gateway::VERSION,
-            'offersURL' => Core::get_offers_url(),
+            'offersURL' => Core::get_offers_url() . '?total=' . $woocommerce->cart->get_total(''),
             'language' => substr(get_locale(), 0, 2),
+            'currency' => get_woocommerce_currency(),
+            'cartTotal' => (float)$woocommerce->cart->get_total(''),
+            'cartTotalFormatted' => wc_price($woocommerce->cart->get_total(), ['currency' => get_woocommerce_currency()]),
         ];
 
         echo '
         <div id="comfino-payment-container">
             <input id="comfino-loan-term" name="comfino_loan_term" type="hidden" />
-            <input id="comfino-type" name="comfino_type" type="hidden" />            
+            <input id="comfino-type" name="comfino_type" type="hidden" />
+            <div id="comfino-payment-subcontainer"></div>            
             <script>
                 Comfino.options = ' . json_encode($options) . ';
-                Comfino.options.frontendTarget = document.getElementById(\'comfino-payment-container\').parentElement;
+                Comfino.options.frontendInitElement = document.getElementById(\'payment_method_comfino\');
+                Comfino.options.frontendTargetElement = document.getElementById(\'comfino-payment-subcontainer\');                
                 Comfino.init(\''. Api_Client::get_frontend_script_url() . '\');
             </script>
         </div>

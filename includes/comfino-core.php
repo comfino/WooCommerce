@@ -134,36 +134,38 @@ class Core
 
     public static function get_offers(\WP_REST_Request $request): \WP_REST_Response
     {
-        global $woocommerce;
-
-        $total = (int)round($woocommerce->cart->total) * 100;
+        $total = (int)round($request->has_param('total') ? (float)$request->get_param('total') : 0) * 100;
         $offers = Api_Client::fetch_offers($total);
         $payment_offers = [];
 
         foreach ($offers as $offer) {
-            $instalmentAmount = ((float)$offer['instalmentAmount']) / 100;
-            $rrso = ((float)$offer['rrso']) * 100;
-            $toPay = ((float)$offer['toPay']) / 100;
-
             $payment_offers[] = [
                 'name' => $offer['name'],
                 'description' => $offer['description'],
                 'icon' => str_ireplace('<?xml version="1.0" encoding="UTF-8"?>', '', $offer['icon']),
                 'type' => $offer['type'],
-                'sumAmount' => number_format($total / 100, 2, ',', ' '),
                 'representativeExample' => $offer['representativeExample'],
-                'rrso' => number_format($rrso, 2, ',', ' '),
                 'loanTerm' => $offer['loanTerm'],
-                'instalmentAmount' => number_format($instalmentAmount, 2, ',', ' '),
-                'toPay' => number_format($toPay, 2, ',', ' '),
+                'instalmentAmount' => number_format(((float)$offer['instalmentAmount']) / 100, 2, ',', ' '),
+                'instalmentAmountFormatted' => wc_price(((float)$offer['instalmentAmount']) / 100, ['currency' => get_woocommerce_currency()]),
+                'sumAmount' => number_format($total / 100, 2, ',', ' '),
+                'sumAmountFormatted' => wc_price($total / 100, ['currency' => get_woocommerce_currency()]),
+                'toPay' => number_format(((float)$offer['toPay']) / 100, 2, ',', ' '),
+                'toPayFormatted' => wc_price(((float)$offer['toPay']) / 100, ['currency' => get_woocommerce_currency()]),
                 'commission' => number_format(((int)$offer['toPay'] - $total) / 100, 2, ',', ' '),
+                'commissionFormatted' => wc_price(((int)$offer['toPay'] - $total) / 100, ['currency' => get_woocommerce_currency()]),
+                'rrso' => number_format(((float)$offer['rrso']) * 100, 2, ',', ' '),
                 'loanParameters' => array_map(static function ($loan_params) use ($total) {
                     return [
                         'loanTerm' => $loan_params['loanTerm'],
                         'instalmentAmount' => number_format(((float)$loan_params['instalmentAmount']) / 100, 2, ',', ' '),
-                        'toPay' => number_format(((float)$loan_params['toPay']) / 100, 2, ',', ' '),
-                        'commission' => number_format(((int)$loan_params['toPay'] - $total) / 100, 2, ',', ' '),
+                        'instalmentAmountFormatted' => wc_price(((float)$loan_params['instalmentAmount']) / 100, ['currency' => get_woocommerce_currency()]),
                         'sumAmount' => number_format($total / 100, 2, ',', ' '),
+                        'sumAmountFormatted' => wc_price($total / 100, ['currency' => get_woocommerce_currency()]),
+                        'toPay' => number_format(((float)$loan_params['toPay']) / 100, 2, ',', ' '),
+                        'toPayFormatted' => wc_price(((float)$loan_params['toPay']) / 100, ['currency' => get_woocommerce_currency()]),
+                        'commission' => number_format(((int)$loan_params['toPay'] - $total) / 100, 2, ',', ' '),
+                        'commissionFormatted' => wc_price(((int)$loan_params['toPay'] - $total) / 100, ['currency' => get_woocommerce_currency()]),
                         'rrso' => number_format($loan_params['rrso'] * 100, 2, ',', ' '),
                     ];
                 }, $offer['loanParameters']),
