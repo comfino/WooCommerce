@@ -9,6 +9,9 @@ class Core
     const COMFINO_PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
     const COMFINO_SANDBOX_HOST = 'https://api-ecommerce.ecraty.pl';
 
+    const COMFINO_FRONTEND_JS_SANDBOX = 'https://widget.craty.pl/comfino-frontend.min.js';
+    const COMFINO_FRONTEND_JS_PRODUCTION = 'https://widget.comfino.pl/comfino-frontend.min.js';
+
     const COMFINO_WIDGET_JS_SANDBOX = 'https://widget.craty.pl/comfino.min.js';
     const COMFINO_WIDGET_JS_PRODUCTION = 'https://widget.comfino.pl/comfino.min.js';
 
@@ -72,6 +75,11 @@ class Core
         return $url_parts['host'] . (isset($url_parts['port']) ? ':' . $url_parts['port'] : '');
     }
 
+    public static function get_offers_url(): string
+    {
+        return get_rest_url(null, 'comfino/offers');
+    }
+
     public static function get_notify_url(): string
     {
         return get_rest_url(null, 'comfino/notification');
@@ -122,6 +130,47 @@ class Core
         }
 
         return new \WP_REST_Response('OK', 200);
+    }
+
+    public static function get_offers(\WP_REST_Request $request): \WP_REST_Response
+    {
+        global $woocommerce;
+
+        $total = (int)round($woocommerce->cart->total) * 100;
+        $offers = Api_Client::fetch_offers($total);
+        $payment_offers = [];
+
+        foreach ($offers as $offer) {
+            $instalmentAmount = ((float)$offer['instalmentAmount']) / 100;
+            $rrso = ((float)$offer['rrso']) * 100;
+            $toPay = ((float)$offer['toPay']) / 100;
+
+            $payment_offers[] = [
+                'name' => $offer['name'],
+                'description' => $offer['description'],
+                'icon' => str_ireplace('<?xml version="1.0" encoding="UTF-8"?>', '', $offer['icon']),
+                'type' => $offer['type'],
+                'sumAmount' => number_format($total / 100, 2, ',', ' '),
+                'representativeExample' => $offer['representativeExample'],
+                'rrso' => number_format($rrso, 2, ',', ' '),
+                'loanTerm' => $offer['loanTerm'],
+                'instalmentAmount' => number_format($instalmentAmount, 2, ',', ' '),
+                'toPay' => number_format($toPay, 2, ',', ' '),
+                'commission' => number_format(((int)$offer['toPay'] - $total) / 100, 2, ',', ' '),
+                'loanParameters' => array_map(static function ($loan_params) use ($total) {
+                    return [
+                        'loanTerm' => $loan_params['loanTerm'],
+                        'instalmentAmount' => number_format(((float)$loan_params['instalmentAmount']) / 100, 2, ',', ' '),
+                        'toPay' => number_format(((float)$loan_params['toPay']) / 100, 2, ',', ' '),
+                        'commission' => number_format(((int)$loan_params['toPay'] - $total) / 100, 2, ',', ' '),
+                        'sumAmount' => number_format($total / 100, 2, ',', ' '),
+                        'rrso' => number_format($loan_params['rrso'] * 100, 2, ',', ' '),
+                    ];
+                }, $offer['loanParameters']),
+            ];
+        }
+
+        return new \WP_REST_Response($payment_offers, 200);
     }
 
     public static function get_configuration(\WP_REST_Request $request): \WP_REST_Response
@@ -244,10 +293,12 @@ class Core
         if (self::$config_manager->get_option('sandbox_mode') === 'yes') {
             Api_Client::$host = self::COMFINO_SANDBOX_HOST;
             Api_Client::$key = self::$config_manager->get_option('sandbox_key');
+            Api_Client::$frontend_script_url = self::COMFINO_FRONTEND_JS_SANDBOX;
             Api_Client::$widget_script_url = self::COMFINO_WIDGET_JS_SANDBOX;
         } else {
             Api_Client::$host = self::COMFINO_PRODUCTION_HOST;
             Api_Client::$key = self::$config_manager->get_option('production_key');
+            Api_Client::$frontend_script_url = self::COMFINO_FRONTEND_JS_PRODUCTION;
             Api_Client::$widget_script_url = self::COMFINO_WIDGET_JS_PRODUCTION;
         }
     }

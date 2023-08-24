@@ -134,120 +134,25 @@ class Comfino_Gateway extends WC_Payment_Gateway
      */
     public function payment_fields()
     {
-        global $woocommerce;
-
-        $total = (int)round($woocommerce->cart->total) * 100;
-        $offers = Api_Client::fetch_offers($total);
-        $payment_infos = [];
-
-        foreach ($offers as $offer) {
-            $instalmentAmount = ((float)$offer['instalmentAmount']) / 100;
-            $rrso = ((float)$offer['rrso']) * 100;
-            $toPay = ((float)$offer['toPay']) / 100;
-
-            $payment_infos[] = [
-                'name' => $offer['name'],
-                'description' => $offer['description'],
-                'icon' => str_ireplace('<?xml version="1.0" encoding="UTF-8"?>', '', $offer['icon']),
-                'type' => $offer['type'],
-                'sumAmount' => number_format($total / 100, 2, ',', ' '),
-                'representativeExample' => $offer['representativeExample'],
-                'rrso' => number_format($rrso, 2, ',', ' '),
-                'loanTerm' => $offer['loanTerm'],
-                'instalmentAmount' => number_format($instalmentAmount, 2, ',', ' '),
-                'toPay' => number_format($toPay, 2, ',', ' '),
-                'commission' => number_format(((int)$offer['toPay'] - $total) / 100, 2, ',', ' '),
-                'loanParameters' => array_map(static function ($loan_params) use ($total) {
-                    return [
-                        'loanTerm' => $loan_params['loanTerm'],
-                        'instalmentAmount' => number_format(((float)$loan_params['instalmentAmount']) / 100, 2, ',', ' '),
-                        'toPay' => number_format(((float)$loan_params['toPay']) / 100, 2, ',', ' '),
-                        'commission' => number_format(((int)$loan_params['toPay'] - $total) / 100, 2, ',', ' '),
-                        'sumAmount' => number_format($total / 100, 2, ',', ' '),
-                        'rrso' => number_format($loan_params['rrso'] * 100, 2, ',', ' '),
-                    ];
-                }, $offer['loanParameters']),
-            ];
-        }
+        $options = [
+            'platform' => 'woocommerce',
+            'platformVersion' => WC_VERSION,
+            'platformDomain' => Core::get_shop_domain(),
+            'pluginVersion' => \Comfino_Payment_Gateway::VERSION,
+            'offersURL' => Core::get_offers_url(),
+            'language' => substr(get_locale(), 0, 2),
+        ];
 
         echo '
-            <div id="comfino-box" class="comfino">
-                <div class="comfino-box">
-                    <div class="header">
-                        <div class="comfino-title">' . __('Choose payment method', 'comfino-payment-gateway') . '</div>
-                    </div>
-                    <main>
-                        <section id="comfino-offer-items" class="comfino-select-payment"></section>
-                        <section class="comfino-payment-box">
-                            <div class="comfino-payment-title">' . __('Value of purchase', 'comfino-payment-gateway') . ':</div>
-                            <div id="comfino-total-payment" class="comfino-total-payment"></div>
-                        </section>
-                        <section id="comfino-installments">
-                            <section class="comfino-installments-box">
-                                <div class="comfino-installments-title"><span id="comfino-installments-num">' . __('Choose number of instalments', 'comfino-payment-gateway') . '</span><span id="comfino-delay-days-num" style="display: none">' . __('How many days do you want to defer payment?', 'comfino-payment-gateway') . '</span></div>
-                                <div id="comfino-quantity-select" class="comfino-quantity-select"></div>
-                            </section>
-                            <section class="comfino-monthly-box">
-                                <div class="comfino-monthly-title">' . __('Monthly instalment', 'comfino-payment-gateway') . ':</div>
-                                <div id="comfino-monthly-rate" class="comfino-monthly-rate"></div>
-                            </section>
-                            <section id="comfino-summary-box" class="comfino-summary-box">
-                                <div class="comfino-summary-total">' . __('Total amount to pay', 'comfino-payment-gateway') . ': <span id="comfino-summary-total"></span></div>
-                                <div class="comfino-summary-total-bnpl">' . __('Total amount to pay', 'comfino-payment-gateway') . ': <span id="comfino-summary-total-bnpl"></span></div>
-                                <div id="comfino-rrso-container" class="comfino-rrso">RRSO <span id="comfino-rrso"></span></div
-                                <div id="comfino-operator-commission-container" class="comfino-operator-commission" style="display: none">' . __('Operator commission', 'comfino-payment-gateway') . ': <span id="comfino-operator-commission"></span></div>
-                                <div id="comfino-description-box" class="comfino-description-box"></div>
-                            </section>
-                            <footer>
-                                <a id="comfino-repr-example-link" class="representative comfino-footer-link">' . __('Representative example', 'comfino-payment-gateway') . '</a>
-                                <div id="modal-repr-example" class="comfino-modal">
-                                    <div class="comfino-modal-bg comfino-modal-exit"></div>
-                                    <div class="comfino-modal-container">
-                                        <span id="comfino-repr-example"></span>
-                                        <button class="comfino-modal-close comfino-modal-exit">&times;</button>
-                                    </div>
-                                </div>
-                            </footer>
-                        </section>
-                        <section id="comfino-payment-delay" class="comfino-payment-delay">
-                            <div class="comfino-payment-delay__title">' . __('Buy now, pay in 30 days', 'comfino-payment-gateway') . ' <span>' . __('How it\'s working?', 'comfino-payment-gateway') . '</span></div>
-                            <div class="comfino-payment-delay__box">
-                                <div class="comfino-helper-box">
-                                    <div class="comfino-payment-delay__single-instruction">
-                                        <div class="single-instruction-img__background">
-                                            <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/cart.svg" alt="" class="single-instruction-img" />
-                                        </div>
-                                        <div class="comfino-single-instruction__text">' . __('Put the product in the basket', 'comfino-payment-gateway') . '</div>
-                                    </div>
-                                    <div class="comfino-payment-delay__single-instruction">
-                                        <div class="single-instruction-img__background">
-                                            <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/comfino.svg" alt="" class="single-instruction-img" />
-                                        </div>
-                                        <div class="comfino-single-instruction__text">' . __('Choose Comfino payment', 'comfino-payment-gateway') . '</div>
-                                    </div>
-                                </div>
-                                <div class="comfino-helper-box">
-                                    <div class="comfino-payment-delay__single-instruction">
-                                        <div class="single-instruction-img__background">
-                                            <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/check.svg" alt="" class="single-instruction-img" />
-                                        </div>
-                                        <div class="comfino-single-instruction__text">' . __('Check the products at home', 'comfino-payment-gateway') . '</div>
-                                    </div>
-                                    <div class="comfino-payment-delay__single-instruction">
-                                        <div class="single-instruction-img__background">
-                                            <img src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/icons/wallet.svg" alt="" class="single-instruction-img" />
-                                        </div>
-                                        <div class="comfino-single-instruction__text">' . __('Pay in 30 days', 'comfino-payment-gateway') . '</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-                    </main>
-                </div>
-            </div>
+        <div id="comfino-payment-container">
             <input id="comfino-loan-term" name="comfino_loan_term" type="hidden" />
             <input id="comfino-type" name="comfino_type" type="hidden" />            
-            <script>Comfino.initPayments(' . json_encode($payment_infos) . ')</script>
+            <script>
+                Comfino.options = ' . json_encode($options) . ';
+                Comfino.options.frontendTarget = document.getElementById(\'comfino-payment-container\').parentElement;
+                Comfino.init(\''. Api_Client::get_frontend_script_url() . '\');
+            </script>
+        </div>
         ';
     }
 
@@ -261,7 +166,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
         }
 
         wp_enqueue_style('comfino', plugins_url('assets/css/comfino.css', __FILE__));
-        wp_enqueue_script('comfino', plugins_url('assets/js/comfino.js', __FILE__));
+        wp_enqueue_script('comfino', plugins_url('assets/js/comfino.js', __FILE__), [], null);
     }
 
     public function process_payment($order_id): array

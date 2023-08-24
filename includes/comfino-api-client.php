@@ -11,6 +11,9 @@ class Api_Client
     public static $key;
 
     /** @var string */
+    public static $frontend_script_url;
+
+    /** @var string */
     public static $widget_script_url;
 
     /**
@@ -297,6 +300,17 @@ class Api_Client
         }
 
         $order->add_order_note(__("Send to Comfino resign order", 'comfino-payment-gateway'));
+    }
+
+    public static function get_frontend_script_url(): string
+    {
+        if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV_FRONTEND_SCRIPT_URL') &&
+            getenv('COMFINO_DEV') === 'WC_' . WC_VERSION . '_' . Core::get_shop_url()
+        ) {
+            return getenv('COMFINO_DEV_FRONTEND_SCRIPT_URL');
+        }
+
+        return self::$frontend_script_url;
     }
 
     public static function get_widget_script_url(): string
