@@ -12,7 +12,7 @@ License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 3.1.0
-* Add support for a new payment method - pay later for companies (COMPANY_BNPL).
+* Add support for a new payment method - pay later for companies (COMPANY_BNPL), completely rewrite frontend logic.
 
 3.0.0
  * Complete plugin refactoring: new admin GUI design.
