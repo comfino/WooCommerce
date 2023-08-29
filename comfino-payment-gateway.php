@@ -67,6 +67,7 @@ class Comfino_Payment_Gateway
                 [
                     'methods' => WP_REST_Server::EDITABLE,
                     'callback' => [Core::class, 'process_notification'],
+                    'permission_callback' => '__return_true',
                 ],
             ]);
 
@@ -74,6 +75,7 @@ class Comfino_Payment_Gateway
                 [
                     'methods' => WP_REST_Server::READABLE,
                     'callback' => [Core::class, 'get_offers'],
+                    'permission_callback' => '__return_true',
                 ],
             ]);
 
@@ -81,10 +83,12 @@ class Comfino_Payment_Gateway
                 [
                     'methods' => WP_REST_Server::READABLE,
                     'callback' => [Core::class, 'get_configuration'],
+                    'permission_callback' => '__return_true',
                 ],
                 [
                     'methods' => WP_REST_Server::EDITABLE,
                     'callback' => [Core::class, 'update_configuration'],
+                    'permission_callback' => '__return_true',
                 ]
             ]);
         });
