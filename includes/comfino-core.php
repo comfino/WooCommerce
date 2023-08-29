@@ -61,6 +61,25 @@ class Core
      */
     private static $config_manager;
 
+    public static function init()
+    {
+        if (self::$config_manager === null) {
+            self::$config_manager = new Config_Manager();
+        }
+
+        if (self::$config_manager->get_option('sandbox_mode') === 'yes') {
+            Api_Client::$host = self::COMFINO_SANDBOX_HOST;
+            Api_Client::$key = self::$config_manager->get_option('sandbox_key');
+            Api_Client::$frontend_script_url = self::COMFINO_FRONTEND_JS_SANDBOX;
+            Api_Client::$widget_script_url = self::COMFINO_WIDGET_JS_SANDBOX;
+        } else {
+            Api_Client::$host = self::COMFINO_PRODUCTION_HOST;
+            Api_Client::$key = self::$config_manager->get_option('production_key');
+            Api_Client::$frontend_script_url = self::COMFINO_FRONTEND_JS_PRODUCTION;
+            Api_Client::$widget_script_url = self::COMFINO_WIDGET_JS_PRODUCTION;
+        }
+    }
+
     public static function get_shop_domain(): string
     {
         $url_parts = parse_url(get_permalink(wc_get_page_id('shop')));
@@ -284,25 +303,6 @@ class Core
                    ["'", '>', '&', '"', '"'],
                    esc_html($code)
                ) . '</script>';
-    }
-
-    private static function init()
-    {
-        if (self::$config_manager === null) {
-            self::$config_manager = new Config_Manager();
-        }
-
-        if (self::$config_manager->get_option('sandbox_mode') === 'yes') {
-            Api_Client::$host = self::COMFINO_SANDBOX_HOST;
-            Api_Client::$key = self::$config_manager->get_option('sandbox_key');
-            Api_Client::$frontend_script_url = self::COMFINO_FRONTEND_JS_SANDBOX;
-            Api_Client::$widget_script_url = self::COMFINO_WIDGET_JS_SANDBOX;
-        } else {
-            Api_Client::$host = self::COMFINO_PRODUCTION_HOST;
-            Api_Client::$key = self::$config_manager->get_option('production_key');
-            Api_Client::$frontend_script_url = self::COMFINO_FRONTEND_JS_PRODUCTION;
-            Api_Client::$widget_script_url = self::COMFINO_WIDGET_JS_PRODUCTION;
-        }
     }
 
     private static function valid_signature(string $signature, string $request_data): bool

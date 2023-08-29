@@ -136,6 +136,8 @@ class Comfino_Gateway extends WC_Payment_Gateway
     {
         global $woocommerce;
 
+        \Comfino\Core::init();
+
         $options = [
             'platform' => 'woocommerce',
             'platformVersion' => WC_VERSION,
