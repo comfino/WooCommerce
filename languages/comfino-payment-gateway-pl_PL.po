@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comfino Payment Gateway 2.2.8\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/comfino\n"
-"POT-Creation-Date: 2023-07-25T15:45:23+00:00\n"
-"PO-Revision-Date: 2023-07-25 17:51+0200\n"
+"POT-Creation-Date: 2023-08-29T08:33:58+00:00\n"
+"PO-Revision-Date: 2023-08-29 10:41+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: pl_PL\n"
@@ -37,30 +37,30 @@ msgstr "Comfino (Comperia)"
 msgid "https://github.com/comfino"
 msgstr "https://github.com/comfino"
 
-#: comfino-payment-gateway.php:96
+#: comfino-payment-gateway.php:103
 msgid "The minimum PHP version required for Comfino is %s. You are running %s."
 msgstr "Minimalna wersja PHP wymagana przez Comfino to %s. Obecna to %s."
 
-#: comfino-payment-gateway.php:102
+#: comfino-payment-gateway.php:109
 msgid "WooCommerce needs to be activated."
 msgstr "Rozszerzenie WooCommerce musi zostać aktywowane."
 
-#: comfino-payment-gateway.php:106
+#: comfino-payment-gateway.php:113
 msgid ""
 "The minimum WooCommerce version required for Comfino is %s. You are running "
 "%s."
 msgstr ""
 "Minimalna wersja WooCommerce wymagana przez Comfino to %s. Obecna to %s."
 
-#: comfino-payment-gateway.php:121
+#: comfino-payment-gateway.php:128
 msgid "Settings"
 msgstr "Ustawienia"
 
-#: includes/comfino-api-client.php:115
+#: includes/comfino-api-client.php:118
 msgid "Comfino create order"
 msgstr "Wniosek Comfino stworzony"
 
-#: includes/comfino-api-client.php:299
+#: includes/comfino-api-client.php:302
 msgid "Send to Comfino resign order"
 msgstr "Wysłanie odstąpienia od umowy do Comfino"
 
@@ -231,7 +231,7 @@ msgstr "Kod inicjalizacji widgetu"
 msgid "API key %s is not valid."
 msgstr "Klucz API %s jest nieprawidłowy."
 
-#: includes/comfino-core.php:112
+#: includes/comfino-core.php:120
 msgid "Comfino status"
 msgstr "Comfino status"
 
@@ -275,71 +275,23 @@ msgstr "Ustawienia deweloperskie"
 msgid "Plugin diagnostics"
 msgstr "Diagnostyka wtyczki"
 
-#: includes/comfino-gateway.php:113
+#: includes/comfino-gateway.php:124
 msgid "Errors log"
 msgstr "Log błędów"
 
-#: includes/comfino-gateway.php:164
-msgid "Choose payment method"
-msgstr "Wybierz sposób płatności"
-
-#: includes/comfino-gateway.php:169
-msgid "Value of purchase"
-msgstr "Wartość zakupów"
-
-#: includes/comfino-gateway.php:174
-msgid "Choose number of instalments"
-msgstr "Wybierz ilość rat"
-
-#: includes/comfino-gateway.php:178
-msgid "Monthly instalment"
-msgstr "Miesięczna rata"
-
-#: includes/comfino-gateway.php:182
-msgid "Total amount to pay"
-msgstr "Łączna kwota do spłaty"
-
-#: includes/comfino-gateway.php:187
-msgid "Representative example"
-msgstr "Przykład reprezentatywny"
-
-#: includes/comfino-gateway.php:198
-msgid "Buy now, pay in 30 days"
-msgstr "Kup teraz, zapłać za 30 dni"
-
-#: includes/comfino-gateway.php:198
-msgid "How it's working?"
-msgstr "Jak to działa?"
-
-#: includes/comfino-gateway.php:205
-msgid "Put the product in the basket"
-msgstr "Włóż produkt do koszyka"
-
-#: includes/comfino-gateway.php:211
-msgid "Choose Comfino payment"
-msgstr "Wybierz płatność Comfino"
-
-#: includes/comfino-gateway.php:219
-msgid "Check the products at home"
-msgstr "Sprawdź produkty w domu"
-
-#: includes/comfino-gateway.php:225
-msgid "Pay in 30 days"
-msgstr "Zapłać za 30 dni"
-
-#: includes/comfino-gateway.php:268
+#: includes/comfino-gateway.php:197
 msgid "Send to Comfino canceled order"
 msgstr "Wysłanie anulowania wniosku do Comfino"
 
-#: includes/comfino-gateway.php:317
+#: includes/comfino-gateway.php:247
 msgid "Are you sure you want to cancel?"
 msgstr "Czy na pewno chcesz anulować?"
 
-#: includes/comfino-gateway.php:317
+#: includes/comfino-gateway.php:247
 msgid "Cancel"
 msgstr "Anulowanie"
 
-#: includes/comfino-gateway.php:317
+#: includes/comfino-gateway.php:247
 msgid ""
 "Attention: You are cancelling a customer order. Check if you do not have to "
 "return the money to Comfino."
@@ -347,15 +299,15 @@ msgstr ""
 "Uwaga! Anulujesz zamówienie klienta. Sprawdź czy nie musisz zwrócić "
 "pieniędzy do Comfino."
 
-#: includes/comfino-gateway.php:321
+#: includes/comfino-gateway.php:251
 msgid "Are you sure you want to resign?"
 msgstr "Czy na pewno chcesz odstąpić od umowy?"
 
-#: includes/comfino-gateway.php:321
+#: includes/comfino-gateway.php:251
 msgid "Resign"
 msgstr "Odstąpienie od umowy"
 
-#: includes/comfino-gateway.php:321
+#: includes/comfino-gateway.php:251
 msgid ""
 "Attention: you are initiating a resignation of the Customer's contract. "
 "Required refund to Comfino."
