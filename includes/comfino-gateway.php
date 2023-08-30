@@ -166,7 +166,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
     }
 
     /**
-     * Include CSS and JavaScript.
+     * Include JavaScript.
      */
     public function payment_scripts()
     {
@@ -174,7 +174,6 @@ class Comfino_Gateway extends WC_Payment_Gateway
             return;
         }
 
-        wp_enqueue_style('comfino', plugins_url('assets/css/comfino.css', __FILE__));
         wp_enqueue_script('comfino', plugins_url('assets/js/comfino.js', __FILE__), [], null);
     }
 
