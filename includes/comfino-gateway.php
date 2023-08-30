@@ -154,7 +154,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
         <div id="comfino-payment-container">
             <input id="comfino-loan-term" name="comfino_loan_term" type="hidden" />
             <input id="comfino-type" name="comfino_type" type="hidden" />
-            <div id="comfino-payment-subcontainer"></div>            
+            <div id="comfino-payment-subcontainer" style="display: none"></div>            
             <script>
                 Comfino.options = ' . json_encode($options) . ';
                 Comfino.options.frontendInitElement = document.getElementById(\'payment_method_comfino\');
