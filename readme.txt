@@ -5,7 +5,7 @@ Tags: comfino, woocommerce, gateway, payment, bank
 WC tested up to: 8.0.3
 WC requires at least: 3.0
 Stable tag: 3.1.0
-Tested up to: 6.2.2
+Tested up to: 6.3.1
 Requires at least: 5.0
 Requires PHP: 7.0
 License: GPLv2 or later
