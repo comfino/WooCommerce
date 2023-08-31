@@ -66,10 +66,10 @@ final class Shop_Plugin_Error
         array   $environment,
         string  $error_code,
         string  $error_message,
-        ?string $api_request_url = null,
-        ?string $api_request = null,
-        ?string $api_response = null,
-        ?string $stack_trace = null
+        $api_request_url = null,
+        $api_request = null,
+        $api_response = null,
+        $stack_trace = null
     )
     {
         $this->host = $host;

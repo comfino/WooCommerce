@@ -9,6 +9,9 @@ class Core
     const COMFINO_PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
     const COMFINO_SANDBOX_HOST = 'https://api-ecommerce.ecraty.pl';
 
+    const COMFINO_FRONTEND_JS_SANDBOX = 'https://widget.craty.pl/comfino-frontend.min.js';
+    const COMFINO_FRONTEND_JS_PRODUCTION = 'https://widget.comfino.pl/comfino-frontend.min.js';
+
     const COMFINO_WIDGET_JS_SANDBOX = 'https://widget.craty.pl/comfino.min.js';
     const COMFINO_WIDGET_JS_PRODUCTION = 'https://widget.comfino.pl/comfino.min.js';
 
@@ -58,6 +61,25 @@ class Core
      */
     private static $config_manager;
 
+    public static function init()
+    {
+        if (self::$config_manager === null) {
+            self::$config_manager = new Config_Manager();
+        }
+
+        if (self::$config_manager->get_option('sandbox_mode') === 'yes') {
+            Api_Client::$host = self::COMFINO_SANDBOX_HOST;
+            Api_Client::$key = self::$config_manager->get_option('sandbox_key');
+            Api_Client::$frontend_script_url = self::COMFINO_FRONTEND_JS_SANDBOX;
+            Api_Client::$widget_script_url = self::COMFINO_WIDGET_JS_SANDBOX;
+        } else {
+            Api_Client::$host = self::COMFINO_PRODUCTION_HOST;
+            Api_Client::$key = self::$config_manager->get_option('production_key');
+            Api_Client::$frontend_script_url = self::COMFINO_FRONTEND_JS_PRODUCTION;
+            Api_Client::$widget_script_url = self::COMFINO_WIDGET_JS_PRODUCTION;
+        }
+    }
+
     public static function get_shop_domain(): string
     {
         $url_parts = parse_url(get_permalink(wc_get_page_id('shop')));
@@ -70,6 +92,11 @@ class Core
         $url_parts = parse_url(get_permalink(wc_get_page_id('shop')));
 
         return $url_parts['host'] . (isset($url_parts['port']) ? ':' . $url_parts['port'] : '');
+    }
+
+    public static function get_offers_url(): string
+    {
+        return get_rest_url(null, 'comfino/offers');
     }
 
     public static function get_notify_url(): string
@@ -122,6 +149,49 @@ class Core
         }
 
         return new \WP_REST_Response('OK', 200);
+    }
+
+    public static function get_offers(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $total = (int)round($request->has_param('total') ? (float)$request->get_param('total') : 0) * 100;
+        $offers = Api_Client::fetch_offers($total);
+        $payment_offers = [];
+
+        foreach ($offers as $offer) {
+            $payment_offers[] = [
+                'name' => $offer['name'],
+                'description' => $offer['description'],
+                'icon' => str_ireplace('<?xml version="1.0" encoding="UTF-8"?>', '', $offer['icon']),
+                'type' => $offer['type'],
+                'representativeExample' => $offer['representativeExample'],
+                'loanTerm' => $offer['loanTerm'],
+                'instalmentAmount' => number_format(((float)$offer['instalmentAmount']) / 100, 2, ',', ' '),
+                'instalmentAmountFormatted' => wc_price(((float)$offer['instalmentAmount']) / 100, ['currency' => get_woocommerce_currency()]),
+                'sumAmount' => number_format($total / 100, 2, ',', ' '),
+                'sumAmountFormatted' => wc_price($total / 100, ['currency' => get_woocommerce_currency()]),
+                'toPay' => number_format(((float)$offer['toPay']) / 100, 2, ',', ' '),
+                'toPayFormatted' => wc_price(((float)$offer['toPay']) / 100, ['currency' => get_woocommerce_currency()]),
+                'commission' => number_format(((int)$offer['toPay'] - $total) / 100, 2, ',', ' '),
+                'commissionFormatted' => wc_price(((int)$offer['toPay'] - $total) / 100, ['currency' => get_woocommerce_currency()]),
+                'rrso' => number_format(((float)$offer['rrso']) * 100, 2, ',', ' '),
+                'loanParameters' => array_map(static function ($loan_params) use ($total) {
+                    return [
+                        'loanTerm' => $loan_params['loanTerm'],
+                        'instalmentAmount' => number_format(((float)$loan_params['instalmentAmount']) / 100, 2, ',', ' '),
+                        'instalmentAmountFormatted' => wc_price(((float)$loan_params['instalmentAmount']) / 100, ['currency' => get_woocommerce_currency()]),
+                        'sumAmount' => number_format($total / 100, 2, ',', ' '),
+                        'sumAmountFormatted' => wc_price($total / 100, ['currency' => get_woocommerce_currency()]),
+                        'toPay' => number_format(((float)$loan_params['toPay']) / 100, 2, ',', ' '),
+                        'toPayFormatted' => wc_price(((float)$loan_params['toPay']) / 100, ['currency' => get_woocommerce_currency()]),
+                        'commission' => number_format(((int)$loan_params['toPay'] - $total) / 100, 2, ',', ' '),
+                        'commissionFormatted' => wc_price(((int)$loan_params['toPay'] - $total) / 100, ['currency' => get_woocommerce_currency()]),
+                        'rrso' => number_format($loan_params['rrso'] * 100, 2, ',', ' '),
+                    ];
+                }, $offer['loanParameters']),
+            ];
+        }
+
+        return new \WP_REST_Response($payment_offers, 200);
     }
 
     public static function get_configuration(\WP_REST_Request $request): \WP_REST_Response
@@ -233,23 +303,6 @@ class Core
                    ["'", '>', '&', '"', '"'],
                    esc_html($code)
                ) . '</script>';
-    }
-
-    private static function init()
-    {
-        if (self::$config_manager === null) {
-            self::$config_manager = new Config_Manager();
-        }
-
-        if (self::$config_manager->get_option('sandbox_mode') === 'yes') {
-            Api_Client::$host = self::COMFINO_SANDBOX_HOST;
-            Api_Client::$key = self::$config_manager->get_option('sandbox_key');
-            Api_Client::$widget_script_url = self::COMFINO_WIDGET_JS_SANDBOX;
-        } else {
-            Api_Client::$host = self::COMFINO_PRODUCTION_HOST;
-            Api_Client::$key = self::$config_manager->get_option('production_key');
-            Api_Client::$widget_script_url = self::COMFINO_WIDGET_JS_PRODUCTION;
-        }
     }
 
     private static function valid_signature(string $signature, string $request_data): bool

@@ -165,6 +165,11 @@ class Error_Logger
 
     public static function init()
     {
+        if ((defined('WP_DEBUG') && WP_DEBUG === true) || getenv('COMFINO_DEBUG') === 'TRUE') {
+            // Disable custom errors handling if WordPress or plugin is in debug mode.
+            return;
+        }
+
         static $initialized = false;
 
         if (!$initialized) {

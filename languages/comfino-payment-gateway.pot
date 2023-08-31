@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Comfino Payment Gateway plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Comfino Payment Gateway 3.0.0\n"
+"Project-Id-Version: Comfino Payment Gateway 3.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/comfino\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2023-07-25T15:45:23+00:00\n"
+"POT-Creation-Date: 2023-08-29T08:33:58+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.8.1\n"
 "X-Domain: comfino-payment-gateway\n"
@@ -34,27 +34,27 @@ msgstr ""
 msgid "https://github.com/comfino"
 msgstr ""
 
-#: comfino-payment-gateway.php:96
+#: comfino-payment-gateway.php:103
 msgid "The minimum PHP version required for Comfino is %s. You are running %s."
 msgstr ""
 
-#: comfino-payment-gateway.php:102
+#: comfino-payment-gateway.php:109
 msgid "WooCommerce needs to be activated."
 msgstr ""
 
-#: comfino-payment-gateway.php:106
+#: comfino-payment-gateway.php:113
 msgid "The minimum WooCommerce version required for Comfino is %s. You are running %s."
 msgstr ""
 
-#: comfino-payment-gateway.php:121
+#: comfino-payment-gateway.php:128
 msgid "Settings"
 msgstr ""
 
-#: includes/comfino-api-client.php:115
+#: includes/comfino-api-client.php:118
 msgid "Comfino create order"
 msgstr ""
 
-#: includes/comfino-api-client.php:299
+#: includes/comfino-api-client.php:302
 msgid "Send to Comfino resign order"
 msgstr ""
 
@@ -206,7 +206,7 @@ msgstr ""
 msgid "API key %s is not valid."
 msgstr ""
 
-#: includes/comfino-core.php:112
+#: includes/comfino-core.php:120
 msgid "Comfino status"
 msgstr ""
 
@@ -246,82 +246,34 @@ msgstr ""
 msgid "Plugin diagnostics"
 msgstr ""
 
-#: includes/comfino-gateway.php:113
+#: includes/comfino-gateway.php:124
 msgid "Errors log"
 msgstr ""
 
-#: includes/comfino-gateway.php:164
-msgid "Choose payment method"
-msgstr ""
-
-#: includes/comfino-gateway.php:169
-msgid "Value of purchase"
-msgstr ""
-
-#: includes/comfino-gateway.php:174
-msgid "Choose number of instalments"
-msgstr ""
-
-#: includes/comfino-gateway.php:178
-msgid "Monthly instalment"
-msgstr ""
-
-#: includes/comfino-gateway.php:182
-msgid "Total amount to pay"
-msgstr ""
-
-#: includes/comfino-gateway.php:187
-msgid "Representative example"
-msgstr ""
-
-#: includes/comfino-gateway.php:198
-msgid "Buy now, pay in 30 days"
-msgstr ""
-
-#: includes/comfino-gateway.php:198
-msgid "How it's working?"
-msgstr ""
-
-#: includes/comfino-gateway.php:205
-msgid "Put the product in the basket"
-msgstr ""
-
-#: includes/comfino-gateway.php:211
-msgid "Choose Comfino payment"
-msgstr ""
-
-#: includes/comfino-gateway.php:219
-msgid "Check the products at home"
-msgstr ""
-
-#: includes/comfino-gateway.php:225
-msgid "Pay in 30 days"
-msgstr ""
-
-#: includes/comfino-gateway.php:268
+#: includes/comfino-gateway.php:197
 msgid "Send to Comfino canceled order"
 msgstr ""
 
-#: includes/comfino-gateway.php:317
+#: includes/comfino-gateway.php:247
 msgid "Are you sure you want to cancel?"
 msgstr ""
 
-#: includes/comfino-gateway.php:317
+#: includes/comfino-gateway.php:247
 msgid "Cancel"
 msgstr ""
 
-#: includes/comfino-gateway.php:317
+#: includes/comfino-gateway.php:247
 msgid "Attention: You are cancelling a customer order. Check if you do not have to return the money to Comfino."
 msgstr ""
 
-#: includes/comfino-gateway.php:321
+#: includes/comfino-gateway.php:251
 msgid "Are you sure you want to resign?"
 msgstr ""
 
-#: includes/comfino-gateway.php:321
+#: includes/comfino-gateway.php:251
 msgid "Resign"
 msgstr ""
 
-#: includes/comfino-gateway.php:321
+#: includes/comfino-gateway.php:251
 msgid "Attention: you are initiating a resignation of the Customer's contract. Required refund to Comfino."
 msgstr ""
