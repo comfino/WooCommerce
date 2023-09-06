@@ -153,6 +153,8 @@ class Core
 
     public static function get_offers(\WP_REST_Request $request): \WP_REST_Response
     {
+        Api_Client::$api_language = substr(get_locale(), 0, 2);
+
         $total = (int)round($request->has_param('total') ? (float)$request->get_param('total') * 100 : 0);
         $offers = Api_Client::fetch_offers($total);
         $payment_offers = [];

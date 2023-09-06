@@ -179,6 +179,8 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
     public function process_payment($order_id): array
     {
+        Api_Client::$api_language = substr(get_locale(), 0, 2);
+
         return Api_Client::process_payment(
             $order = wc_get_order($order_id),
             $this->get_return_url($order),

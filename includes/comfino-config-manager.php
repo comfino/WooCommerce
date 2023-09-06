@@ -50,6 +50,13 @@ class Config_Manager extends \WC_Settings_API
 
     public function __construct()
     {
+        Api_Client::$api_language = substr(get_bloginfo('language'), 0, 2);
+
+        if (($product_types = get_transient('COMFINO_PRODUCT_TYPES')) === false) {
+            $product_types = Api_Client::get_product_types();
+            set_transient('COMFINO_PRODUCT_TYPES', $product_types, DAY_IN_SECONDS);
+        }
+
         $this->id = 'comfino';
         $this->form_fields = [
             'enabled' => [
@@ -120,7 +127,7 @@ class Config_Manager extends \WC_Settings_API
             'widget_offer_type' => [
                 'title' => __('Widget offer type', 'comfino-payment-gateway'),
                 'type' => 'select',
-                'options' => [
+                'options' => !empty($product_types) ? $product_types : [
                     'INSTALLMENTS_ZERO_PERCENT' => __('Zero percent installments', 'comfino-payment-gateway'),
                     'CONVENIENT_INSTALLMENTS' => __('Convenient installments', 'comfino-payment-gateway'),
                     'PAY_LATER' => __('Pay later', 'comfino-payment-gateway'),
@@ -306,6 +313,8 @@ class Config_Manager extends \WC_Settings_API
 
             $this->settings['widget_key'] = Api_Client::get_widget_key($api_host, $api_key);
         }
+
+        delete_transient('COMFINO_PRODUCT_TYPES');
 
         return update_option(
             $this->get_option_key(),

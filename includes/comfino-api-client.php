@@ -16,6 +16,9 @@ class Api_Client
     /** @var string */
     public static $widget_script_url;
 
+    /** @var string */
+    public static $api_language;
+
     /**
      * Fetch products.
      *
@@ -206,6 +209,37 @@ class Api_Client
         }
 
         return $widget_key !== false ? $widget_key : '';
+    }
+
+    /**
+     * @return string[]|bool
+     */
+    public static function get_product_types()
+    {
+        static $product_types = null;
+
+        if ($product_types !== null) {
+            return $product_types;
+        }
+
+        $response = wp_remote_get(
+            self::get_api_host() . '/v1/product-types',
+            ['headers' => self::get_header_request()]
+        );
+
+        if (!is_wp_error($response)) {
+            $json_response = wp_remote_retrieve_body($response);
+
+            if (strpos($json_response, 'errors') === false) {
+                $product_types = json_decode($json_response, true);
+            } else {
+                $product_types = false;
+            }
+        } else {
+            $product_types = false;
+        }
+
+        return $product_types;
     }
 
     public static function is_api_key_valid(string $api_host, string $api_key): bool
@@ -456,6 +490,7 @@ class Api_Client
         return [
             'Content-Type' => 'application/json',
             'Api-Key' => self::$key,
+            'Api-Language' => !empty(self::$api_language) ? self::$api_language : substr(get_locale(), 0, 2),
             'User-Agent' => self::get_user_agent_header(),
         ];
     }
