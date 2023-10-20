@@ -111,7 +111,7 @@ class Api_Client
                         ? implode(', ', $decoded['errors'])
                         : 'API call error ' . wp_remote_retrieve_response_code($response),
                     $url,
-                    $body,
+                    self::get_api_request_for_log($args['headers'], $body),
                     wp_remote_retrieve_body($response)
                 );
 
@@ -133,7 +133,7 @@ class Api_Client
             implode(', ', $response->get_error_codes()),
             implode(', ', $response->get_error_messages()),
             $url,
-            $body,
+            self::get_api_request_for_log($args['headers'], $body),
             wp_remote_retrieve_body($response)
         );
 
@@ -323,7 +323,7 @@ class Api_Client
                 implode(', ', $response->get_error_codes()),
                 implode(', ', $response->get_error_messages()),
                 $url,
-                $body,
+                self::get_api_request_for_log($args['headers'], $body),
                 wp_remote_retrieve_body($response)
             );
 
@@ -480,6 +480,22 @@ class Api_Client
                 'countryCode' => $order->get_billing_country(),
             ],
         ];
+    }
+
+    private static function get_api_request_for_log(array $headers, string $body): string
+    {
+        return "Headers: " . self::get_headers_for_log($headers) . "\nBody: $body";
+    }
+
+    private static function get_headers_for_log(array $headers): string
+    {
+        $headers_str = [];
+
+        foreach ($headers as $header_name => $header_value) {
+            $headers_str[] = "$header_name: $header_value";
+        }
+
+        return implode(', ', $headers_str);
     }
 
     /**
