@@ -43,7 +43,7 @@ class Api_Client
                         ? implode(', ', $decoded['errors'])
                         : 'API call error ' . wp_remote_retrieve_response_code($response),
                     $url,
-                    null,
+                    self::get_api_request_for_log($args['headers']),
                     wp_remote_retrieve_body($response)
                 );
 
@@ -58,7 +58,7 @@ class Api_Client
             implode(', ', $response->get_error_codes()),
             implode(', ', $response->get_error_messages()),
             $url,
-            null,
+            self::get_api_request_for_log($args['headers']),
             wp_remote_retrieve_body($response)
         );
 
@@ -161,9 +161,11 @@ class Api_Client
         $widget_key = '';
 
         if (!empty(self::$key)) {
+            $headers = self::get_request_headers();
+
             $response = wp_remote_get(
                 self::get_api_host() . '/v1/widget-key',
-                ['headers' => self::get_request_headers()]
+                ['headers' => $headers]
             );
 
             if (!is_wp_error($response)) {
@@ -180,7 +182,7 @@ class Api_Client
                         wp_remote_retrieve_response_code($response),
                         implode(', ', $errors),
                         self::get_api_host() . '/v1/widget-key',
-                        null,
+                        self::get_api_request_for_log($headers),
                         $json_response
                     );
 
@@ -197,7 +199,7 @@ class Api_Client
                     implode(', ', $response->get_error_codes()),
                     implode(', ', $response->get_error_messages()),
                     self::get_api_host() . '/v1/widget-key',
-                    null,
+                    self::get_api_request_for_log($headers),
                     wp_remote_retrieve_body($response)
                 );
 
@@ -286,7 +288,7 @@ class Api_Client
                 implode(', ', $response->get_error_codes()),
                 implode(', ', $response->get_error_messages()),
                 $url,
-                null,
+                self::get_api_request_for_log($args['headers']),
                 wp_remote_retrieve_body($response)
             );
 
@@ -484,9 +486,14 @@ class Api_Client
         ];
     }
 
-    private static function get_api_request_for_log(array $headers, string $body): string
+    /**
+     * @param array $headers
+     * @param string|null $body
+     * @return string
+     */
+    private static function get_api_request_for_log(array $headers, $body = null): string
     {
-        return "Headers: " . self::get_headers_for_log($headers) . "\nBody: $body";
+        return "Headers: " . self::get_headers_for_log($headers) . "\nBody: " . ($body ?? 'n/a');
     }
 
     private static function get_headers_for_log(array $headers): string

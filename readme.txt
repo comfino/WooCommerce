@@ -1,15 +1,20 @@
 === Comfino Payment Gateway ===
-Contributors: Comperia.pl
+Contributors: comfino.pl
 Donate link: https://comfino.pl/
-Tags: comfino, woocommerce, gateway, payment, bank
+Tags: comfino, woocommerce, gateway, payment, bank, deferred payments, installments
 WC tested up to: 8.0.3
 WC requires at least: 3.0
-Stable tag: 3.2.0
+Stable tag: 3.2.1
 Tested up to: 6.3.1
 Requires at least: 5.0
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
+
+3.2.1
+ * Update documentation.
+ * Error logger: ignore all errors outside the plugin code.
+ * Extend error information - add HTTP request headers in API request body field.
 
 3.2.0
  * Add dynamically loaded list of offer types from Comfino API in configuration form (widget settings).
@@ -32,12 +37,12 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
  * Add a new widget initialization script, add debug mode for plugin frontend.
 
 2.3.1
- * Update language
- * Fix verify algos
+ * Update language.
+ * Fix verify algorithms.
 
 2.3.0
  * Fix product type
- * Add get and verify algos
+ * Add get and verify algorithms
  * Tested up WC 7.5.1
  * Tested up WP 6.2
 
