@@ -94,7 +94,7 @@ class Api_Client
 
         $url = self::get_api_host() . '/v1/orders';
         $args = [
-            'headers' => self::get_header_request(),
+            'headers' => self::get_header_request('POST', $body),
             'body' => $body,
         ];
 
@@ -272,7 +272,7 @@ class Api_Client
     {
         $url = self::get_api_host() . "/v1/orders/{$order->get_id()}/cancel";
         $args = [
-            'headers' => self::get_header_request(),
+            'headers' => self::get_header_request('PUT'),
             'method' => 'PUT'
         ];
 
@@ -308,7 +308,7 @@ class Api_Client
 
         $url = self::get_api_host() . "/v1/orders/{$order->get_id()}/resign";
         $args = [
-            'headers' => self::get_header_request(),
+            'headers' => self::get_header_request('PUT', $body),
             'body' => $body,
             'method' => 'PUT'
         ];
@@ -368,9 +368,11 @@ class Api_Client
             return false;
         }
 
+        $body = wp_json_encode(['error_details' => $request->error_details, 'hash' => $request->hash]);
+
         $args = [
-            'headers' => self::get_header_request(),
-            'body' => wp_json_encode(['error_details' => $request->error_details, 'hash' => $request->hash]),
+            'headers' => self::get_header_request('POST', $body),
+            'body' => $body,
         ];
 
         $response = wp_remote_post(self::get_api_host() . '/v1/log-plugin-error', $args);
@@ -501,14 +503,19 @@ class Api_Client
     /**
      * Prepare request headers.
      */
-    private static function get_header_request(): array
+    private static function get_header_request(string $method = 'GET', $data = null): array
     {
-        return [
-            'Content-Type' => 'application/json',
+        $headers = [];
+
+        if (($method === 'POST' || $method === 'PUT') && $data !== null) {
+            $headers['Content-Type'] = 'application/json';
+        }
+
+        return array_merge($headers, [
             'Api-Key' => self::$key,
             'Api-Language' => !empty(self::$api_language) ? self::$api_language : substr(get_locale(), 0, 2),
             'User-Agent' => self::get_user_agent_header(),
-        ];
+        ]);
     }
 
     private static function get_user_agent_header(): string
