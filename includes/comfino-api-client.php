@@ -383,7 +383,7 @@ class Api_Client
             wp_remote_retrieve_response_code($response) < 400;
     }
 
-    private static function get_api_host($frontend_host = false)
+    public static function get_api_host($frontend_host = false, $api_host = null)
     {
         if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV') === 'WC_' . WC_VERSION . '_' . Core::get_shop_url()) {
             if ($frontend_host) {
@@ -397,7 +397,7 @@ class Api_Client
             }
         }
 
-        return self::$host;
+        return $api_host ?? self::$host;
     }
 
     /**
