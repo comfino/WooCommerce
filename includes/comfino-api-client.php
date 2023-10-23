@@ -28,7 +28,7 @@ class Api_Client
     public static function fetch_offers(int $loanAmount): array
     {
         $url = self::get_api_host() . '/v1/financial-products' . '?' . http_build_query(['loanAmount' => $loanAmount]);
-        $args = ['headers' => self::get_header_request()];
+        $args = ['headers' => self::get_request_headers()];
 
         $response = wp_remote_get($url, $args);
 
@@ -94,7 +94,7 @@ class Api_Client
 
         $url = self::get_api_host() . '/v1/orders';
         $args = [
-            'headers' => self::get_header_request('POST', $body),
+            'headers' => self::get_request_headers('POST', $body),
             'body' => $body,
         ];
 
@@ -163,7 +163,7 @@ class Api_Client
         if (!empty(self::$key)) {
             $response = wp_remote_get(
                 self::get_api_host() . '/v1/widget-key',
-                ['headers' => self::get_header_request()]
+                ['headers' => self::get_request_headers()]
             );
 
             if (!is_wp_error($response)) {
@@ -224,7 +224,7 @@ class Api_Client
 
         $response = wp_remote_get(
             self::get_api_host() . '/v1/product-types',
-            ['headers' => self::get_header_request()]
+            ['headers' => self::get_request_headers()]
         );
 
         if (!is_wp_error($response)) {
@@ -252,7 +252,7 @@ class Api_Client
         if (!empty(self::$key)) {
             $response = wp_remote_get(
                 self::get_api_host() . '/v1/user/is-active',
-                ['headers' => self::get_header_request()]
+                ['headers' => self::get_request_headers()]
             );
 
             if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
@@ -272,7 +272,7 @@ class Api_Client
     {
         $url = self::get_api_host() . "/v1/orders/{$order->get_id()}/cancel";
         $args = [
-            'headers' => self::get_header_request('PUT'),
+            'headers' => self::get_request_headers('PUT'),
             'method' => 'PUT'
         ];
 
@@ -308,7 +308,7 @@ class Api_Client
 
         $url = self::get_api_host() . "/v1/orders/{$order->get_id()}/resign";
         $args = [
-            'headers' => self::get_header_request('PUT', $body),
+            'headers' => self::get_request_headers('PUT', $body),
             'body' => $body,
             'method' => 'PUT'
         ];
@@ -371,7 +371,7 @@ class Api_Client
         $body = wp_json_encode(['error_details' => $request->error_details, 'hash' => $request->hash]);
 
         $args = [
-            'headers' => self::get_header_request('POST', $body),
+            'headers' => self::get_request_headers('POST', $body),
             'body' => $body,
         ];
 
@@ -503,7 +503,7 @@ class Api_Client
     /**
      * Prepare request headers.
      */
-    private static function get_header_request(string $method = 'GET', $data = null): array
+    private static function get_request_headers(string $method = 'GET', $data = null): array
     {
         $headers = [];
 
