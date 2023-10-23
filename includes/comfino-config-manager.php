@@ -378,6 +378,7 @@ script.onload = function () {
         embedMethod: '{EMBED_METHOD}',
         numOfInstallments: 0,
         price: null,
+        pluginVersion: '{PLUGIN_VERSION}',
         callbackBefore: function () {},
         callbackAfter: function () {},
         onOfferRendered: function (jsonResponse, widgetTarget, widgetNode) { },

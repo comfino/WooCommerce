@@ -285,6 +285,7 @@ class Core
                 '{WIDGET_PRICE_OBSERVER_LEVEL}',
                 '{WIDGET_PRICE_OBSERVER_SELECTOR}',
                 '{WIDGET_SCRIPT_URL}',
+                '{PLUGIN_VERSION}',
             ],
             [
                 $comfino_gateway->get_option('widget_key'),
@@ -296,15 +297,16 @@ class Core
                 $comfino_gateway->get_option('widget_price_observer_level'),
                 $comfino_gateway->get_option('widget_price_observer_selector'),
                 Api_Client::get_widget_script_url(),
+                \Comfino_Payment_Gateway::VERSION,
             ],
             $comfino_gateway->get_option('widget_js_code')
         );
 
         return '<script>' . str_replace(
-                   ['&#039;', '&gt;', '&amp;', '&quot;', '&#34;'],
-                   ["'", '>', '&', '"', '"'],
-                   esc_html($code)
-               ) . '</script>';
+            ['&#039;', '&gt;', '&amp;', '&quot;', '&#34;'],
+            ["'", '>', '&', '"', '"'],
+            esc_html($code)
+        ) . '</script>';
     }
 
     private static function valid_signature(string $signature, string $request_data): bool
