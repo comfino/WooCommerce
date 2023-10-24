@@ -28,7 +28,7 @@ class Api_Client
     public static function fetch_offers(int $loanAmount): array
     {
         $url = self::get_api_host() . '/v1/financial-products' . '?' . http_build_query(['loanAmount' => $loanAmount]);
-        $args = ['headers' => self::get_header_request()];
+        $args = ['headers' => self::get_request_headers()];
 
         $response = wp_remote_get($url, $args);
 
@@ -43,7 +43,7 @@ class Api_Client
                         ? implode(', ', $decoded['errors'])
                         : 'API call error ' . wp_remote_retrieve_response_code($response),
                     $url,
-                    null,
+                    self::get_api_request_for_log($args['headers']),
                     wp_remote_retrieve_body($response)
                 );
 
@@ -58,7 +58,7 @@ class Api_Client
             implode(', ', $response->get_error_codes()),
             implode(', ', $response->get_error_messages()),
             $url,
-            null,
+            self::get_api_request_for_log($args['headers']),
             wp_remote_retrieve_body($response)
         );
 
@@ -94,7 +94,7 @@ class Api_Client
 
         $url = self::get_api_host() . '/v1/orders';
         $args = [
-            'headers' => self::get_header_request(),
+            'headers' => self::get_request_headers('POST', $body),
             'body' => $body,
         ];
 
@@ -111,7 +111,7 @@ class Api_Client
                         ? implode(', ', $decoded['errors'])
                         : 'API call error ' . wp_remote_retrieve_response_code($response),
                     $url,
-                    $body,
+                    self::get_api_request_for_log($args['headers'], $body),
                     wp_remote_retrieve_body($response)
                 );
 
@@ -133,7 +133,7 @@ class Api_Client
             implode(', ', $response->get_error_codes()),
             implode(', ', $response->get_error_messages()),
             $url,
-            $body,
+            self::get_api_request_for_log($args['headers'], $body),
             wp_remote_retrieve_body($response)
         );
 
@@ -161,9 +161,11 @@ class Api_Client
         $widget_key = '';
 
         if (!empty(self::$key)) {
+            $headers = self::get_request_headers();
+
             $response = wp_remote_get(
                 self::get_api_host() . '/v1/widget-key',
-                ['headers' => self::get_header_request()]
+                ['headers' => $headers]
             );
 
             if (!is_wp_error($response)) {
@@ -180,7 +182,7 @@ class Api_Client
                         wp_remote_retrieve_response_code($response),
                         implode(', ', $errors),
                         self::get_api_host() . '/v1/widget-key',
-                        null,
+                        self::get_api_request_for_log($headers),
                         $json_response
                     );
 
@@ -197,7 +199,7 @@ class Api_Client
                     implode(', ', $response->get_error_codes()),
                     implode(', ', $response->get_error_messages()),
                     self::get_api_host() . '/v1/widget-key',
-                    null,
+                    self::get_api_request_for_log($headers),
                     wp_remote_retrieve_body($response)
                 );
 
@@ -224,7 +226,7 @@ class Api_Client
 
         $response = wp_remote_get(
             self::get_api_host() . '/v1/product-types',
-            ['headers' => self::get_header_request()]
+            ['headers' => self::get_request_headers()]
         );
 
         if (!is_wp_error($response)) {
@@ -252,7 +254,7 @@ class Api_Client
         if (!empty(self::$key)) {
             $response = wp_remote_get(
                 self::get_api_host() . '/v1/user/is-active',
-                ['headers' => self::get_header_request()]
+                ['headers' => self::get_request_headers()]
             );
 
             if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
@@ -272,7 +274,7 @@ class Api_Client
     {
         $url = self::get_api_host() . "/v1/orders/{$order->get_id()}/cancel";
         $args = [
-            'headers' => self::get_header_request(),
+            'headers' => self::get_request_headers('PUT'),
             'method' => 'PUT'
         ];
 
@@ -286,7 +288,7 @@ class Api_Client
                 implode(', ', $response->get_error_codes()),
                 implode(', ', $response->get_error_messages()),
                 $url,
-                null,
+                self::get_api_request_for_log($args['headers']),
                 wp_remote_retrieve_body($response)
             );
 
@@ -308,7 +310,7 @@ class Api_Client
 
         $url = self::get_api_host() . "/v1/orders/{$order->get_id()}/resign";
         $args = [
-            'headers' => self::get_header_request(),
+            'headers' => self::get_request_headers('PUT', $body),
             'body' => $body,
             'method' => 'PUT'
         ];
@@ -323,7 +325,7 @@ class Api_Client
                 implode(', ', $response->get_error_codes()),
                 implode(', ', $response->get_error_messages()),
                 $url,
-                $body,
+                self::get_api_request_for_log($args['headers'], $body),
                 wp_remote_retrieve_body($response)
             );
 
@@ -368,9 +370,11 @@ class Api_Client
             return false;
         }
 
+        $body = wp_json_encode(['error_details' => $request->error_details, 'hash' => $request->hash]);
+
         $args = [
-            'headers' => self::get_header_request(),
-            'body' => wp_json_encode(['error_details' => $request->error_details, 'hash' => $request->hash]),
+            'headers' => self::get_request_headers('POST', $body),
+            'body' => $body,
         ];
 
         $response = wp_remote_post(self::get_api_host() . '/v1/log-plugin-error', $args);
@@ -379,7 +383,7 @@ class Api_Client
             wp_remote_retrieve_response_code($response) < 400;
     }
 
-    private static function get_api_host($frontend_host = false)
+    public static function get_api_host($frontend_host = false, $api_host = null)
     {
         if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV') === 'WC_' . WC_VERSION . '_' . Core::get_shop_url()) {
             if ($frontend_host) {
@@ -393,7 +397,7 @@ class Api_Client
             }
         }
 
-        return self::$host;
+        return $api_host ?? self::$host;
     }
 
     /**
@@ -483,16 +487,42 @@ class Api_Client
     }
 
     /**
+     * @param array $headers
+     * @param string|null $body
+     * @return string
+     */
+    private static function get_api_request_for_log(array $headers, $body = null): string
+    {
+        return "Headers: " . self::get_headers_for_log($headers) . "\nBody: " . ($body ?? 'n/a');
+    }
+
+    private static function get_headers_for_log(array $headers): string
+    {
+        $headers_str = [];
+
+        foreach ($headers as $header_name => $header_value) {
+            $headers_str[] = "$header_name: $header_value";
+        }
+
+        return implode(', ', $headers_str);
+    }
+
+    /**
      * Prepare request headers.
      */
-    private static function get_header_request(): array
+    private static function get_request_headers(string $method = 'GET', $data = null): array
     {
-        return [
-            'Content-Type' => 'application/json',
+        $headers = [];
+
+        if (($method === 'POST' || $method === 'PUT') && $data !== null) {
+            $headers['Content-Type'] = 'application/json';
+        }
+
+        return array_merge($headers, [
             'Api-Key' => self::$key,
             'Api-Language' => !empty(self::$api_language) ? self::$api_language : substr(get_locale(), 0, 2),
             'User-Agent' => self::get_user_agent_header(),
-        ];
+        ]);
     }
 
     private static function get_user_agent_header(): string

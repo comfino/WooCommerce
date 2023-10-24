@@ -296,7 +296,7 @@ class Config_Manager extends \WC_Settings_API
             }
         } else {
             $is_sandbox = ($this->settings['sandbox_mode'] === 'yes');
-            $api_host = $is_sandbox ? Core::COMFINO_SANDBOX_HOST : Core::COMFINO_PRODUCTION_HOST;
+            $api_host = $is_sandbox ? Api_Client::get_api_host(false, Core::COMFINO_SANDBOX_HOST) : Core::COMFINO_PRODUCTION_HOST;
             $api_key = $is_sandbox ? $this->settings['sandbox_key'] : $this->settings['production_key'];
 
             if (!Api_Client::is_api_key_valid($api_host, $api_key)) {
@@ -378,6 +378,7 @@ script.onload = function () {
         embedMethod: '{EMBED_METHOD}',
         numOfInstallments: 0,
         price: null,
+        pluginVersion: '{PLUGIN_VERSION}',
         callbackBefore: function () {},
         callbackAfter: function () {},
         onOfferRendered: function (jsonResponse, widgetTarget, widgetNode) { },

@@ -63,6 +63,11 @@ class Error_Logger
     {
         global $wp_version, $wpdb;
 
+        if (preg_match('/Error .*in \//', $error_message) && strpos($error_message, 'plugins/comfino') === false) {
+            // Ignore all errors outside the plugin code.
+            return;
+        }
+
         $error = new Shop_Plugin_Error(
             Core::get_shop_url(),
             'WooCommerce',

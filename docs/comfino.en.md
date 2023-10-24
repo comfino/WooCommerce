@@ -28,8 +28,8 @@ Configuration parameter fields:
 
 **PAYMENT SETTINGS**
 
-* **Enable/Disable** - Comfino module active status (visibility at the list of payment methods in the basket)
-* **Title** - text displayed at the list of payment methods (default `"Comfino"`)
+* **Enable/Disable** - activity status of the Comfino module (visibility on the list of payment methods in the basket)
+* **Title** - text displayed on the list of payment methods (default `"Comfino"`)
 * **Production environment API key** — a unique access key that allows the module to communicate with the Comfino API (you will receive it from a Comfino representative)
 * **Show logo** - visibility status of the Comfino logo next to the title at the list of payment methods (default: enabled)
 
@@ -42,14 +42,16 @@ Configuration parameter fields:
 * **Widget enable** — promotional widget activation/deactivation switch on the product page
 * **Widget key** - a unique access key which enables the widget to communicate with the Comfino API (set automatically when saving the configuration with the correct API key)
 * **Widget type** — way of presenting the widget [`Textual widget`, `Graphical widget with banner`, `Graphical widget with installments calculator`]
-* **Widget offer type** — type of financing offer promoted [`Zero percent installments`, `Convenient installments`, `Pay later`]
+* **Widget offer type** — type of financing offer promoted [`Zero percent installments`, `Convenient installments`, `Pay later`, `Deferred payments for companies`]
+
+The availability of offer types on the list depends on the individual contract and may differ from that described in the documentation.
 
 **Advanced settings**
 
 * **Widget price element selector** — HTML document element containing the price of the product
 * **Widget anchor element selector** — widget container element (widget is embedded in it)
-* **Price change detection - container selector** — HTML document element containing a price element directly or indirectly used to track price changes and recalculate offers
-* **Price change detection - container hierarchy level** — DOM hierarchy level used to track price changes and recalculate offers
+* **Price change detection — container selector** — HTML document element containing a price element directly or indirectly used to track price changes and recalculate offers
+* **Price change detection — container hierarchy level** — DOM hierarchy level used to track price changes and recalculate offers
 * **Embedding method** — how the widget is oriented relative to the container element [`INSERT_INTO_FIRST`, `INSERT_INTO_LAST`, `INSERT_BEFORE`, `INSERT_AFTER`]
 * **Widget initialization code** — JavaScript script to initialize the widget on the product page (making changes not recommended for non-advanced users without JavaScript knowledge)
 
@@ -78,7 +80,7 @@ It also contains a list of recent errors with a preview of the local error log.
 ## REMARKS
 
 * The Comfino payment module requires you to set the customer's phone number as required in the process of entering the customer's contact details. The phone number is used to send codes and inform the customer about the status of the transaction, at a later stage of Comfino payment processing. In case of absence of a telephone number, the Comfino payment transaction will end with an error displayed on the store's website.
-* The module notification system requires the availability of the HTTP "PUT" method. The module receives information about changes in the status of Comfino transactions and changes the internal order status in PrestaShop accordingly. In case of problems with notifications, check the web server settings in your hosting panel.
+* The module notification system requires the availability of the HTTP "PUT" method. The module receives information about changes in the status of Comfino transactions and changes the internal order status in WooCommerce accordingly. In case of problems with notifications, check the web server settings in your hosting panel.
 * Customer and order data required by the Comfino module:
     * Customer:
         * first name - 2-63 characters
