@@ -63,7 +63,7 @@ class Error_Logger
     {
         global $wp_version, $wpdb;
 
-        if (strpos($error_message, 'Error in /') !== false && strpos($error_message, 'plugins/comfino') === false) {
+        if (preg_match('/Error .*in \//', $error_message) && strpos($error_message, 'plugins/comfino') === false) {
             // Ignore all errors outside the plugin code.
             return;
         }
