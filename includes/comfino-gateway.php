@@ -55,6 +55,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
         }
 
         add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
+        add_action('admin_enqueue_scripts', [$this, 'admin_scripts']);
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
         add_action('woocommerce_api_comfino_gateway', [$this, 'webhook']);
         add_action('woocommerce_order_status_cancelled', [$this, 'cancel_order']);
@@ -95,6 +96,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
         echo '<nav class="nav-tab-wrapper woo-nav-tab-wrapper">';
         echo '<a href="' . home_url(add_query_arg($wp->request, ['subsection' => 'payment_settings'])) . '" class="nav-tab' . ($subsection === 'payment_settings' ? ' nav-tab-active' : '') . '">' . __('Payment settings', 'comfino-payment-gateway') . '</a>';
+        echo '<a href="' . home_url(add_query_arg($wp->request, ['subsection' => 'sale_settings'])) . '" class="nav-tab' . ($subsection === 'sale_settings' ? ' nav-tab-active' : '') . '">' . __('Sale settings', 'comfino-payment-gateway') . '</a>';
         echo '<a href="' . home_url(add_query_arg($wp->request, ['subsection' => 'widget_settings'])) . '" class="nav-tab' . ($subsection === 'widget_settings' ? ' nav-tab-active' : '') . '">' . __('Widget settings', 'comfino-payment-gateway') . '</a>';
         echo '<a href="' . home_url(add_query_arg($wp->request, ['subsection' => 'developer_settings'])) . '" class="nav-tab' . ($subsection === 'developer_settings' ? ' nav-tab-active' : '') . '">' . __('Developer settings', 'comfino-payment-gateway') . '</a>';
         echo '<a href="' . home_url(add_query_arg($wp->request, ['subsection' => 'plugin_diagnostics'])) . '" class="nav-tab' . ($subsection === 'plugin_diagnostics' ? ' nav-tab-active' : '') . '">' . __('Plugin diagnostics', 'comfino-payment-gateway') . '</a>';
@@ -104,6 +106,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
         switch ($subsection) {
             case 'payment_settings':
+            case 'sale_settings':
             case 'widget_settings':
             case 'developer_settings':
                 echo $this->generate_settings_html($this->config_manager->get_form_fields($subsection));
@@ -175,6 +178,20 @@ class Comfino_Gateway extends WC_Payment_Gateway
         }
 
         wp_enqueue_script('comfino', plugins_url('assets/js/comfino.js', __FILE__), [], null);
+    }
+
+    /**
+     * Include JavaScript.
+     */
+    public function admin_scripts($hook)
+    {
+        if ($this->enabled === 'no') {
+            return;
+        }
+
+        if ($hook === 'woocommerce_page_wc-settings') {
+            wp_enqueue_script('prod_cat_tree', plugins_url('assets/js/tree.min.js', __FILE__), [], null);
+        }
     }
 
     public function process_payment($order_id): array
@@ -282,6 +299,63 @@ class Comfino_Gateway extends WC_Payment_Gateway
         }
     }
 
+    public function generate_hidden_html($key, $data)
+    {
+        $field_key = $this->get_field_key($key);
+        $defaults = [
+            'title' => '',
+            'disabled' => false,
+            'class' => '',
+            'css' => '',
+            'placeholder' => '',
+            'type' => 'text',
+            'desc_tip' => false,
+            'description' => '',
+            'custom_attributes' => [],
+        ];
+
+        $data = wp_parse_args($data, $defaults);
+
+        ob_start();
+        ?>
+        <input class="input-text regular-input <?php echo esc_attr($data['class']); ?>" type="<?php echo esc_attr($data['type']); ?>" name="<?php echo esc_attr($field_key); ?>" id="<?php echo esc_attr($field_key); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr($this->get_option($key)); ?>" placeholder="<?php echo esc_attr($data['placeholder']); ?>" <?php disabled($data['disabled'], true); ?> <?php echo $this->get_custom_attribute_html($data); // WPCS: XSS ok. ?> />
+        <?php
+
+        return ob_get_clean();
+    }
+
+    public function generate_product_category_tree_html($key, $data)
+    {
+        $defaults = [
+            'title' => '',
+            'disabled' => false,
+            'class' => '',
+            'css' => '',
+            'placeholder' => '',
+            'type' => 'text',
+            'desc_tip' => false,
+            'description' => '',
+            'custom_attributes' => [],
+            'id' => '',
+            'product_type' => '',
+            'selected_categories' => [],
+        ];
+
+        $data = wp_parse_args($data, $defaults);
+
+        ob_start();
+        ?>
+        <tr valign="top">
+            <td class="forminp" colspan="2">
+                <h3><?php echo esc_html($data['title']); ?></h3>
+                <?php echo $this->render_category_tree($data['id'], $data['product_type'], $data['selected_categories']); ?>
+            </td>
+        </tr>
+        <?php
+
+        return ob_get_clean();
+    }
+
     private function is_active_resign(\WC_Abstract_Order$order): bool
     {
         $date = new DateTime();
@@ -316,10 +390,35 @@ class Comfino_Gateway extends WC_Payment_Gateway
     {
         $subsection = $_GET['subsection'] ?? 'payment_settings';
 
-        if (!in_array($subsection, ['payment_settings', 'widget_settings', 'developer_settings', 'plugin_diagnostics'], true)) {
+        if (!in_array($subsection, ['payment_settings', 'sale_settings', 'widget_settings', 'developer_settings', 'plugin_diagnostics'], true)) {
             $subsection = 'payment_settings';
         }
 
         return $subsection;
+    }
+
+    /**
+     * @param int[] $selected_categories
+     */
+    private function render_category_tree(string $tree_id, string $product_type, array $selected_categories): string
+    {
+        $tree_nodes = json_encode($this->config_manager->build_categories_tree($selected_categories));
+        $close_depth = 3;
+
+        return trim('
+<div id="' . $tree_id . '_' . $product_type . '"></div>
+<input id="' . $tree_id . '_' . $product_type . '_input" name="' . $tree_id . '[' . $product_type . ']" type="hidden" />
+<script>
+    new Tree(
+        \'#' . $tree_id . '_' . $product_type . '\',
+        {
+            data: ' . $tree_nodes . ',
+            closeDepth: ' . $close_depth . ',
+            onChange: function () {
+                document.getElementById(\'' . $tree_id . '_' . $product_type . '_input\').value = this.values.join();
+            }
+        }
+    );
+</script>');
     }
 }
