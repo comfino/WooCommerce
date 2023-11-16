@@ -328,21 +328,6 @@ class Config_Manager extends \WC_Settings_API
                 try {
                     if ($configuration_options[$field_key] === 'yes' || $configuration_options[$field_key] === 'no') {
                         $this->settings[$key] = $configuration_options[$field_key];
-                    } elseif ($key === 'product_category_filters') {
-                        $product_categories = array_map(
-                            static function (array $category) { return (int) $category['id_category']; },
-                            $this->getNestedCategories(true)
-                        );
-                        $product_category_filters = [];
-
-                        foreach ($configuration_options['product_categories'] as $product_type => $category_ids) {
-                            $product_category_filters[$product_type] = array_values(array_diff(
-                                $product_categories,
-                                explode(',', $category_ids)
-                            ));
-                        }
-
-                        $this->settings[$key] = json_encode($product_category_filters);
                     } else {
                         $this->settings[$key] = $this->get_field_value($key, $field, $configuration_options);
                     }
@@ -351,6 +336,21 @@ class Config_Manager extends \WC_Settings_API
 
                     $is_error = true;
                 }
+            } elseif ($subsection === 'sale_settings') {
+                $product_categories = array_map(
+                    static function (array $category) { return (int) $category['id']; },
+                    $this->get_category_tree_leafs()
+                );
+                $product_category_filters = [];
+
+                foreach ($configuration_options['product_categories'] as $product_type => $category_ids) {
+                    $product_category_filters[$product_type] = array_values(array_diff(
+                        $product_categories,
+                        explode(',', $configuration_options['product_categories'][$product_type])
+                    ));
+                }
+
+                $this->settings['product_category_filters'] = json_encode($product_category_filters);
             }
         }
 
@@ -463,6 +463,26 @@ class Config_Manager extends \WC_Settings_API
         }
 
         return true;
+    }
+
+    public function get_category_tree_leafs(array $cat_tree = []): array
+    {
+        if (!count($cat_tree)) {
+            $cat_tree = $this->build_categories_tree([]);
+        }
+
+        $leaf_nodes = [];
+        $child_nodes = [];
+
+        foreach ($cat_tree as $cat_tree_node) {
+            if (!isset($cat_tree_node['children'])) {
+                $leaf_nodes[] = $cat_tree_node;
+            } else {
+                $child_nodes[] = $this->get_category_tree_leafs($cat_tree_node['children']);
+            }
+        }
+
+        return array_merge($leaf_nodes, ...$child_nodes);
     }
 
     /**
