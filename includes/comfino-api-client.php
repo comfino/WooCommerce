@@ -67,8 +67,6 @@ class Api_Client
 
     public static function process_payment(\WC_Abstract_Order $order, string $return_url, string $notify_url): array
     {
-        global $woocommerce;
-
         $loan_term = sanitize_text_field($_POST['comfino_loan_term']);
         $type = sanitize_text_field($_POST['comfino_type']);
 
@@ -87,7 +85,7 @@ class Api_Client
             'cart' => [
                 'totalAmount' => (int)($order->get_total() * 100),
                 'deliveryCost' => (int)($order->get_shipping_total() * 100),
-                'products' => self::get_products(),
+                'products' => Core::get_products(),
             ],
             'customer' => self::get_customer($order),
         ]);
@@ -121,7 +119,7 @@ class Api_Client
             $order->add_order_note(__("Comfino create order", 'comfino-payment-gateway'));
             $order->reduce_order_stock();
 
-            $woocommerce->cart->empty_cart();
+            WC()->cart->empty_cart();
 
             return ['result' => 'success', 'redirect' => $decoded['applicationUrl']];
         }
@@ -398,38 +396,6 @@ class Api_Client
         }
 
         return $api_host ?? self::$host;
-    }
-
-    /**
-     * Prepare product data.
-     *
-     * @return array
-     */
-    private static function get_products(): array
-    {
-        $products = [];
-
-        foreach (WC()->cart->get_cart() as $item) {
-            /** @var \WC_Product_Simple $product */
-            $product = $item['data'];
-            $image_id = $product->get_image_id();
-
-            if ($image_id !== '') {
-                $image_url = wp_get_attachment_image_url($image_id, 'full');
-            } else {
-                $image_url = null;
-            }
-
-            $products[] = [
-                'name' => $product->get_name(),
-                'quantity' => (int)$item['quantity'],
-                'photoUrl' => $image_url,
-                'externalId' => (string)$product->get_id(),
-                'price' => (int)(wc_get_price_including_tax($product) * 100),
-            ];
-        }
-
-        return $products;
     }
 
     /**

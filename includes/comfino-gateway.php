@@ -137,20 +137,20 @@ class Comfino_Gateway extends WC_Payment_Gateway
      */
     public function payment_fields()
     {
-        global $woocommerce;
-
         \Comfino\Core::init();
+
+        $cart = WC()->cart;
 
         $options = [
             'platform' => 'woocommerce',
             'platformVersion' => WC_VERSION,
             'platformDomain' => Core::get_shop_domain(),
             'pluginVersion' => \Comfino_Payment_Gateway::VERSION,
-            'offersURL' => Core::get_offers_url() . '?total=' . $woocommerce->cart->get_total(''),
+            'offersURL' => Core::get_offers_url() . '?total=' . $cart->get_total(''),
             'language' => substr(get_locale(), 0, 2),
             'currency' => get_woocommerce_currency(),
-            'cartTotal' => (float)$woocommerce->cart->get_total(''),
-            'cartTotalFormatted' => wc_price($woocommerce->cart->get_total(), ['currency' => get_woocommerce_currency()]),
+            'cartTotal' => (float)$cart->get_total(''),
+            'cartTotalFormatted' => wc_price($cart->get_total(), ['currency' => get_woocommerce_currency()]),
         ];
 
         echo '

@@ -109,6 +109,39 @@ class Core
         return get_rest_url(null, 'comfino/configuration');
     }
 
+    /**
+     * Prepare product data.
+     *
+     * @return array
+     */
+    public static function get_products(): array
+    {
+        $products = [];
+
+        foreach (WC()->cart->get_cart() as $item) {
+            /** @var \WC_Product_Simple $product */
+            $product = $item['data'];
+            $image_id = $product->get_image_id();
+
+            if ($image_id !== '') {
+                $image_url = wp_get_attachment_image_url($image_id, 'full');
+            } else {
+                $image_url = null;
+            }
+
+            $products[] = [
+                'name' => $product->get_name(),
+                'quantity' => (int)$item['quantity'],
+                'price' => (int)(wc_get_price_including_tax($product) * 100),
+                'photoUrl' => $image_url,
+                'externalId' => (string)$product->get_id(),
+                'category' => implode(',', $product->get_category_ids())
+            ];
+        }
+
+        return $products;
+    }
+
     public static function process_notification(\WP_REST_Request $request): \WP_REST_Response
     {
         self::init();
@@ -161,7 +194,14 @@ class Core
         $offers = Api_Client::fetch_offers($total);
         $payment_offers = [];
 
+        wc_load_cart();
+
         foreach ($offers as $offer) {
+            // Check product category filters.
+            if (!self::$config_manager->is_financial_product_available($offer['type'], WC()->cart->get_cart())) {
+                continue;
+            }
+
             $payment_offers[] = [
                 'name' => $offer['name'],
                 'description' => $offer['description'],

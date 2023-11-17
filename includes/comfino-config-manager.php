@@ -435,7 +435,7 @@ class Config_Manager extends \WC_Settings_API
 
     /**
      * @param string $product_type Financial product type (offer type)
-     * @param array $products Products in the cart
+     * @param \WC_Product_Simple[] $products Products in the cart
      */
     public function is_financial_product_available(string $product_type, array $products): bool
     {
@@ -449,15 +449,12 @@ class Config_Manager extends \WC_Settings_API
             $excluded_cat_ids = $product_category_filters[$product_type];
 
             foreach ($products as $product) {
-                $category_id = (int)$product['id_category_default'];
-
-                if (in_array($category_id, $excluded_cat_ids, true) ||
-                    count(array_intersect($excluded_cat_ids, array_map(
-                        static function (\Category $category) { return $category->id; },
-                        (new \Category($category_id))->getAllChildren()->getResults()
-                    )))
-                ) {
-                    return false;
+                foreach ($product->get_category_ids() as $category_id) {
+                    if (in_array($category_id, $excluded_cat_ids, true) ||
+                        count(array_intersect($excluded_cat_ids, get_term_children($category_id, 'product_cat')))
+                    ) {
+                        return false;
+                    }
                 }
             }
         }
