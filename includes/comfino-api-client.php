@@ -74,7 +74,24 @@ class Api_Client
             return ['result' => 'failure', 'redirect' => ''];
         }
 
-        $body = wp_json_encode([
+        $config_manager = new Config_Manager();
+
+        $allowed_product_types = null;
+        $disabled_product_types = [];
+        $available_product_types = array_keys($config_manager->get_offer_types());
+
+        // Check product category filters.
+        foreach ($available_product_types as $product_type) {
+            if (!$config_manager->is_financial_product_available($product_type, WC()->cart->get_cart())) {
+                $disabled_product_types[] = $product_type;
+            }
+        }
+
+        if (count($disabled_product_types)) {
+            $allowed_product_types = array_values(array_diff($available_product_types, $disabled_product_types));
+        }
+
+        $data = [
             'orderId' => (string)$order->get_id(),
             'returnUrl' => $return_url,
             'notifyUrl' => $notify_url,
@@ -88,7 +105,13 @@ class Api_Client
                 'products' => Core::get_products(),
             ],
             'customer' => self::get_customer($order),
-        ]);
+        ];
+
+        if ($allowed_product_types !== null) {
+            $data['loanParameters']['allowedProductTypes'] = $allowed_product_types;
+        }
+
+        $body = wp_json_encode($data);
 
         $url = self::get_api_host() . '/v1/orders';
         $args = [

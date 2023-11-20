@@ -421,6 +421,11 @@ class Config_Manager extends \WC_Settings_API
         return $prepared_config_options;
     }
 
+    public function get_offer_types(): array
+    {
+        return $this->product_types;
+    }
+
     public function get_product_category_filters(): array
     {
         $categories = [];
@@ -449,7 +454,7 @@ class Config_Manager extends \WC_Settings_API
             $excluded_cat_ids = $product_category_filters[$product_type];
 
             foreach ($products as $product) {
-                foreach ($product->get_category_ids() as $category_id) {
+                foreach ($product['data']->get_category_ids() as $category_id) {
                     if (in_array($category_id, $excluded_cat_ids, true) ||
                         count(array_intersect($excluded_cat_ids, get_term_children($category_id, 'product_cat')))
                     ) {

@@ -194,7 +194,19 @@ class Core
         $offers = Api_Client::fetch_offers($total);
         $payment_offers = [];
 
-        wc_load_cart();
+        if (WC()->cart === null) {
+            /* Workaround for WC bug:
+               https://github.com/woocommerce/woocommerce/issues/27160
+               https://github.com/woocommerce/woocommerce/issues/27157
+               https://github.com/woocommerce/woocommerce/issues/23792
+             */
+            require_once WC_ABSPATH . 'includes/wc-cart-functions.php';
+
+            WC()->session = new \WC_Session_Handler();
+            WC()->session->init();
+            WC()->customer = new \WC_Customer( );
+            WC()->cart = new \WC_Cart();
+        }
 
         foreach ($offers as $offer) {
             // Check product category filters.
