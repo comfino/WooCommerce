@@ -286,11 +286,11 @@ class Config_Manager extends \WC_Settings_API
                     break;
 
                 case 'int':
-                    $configuration_options[$opt_name] = (int)$configuration_options[$opt_name];
+                    $configuration_options[$opt_name] = (int) $configuration_options[$opt_name];
                     break;
 
                 case 'float':
-                    $configuration_options[$opt_name] = (float)$configuration_options[$opt_name];
+                    $configuration_options[$opt_name] = (float) $configuration_options[$opt_name];
                     break;
             }
 

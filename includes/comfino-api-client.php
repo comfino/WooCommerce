@@ -74,10 +74,10 @@ class Api_Client
             return ['result' => 'failure', 'redirect' => ''];
         }
 
-        $total = (int)($order->get_total() * 100);
-        $delivery = (int)($order->get_shipping_total() * 100);
+        $total = (int) ($order->get_total() * 100);
+        $delivery = (int) ($order->get_shipping_total() * 100);
 
-        $products = self::get_products();
+        $products = Core::get_products();
         $cart_total = 0;
 
         foreach ($products as $product) {
@@ -110,7 +110,6 @@ class Api_Client
             ];
         }
 
-        $body = wp_json_encode([
         $config_manager = new Config_Manager();
 
         $allowed_product_types = null;
