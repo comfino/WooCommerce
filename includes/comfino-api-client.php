@@ -76,6 +76,42 @@ class Api_Client
             return ['result' => 'failure', 'redirect' => ''];
         }
 
+        $total = (int)($order->get_total() * 100);
+        $delivery = (int)($order->get_shipping_total() * 100);
+
+        $products = self::get_products();
+        $cart_total = 0;
+
+        foreach ($products as $product) {
+            $cart_total += ($product['price'] * $product['quantity']);
+        }
+
+        $cart_total_with_delivery = $cart_total + $delivery;
+
+        if ($cart_total_with_delivery > $total) {
+            // Add discount item to the list - problems with cart items value and order total value inconsistency.
+            $products[] = [
+                'name' => 'Rabat',
+                'quantity' => 1,
+                'price' => (int) ($total - $cart_total_with_delivery),
+                'photoUrl' => '',
+                'ean' => '',
+                'externalId' => '',
+                'category' => 'DISCOUNT',
+            ];
+        } elseif ($cart_total_with_delivery < $total) {
+            // Add correction item to the list - problems with cart items value and order total value inconsistency.
+            $products[] = [
+                'name' => 'Korekta',
+                'quantity' => 1,
+                'price' => (int) ($total - $cart_total_with_delivery),
+                'photoUrl' => '',
+                'ean' => '',
+                'externalId' => '',
+                'category' => 'CORRECTION',
+            ];
+        }
+
         $body = wp_json_encode([
             'orderId' => (string)$order->get_id(),
             'returnUrl' => $return_url,
@@ -85,9 +121,9 @@ class Api_Client
                 'type' => $type,
             ],
             'cart' => [
-                'totalAmount' => (int)($order->get_total() * 100),
-                'deliveryCost' => (int)($order->get_shipping_total() * 100),
-                'products' => self::get_products(),
+                'totalAmount' => $total,
+                'deliveryCost' => $delivery,
+                'products' => $products,
             ],
             'customer' => self::get_customer($order),
         ]);
