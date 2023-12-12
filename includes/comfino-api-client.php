@@ -19,6 +19,21 @@ class Api_Client
     /** @var string */
     public static $api_language;
 
+    public static function init(Config_Manager $config_manager)
+    {
+        if ($config_manager->get_option('sandbox_mode') === 'yes') {
+            self::$host = Core::COMFINO_SANDBOX_HOST;
+            self::$key = $config_manager->get_option('sandbox_key');
+            self::$frontend_script_url = Core::COMFINO_FRONTEND_JS_SANDBOX;
+            self::$widget_script_url = Core::COMFINO_WIDGET_JS_SANDBOX;
+        } else {
+            self::$host = Core::COMFINO_PRODUCTION_HOST;
+            self::$key = $config_manager->get_option('production_key');
+            self::$frontend_script_url = Core::COMFINO_FRONTEND_JS_PRODUCTION;
+            self::$widget_script_url = Core::COMFINO_WIDGET_JS_PRODUCTION;
+        }
+    }
+
     /**
      * Fetch products.
      *

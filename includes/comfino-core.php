@@ -67,17 +67,7 @@ class Core
             self::$config_manager = new Config_Manager();
         }
 
-        if (self::$config_manager->get_option('sandbox_mode') === 'yes') {
-            Api_Client::$host = self::COMFINO_SANDBOX_HOST;
-            Api_Client::$key = self::$config_manager->get_option('sandbox_key');
-            Api_Client::$frontend_script_url = self::COMFINO_FRONTEND_JS_SANDBOX;
-            Api_Client::$widget_script_url = self::COMFINO_WIDGET_JS_SANDBOX;
-        } else {
-            Api_Client::$host = self::COMFINO_PRODUCTION_HOST;
-            Api_Client::$key = self::$config_manager->get_option('production_key');
-            Api_Client::$frontend_script_url = self::COMFINO_FRONTEND_JS_PRODUCTION;
-            Api_Client::$widget_script_url = self::COMFINO_WIDGET_JS_PRODUCTION;
-        }
+        Api_Client::init(self::$config_manager);
     }
 
     public static function get_shop_domain(): string

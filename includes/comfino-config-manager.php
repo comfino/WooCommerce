@@ -56,9 +56,12 @@ class Config_Manager extends \WC_Settings_API
 
     public function __construct()
     {
+        $this->id = 'comfino';
+
         Api_Client::$api_language = substr(get_bloginfo('language'), 0, 2);
 
         if (($this->product_types = get_transient('COMFINO_PRODUCT_TYPES')) === false) {
+            Api_Client::init($this);
             $this->product_types = Api_Client::get_product_types();
             set_transient('COMFINO_PRODUCT_TYPES', $this->product_types, DAY_IN_SECONDS);
         }
