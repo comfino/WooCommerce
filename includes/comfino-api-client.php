@@ -154,6 +154,10 @@ class Api_Client
                 return ['result' => 'failure', 'redirect' => ''];
             }
 
+            if ($order->get_status() == 'failed') {
+                $order->update_status('pending');
+            }
+
             $order->add_order_note(__("Comfino create order", 'comfino-payment-gateway'));
             $order->reduce_order_stock();
 
@@ -372,6 +376,23 @@ class Api_Client
         }
 
         $order->add_order_note(__("Send to Comfino resign order", 'comfino-payment-gateway'));
+    }
+
+    public static function abandoned_cart(string $type)
+    {
+        $body = wp_json_encode([
+            'type' => $type
+        ]);
+
+        $url = self::get_api_host() . "/v1/abandoned_cart";
+
+        $args = [
+            'headers' => self::get_request_headers('POST', $body),
+            'body' => $body,
+            'method' => 'POST'
+        ];
+
+        wp_remote_request($url, $args);
     }
 
     public static function get_frontend_script_url(): string
