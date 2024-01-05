@@ -3,9 +3,10 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Comfino Payment Gateway 3.2.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/comfino\n"
-"POT-Creation-Date: 2023-09-06T15:46:10+00:00\n"
-"PO-Revision-Date: 2023-09-06 17:46+0200\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/comfino-payment-"
+"gateway\n"
+"POT-Creation-Date: 2024-01-05T13:44:22+00:00\n"
+"PO-Revision-Date: 2024-01-05 14:47+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: pl_PL\n"
@@ -14,7 +15,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 "
 "|| n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 3.3.2\n"
+"X-Generator: Poedit 3.4\n"
 "X-Domain: comfino-payment-gateway\n"
 
 #. Plugin Name of the plugin
@@ -37,74 +38,294 @@ msgstr "Comfino (Comperia)"
 msgid "https://github.com/comfino"
 msgstr "https://github.com/comfino"
 
-#: comfino-payment-gateway.php:107
+#: comfino-payment-gateway.php:107 git/comfino-payment-gateway.php:107
+#: svn/tags/2.2.8/comfino-payment-gateway.php:77
+#: svn/tags/2.2.9/comfino-payment-gateway.php:77
+#: svn/tags/2.2.10/comfino-payment-gateway.php:77
+#: svn/tags/2.2.11/comfino-payment-gateway.php:77
+#: svn/tags/2.2.12/comfino-payment-gateway.php:77
+#: svn/tags/2.3.0/comfino-payment-gateway.php:77
+#: svn/tags/2.3.1/comfino-payment-gateway.php:77
+#: svn/tags/2.4.0/comfino-payment-gateway.php:95
+#: svn/tags/3.0.0/comfino-payment-gateway.php:96
+#: svn/tags/3.1.0/comfino-payment-gateway.php:107
+#: svn/tags/3.1.1/comfino-payment-gateway.php:107
+#: svn/tags/3.2.0/comfino-payment-gateway.php:107
+#: svn/tags/3.2.1/comfino-payment-gateway.php:107
+#: svn/tags/3.2.2/comfino-payment-gateway.php:107
+#: svn/tags/3.2.3/comfino-payment-gateway.php:107
+#: svn/trunk/comfino-payment-gateway.php:107
 msgid "The minimum PHP version required for Comfino is %s. You are running %s."
 msgstr "Minimalna wersja PHP wymagana przez Comfino to %s. Obecna to %s."
 
-#: comfino-payment-gateway.php:113
+#: comfino-payment-gateway.php:113 git/comfino-payment-gateway.php:113
+#: svn/tags/2.2.8/comfino-payment-gateway.php:83
+#: svn/tags/2.2.9/comfino-payment-gateway.php:83
+#: svn/tags/2.2.10/comfino-payment-gateway.php:83
+#: svn/tags/2.2.11/comfino-payment-gateway.php:83
+#: svn/tags/2.2.12/comfino-payment-gateway.php:83
+#: svn/tags/2.3.0/comfino-payment-gateway.php:83
+#: svn/tags/2.3.1/comfino-payment-gateway.php:83
+#: svn/tags/2.4.0/comfino-payment-gateway.php:101
+#: svn/tags/3.0.0/comfino-payment-gateway.php:102
+#: svn/tags/3.1.0/comfino-payment-gateway.php:113
+#: svn/tags/3.1.1/comfino-payment-gateway.php:113
+#: svn/tags/3.2.0/comfino-payment-gateway.php:113
+#: svn/tags/3.2.1/comfino-payment-gateway.php:113
+#: svn/tags/3.2.2/comfino-payment-gateway.php:113
+#: svn/tags/3.2.3/comfino-payment-gateway.php:113
+#: svn/trunk/comfino-payment-gateway.php:113
 msgid "WooCommerce needs to be activated."
 msgstr "Rozszerzenie WooCommerce musi zostać aktywowane."
 
-#: comfino-payment-gateway.php:117
+#: comfino-payment-gateway.php:117 git/comfino-payment-gateway.php:117
+#: svn/tags/2.2.8/comfino-payment-gateway.php:87
+#: svn/tags/2.2.9/comfino-payment-gateway.php:87
+#: svn/tags/2.2.10/comfino-payment-gateway.php:87
+#: svn/tags/2.2.11/comfino-payment-gateway.php:87
+#: svn/tags/2.2.12/comfino-payment-gateway.php:87
+#: svn/tags/2.3.0/comfino-payment-gateway.php:87
+#: svn/tags/2.3.1/comfino-payment-gateway.php:87
+#: svn/tags/2.4.0/comfino-payment-gateway.php:105
+#: svn/tags/3.0.0/comfino-payment-gateway.php:106
+#: svn/tags/3.1.0/comfino-payment-gateway.php:117
+#: svn/tags/3.1.1/comfino-payment-gateway.php:117
+#: svn/tags/3.2.0/comfino-payment-gateway.php:117
+#: svn/tags/3.2.1/comfino-payment-gateway.php:117
+#: svn/tags/3.2.2/comfino-payment-gateway.php:117
+#: svn/tags/3.2.3/comfino-payment-gateway.php:117
+#: svn/trunk/comfino-payment-gateway.php:117
 msgid ""
 "The minimum WooCommerce version required for Comfino is %s. You are running "
 "%s."
 msgstr ""
 "Minimalna wersja WooCommerce wymagana przez Comfino to %s. Obecna to %s."
 
-#: comfino-payment-gateway.php:132
+#: comfino-payment-gateway.php:132 git/comfino-payment-gateway.php:132
+#: svn/tags/2.2.8/comfino-payment-gateway.php:103
+#: svn/tags/2.2.9/comfino-payment-gateway.php:103
+#: svn/tags/2.2.10/comfino-payment-gateway.php:103
+#: svn/tags/2.2.11/comfino-payment-gateway.php:103
+#: svn/tags/2.2.12/comfino-payment-gateway.php:103
+#: svn/tags/2.3.0/comfino-payment-gateway.php:103
+#: svn/tags/2.3.1/comfino-payment-gateway.php:103
+#: svn/tags/2.4.0/comfino-payment-gateway.php:119
+#: svn/tags/3.0.0/comfino-payment-gateway.php:121
+#: svn/tags/3.1.0/comfino-payment-gateway.php:132
+#: svn/tags/3.1.1/comfino-payment-gateway.php:132
+#: svn/tags/3.2.0/comfino-payment-gateway.php:132
+#: svn/tags/3.2.1/comfino-payment-gateway.php:132
+#: svn/tags/3.2.2/comfino-payment-gateway.php:132
+#: svn/tags/3.2.3/comfino-payment-gateway.php:132
+#: svn/trunk/comfino-payment-gateway.php:132
 msgid "Settings"
 msgstr "Ustawienia"
 
-#: includes/comfino-api-client.php:121
+#: git/includes/comfino-api-client.php:157 includes/comfino-api-client.php:161
+#: svn/tags/2.2.8/includes/comfino-gateway.php:503
+#: svn/tags/2.2.9/includes/comfino-gateway.php:501
+#: svn/tags/2.2.10/includes/comfino-gateway.php:501
+#: svn/tags/2.2.11/includes/comfino-gateway.php:501
+#: svn/tags/2.2.12/includes/comfino-gateway.php:527
+#: svn/tags/2.3.0/includes/comfino-gateway.php:505
+#: svn/tags/2.3.1/includes/comfino-gateway.php:505
+#: svn/tags/2.4.0/includes/comfino-api-client.php:110
+#: svn/tags/3.0.0/includes/comfino-api-client.php:115
+#: svn/tags/3.1.0/includes/comfino-api-client.php:118
+#: svn/tags/3.1.1/includes/comfino-api-client.php:118
+#: svn/tags/3.2.0/includes/comfino-api-client.php:121
+#: svn/tags/3.2.1/includes/comfino-api-client.php:121
+#: svn/tags/3.2.2/includes/comfino-api-client.php:121
+#: svn/tags/3.2.3/includes/comfino-api-client.php:157
+#: svn/trunk/includes/comfino-api-client.php:157
 msgid "Comfino create order"
 msgstr "Wniosek Comfino stworzony"
 
-#: includes/comfino-api-client.php:336
+#: git/includes/comfino-api-client.php:374 includes/comfino-api-client.php:378
+#: svn/tags/2.2.8/includes/comfino-gateway.php:604
+#: svn/tags/2.2.9/includes/comfino-gateway.php:602
+#: svn/tags/2.2.10/includes/comfino-gateway.php:602
+#: svn/tags/2.2.11/includes/comfino-gateway.php:602
+#: svn/tags/2.2.12/includes/comfino-gateway.php:628
+#: svn/tags/2.3.0/includes/comfino-gateway.php:606
+#: svn/tags/2.3.1/includes/comfino-gateway.php:606
+#: svn/tags/2.4.0/includes/comfino-api-client.php:289
+#: svn/tags/3.0.0/includes/comfino-api-client.php:299
+#: svn/tags/3.1.0/includes/comfino-api-client.php:302
+#: svn/tags/3.1.1/includes/comfino-api-client.php:302
+#: svn/tags/3.2.0/includes/comfino-api-client.php:336
+#: svn/tags/3.2.1/includes/comfino-api-client.php:338
+#: svn/tags/3.2.2/includes/comfino-api-client.php:338
+#: svn/tags/3.2.3/includes/comfino-api-client.php:374
+#: svn/trunk/includes/comfino-api-client.php:374
 msgid "Send to Comfino resign order"
 msgstr "Wysłanie odstąpienia od umowy do Comfino"
 
-#: includes/comfino-config-manager.php:63
+#: git/includes/comfino-config-manager.php:63
+#: includes/comfino-config-manager.php:66
+#: includes/comfino-config-manager.php:189
+#: svn/tags/2.2.8/includes/comfino-gateway.php:154
+#: svn/tags/2.2.9/includes/comfino-gateway.php:152
+#: svn/tags/2.2.10/includes/comfino-gateway.php:152
+#: svn/tags/2.2.11/includes/comfino-gateway.php:152
+#: svn/tags/2.2.12/includes/comfino-gateway.php:153
+#: svn/tags/2.3.0/includes/comfino-gateway.php:135
+#: svn/tags/2.3.1/includes/comfino-gateway.php:135
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:56
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:56
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:56
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:56
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:63
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:63
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:63
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:63
+#: svn/trunk/includes/comfino-config-manager.php:63
 msgid "Enable/Disable"
 msgstr "Włączony/Wyłączony"
 
-#: includes/comfino-config-manager.php:65
+#: git/includes/comfino-config-manager.php:65
+#: includes/comfino-config-manager.php:68
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:58
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:58
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:58
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:65
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:65
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:65
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:65
+#: svn/trunk/includes/comfino-config-manager.php:65
 msgid "Enable Comfino payment module"
 msgstr "Włączony moduł płatności Comfino"
 
-#: includes/comfino-config-manager.php:67
+#: git/includes/comfino-config-manager.php:67
+#: includes/comfino-config-manager.php:70
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:60
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:60
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:60
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:67
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:67
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:67
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:67
+#: svn/trunk/includes/comfino-config-manager.php:67
 msgid "Shows Comfino payment option at the payment list."
 msgstr "Pokaż opcję płatności Comfino na liście płatności."
 
-#: includes/comfino-config-manager.php:70
+#: git/includes/comfino-config-manager.php:70
+#: includes/comfino-config-manager.php:73
+#: svn/tags/2.2.12/includes/comfino-gateway.php:160
+#: svn/tags/2.3.0/includes/comfino-gateway.php:142
+#: svn/tags/2.3.1/includes/comfino-gateway.php:142
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:63
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:63
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:63
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:63
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:70
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:70
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:70
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:70
+#: svn/trunk/includes/comfino-config-manager.php:70
 msgid "Title"
 msgstr "Tytuł"
 
-#: includes/comfino-config-manager.php:75
+#: git/includes/comfino-config-manager.php:75
+#: includes/comfino-config-manager.php:78
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:68
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:68
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:68
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:75
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:75
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:75
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:75
+#: svn/trunk/includes/comfino-config-manager.php:75
 msgid "Production environment API key"
 msgstr "Klucz API środowiska produkcyjnego"
 
-#: includes/comfino-config-manager.php:77
+#: git/includes/comfino-config-manager.php:77
+#: includes/comfino-config-manager.php:80
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:70
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:70
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:70
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:77
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:77
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:77
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:77
+#: svn/trunk/includes/comfino-config-manager.php:77
 msgid "Please enter the key provided during registration"
 msgstr "Proszę wprowadzić klucz podany podczas rejestracji"
 
-#: includes/comfino-config-manager.php:80
+#: git/includes/comfino-config-manager.php:80
+#: includes/comfino-config-manager.php:83
+#: svn/tags/2.2.12/includes/comfino-gateway.php:169
+#: svn/tags/2.3.0/includes/comfino-gateway.php:151
+#: svn/tags/2.3.1/includes/comfino-gateway.php:151
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:72
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:73
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:73
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:73
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:80
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:80
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:80
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:80
+#: svn/trunk/includes/comfino-config-manager.php:80
 msgid "Show logo"
 msgstr "Wyświetlanie logo"
 
-#: includes/comfino-config-manager.php:82
+#: git/includes/comfino-config-manager.php:82
+#: includes/comfino-config-manager.php:85
+#: svn/tags/2.2.8/includes/comfino-gateway.php:172
+#: svn/tags/2.2.9/includes/comfino-gateway.php:170
+#: svn/tags/2.2.10/includes/comfino-gateway.php:170
+#: svn/tags/2.2.11/includes/comfino-gateway.php:170
+#: svn/tags/2.2.12/includes/comfino-gateway.php:171
+#: svn/tags/2.3.0/includes/comfino-gateway.php:153
+#: svn/tags/2.3.1/includes/comfino-gateway.php:153
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:74
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:75
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:75
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:75
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:82
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:82
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:82
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:82
+#: svn/trunk/includes/comfino-config-manager.php:82
 msgid "Show logo on payment method"
 msgstr "Pokaż logo na metodzie płatności"
 
-#: includes/comfino-config-manager.php:86
+#: git/includes/comfino-config-manager.php:86
+#: includes/comfino-config-manager.php:89
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:79
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:79
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:79
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:86
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:86
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:86
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:86
+#: svn/trunk/includes/comfino-config-manager.php:86
 msgid "Test environment"
 msgstr "Środowisko testowe"
 
-#: includes/comfino-config-manager.php:88
+#: git/includes/comfino-config-manager.php:88
+#: includes/comfino-config-manager.php:91
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:81
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:81
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:81
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:88
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:88
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:88
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:88
+#: svn/trunk/includes/comfino-config-manager.php:88
 msgid "Use test environment"
 msgstr "Użyj środowiska testowego"
 
-#: includes/comfino-config-manager.php:90
+#: git/includes/comfino-config-manager.php:90
+#: includes/comfino-config-manager.php:93
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:83
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:83
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:83
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:90
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:90
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:90
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:90
+#: svn/trunk/includes/comfino-config-manager.php:90
 msgid ""
 "The test environment allows the store owner to get acquainted with the "
 "functionality of the Comfino module. This is a Comfino simulator, thanks to "
@@ -116,11 +337,29 @@ msgstr ""
 "poznać wszystkie zalety tej metody płatności. Użycie trybu testowego jest "
 "darmowe (nie są również pobierane opłaty za zamówienia)."
 
-#: includes/comfino-config-manager.php:99
+#: git/includes/comfino-config-manager.php:99
+#: includes/comfino-config-manager.php:102
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:92
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:92
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:92
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:99
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:99
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:99
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:99
+#: svn/trunk/includes/comfino-config-manager.php:99
 msgid "Test environment API key"
 msgstr "Klucz API środowiska testowego"
 
-#: includes/comfino-config-manager.php:101
+#: git/includes/comfino-config-manager.php:101
+#: includes/comfino-config-manager.php:104
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:94
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:94
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:94
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:101
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:101
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:101
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:101
+#: svn/trunk/includes/comfino-config-manager.php:101
 msgid ""
 "Ask the supervisor for access to the test environment (key, login, password, "
 "link). Remember, the test key is different from the production key."
@@ -128,59 +367,257 @@ msgstr ""
 "Poproś opiekuna o dostęp do środowiska testowego (klucz, login, hasło, "
 "link). Pamiętaj, klucz testowy różni się od klucza produkcyjnego."
 
-#: includes/comfino-config-manager.php:104
+#: git/includes/comfino-config-manager.php:104
+#: includes/comfino-config-manager.php:107
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:97
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:97
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:97
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:104
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:104
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:104
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:104
+#: svn/trunk/includes/comfino-config-manager.php:104
 msgid "Basic settings"
 msgstr "Ustawienia podstawowe"
 
-#: includes/comfino-config-manager.php:108
+#: git/includes/comfino-config-manager.php:108
+#: includes/comfino-config-manager.php:111
+#: svn/tags/2.2.12/includes/comfino-gateway.php:185
+#: svn/tags/2.3.0/includes/comfino-gateway.php:167
+#: svn/tags/2.3.1/includes/comfino-gateway.php:167
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:88
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:101
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:101
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:101
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:108
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:108
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:108
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:108
+#: svn/trunk/includes/comfino-config-manager.php:108
 msgid "Widget enable"
 msgstr "Widget włączony"
 
-#: includes/comfino-config-manager.php:110
+#: git/includes/comfino-config-manager.php:110
+#: includes/comfino-config-manager.php:113
+#: svn/tags/2.2.12/includes/comfino-gateway.php:187
+#: svn/tags/2.3.0/includes/comfino-gateway.php:169
+#: svn/tags/2.3.1/includes/comfino-gateway.php:169
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:90
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:103
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:103
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:103
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:110
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:110
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:110
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:110
+#: svn/trunk/includes/comfino-config-manager.php:110
 msgid "Enable Comfino widget"
 msgstr "Włączony widget Comfino"
 
-#: includes/comfino-config-manager.php:112
+#: git/includes/comfino-config-manager.php:112
+#: includes/comfino-config-manager.php:115
+#: svn/tags/2.2.12/includes/comfino-gateway.php:189
+#: svn/tags/2.3.0/includes/comfino-gateway.php:171
+#: svn/tags/2.3.1/includes/comfino-gateway.php:171
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:92
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:105
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:105
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:105
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:112
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:112
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:112
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:112
+#: svn/trunk/includes/comfino-config-manager.php:112
 msgid "Show Comfino widget in the product."
 msgstr "Pokazuj widget Comfino w produkcie."
 
-#: includes/comfino-config-manager.php:115
+#: git/includes/comfino-config-manager.php:115
+#: includes/comfino-config-manager.php:118
+#: svn/tags/2.2.12/includes/comfino-gateway.php:239
+#: svn/tags/2.3.0/includes/comfino-gateway.php:221
+#: svn/tags/2.3.1/includes/comfino-gateway.php:221
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:147
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:108
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:108
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:108
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:115
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:115
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:115
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:115
+#: svn/trunk/includes/comfino-config-manager.php:115
 msgid "Widget key"
 msgstr "Klucz widgetu"
 
-#: includes/comfino-config-manager.php:119
+#: git/includes/comfino-config-manager.php:119
+#: includes/comfino-config-manager.php:122
+#: svn/tags/2.2.12/includes/comfino-gateway.php:192
+#: svn/tags/2.3.0/includes/comfino-gateway.php:174
+#: svn/tags/2.3.1/includes/comfino-gateway.php:174
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:95
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:112
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:112
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:112
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:119
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:119
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:119
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:119
+#: svn/trunk/includes/comfino-config-manager.php:119
 msgid "Widget type"
 msgstr "Typ widgetu"
 
-#: includes/comfino-config-manager.php:122
+#: git/includes/comfino-config-manager.php:122
+#: includes/comfino-config-manager.php:125
+#: svn/tags/2.2.8/includes/comfino-gateway.php:196
+#: svn/tags/2.2.9/includes/comfino-gateway.php:194
+#: svn/tags/2.2.10/includes/comfino-gateway.php:194
+#: svn/tags/2.2.11/includes/comfino-gateway.php:194
+#: svn/tags/2.2.12/includes/comfino-gateway.php:195
+#: svn/tags/2.3.0/includes/comfino-gateway.php:177
+#: svn/tags/2.3.1/includes/comfino-gateway.php:177
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:98
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:115
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:115
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:115
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:122
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:122
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:122
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:122
+#: svn/trunk/includes/comfino-config-manager.php:122
 msgid "Textual widget"
 msgstr "Widget tekstowy"
 
-#: includes/comfino-config-manager.php:123
+#: git/includes/comfino-config-manager.php:123
+#: includes/comfino-config-manager.php:126
+#: svn/tags/2.2.8/includes/comfino-gateway.php:197
+#: svn/tags/2.2.9/includes/comfino-gateway.php:195
+#: svn/tags/2.2.10/includes/comfino-gateway.php:195
+#: svn/tags/2.2.11/includes/comfino-gateway.php:195
+#: svn/tags/2.2.12/includes/comfino-gateway.php:196
+#: svn/tags/2.3.0/includes/comfino-gateway.php:178
+#: svn/tags/2.3.1/includes/comfino-gateway.php:178
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:99
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:116
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:116
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:116
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:123
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:123
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:123
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:123
+#: svn/trunk/includes/comfino-config-manager.php:123
 msgid "Graphical widget with banner"
 msgstr "Widget graficzny z banerem"
 
-#: includes/comfino-config-manager.php:124
+#: git/includes/comfino-config-manager.php:124
+#: includes/comfino-config-manager.php:127
+#: svn/tags/2.2.8/includes/comfino-gateway.php:198
+#: svn/tags/2.2.9/includes/comfino-gateway.php:196
+#: svn/tags/2.2.10/includes/comfino-gateway.php:196
+#: svn/tags/2.2.11/includes/comfino-gateway.php:196
+#: svn/tags/2.2.12/includes/comfino-gateway.php:197
+#: svn/tags/2.3.0/includes/comfino-gateway.php:179
+#: svn/tags/2.3.1/includes/comfino-gateway.php:179
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:100
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:117
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:117
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:117
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:124
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:124
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:124
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:124
+#: svn/trunk/includes/comfino-config-manager.php:124
 msgid "Graphical widget with installments calculator"
 msgstr "Widget graficzny z kalkulatorem rat"
 
-#: includes/comfino-config-manager.php:128
+#: git/includes/comfino-config-manager.php:128
+#: includes/comfino-config-manager.php:131
+#: svn/tags/2.2.12/includes/comfino-gateway.php:201
+#: svn/tags/2.3.0/includes/comfino-gateway.php:183
+#: svn/tags/2.3.1/includes/comfino-gateway.php:183
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:104
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:121
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:121
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:121
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:128
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:128
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:128
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:128
+#: svn/trunk/includes/comfino-config-manager.php:128
 msgid "Widget offer type"
 msgstr "Typ oferty widgetu"
 
-#: includes/comfino-config-manager.php:131
+#: git/includes/comfino-config-manager.php:131
+#: includes/comfino-config-manager.php:134
+#: svn/tags/2.2.8/includes/comfino-gateway.php:205
+#: svn/tags/2.2.9/includes/comfino-gateway.php:203
+#: svn/tags/2.2.10/includes/comfino-gateway.php:203
+#: svn/tags/2.2.11/includes/comfino-gateway.php:203
+#: svn/tags/2.2.12/includes/comfino-gateway.php:204
+#: svn/tags/2.3.0/includes/comfino-gateway.php:186
+#: svn/tags/2.3.1/includes/comfino-gateway.php:186
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:107
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:124
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:124
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:124
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:131
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:131
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:131
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:131
+#: svn/trunk/includes/comfino-config-manager.php:131
 msgid "Zero percent installments"
 msgstr "Raty zero procent"
 
-#: includes/comfino-config-manager.php:132
+#: git/includes/comfino-config-manager.php:132
+#: includes/comfino-config-manager.php:135
+#: svn/tags/2.2.8/includes/comfino-gateway.php:206
+#: svn/tags/2.2.9/includes/comfino-gateway.php:204
+#: svn/tags/2.2.10/includes/comfino-gateway.php:204
+#: svn/tags/2.2.11/includes/comfino-gateway.php:204
+#: svn/tags/2.2.12/includes/comfino-gateway.php:205
+#: svn/tags/2.3.0/includes/comfino-gateway.php:187
+#: svn/tags/2.3.1/includes/comfino-gateway.php:187
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:108
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:125
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:125
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:125
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:132
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:132
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:132
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:132
+#: svn/trunk/includes/comfino-config-manager.php:132
 msgid "Convenient installments"
 msgstr "Niskie raty"
 
-#: includes/comfino-config-manager.php:133
+#: git/includes/comfino-config-manager.php:133
+#: includes/comfino-config-manager.php:136
+#: svn/tags/2.2.8/includes/comfino-gateway.php:207
+#: svn/tags/2.2.9/includes/comfino-gateway.php:205
+#: svn/tags/2.2.10/includes/comfino-gateway.php:205
+#: svn/tags/2.2.11/includes/comfino-gateway.php:205
+#: svn/tags/2.2.12/includes/comfino-gateway.php:206
+#: svn/tags/2.3.0/includes/comfino-gateway.php:188
+#: svn/tags/2.3.1/includes/comfino-gateway.php:188
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:109
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:126
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:126
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:126
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:133
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:133
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:133
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:133
+#: svn/trunk/includes/comfino-config-manager.php:133
 msgid "Pay later"
 msgstr "Zapłać później"
 
-#: includes/comfino-config-manager.php:135
+#: git/includes/comfino-config-manager.php:135
+#: includes/comfino-config-manager.php:138
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:128
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:128
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:128
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:135
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:135
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:135
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:135
+#: svn/trunk/includes/comfino-config-manager.php:135
 msgid ""
 "Other payment methods (Installments 0%, Buy now, pay later, Installments for "
 "Companies) available after consulting a Comfino advisor (kontakt@comfino.pl)."
@@ -188,62 +625,244 @@ msgstr ""
 "Inne sposoby płatności (Raty 0%, Kup teraz, zapłać później, Raty dla firm) "
 "dostępne po konsultacji z doradcą Comfino (kontakt@comfino.pl)."
 
-#: includes/comfino-config-manager.php:138
+#: git/includes/comfino-config-manager.php:138
+#: includes/comfino-config-manager.php:141
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:131
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:131
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:131
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:138
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:138
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:138
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:138
+#: svn/trunk/includes/comfino-config-manager.php:138
 msgid "Advanced settings"
 msgstr "Ustawienia zaawansowane"
 
-#: includes/comfino-config-manager.php:142
+#: git/includes/comfino-config-manager.php:142
+#: includes/comfino-config-manager.php:145
+#: svn/tags/2.2.12/includes/comfino-gateway.php:220
+#: svn/tags/2.3.0/includes/comfino-gateway.php:202
+#: svn/tags/2.3.1/includes/comfino-gateway.php:202
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:123
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:135
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:135
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:135
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:142
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:142
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:142
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:142
+#: svn/trunk/includes/comfino-config-manager.php:142
 msgid "Widget price selector"
 msgstr "Selektor elementu ceny widgetu"
 
-#: includes/comfino-config-manager.php:147
+#: git/includes/comfino-config-manager.php:147
+#: includes/comfino-config-manager.php:150
+#: svn/tags/2.2.12/includes/comfino-gateway.php:225
+#: svn/tags/2.3.0/includes/comfino-gateway.php:207
+#: svn/tags/2.3.1/includes/comfino-gateway.php:207
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:128
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:140
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:140
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:140
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:147
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:147
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:147
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:147
+#: svn/trunk/includes/comfino-config-manager.php:147
 msgid "Widget target selector"
 msgstr "Selektor elementu zakotwiczenia widgetu"
 
-#: includes/comfino-config-manager.php:152
+#: git/includes/comfino-config-manager.php:152
+#: includes/comfino-config-manager.php:155
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:145
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:145
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:145
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:152
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:152
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:152
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:152
+#: svn/trunk/includes/comfino-config-manager.php:152
 msgid "Price change detection - container selector"
 msgstr "Wykrywanie zmian ceny - selektor kontenera"
 
-#: includes/comfino-config-manager.php:154
+#: git/includes/comfino-config-manager.php:154
+#: includes/comfino-config-manager.php:157
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:147
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:147
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:147
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:154
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:154
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:154
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:154
+#: svn/trunk/includes/comfino-config-manager.php:154
 msgid "Selector of observed parent element which contains price element."
 msgstr ""
 "Selektor obserwowanego elementu nadrzędnego, który zawiera element ceny."
 
-#: includes/comfino-config-manager.php:160
+#: git/includes/comfino-config-manager.php:160
+#: includes/comfino-config-manager.php:163
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:153
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:153
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:153
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:160
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:160
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:160
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:160
+#: svn/trunk/includes/comfino-config-manager.php:160
 msgid "Price change detection - container hierarchy level"
 msgstr "Wykrywanie zmian ceny - poziom hierarchii kontenera"
 
-#: includes/comfino-config-manager.php:163
+#: git/includes/comfino-config-manager.php:163
+#: includes/comfino-config-manager.php:166
+#: svn/tags/2.2.12/includes/comfino-gateway.php:233
+#: svn/tags/2.3.0/includes/comfino-gateway.php:215
+#: svn/tags/2.3.1/includes/comfino-gateway.php:215
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:141
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:156
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:156
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:156
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:163
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:163
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:163
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:163
+#: svn/trunk/includes/comfino-config-manager.php:163
 msgid ""
 "Hierarchy level of observed parent element relative to the price element."
 msgstr ""
 "Poziom hierarchii obserwowanego elementu nadrzędnego względem elementu ceny."
 
-#: includes/comfino-config-manager.php:169
+#: git/includes/comfino-config-manager.php:169
+#: includes/comfino-config-manager.php:172
+#: svn/tags/2.2.12/includes/comfino-gateway.php:210
+#: svn/tags/2.3.0/includes/comfino-gateway.php:192
+#: svn/tags/2.3.1/includes/comfino-gateway.php:192
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:113
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:162
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:162
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:162
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:169
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:169
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:169
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:169
+#: svn/trunk/includes/comfino-config-manager.php:169
 msgid "Widget embed method"
 msgstr "Metoda osadzania"
 
-#: includes/comfino-config-manager.php:179
+#: git/includes/comfino-config-manager.php:179
+#: includes/comfino-config-manager.php:182
+#: svn/tags/2.2.8/includes/comfino-gateway.php:235
+#: svn/tags/2.2.9/includes/comfino-gateway.php:233
+#: svn/tags/2.2.10/includes/comfino-gateway.php:233
+#: svn/tags/2.2.11/includes/comfino-gateway.php:233
+#: svn/tags/2.2.12/includes/comfino-gateway.php:243
+#: svn/tags/2.3.0/includes/comfino-gateway.php:225
+#: svn/tags/2.3.1/includes/comfino-gateway.php:225
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:151
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:172
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:172
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:172
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:179
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:179
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:179
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:179
+#: svn/trunk/includes/comfino-config-manager.php:179
 msgid "Widget code"
 msgstr "Kod inicjalizacji widgetu"
 
-#: includes/comfino-config-manager.php:303
+#: git/includes/comfino-config-manager.php:303
+#: includes/comfino-config-manager.php:331
+#: svn/tags/2.2.12/includes/comfino-gateway.php:293
+#: svn/tags/2.3.0/includes/comfino-gateway.php:275
+#: svn/tags/2.3.1/includes/comfino-gateway.php:275
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:240
+#: svn/tags/3.0.0/includes/comfino-config-manager.php:296
+#: svn/tags/3.1.0/includes/comfino-config-manager.php:296
+#: svn/tags/3.1.1/includes/comfino-config-manager.php:296
+#: svn/tags/3.2.0/includes/comfino-config-manager.php:303
+#: svn/tags/3.2.1/includes/comfino-config-manager.php:303
+#: svn/tags/3.2.2/includes/comfino-config-manager.php:303
+#: svn/tags/3.2.3/includes/comfino-config-manager.php:303
+#: svn/trunk/includes/comfino-config-manager.php:303
 msgid "API key %s is not valid."
 msgstr "Klucz API %s jest nieprawidłowy."
 
-#: includes/comfino-core.php:139
+#: git/includes/comfino-core.php:139 includes/comfino-core.php:139
+#: svn/tags/2.2.8/includes/comfino-gateway.php:625
+#: svn/tags/2.2.9/includes/comfino-gateway.php:622
+#: svn/tags/2.2.10/includes/comfino-gateway.php:622
+#: svn/tags/2.2.11/includes/comfino-gateway.php:622
+#: svn/tags/2.2.12/includes/comfino-gateway.php:648
+#: svn/tags/2.3.0/includes/comfino-gateway.php:626
+#: svn/tags/2.3.1/includes/comfino-gateway.php:627
+#: svn/tags/2.4.0/includes/comfino-core.php:93
+#: svn/tags/3.0.0/includes/comfino-core.php:112
+#: svn/tags/3.1.0/includes/comfino-core.php:139
+#: svn/tags/3.1.1/includes/comfino-core.php:139
+#: svn/tags/3.2.0/includes/comfino-core.php:139
+#: svn/tags/3.2.1/includes/comfino-core.php:139
+#: svn/tags/3.2.2/includes/comfino-core.php:139
+#: svn/tags/3.2.3/includes/comfino-core.php:139
+#: svn/trunk/includes/comfino-core.php:139
 msgid "Comfino status"
 msgstr "Comfino status"
 
-#: includes/comfino-gateway.php:34
+#: git/includes/comfino-gateway.php:34 includes/comfino-gateway.php:36
+#: svn/tags/2.2.8/includes/comfino-gateway.php:88
+#: svn/tags/2.2.9/includes/comfino-gateway.php:88
+#: svn/tags/2.2.10/includes/comfino-gateway.php:88
+#: svn/tags/2.2.11/includes/comfino-gateway.php:88
+#: svn/tags/2.2.12/includes/comfino-gateway.php:89
+#: svn/tags/2.3.0/includes/comfino-gateway.php:71
+#: svn/tags/2.3.1/includes/comfino-gateway.php:71
+#: svn/tags/2.4.0/includes/comfino-gateway.php:32
+#: svn/tags/3.0.0/includes/comfino-gateway.php:34
+#: svn/tags/3.1.0/includes/comfino-gateway.php:34
+#: svn/tags/3.1.1/includes/comfino-gateway.php:34
+#: svn/tags/3.2.0/includes/comfino-gateway.php:34
+#: svn/tags/3.2.1/includes/comfino-gateway.php:34
+#: svn/tags/3.2.2/includes/comfino-gateway.php:34
+#: svn/tags/3.2.3/includes/comfino-gateway.php:34
+#: svn/trunk/includes/comfino-gateway.php:34
 msgid "Comfino Gateway"
 msgstr "Bramka Comfino"
 
-#: includes/comfino-gateway.php:35
+#: git/includes/comfino-gateway.php:35 includes/comfino-gateway.php:37
+#: svn/tags/2.2.8/includes/comfino-gateway.php:89
+#: svn/tags/2.2.9/includes/comfino-gateway.php:89
+#: svn/tags/2.2.10/includes/comfino-gateway.php:89
+#: svn/tags/2.2.11/includes/comfino-gateway.php:89
+#: svn/tags/2.2.12/includes/comfino-gateway.php:90
+#: svn/tags/2.3.0/includes/comfino-gateway.php:72
+#: svn/tags/2.3.1/includes/comfino-gateway.php:72
+#: svn/tags/2.4.0/includes/comfino-gateway.php:33
+#: svn/tags/3.0.0/includes/comfino-gateway.php:35
+#: svn/tags/3.1.0/includes/comfino-gateway.php:35
+#: svn/tags/3.1.1/includes/comfino-gateway.php:35
+#: svn/tags/3.2.0/includes/comfino-gateway.php:35
+#: svn/tags/3.2.1/includes/comfino-gateway.php:35
+#: svn/tags/3.2.2/includes/comfino-gateway.php:35
+#: svn/tags/3.2.3/includes/comfino-gateway.php:35
+#: svn/trunk/includes/comfino-gateway.php:35
 msgid "Comfino payment gateway"
 msgstr "Bramka płatności Comfino"
 
-#: includes/comfino-gateway.php:91
+#: git/includes/comfino-gateway.php:91 includes/comfino-gateway.php:97
+#: svn/tags/2.2.8/includes/comfino-gateway.php:299
+#: svn/tags/2.2.9/includes/comfino-gateway.php:297
+#: svn/tags/2.2.10/includes/comfino-gateway.php:297
+#: svn/tags/2.2.11/includes/comfino-gateway.php:297
+#: svn/tags/2.2.12/includes/comfino-gateway.php:323
+#: svn/tags/2.3.0/includes/comfino-gateway.php:305
+#: svn/tags/2.3.1/includes/comfino-gateway.php:305
+#: svn/tags/2.4.0/includes/comfino-gateway.php:86
+#: svn/tags/3.0.0/includes/comfino-gateway.php:91
+#: svn/tags/3.1.0/includes/comfino-gateway.php:91
+#: svn/tags/3.1.1/includes/comfino-gateway.php:91
+#: svn/tags/3.2.0/includes/comfino-gateway.php:91
+#: svn/tags/3.2.1/includes/comfino-gateway.php:91
+#: svn/tags/3.2.2/includes/comfino-gateway.php:91
+#: svn/tags/3.2.3/includes/comfino-gateway.php:91
+#: svn/trunk/includes/comfino-gateway.php:91
 msgid ""
 "Do you want to ask about something? Write to us at %s or contact us by "
 "phone. We are waiting on the number: %s. We will answer all your questions!"
@@ -251,47 +870,191 @@ msgstr ""
 "Chcesz o coś zapytać? Napisz do nas na adres %s lub skontaktuj się "
 "telefonicznie. Czekamy pod numerem: %s. Odpowiemy na każde Twoje pytanie!"
 
-#: includes/comfino-gateway.php:92
+#: git/includes/comfino-gateway.php:92 includes/comfino-gateway.php:98
+#: svn/tags/2.2.8/includes/comfino-gateway.php:300
+#: svn/tags/2.2.9/includes/comfino-gateway.php:298
+#: svn/tags/2.2.10/includes/comfino-gateway.php:298
+#: svn/tags/2.2.11/includes/comfino-gateway.php:298
+#: svn/tags/2.2.12/includes/comfino-gateway.php:324
+#: svn/tags/2.3.0/includes/comfino-gateway.php:306
+#: svn/tags/2.3.1/includes/comfino-gateway.php:306
+#: svn/tags/2.4.0/includes/comfino-gateway.php:87
+#: svn/tags/3.0.0/includes/comfino-gateway.php:92
+#: svn/tags/3.1.0/includes/comfino-gateway.php:92
+#: svn/tags/3.1.1/includes/comfino-gateway.php:92
+#: svn/tags/3.2.0/includes/comfino-gateway.php:92
+#: svn/tags/3.2.1/includes/comfino-gateway.php:92
+#: svn/tags/3.2.2/includes/comfino-gateway.php:92
+#: svn/tags/3.2.3/includes/comfino-gateway.php:92
+#: svn/trunk/includes/comfino-gateway.php:92
 msgid "WordPress %s WooCommerce %s Comfino %s - question"
 msgstr "WordPress %s WooCommerce %s Comfino %s - pytanie"
 
-#: includes/comfino-gateway.php:93
+#: git/includes/comfino-gateway.php:93 includes/comfino-gateway.php:99
+#: svn/tags/2.2.8/includes/comfino-gateway.php:301
+#: svn/tags/2.2.9/includes/comfino-gateway.php:299
+#: svn/tags/2.2.10/includes/comfino-gateway.php:299
+#: svn/tags/2.2.11/includes/comfino-gateway.php:299
+#: svn/tags/2.2.12/includes/comfino-gateway.php:325
+#: svn/tags/2.3.0/includes/comfino-gateway.php:307
+#: svn/tags/2.3.1/includes/comfino-gateway.php:307
+#: svn/tags/2.4.0/includes/comfino-gateway.php:88
+#: svn/tags/3.0.0/includes/comfino-gateway.php:93
+#: svn/tags/3.1.0/includes/comfino-gateway.php:93
+#: svn/tags/3.1.1/includes/comfino-gateway.php:93
+#: svn/tags/3.2.0/includes/comfino-gateway.php:93
+#: svn/tags/3.2.1/includes/comfino-gateway.php:93
+#: svn/tags/3.2.2/includes/comfino-gateway.php:93
+#: svn/tags/3.2.3/includes/comfino-gateway.php:93
+#: svn/trunk/includes/comfino-gateway.php:93
 msgid "WordPress %s WooCommerce %s Comfino %s, PHP %s"
 msgstr "WordPress %s WooCommerce %s Comfino %s, PHP %s"
 
-#: includes/comfino-gateway.php:97
+#: git/includes/comfino-gateway.php:97 includes/comfino-gateway.php:103
+#: svn/tags/3.0.0/includes/comfino-gateway.php:97
+#: svn/tags/3.1.0/includes/comfino-gateway.php:97
+#: svn/tags/3.1.1/includes/comfino-gateway.php:97
+#: svn/tags/3.2.0/includes/comfino-gateway.php:97
+#: svn/tags/3.2.1/includes/comfino-gateway.php:97
+#: svn/tags/3.2.2/includes/comfino-gateway.php:97
+#: svn/tags/3.2.3/includes/comfino-gateway.php:97
+#: svn/trunk/includes/comfino-gateway.php:97
 msgid "Payment settings"
 msgstr "Ustawienia płatności"
 
-#: includes/comfino-gateway.php:98
+#: git/includes/comfino-gateway.php:98 includes/comfino-gateway.php:104
+#: svn/tags/3.0.0/includes/comfino-gateway.php:98
+#: svn/tags/3.1.0/includes/comfino-gateway.php:98
+#: svn/tags/3.1.1/includes/comfino-gateway.php:98
+#: svn/tags/3.2.0/includes/comfino-gateway.php:98
+#: svn/tags/3.2.1/includes/comfino-gateway.php:98
+#: svn/tags/3.2.2/includes/comfino-gateway.php:98
+#: svn/tags/3.2.3/includes/comfino-gateway.php:98
+#: svn/trunk/includes/comfino-gateway.php:98
 msgid "Widget settings"
 msgstr "Ustawienia widgetu"
 
-#: includes/comfino-gateway.php:99
+#: git/includes/comfino-gateway.php:99 includes/comfino-gateway.php:106
+#: svn/tags/3.0.0/includes/comfino-gateway.php:99
+#: svn/tags/3.1.0/includes/comfino-gateway.php:99
+#: svn/tags/3.1.1/includes/comfino-gateway.php:99
+#: svn/tags/3.2.0/includes/comfino-gateway.php:99
+#: svn/tags/3.2.1/includes/comfino-gateway.php:99
+#: svn/tags/3.2.2/includes/comfino-gateway.php:99
+#: svn/tags/3.2.3/includes/comfino-gateway.php:99
+#: svn/trunk/includes/comfino-gateway.php:99
 msgid "Developer settings"
 msgstr "Ustawienia deweloperskie"
 
-#: includes/comfino-gateway.php:100
+#: git/includes/comfino-gateway.php:100 includes/comfino-gateway.php:107
+#: svn/tags/3.0.0/includes/comfino-gateway.php:100
+#: svn/tags/3.1.0/includes/comfino-gateway.php:100
+#: svn/tags/3.1.1/includes/comfino-gateway.php:100
+#: svn/tags/3.2.0/includes/comfino-gateway.php:100
+#: svn/tags/3.2.1/includes/comfino-gateway.php:100
+#: svn/tags/3.2.2/includes/comfino-gateway.php:100
+#: svn/tags/3.2.3/includes/comfino-gateway.php:100
+#: svn/trunk/includes/comfino-gateway.php:100
 msgid "Plugin diagnostics"
 msgstr "Diagnostyka wtyczki"
 
-#: includes/comfino-gateway.php:124
+#: git/includes/comfino-gateway.php:124 includes/comfino-gateway.php:132
+#: svn/tags/2.2.8/includes/comfino-gateway.php:306
+#: svn/tags/2.2.9/includes/comfino-gateway.php:304
+#: svn/tags/2.2.10/includes/comfino-gateway.php:304
+#: svn/tags/2.2.11/includes/comfino-gateway.php:304
+#: svn/tags/2.2.12/includes/comfino-gateway.php:330
+#: svn/tags/2.3.0/includes/comfino-gateway.php:312
+#: svn/tags/2.3.1/includes/comfino-gateway.php:312
+#: svn/tags/2.4.0/includes/comfino-gateway.php:93
+#: svn/tags/3.0.0/includes/comfino-gateway.php:124
+#: svn/tags/3.1.0/includes/comfino-gateway.php:124
+#: svn/tags/3.1.1/includes/comfino-gateway.php:124
+#: svn/tags/3.2.0/includes/comfino-gateway.php:124
+#: svn/tags/3.2.1/includes/comfino-gateway.php:124
+#: svn/tags/3.2.2/includes/comfino-gateway.php:124
+#: svn/tags/3.2.3/includes/comfino-gateway.php:124
+#: svn/trunk/includes/comfino-gateway.php:124
 msgid "Errors log"
 msgstr "Log błędów"
 
-#: includes/comfino-gateway.php:200
+#: git/includes/comfino-gateway.php:202 includes/comfino-gateway.php:217
+#: svn/tags/2.2.8/includes/comfino-gateway.php:564
+#: svn/tags/2.2.9/includes/comfino-gateway.php:562
+#: svn/tags/2.2.10/includes/comfino-gateway.php:562
+#: svn/tags/2.2.11/includes/comfino-gateway.php:562
+#: svn/tags/2.2.12/includes/comfino-gateway.php:588
+#: svn/tags/2.3.0/includes/comfino-gateway.php:566
+#: svn/tags/2.3.1/includes/comfino-gateway.php:566
+#: svn/tags/2.4.0/includes/comfino-gateway.php:245
+#: svn/tags/3.0.0/includes/comfino-gateway.php:281
+#: svn/tags/3.1.0/includes/comfino-gateway.php:198
+#: svn/tags/3.1.1/includes/comfino-gateway.php:198
+#: svn/tags/3.2.0/includes/comfino-gateway.php:200
+#: svn/tags/3.2.1/includes/comfino-gateway.php:200
+#: svn/tags/3.2.2/includes/comfino-gateway.php:202
+#: svn/tags/3.2.3/includes/comfino-gateway.php:202
+#: svn/trunk/includes/comfino-gateway.php:202
 msgid "Send to Comfino canceled order"
 msgstr "Wysłanie anulowania wniosku do Comfino"
 
-#: includes/comfino-gateway.php:250
+#: git/includes/comfino-gateway.php:252 includes/comfino-gateway.php:267
+#: svn/tags/2.2.8/includes/comfino-gateway.php:876
+#: svn/tags/2.2.9/includes/comfino-gateway.php:870
+#: svn/tags/2.2.10/includes/comfino-gateway.php:882
+#: svn/tags/2.2.11/includes/comfino-gateway.php:881
+#: svn/tags/2.2.12/includes/comfino-gateway.php:928
+#: svn/tags/2.3.0/includes/comfino-gateway.php:926
+#: svn/tags/2.3.1/includes/comfino-gateway.php:917
+#: svn/tags/2.4.0/includes/comfino-gateway.php:294
+#: svn/tags/3.0.0/includes/comfino-gateway.php:331
+#: svn/tags/3.1.0/includes/comfino-gateway.php:248
+#: svn/tags/3.1.1/includes/comfino-gateway.php:248
+#: svn/tags/3.2.0/includes/comfino-gateway.php:250
+#: svn/tags/3.2.1/includes/comfino-gateway.php:250
+#: svn/tags/3.2.2/includes/comfino-gateway.php:252
+#: svn/tags/3.2.3/includes/comfino-gateway.php:252
+#: svn/trunk/includes/comfino-gateway.php:252
 msgid "Are you sure you want to cancel?"
 msgstr "Czy na pewno chcesz anulować?"
 
-#: includes/comfino-gateway.php:250
+#: git/includes/comfino-gateway.php:252 includes/comfino-gateway.php:267
+#: svn/tags/2.2.8/includes/comfino-gateway.php:876
+#: svn/tags/2.2.9/includes/comfino-gateway.php:870
+#: svn/tags/2.2.10/includes/comfino-gateway.php:882
+#: svn/tags/2.2.11/includes/comfino-gateway.php:881
+#: svn/tags/2.2.12/includes/comfino-gateway.php:928
+#: svn/tags/2.3.0/includes/comfino-gateway.php:926
+#: svn/tags/2.3.1/includes/comfino-gateway.php:917
+#: svn/tags/2.4.0/includes/comfino-gateway.php:294
+#: svn/tags/3.0.0/includes/comfino-gateway.php:331
+#: svn/tags/3.1.0/includes/comfino-gateway.php:248
+#: svn/tags/3.1.1/includes/comfino-gateway.php:248
+#: svn/tags/3.2.0/includes/comfino-gateway.php:250
+#: svn/tags/3.2.1/includes/comfino-gateway.php:250
+#: svn/tags/3.2.2/includes/comfino-gateway.php:252
+#: svn/tags/3.2.3/includes/comfino-gateway.php:252
+#: svn/trunk/includes/comfino-gateway.php:252
 msgid "Cancel"
 msgstr "Anulowanie"
 
-#: includes/comfino-gateway.php:250
+#: git/includes/comfino-gateway.php:252 includes/comfino-gateway.php:267
+#: svn/tags/2.2.8/includes/comfino-gateway.php:876
+#: svn/tags/2.2.9/includes/comfino-gateway.php:870
+#: svn/tags/2.2.10/includes/comfino-gateway.php:882
+#: svn/tags/2.2.11/includes/comfino-gateway.php:881
+#: svn/tags/2.2.12/includes/comfino-gateway.php:928
+#: svn/tags/2.3.0/includes/comfino-gateway.php:926
+#: svn/tags/2.3.1/includes/comfino-gateway.php:917
+#: svn/tags/2.4.0/includes/comfino-gateway.php:294
+#: svn/tags/3.0.0/includes/comfino-gateway.php:331
+#: svn/tags/3.1.0/includes/comfino-gateway.php:248
+#: svn/tags/3.1.1/includes/comfino-gateway.php:248
+#: svn/tags/3.2.0/includes/comfino-gateway.php:250
+#: svn/tags/3.2.1/includes/comfino-gateway.php:250
+#: svn/tags/3.2.2/includes/comfino-gateway.php:252
+#: svn/tags/3.2.3/includes/comfino-gateway.php:252
+#: svn/trunk/includes/comfino-gateway.php:252
 msgid ""
 "Attention: You are cancelling a customer order. Check if you do not have to "
 "return the money to Comfino."
@@ -299,15 +1062,63 @@ msgstr ""
 "Uwaga! Anulujesz zamówienie klienta. Sprawdź czy nie musisz zwrócić "
 "pieniędzy do Comfino."
 
-#: includes/comfino-gateway.php:254
+#: git/includes/comfino-gateway.php:256 includes/comfino-gateway.php:271
+#: svn/tags/2.2.8/includes/comfino-gateway.php:880
+#: svn/tags/2.2.9/includes/comfino-gateway.php:874
+#: svn/tags/2.2.10/includes/comfino-gateway.php:886
+#: svn/tags/2.2.11/includes/comfino-gateway.php:885
+#: svn/tags/2.2.12/includes/comfino-gateway.php:932
+#: svn/tags/2.3.0/includes/comfino-gateway.php:930
+#: svn/tags/2.3.1/includes/comfino-gateway.php:921
+#: svn/tags/2.4.0/includes/comfino-gateway.php:298
+#: svn/tags/3.0.0/includes/comfino-gateway.php:335
+#: svn/tags/3.1.0/includes/comfino-gateway.php:252
+#: svn/tags/3.1.1/includes/comfino-gateway.php:252
+#: svn/tags/3.2.0/includes/comfino-gateway.php:254
+#: svn/tags/3.2.1/includes/comfino-gateway.php:254
+#: svn/tags/3.2.2/includes/comfino-gateway.php:256
+#: svn/tags/3.2.3/includes/comfino-gateway.php:256
+#: svn/trunk/includes/comfino-gateway.php:256
 msgid "Are you sure you want to resign?"
 msgstr "Czy na pewno chcesz odstąpić od umowy?"
 
-#: includes/comfino-gateway.php:254
+#: git/includes/comfino-gateway.php:256 includes/comfino-gateway.php:271
+#: svn/tags/2.2.8/includes/comfino-gateway.php:880
+#: svn/tags/2.2.9/includes/comfino-gateway.php:874
+#: svn/tags/2.2.10/includes/comfino-gateway.php:886
+#: svn/tags/2.2.11/includes/comfino-gateway.php:885
+#: svn/tags/2.2.12/includes/comfino-gateway.php:932
+#: svn/tags/2.3.0/includes/comfino-gateway.php:930
+#: svn/tags/2.3.1/includes/comfino-gateway.php:921
+#: svn/tags/2.4.0/includes/comfino-gateway.php:298
+#: svn/tags/3.0.0/includes/comfino-gateway.php:335
+#: svn/tags/3.1.0/includes/comfino-gateway.php:252
+#: svn/tags/3.1.1/includes/comfino-gateway.php:252
+#: svn/tags/3.2.0/includes/comfino-gateway.php:254
+#: svn/tags/3.2.1/includes/comfino-gateway.php:254
+#: svn/tags/3.2.2/includes/comfino-gateway.php:256
+#: svn/tags/3.2.3/includes/comfino-gateway.php:256
+#: svn/trunk/includes/comfino-gateway.php:256
 msgid "Resign"
 msgstr "Odstąpienie od umowy"
 
-#: includes/comfino-gateway.php:254
+#: git/includes/comfino-gateway.php:256 includes/comfino-gateway.php:271
+#: svn/tags/2.2.8/includes/comfino-gateway.php:880
+#: svn/tags/2.2.9/includes/comfino-gateway.php:874
+#: svn/tags/2.2.10/includes/comfino-gateway.php:886
+#: svn/tags/2.2.11/includes/comfino-gateway.php:885
+#: svn/tags/2.2.12/includes/comfino-gateway.php:932
+#: svn/tags/2.3.0/includes/comfino-gateway.php:930
+#: svn/tags/2.3.1/includes/comfino-gateway.php:921
+#: svn/tags/2.4.0/includes/comfino-gateway.php:298
+#: svn/tags/3.0.0/includes/comfino-gateway.php:335
+#: svn/tags/3.1.0/includes/comfino-gateway.php:252
+#: svn/tags/3.1.1/includes/comfino-gateway.php:252
+#: svn/tags/3.2.0/includes/comfino-gateway.php:254
+#: svn/tags/3.2.1/includes/comfino-gateway.php:254
+#: svn/tags/3.2.2/includes/comfino-gateway.php:256
+#: svn/tags/3.2.3/includes/comfino-gateway.php:256
+#: svn/trunk/includes/comfino-gateway.php:256
 msgid ""
 "Attention: you are initiating a resignation of the Customer's contract. "
 "Required refund to Comfino."
@@ -315,14 +1126,415 @@ msgstr ""
 "Uwaga! Rozpoczynasz odstąpienie od umowy Klienta. Wymagany zwrot pieniędzy "
 "do Comfino."
 
-#~ msgid "Sandbox mode"
-#~ msgstr "Tryb piaskownicy"
+#: includes/comfino-config-manager.php:191
+msgid ""
+"By enabling \"Saving shopping cart\", you agree and accept <a href=\"https://"
+"cdn.comfino.pl/regulamin/Regulamin-Ratowanie-Koszyka.pdf\">Regulations</a>"
+msgstr ""
+"Włączając „Ratowanie koszyków” zgadzasz się i akceptujesz <a href=\"https://"
+"cdn.comfino.pl/regulamin/Regulamin-Ratowanie-Koszyka.pdf\">Regulamin</a>"
 
-#~ msgid "Enable sandbox mode"
-#~ msgstr "Włączony tryb piaskownicy"
+#: includes/comfino-config-manager.php:193
+msgid "Saving shopping cart info"
+msgstr ""
+"Dzięki funkcji „Ratowanie koszyków” efektywnie zminimalizujesz problem "
+"porzuconych koszyków, z którym borykają się wszyscy sprzedawcy. Gdy klient "
+"dodaje produkty do koszyka, ale porzuca go, także z powodu nieudanej "
+"płatności, automatycznie otrzyma przypominający e-mail z bezpośrednim "
+"linkiem prowadzącym do płatności. Ta usługa pozwala skutecznie odzyskiwać "
+"potencjalne transakcje i zwiększać konwersję zamówień"
 
-#~ msgid "Sandbox key"
-#~ msgstr "Klucz piaskownicy"
+#: includes/comfino-config-manager.php:197
+msgid "View in payment list"
+msgstr "Wyświetlaj na liście płatności"
+
+#: includes/comfino-config-manager.php:200
+msgid "Only Comfino"
+msgstr "Tylko Comfino"
+
+#: includes/comfino-config-manager.php:201
+msgid "All payments"
+msgstr "Wszystkie płatności"
+
+#: includes/comfino-gateway.php:105
+msgid "Abandoned Cart settings"
+msgstr "Ustawienia Ratowania koszyków"
+
+#: includes/comfino-gateway.php:360
+msgid "Order reminder"
+msgstr "Przypomnienie o zamówieniu"
+
+#. translators: %s: Customer first name
+#: includes/templates/emails/failed-order.php:11
+msgid "Hi %s,"
+msgstr "Cześć %s,"
+
+#: includes/templates/emails/failed-order.php:13
+msgid ""
+"We have noticed that your order number [%s] has still not been paid. The "
+"products you have selected are still waiting in your shopping cart."
+msgstr ""
+"Zauważyliśmy, że Twoje zamówienia numer [%s] nadal nie zostało opłacone. "
+"Wybrane przez Ciebie produkty wciąż czekają w koszyku zakupowym."
+
+#: includes/templates/emails/failed-order.php:14
+msgid "Click on the link below and use the payments offered in the store. %s"
+msgstr ""
+"Kliknij w link poniżej i skorzystaj z oferowanych w sklepie płatności. %s"
+
+#: includes/templates/emails/failed-order.php:14
+msgid "Proceed to payment"
+msgstr "Przejdź do płatności"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:156
+#: svn/tags/2.2.9/includes/comfino-gateway.php:154
+#: svn/tags/2.2.10/includes/comfino-gateway.php:154
+#: svn/tags/2.2.11/includes/comfino-gateway.php:154
+#: svn/tags/2.2.12/includes/comfino-gateway.php:155
+#: svn/tags/2.3.0/includes/comfino-gateway.php:137
+#: svn/tags/2.3.1/includes/comfino-gateway.php:137
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:58
+msgid "Enable Comfino Payment Module."
+msgstr "Włączony moduł płatności Comfino."
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:158
+#: svn/tags/2.2.9/includes/comfino-gateway.php:156
+#: svn/tags/2.2.10/includes/comfino-gateway.php:156
+#: svn/tags/2.2.11/includes/comfino-gateway.php:156
+msgid "Show in the Payment List as a payment option"
+msgstr "Pokaż opcję płatności Comfino na liście płatności"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:161
+#: svn/tags/2.2.9/includes/comfino-gateway.php:159
+#: svn/tags/2.2.10/includes/comfino-gateway.php:159
+#: svn/tags/2.2.11/includes/comfino-gateway.php:159
+msgid "Title:"
+msgstr "Tytuł:"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:166
+#: svn/tags/2.2.9/includes/comfino-gateway.php:164
+#: svn/tags/2.2.10/includes/comfino-gateway.php:164
+#: svn/tags/2.2.11/includes/comfino-gateway.php:164
+msgid "Production Key"
+msgstr "Klucz Produkcyjny"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:170
+#: svn/tags/2.2.9/includes/comfino-gateway.php:168
+#: svn/tags/2.2.10/includes/comfino-gateway.php:168
+#: svn/tags/2.2.11/includes/comfino-gateway.php:168
+msgid "Show Logo"
+msgstr "Wyświetlaj Logo"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:176
+#: svn/tags/2.2.9/includes/comfino-gateway.php:174
+#: svn/tags/2.2.10/includes/comfino-gateway.php:174
+#: svn/tags/2.2.11/includes/comfino-gateway.php:174
+msgid "Sandbox mode:"
+msgstr "Tryb piaskownicy:"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:178
+#: svn/tags/2.2.9/includes/comfino-gateway.php:176
+#: svn/tags/2.2.10/includes/comfino-gateway.php:176
+#: svn/tags/2.2.11/includes/comfino-gateway.php:176
+msgid "Enable Sandbox Mode"
+msgstr "Włączony tryb piaskownicy"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:182
+#: svn/tags/2.2.9/includes/comfino-gateway.php:180
+#: svn/tags/2.2.10/includes/comfino-gateway.php:180
+#: svn/tags/2.2.11/includes/comfino-gateway.php:180
+#, fuzzy
+#| msgid "Sandbox key"
+msgid "Sandbox Key"
+msgstr "Klucz piaskownicy"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:186
+#: svn/tags/2.2.9/includes/comfino-gateway.php:184
+#: svn/tags/2.2.10/includes/comfino-gateway.php:184
+#: svn/tags/2.2.11/includes/comfino-gateway.php:184
+#, fuzzy
+#| msgid "Widget enable"
+msgid "Widget Enable"
+msgstr "Widget włączony"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:188
+#: svn/tags/2.2.9/includes/comfino-gateway.php:186
+#: svn/tags/2.2.10/includes/comfino-gateway.php:186
+#: svn/tags/2.2.11/includes/comfino-gateway.php:186
+#, fuzzy
+#| msgid "Enable Comfino widget"
+msgid "Enable Comfino Widget"
+msgstr "Włączony widget Comfino"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:190
+#: svn/tags/2.2.9/includes/comfino-gateway.php:188
+#: svn/tags/2.2.10/includes/comfino-gateway.php:188
+#: svn/tags/2.2.11/includes/comfino-gateway.php:188
+msgid "Show Widget Comfino in the product"
+msgstr "Pokazuj widget Comfino w produkcie"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:193
+#: svn/tags/2.2.9/includes/comfino-gateway.php:191
+#: svn/tags/2.2.10/includes/comfino-gateway.php:191
+#: svn/tags/2.2.11/includes/comfino-gateway.php:191
+#, fuzzy
+#| msgid "Widget type"
+msgid "Widget Type"
+msgstr "Typ widgetu"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:202
+#: svn/tags/2.2.9/includes/comfino-gateway.php:200
+#: svn/tags/2.2.10/includes/comfino-gateway.php:200
+#: svn/tags/2.2.11/includes/comfino-gateway.php:200
+#, fuzzy
+#| msgid "Widget offer type"
+msgid "Widget Offer Type"
+msgstr "Typ oferty widgetu"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:211
+#: svn/tags/2.2.9/includes/comfino-gateway.php:209
+#: svn/tags/2.2.10/includes/comfino-gateway.php:209
+#: svn/tags/2.2.11/includes/comfino-gateway.php:209
+#, fuzzy
+#| msgid "Widget price selector"
+msgid "Widget Price Selector"
+msgstr "Selektor elementu ceny widgetu"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:216
+#: svn/tags/2.2.9/includes/comfino-gateway.php:214
+#: svn/tags/2.2.10/includes/comfino-gateway.php:214
+#: svn/tags/2.2.11/includes/comfino-gateway.php:214
+#, fuzzy
+#| msgid "Widget target selector"
+msgid "Widget Target Selector"
+msgstr "Selektor elementu zakotwiczenia widgetu"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:221
+#: svn/tags/2.2.9/includes/comfino-gateway.php:219
+#: svn/tags/2.2.10/includes/comfino-gateway.php:219
+#: svn/tags/2.2.11/includes/comfino-gateway.php:219
+#, fuzzy
+#| msgid "Widget embed method"
+msgid "Widget Embed Method"
+msgstr "Metoda osadzania"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:231
+#: svn/tags/2.2.9/includes/comfino-gateway.php:229
+#: svn/tags/2.2.10/includes/comfino-gateway.php:229
+#: svn/tags/2.2.11/includes/comfino-gateway.php:229
+#, fuzzy
+#| msgid "Widget key"
+msgid "Widget Key"
+msgstr "Klucz widgetu"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:354
+#: svn/tags/2.2.9/includes/comfino-gateway.php:352
+#: svn/tags/2.2.10/includes/comfino-gateway.php:352
+#: svn/tags/2.2.11/includes/comfino-gateway.php:352
+#: svn/tags/2.2.12/includes/comfino-gateway.php:378
+#: svn/tags/2.3.0/includes/comfino-gateway.php:360
+#: svn/tags/2.3.1/includes/comfino-gateway.php:360
+#: svn/tags/2.4.0/includes/comfino-gateway.php:141
+#: svn/tags/3.0.0/includes/comfino-gateway.php:175
+#, fuzzy
+#| msgid "Show logo on payment method"
+msgid "Choose payment method"
+msgstr "Pokaż logo na metodzie płatności"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:359
+#: svn/tags/2.2.9/includes/comfino-gateway.php:357
+#: svn/tags/2.2.10/includes/comfino-gateway.php:357
+#: svn/tags/2.2.11/includes/comfino-gateway.php:357
+#: svn/tags/2.2.12/includes/comfino-gateway.php:383
+#: svn/tags/2.3.0/includes/comfino-gateway.php:365
+#: svn/tags/2.3.1/includes/comfino-gateway.php:365
+#: svn/tags/2.4.0/includes/comfino-gateway.php:146
+#: svn/tags/3.0.0/includes/comfino-gateway.php:180
+msgid "Value of purchase"
+msgstr ""
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:364
+#: svn/tags/2.2.9/includes/comfino-gateway.php:362
+#: svn/tags/2.2.10/includes/comfino-gateway.php:362
+#: svn/tags/2.2.11/includes/comfino-gateway.php:362
+#: svn/tags/2.2.12/includes/comfino-gateway.php:388
+#: svn/tags/2.3.0/includes/comfino-gateway.php:370
+#: svn/tags/2.3.1/includes/comfino-gateway.php:370
+#: svn/tags/2.4.0/includes/comfino-gateway.php:151
+#: svn/tags/3.0.0/includes/comfino-gateway.php:185
+#, fuzzy
+#| msgid "Convenient installments"
+msgid "Choose number of instalments"
+msgstr "Niskie raty"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:368
+#: svn/tags/2.2.9/includes/comfino-gateway.php:366
+#: svn/tags/2.2.10/includes/comfino-gateway.php:366
+#: svn/tags/2.2.11/includes/comfino-gateway.php:366
+#: svn/tags/2.2.12/includes/comfino-gateway.php:392
+#: svn/tags/2.3.0/includes/comfino-gateway.php:374
+#: svn/tags/2.3.1/includes/comfino-gateway.php:374
+#: svn/tags/2.4.0/includes/comfino-gateway.php:155
+#: svn/tags/3.0.0/includes/comfino-gateway.php:189
+#, fuzzy
+#| msgid "Convenient installments"
+msgid "Monthly instalment"
+msgstr "Niskie raty"
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:372
+#: svn/tags/2.2.9/includes/comfino-gateway.php:370
+#: svn/tags/2.2.10/includes/comfino-gateway.php:370
+#: svn/tags/2.2.11/includes/comfino-gateway.php:370
+#: svn/tags/2.2.12/includes/comfino-gateway.php:396
+#: svn/tags/2.3.0/includes/comfino-gateway.php:378
+#: svn/tags/2.3.1/includes/comfino-gateway.php:378
+#: svn/tags/2.4.0/includes/comfino-gateway.php:159
+#: svn/tags/3.0.0/includes/comfino-gateway.php:193
+msgid "Total amount to pay"
+msgstr ""
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:377
+#: svn/tags/2.2.9/includes/comfino-gateway.php:375
+#: svn/tags/2.2.10/includes/comfino-gateway.php:375
+#: svn/tags/2.2.11/includes/comfino-gateway.php:375
+#: svn/tags/2.2.12/includes/comfino-gateway.php:401
+#: svn/tags/2.3.0/includes/comfino-gateway.php:383
+#: svn/tags/2.3.1/includes/comfino-gateway.php:383
+#: svn/tags/2.4.0/includes/comfino-gateway.php:164
+#: svn/tags/3.0.0/includes/comfino-gateway.php:198
+msgid "Representative example"
+msgstr ""
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:388
+#: svn/tags/2.2.9/includes/comfino-gateway.php:386
+#: svn/tags/2.2.10/includes/comfino-gateway.php:386
+#: svn/tags/2.2.11/includes/comfino-gateway.php:386
+#: svn/tags/2.2.12/includes/comfino-gateway.php:412
+#: svn/tags/2.3.0/includes/comfino-gateway.php:394
+#: svn/tags/2.3.1/includes/comfino-gateway.php:394
+#: svn/tags/2.4.0/includes/comfino-gateway.php:175
+#: svn/tags/3.0.0/includes/comfino-gateway.php:209
+msgid "Buy now, pay in 30 days"
+msgstr ""
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:388
+#: svn/tags/2.2.9/includes/comfino-gateway.php:386
+#: svn/tags/2.2.10/includes/comfino-gateway.php:386
+#: svn/tags/2.2.11/includes/comfino-gateway.php:386
+#: svn/tags/2.2.12/includes/comfino-gateway.php:412
+#: svn/tags/2.3.0/includes/comfino-gateway.php:394
+#: svn/tags/2.3.1/includes/comfino-gateway.php:394
+#: svn/tags/2.4.0/includes/comfino-gateway.php:175
+#: svn/tags/3.0.0/includes/comfino-gateway.php:209
+msgid "How it's working?"
+msgstr ""
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:395
+#: svn/tags/2.2.9/includes/comfino-gateway.php:393
+#: svn/tags/2.2.10/includes/comfino-gateway.php:393
+#: svn/tags/2.2.11/includes/comfino-gateway.php:393
+#: svn/tags/2.2.12/includes/comfino-gateway.php:419
+#: svn/tags/2.3.0/includes/comfino-gateway.php:401
+#: svn/tags/2.3.1/includes/comfino-gateway.php:401
+#: svn/tags/2.4.0/includes/comfino-gateway.php:182
+#: svn/tags/3.0.0/includes/comfino-gateway.php:216
+msgid "Put the product in the basket"
+msgstr ""
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:401
+#: svn/tags/2.2.9/includes/comfino-gateway.php:399
+#: svn/tags/2.2.10/includes/comfino-gateway.php:399
+#: svn/tags/2.2.11/includes/comfino-gateway.php:399
+#: svn/tags/2.2.12/includes/comfino-gateway.php:425
+#: svn/tags/2.3.0/includes/comfino-gateway.php:407
+#: svn/tags/2.3.1/includes/comfino-gateway.php:407
+msgid "Choose Twisto payment"
+msgstr ""
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:409
+#: svn/tags/2.2.9/includes/comfino-gateway.php:407
+#: svn/tags/2.2.10/includes/comfino-gateway.php:407
+#: svn/tags/2.2.11/includes/comfino-gateway.php:407
+#: svn/tags/2.2.12/includes/comfino-gateway.php:433
+#: svn/tags/2.3.0/includes/comfino-gateway.php:415
+#: svn/tags/2.3.1/includes/comfino-gateway.php:415
+#: svn/tags/2.4.0/includes/comfino-gateway.php:196
+#: svn/tags/3.0.0/includes/comfino-gateway.php:230
+msgid "Check the products at home"
+msgstr ""
+
+#: svn/tags/2.2.8/includes/comfino-gateway.php:415
+#: svn/tags/2.2.9/includes/comfino-gateway.php:413
+#: svn/tags/2.2.10/includes/comfino-gateway.php:413
+#: svn/tags/2.2.11/includes/comfino-gateway.php:413
+#: svn/tags/2.2.12/includes/comfino-gateway.php:439
+#: svn/tags/2.3.0/includes/comfino-gateway.php:421
+#: svn/tags/2.3.1/includes/comfino-gateway.php:421
+#: svn/tags/2.4.0/includes/comfino-gateway.php:202
+#: svn/tags/3.0.0/includes/comfino-gateway.php:236
+msgid "Pay in 30 days"
+msgstr ""
+
+#: svn/tags/2.2.12/includes/comfino-gateway.php:157
+#: svn/tags/2.3.0/includes/comfino-gateway.php:139
+#: svn/tags/2.3.1/includes/comfino-gateway.php:139
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:60
+#, fuzzy
+#| msgid "Shows Comfino payment option at the payment list."
+msgid "Show in the Payment List as a payment option."
+msgstr "Pokaż opcję płatności Comfino na liście płatności."
+
+#: svn/tags/2.2.12/includes/comfino-gateway.php:165
+#: svn/tags/2.3.0/includes/comfino-gateway.php:147
+#: svn/tags/2.3.1/includes/comfino-gateway.php:147
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:68
+#, fuzzy
+#| msgid "Production environment API key"
+msgid "Production key"
+msgstr "Klucz API środowiska produkcyjnego"
+
+#: svn/tags/2.2.12/includes/comfino-gateway.php:175
+#: svn/tags/2.3.0/includes/comfino-gateway.php:157
+#: svn/tags/2.3.1/includes/comfino-gateway.php:157
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:78
+msgid "Sandbox mode"
+msgstr "Tryb piaskownicy"
+
+#: svn/tags/2.2.12/includes/comfino-gateway.php:177
+#: svn/tags/2.3.0/includes/comfino-gateway.php:159
+#: svn/tags/2.3.1/includes/comfino-gateway.php:159
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:80
+msgid "Enable sandbox mode"
+msgstr "Włączony tryb piaskownicy"
+
+#: svn/tags/2.2.12/includes/comfino-gateway.php:181
+#: svn/tags/2.3.0/includes/comfino-gateway.php:163
+#: svn/tags/2.3.1/includes/comfino-gateway.php:163
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:84
+msgid "Sandbox key"
+msgstr "Klucz piaskownicy"
+
+#: svn/tags/2.2.12/includes/comfino-gateway.php:230
+#: svn/tags/2.3.0/includes/comfino-gateway.php:212
+#: svn/tags/2.3.1/includes/comfino-gateway.php:212
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:138
+#, fuzzy
+#| msgid "Price change detection - container selector"
+msgid "Price change detection level"
+msgstr "Wykrywanie zmian ceny - selektor kontenera"
+
+#: svn/tags/2.4.0/includes/comfino-config-manager.php:133
+#, fuzzy
+#| msgid "Widget price selector"
+msgid "Widget price observer selector"
+msgstr "Selektor elementu ceny widgetu"
+
+#: svn/tags/2.4.0/includes/comfino-gateway.php:188
+#: svn/tags/3.0.0/includes/comfino-gateway.php:222
+#, fuzzy
+#| msgid "Enable Comfino payment module"
+msgid "Choose Comfino payment"
+msgstr "Włączony moduł płatności Comfino"
 
 #~ msgid "ACCEPTED"
 #~ msgstr "Kredyt udzielony"
