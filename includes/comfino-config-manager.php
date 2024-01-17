@@ -23,6 +23,7 @@ class Config_Manager extends \WC_Settings_API
         'COMFINO_WIDGET_OFFER_TYPE' => 'widget_offer_type',
         'COMFINO_WIDGET_EMBED_METHOD' => 'widget_embed_method',
         'COMFINO_WIDGET_CODE' => 'widget_js_code',
+        'COMFINO_ABANDONED_CART_ENABLED' => 'abandoned_cart_enabled',
     ];
 
     const ACCESSIBLE_CONFIG_OPTIONS = [
@@ -42,6 +43,7 @@ class Config_Manager extends \WC_Settings_API
         'COMFINO_WIDGET_OFFER_TYPE',
         'COMFINO_WIDGET_EMBED_METHOD',
         'COMFINO_WIDGET_CODE',
+        'COMFINO_ABANDONED_CART_ENABLED',
     ];
 
     const CONFIG_OPTIONS_TYPES = [
@@ -49,6 +51,7 @@ class Config_Manager extends \WC_Settings_API
         'COMFINO_SHOW_LOGO' => 'bool',
         'COMFINO_IS_SANDBOX' => 'bool',
         'COMFINO_WIDGET_ENABLED' => 'bool',
+        'COMFINO_ABANDONED_CART_ENABLED' => 'bool',
         'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL' => 'int',
     ];
 
@@ -57,6 +60,12 @@ class Config_Manager extends \WC_Settings_API
     public function __construct()
     {
         $this->id = 'comfino';
+
+        if ($this->get_option('sandbox_mode') === 'yes') {
+            Api_Client::$key = $this->get_option('sandbox_key');
+        } else {
+            Api_Client::$key = $this->get_option('production_key');
+        }
 
         Api_Client::$api_language = substr(get_bloginfo('language'), 0, 2);
 
@@ -72,6 +81,11 @@ class Config_Manager extends \WC_Settings_API
                 'CONVENIENT_INSTALLMENTS' => __('Convenient installments', 'comfino-payment-gateway'),
                 'PAY_LATER' => __('Pay later', 'comfino-payment-gateway'),
             ];
+        }
+
+        if (($widget_types = get_transient('COMFINO_WIDGET_TYPES')) === false) {
+            $widget_types = Api_Client::get_widget_types();
+            set_transient('COMFINO_WIDGET_TYPES', $widget_types, DAY_IN_SECONDS);
         }
 
         $this->id = 'comfino';
@@ -143,10 +157,11 @@ class Config_Manager extends \WC_Settings_API
             'widget_type' => [
                 'title' => __('Widget type', 'comfino-payment-gateway'),
                 'type' => 'select',
-                'options' => [
+                'options' => !empty($widget_types) ? $widget_types : [
                     'simple' => __('Textual widget', 'comfino-payment-gateway'),
                     'mixed' => __('Graphical widget with banner', 'comfino-payment-gateway'),
                     'with-modal' => __('Graphical widget with installments calculator', 'comfino-payment-gateway'),
+                    'extended-modal' => __('Graphical widget with extended installments calculator', 'comfino-payment-gateway'),
                 ]
             ],
             'widget_offer_type' => [
@@ -202,6 +217,22 @@ class Config_Manager extends \WC_Settings_API
                 'css' => 'width: 800px; height: 400px',
                 'default' => $this->get_initial_widget_code(),
             ],
+            'abandoned_cart_enabled' => [
+                'title' => __('Enable/Disable', 'comfino-payment-gateway'),
+                'type' => 'checkbox',
+                'label' => __('By enabling "Saving shopping cart", you agree and accept <a href="https://cdn.comfino.pl/regulamin/Regulamin-Ratowanie-Koszyka.pdf">Regulations</a>', 'comfino-payment-gateway'),
+                'default' => 'no',
+                'description' => __('Saving shopping cart info', 'comfino-payment-gateway')
+            ],
+            'abandoned_payments' => [
+                'title' => __('View in payment list', 'comfino-payment-gateway'),
+                'type' => 'select',
+                'options' => [
+                    'comfino' => __('Only Comfino', 'comfino-payment-gateway'),
+                    'all' => __('All payments', 'comfino-payment-gateway'),
+                ]
+            ],
+
         ];
     }
 
@@ -262,6 +293,13 @@ class Config_Manager extends \WC_Settings_API
                         'widget_price_selector', 'widget_target_selector', 'widget_price_observer_selector',
                         'widget_price_observer_level', 'widget_embed_method', 'widget_js_code',
                     ])
+                );
+                break;
+
+            case 'abandoned_cart_settings':
+                $form_fields = array_intersect_key(
+                    $this->form_fields,
+                    array_flip(['abandoned_cart_enabled', 'abandoned_payments'])
                 );
                 break;
 

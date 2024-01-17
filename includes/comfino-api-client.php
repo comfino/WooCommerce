@@ -190,6 +190,10 @@ class Api_Client
                 return ['result' => 'failure', 'redirect' => ''];
             }
 
+            if ($order->get_status() == 'failed') {
+                $order->update_status('pending');
+            }
+
             $order->add_order_note(__("Comfino create order", 'comfino-payment-gateway'));
             $order->reduce_order_stock();
 
@@ -316,6 +320,37 @@ class Api_Client
         return $product_types;
     }
 
+    /**
+     * @return string[]|bool
+     */
+    public static function get_widget_types()
+    {
+        static $widget_types = null;
+
+        if ($widget_types !== null) {
+            return $widget_types;
+        }
+
+        $response = wp_remote_get(
+            self::get_api_host() . '/v1/widget-types',
+            ['headers' => self::get_request_headers()]
+        );
+
+        if (!is_wp_error($response)) {
+            $json_response = wp_remote_retrieve_body($response);
+
+            if (strpos($json_response, 'errors') === false) {
+                $widget_types = json_decode($json_response, true);
+            } else {
+                $widget_types = false;
+            }
+        } else {
+            $widget_types = false;
+        }
+
+        return $widget_types;
+    }
+
     public static function is_api_key_valid(string $api_host, string $api_key): bool
     {
         self::$host = $api_host;
@@ -408,6 +443,23 @@ class Api_Client
         }
 
         $order->add_order_note(__("Send to Comfino resign order", 'comfino-payment-gateway'));
+    }
+
+    public static function abandoned_cart(string $type)
+    {
+        $body = wp_json_encode([
+            'type' => $type
+        ]);
+
+        $url = self::get_api_host() . "/v1/abandoned_cart";
+
+        $args = [
+            'headers' => self::get_request_headers('POST', $body),
+            'body' => $body,
+            'method' => 'POST'
+        ];
+
+        wp_remote_request($url, $args);
     }
 
     public static function get_frontend_script_url(): string
