@@ -11,14 +11,14 @@ Requires PHP: 7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
+3.3.0
+ * New functionality: filtering of financial products (offers) by cart item category.
+
 3.2.5
  * Add dynamically loaded list of widget types from Comfino API in configuration form (widget settings), fix bug in loading product types from API.
 
 3.2.4
  * Add cart rescue.
-
-3.3.0
- * New functionality: filtering of financial products (offers) by cart item category.
 
 3.2.3
  * Fix bug in cart total value calculation if discount is present.

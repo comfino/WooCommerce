@@ -147,14 +147,12 @@ class Comfino_Gateway extends WC_Payment_Gateway
     {
         \Comfino\Core::init();
 
-        $total = $woocommerce->cart->get_total('');
+        $total = WC()->cart->get_total('');
 
         if (is_wc_endpoint_url('order-pay')) {
             $order = wc_get_order(absint(get_query_var('order-pay')));
             $total = $order->get_total('');
         }
-
-        $cart = WC()->cart;
 
         $options = [
             'platform' => 'woocommerce',
@@ -162,13 +160,10 @@ class Comfino_Gateway extends WC_Payment_Gateway
             'platformDomain' => Core::get_shop_domain(),
             'pluginVersion' => \Comfino_Payment_Gateway::VERSION,
             'offersURL' => Core::get_offers_url() . '?total=' . $total,
-            'offersURL' => Core::get_offers_url() . '?total=' . $cart->get_total(''),
             'language' => substr(get_locale(), 0, 2),
             'currency' => get_woocommerce_currency(),
             'cartTotal' => (float)$total,
             'cartTotalFormatted' => wc_price($total, ['currency' => get_woocommerce_currency()]),
-            'cartTotal' => (float)$cart->get_total(''),
-            'cartTotalFormatted' => wc_price($cart->get_total(), ['currency' => get_woocommerce_currency()]),
         ];
 
         echo '
