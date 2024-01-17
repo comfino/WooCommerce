@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comfino Payment Gateway 3.2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/comfino\n"
-"POT-Creation-Date: 2024-01-17T08:35:35+00:00\n"
-"PO-Revision-Date: 2024-01-17 09:37+0100\n"
+"POT-Creation-Date: 2024-01-17T09:19:07+00:00\n"
+"PO-Revision-Date: 2024-01-17 10:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: pl_PL\n"
@@ -311,8 +311,8 @@ msgid "Widget settings"
 msgstr "Ustawienia widgetu"
 
 #: includes/comfino-gateway.php:107
-msgid "Abandoned Cart settings"
-msgstr "Ustawienia Ratowania koszyków"
+msgid "Abandoned cart settings"
+msgstr "Ustawienia ratowania koszyków"
 
 #: includes/comfino-gateway.php:108
 msgid "Developer settings"
