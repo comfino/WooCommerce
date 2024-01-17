@@ -284,6 +284,37 @@ class Api_Client
         return $product_types;
     }
 
+    /**
+     * @return string[]|bool
+     */
+    public static function get_widget_types()
+    {
+        static $widget_types = null;
+
+        if ($widget_types !== null) {
+            return $widget_types;
+        }
+
+        $response = wp_remote_get(
+            self::get_api_host() . '/v1/widget-types',
+            ['headers' => self::get_request_headers()]
+        );
+
+        if (!is_wp_error($response)) {
+            $json_response = wp_remote_retrieve_body($response);
+
+            if (strpos($json_response, 'errors') === false) {
+                $widget_types = json_decode($json_response, true);
+            } else {
+                $widget_types = false;
+            }
+        } else {
+            $widget_types = false;
+        }
+
+        return $widget_types;
+    }
+
     public static function is_api_key_valid(string $api_host, string $api_key): bool
     {
         self::$host = $api_host;

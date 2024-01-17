@@ -53,11 +53,24 @@ class Config_Manager extends \WC_Settings_API
 
     public function __construct()
     {
+        $this->id = 'comfino';
+
+        if ($this->get_option('sandbox_mode') === 'yes') {
+            Api_Client::$key = $this->get_option('sandbox_key');
+        } else {
+            Api_Client::$key = $this->get_option('production_key');
+        }
+
         Api_Client::$api_language = substr(get_bloginfo('language'), 0, 2);
 
         if (($product_types = get_transient('COMFINO_PRODUCT_TYPES')) === false) {
             $product_types = Api_Client::get_product_types();
             set_transient('COMFINO_PRODUCT_TYPES', $product_types, DAY_IN_SECONDS);
+        }
+
+        if (($widget_types = get_transient('COMFINO_WIDGET_TYPES')) === false) {
+            $widget_types = Api_Client::get_widget_types();
+            set_transient('COMFINO_WIDGET_TYPES', $widget_types, DAY_IN_SECONDS);
         }
 
         $this->id = 'comfino';
@@ -121,10 +134,11 @@ class Config_Manager extends \WC_Settings_API
             'widget_type' => [
                 'title' => __('Widget type', 'comfino-payment-gateway'),
                 'type' => 'select',
-                'options' => [
+                'options' => !empty($widget_types) ? $widget_types : [
                     'simple' => __('Textual widget', 'comfino-payment-gateway'),
                     'mixed' => __('Graphical widget with banner', 'comfino-payment-gateway'),
                     'with-modal' => __('Graphical widget with installments calculator', 'comfino-payment-gateway'),
+                    'extended-modal' => __('Graphical widget with extended installments calculator', 'comfino-payment-gateway'),
                 ]
             ],
             'widget_offer_type' => [
@@ -184,7 +198,6 @@ class Config_Manager extends \WC_Settings_API
                 'css' => 'width: 800px; height: 400px',
                 'default' => $this->get_initial_widget_code(),
             ],
-
             'abandoned_cart_enabled' => [
                 'title' => __('Enable/Disable', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
@@ -192,7 +205,6 @@ class Config_Manager extends \WC_Settings_API
                 'default' => 'no',
                 'description' => __('Saving shopping cart info', 'comfino-payment-gateway')
             ],
-
             'abandoned_payments' => [
                 'title' => __('View in payment list', 'comfino-payment-gateway'),
                 'type' => 'select',
