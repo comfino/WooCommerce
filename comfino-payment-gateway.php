@@ -83,6 +83,14 @@ class Comfino_Payment_Gateway
                 ],
             ]);
 
+            register_rest_route('comfino', '/availableoffertypes', [
+                [
+                    'methods' => WP_REST_Server::READABLE,
+                    'callback' => [Core::class, 'get_available_offer_types'],
+                    'permission_callback' => '__return_true',
+                ],
+            ]);
+
             register_rest_route('comfino', '/configuration', [
                 [
                     'methods' => WP_REST_Server::READABLE,

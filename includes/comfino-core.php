@@ -226,6 +226,33 @@ class Core
         return new \WP_REST_Response($payment_offers, 200);
     }
 
+    public static function get_available_offer_types(\WP_REST_Request $request): \WP_REST_Response
+    {
+        self::init();
+
+        $available_product_types = array_keys(self::$config_manager->get_offer_types());
+
+        if (empty($product_id = $request->get_query_params()['product_id'] ?? '')) {
+            return new \WP_REST_Response($available_product_types, 200);
+        }
+
+        $product = wc_get_product($product_id);
+
+        if (!$product) {
+            return new \WP_REST_Response($available_product_types, 200);
+        }
+
+        $filtered_product_types = [];
+
+        foreach ($available_product_types as $product_type) {
+            if (self::$config_manager->is_financial_product_available($product_type, [$product])) {
+                $filtered_product_types[] = $product_type;
+            }
+        }
+
+        return new \WP_REST_Response($filtered_product_types, 200);
+    }
+
     public static function get_configuration(\WP_REST_Request $request): \WP_REST_Response
     {
         global $wp_version, $wpdb;
