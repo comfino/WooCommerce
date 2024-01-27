@@ -250,7 +250,7 @@ class Core
         $filtered_product_types = [];
 
         foreach ($available_product_types as $product_type) {
-            if (self::$config_manager->is_financial_product_available($product_type, [$product])) {
+            if (self::$config_manager->is_financial_product_available($product_type, [$product->get_data()])) {
                 $filtered_product_types[] = $product_type;
             }
         }
@@ -365,7 +365,7 @@ class Core
                 ],
                 array_values($widget_variables)
             ),
-            self::$config_manager->get_current_widget_code()
+            self::$config_manager->get_current_widget_code($product_id)
         );
 
         return '<script>' . str_replace(

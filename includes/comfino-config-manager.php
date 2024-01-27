@@ -495,7 +495,7 @@ class Config_Manager extends \WC_Settings_API
             $excluded_cat_ids = $product_category_filters[$product_type];
 
             foreach ($products as $product) {
-                foreach ($product['data']->get_category_ids() as $category_id) {
+                foreach (is_array($product) ? $product['data']->get_category_ids() : $product->get_category_ids() as $category_id) {
                     if (in_array($category_id, $excluded_cat_ids, true) ||
                         count(array_intersect($excluded_cat_ids, get_term_children($category_id, 'product_cat')))
                     ) {
@@ -621,6 +621,8 @@ class Config_Manager extends \WC_Settings_API
 
         $options_to_inject = [];
 
+        $widget_code = str_replace("\r\n", "\n", $widget_code);
+
         if (strpos($widget_code, 'productId') === false) {
             $options_to_inject[] = "        productId: $product_data[product_id]";
         }
@@ -678,7 +680,7 @@ document.getElementsByTagName('head')[0].appendChild(script);
         $price = 'null';
 
         if ($product_id !== null) {
-            $avail_offers_url .= "&product_id=$product_id";
+            $avail_offers_url .= "?product_id=$product_id";
             $product = wc_get_product($product_id);
 
             if (($price = (!empty($product) ? $product->get_price() : null)) === null) {
