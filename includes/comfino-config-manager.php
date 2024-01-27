@@ -598,6 +598,45 @@ class Config_Manager extends \WC_Settings_API
         return self::CONFIG_OPTIONS_TYPES[$opt_name] ?? 'string';
     }
 
+    public function get_widget_variables($product_id = null)
+    {
+        $product_data = $this->get_product_data($product_id);
+
+        return [
+            '{WIDGET_SCRIPT_URL}' => Api_Client::get_widget_script_url(),
+            '{PRODUCT_ID}' => $product_data['product_id'],
+            '{PRODUCT_PRICE}' => $product_data['price'],
+            '{PLATFORM}' => 'woocommerce',
+            '{PLATFORM_VERSION}' => WC_VERSION,
+            '{PLATFORM_DOMAIN}' => Core::get_shop_domain(),
+            '{PLUGIN_VERSION}' => \Comfino_Payment_Gateway::VERSION,
+            '{AVAILABLE_OFFER_TYPES}' => $product_data['avail_offers_url'],
+        ];
+    }
+
+    public function get_current_widget_code($product_id = null): string
+    {
+        $widget_code = $this->get_option('widget_js_code');
+        $product_data = $this->get_product_data($product_id);
+
+        $options_to_inject = [];
+
+        if (strpos($widget_code, 'productId') === false) {
+            $options_to_inject[] = "        productId: $product_data[product_id]";
+        }
+        if (strpos($widget_code, 'availOffersUrl') === false) {
+            $options_to_inject[] = "        availOffersUrl: '$product_data[avail_offers_url]'";
+        }
+
+        if (count($options_to_inject)) {
+            $injected_init_options = implode(",\n", $options_to_inject) . ",\n";
+
+            return preg_replace('/\{\n(.*widgetKey:)/', "{\n$injected_init_options\$1", $widget_code);
+        }
+
+        return $widget_code;
+    }
+
     private function get_initial_widget_code(): string
     {
         return trim("
@@ -614,7 +653,11 @@ script.onload = function () {
         embedMethod: '{EMBED_METHOD}',
         numOfInstallments: 0,
         price: null,
+        platform: '{PLATFORM}',
+        platformVersion: '{PLATFORM_VERSION}',
+        platformDomain: '{PLATFORM_DOMAIN}',
         pluginVersion: '{PLUGIN_VERSION}',
+        availOffersUrl: '{AVAILABLE_OFFER_TYPES}',
         callbackBefore: function () {},
         callbackAfter: function () {},
         onOfferRendered: function (jsonResponse, widgetTarget, widgetNode) { },
@@ -627,4 +670,31 @@ script.async = true;
 document.getElementsByTagName('head')[0].appendChild(script);
 ");
     }
+
+    private function get_product_data($product_id): array
+    {
+        $avail_offers_url = Core::get_available_offer_types_url();
+
+        $price = 'null';
+
+        if ($product_id !== null) {
+            $avail_offers_url .= "&product_id=$product_id";
+            $product = wc_get_product($product_id);
+
+            if (($price = (!empty($product) ? $product->get_price() : null)) === null) {
+                $price = 'null';
+            } else {
+                //$price = (new \Comfino\Tools($context))->getFormattedPrice($price);
+            }
+        } else {
+            $product_id = 'null';
+        }
+
+        return [
+            'product_id' => $product_id,
+            'price' => $price,
+            'avail_offers_url' => $avail_offers_url,
+        ];
+    }
+
 }

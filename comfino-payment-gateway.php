@@ -172,11 +172,13 @@ class Comfino_Payment_Gateway
      */
     public function render_widget()
     {
+        global $product;
+
         if (is_single() && is_product()) {
             $comfino = new Comfino_Gateway();
 
             if ($comfino->get_option('widget_enabled') === 'yes' && $comfino->get_option('widget_key') !== '') {
-                echo Core::get_widget_init_code($comfino);
+                echo Core::get_widget_init_code($comfino, !empty($product) ? $product->get_id() : null);
             }
         }
     }

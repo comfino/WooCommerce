@@ -94,6 +94,11 @@ class Core
         return get_rest_url(null, 'comfino/notification');
     }
 
+    public static function get_available_offer_types_url(): string
+    {
+        return get_rest_url(null, 'comfino/availableoffertypes');
+    }
+
     public static function get_configuration_url(): string
     {
         return get_rest_url(null, 'comfino/configuration');
@@ -327,36 +332,40 @@ class Core
         return self::get_header_by_name('X_CR_SIGNATURE');
     }
 
-    public static function get_widget_init_code(Comfino_Gateway $comfino_gateway): string
+    public static function get_widget_init_code(Comfino_Gateway $comfino_gateway, $product_id): string
     {
         self::init();
 
+        $widget_variables = self::$config_manager->get_widget_variables($product_id);
+
         $code = str_replace(
-            [
-                '{WIDGET_KEY}',
-                '{WIDGET_PRICE_SELECTOR}',
-                '{WIDGET_TARGET_SELECTOR}',
-                '{WIDGET_TYPE}',
-                '{OFFER_TYPE}',
-                '{EMBED_METHOD}',
-                '{WIDGET_PRICE_OBSERVER_LEVEL}',
-                '{WIDGET_PRICE_OBSERVER_SELECTOR}',
-                '{WIDGET_SCRIPT_URL}',
-                '{PLUGIN_VERSION}',
-            ],
-            [
-                $comfino_gateway->get_option('widget_key'),
-                html_entity_decode($comfino_gateway->get_option('widget_price_selector')),
-                html_entity_decode($comfino_gateway->get_option('widget_target_selector')),
-                $comfino_gateway->get_option('widget_type'),
-                $comfino_gateway->get_option('widget_offer_type'),
-                $comfino_gateway->get_option('widget_embed_method'),
-                $comfino_gateway->get_option('widget_price_observer_level'),
-                $comfino_gateway->get_option('widget_price_observer_selector'),
-                Api_Client::get_widget_script_url(),
-                \Comfino_Payment_Gateway::VERSION,
-            ],
-            $comfino_gateway->get_option('widget_js_code')
+            array_merge(
+                [
+                    '{WIDGET_KEY}',
+                    '{WIDGET_PRICE_SELECTOR}',
+                    '{WIDGET_TARGET_SELECTOR}',
+                    '{WIDGET_PRICE_OBSERVER_SELECTOR}',
+                    '{WIDGET_PRICE_OBSERVER_LEVEL}',
+                    '{WIDGET_TYPE}',
+                    '{OFFER_TYPE}',
+                    '{EMBED_METHOD}',
+                ],
+                array_keys($widget_variables)
+            ),
+            array_merge(
+                [
+                    $comfino_gateway->get_option('widget_key'),
+                    html_entity_decode($comfino_gateway->get_option('widget_price_selector')),
+                    html_entity_decode($comfino_gateway->get_option('widget_target_selector')),
+                    $comfino_gateway->get_option('widget_price_observer_selector'),
+                    $comfino_gateway->get_option('widget_price_observer_level'),
+                    $comfino_gateway->get_option('widget_type'),
+                    $comfino_gateway->get_option('widget_offer_type'),
+                    $comfino_gateway->get_option('widget_embed_method'),
+                ],
+                array_values($widget_variables)
+            ),
+            self::$config_manager->get_current_widget_code()
         );
 
         return '<script>' . str_replace(

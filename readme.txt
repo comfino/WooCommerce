@@ -13,6 +13,9 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 3.3.0
  * New functionality: filtering of financial products (offers) by cart item category.
+ * Add new widget init option productId dynamically inserted into ComfinoProductWidget.init() call.
+ * Add new endpoint availableoffertypes and new init option availOffersUrl dynamically inserted into ComfinoProductWidget.init() call.
+ * Add new widget init options: productId, productPrice, platform, platformVersion, platformDomain.
 
 3.2.5
  * Add dynamically loaded list of widget types from Comfino API in configuration form (widget settings), fix bug in loading product types from API.
