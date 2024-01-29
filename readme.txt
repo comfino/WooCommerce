@@ -2,14 +2,20 @@
 Contributors: comfino.pl
 Donate link: https://comfino.pl/
 Tags: comfino, woocommerce, gateway, payment, bank, deferred payments, installments
-WC tested up to: 8.0.3
+WC tested up to: 8.1.1
 WC requires at least: 3.0
-Stable tag: 3.2.5
+Stable tag: 3.3.0
 Tested up to: 6.3.1
 Requires at least: 5.0
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
+
+3.3.0
+ * New functionality: filtering of financial products (offers) by cart item category.
+ * Add new widget init option productId dynamically inserted into ComfinoProductWidget.init() call.
+ * Add new endpoint availableoffertypes and new init option availOffersUrl dynamically inserted into ComfinoProductWidget.init() call.
+ * Add new widget init options: productId, productPrice, platform, platformVersion, platformDomain.
 
 3.2.5
  * Add dynamically loaded list of widget types from Comfino API in configuration form (widget settings), fix bug in loading product types from API.

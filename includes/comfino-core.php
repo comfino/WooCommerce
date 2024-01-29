@@ -67,17 +67,7 @@ class Core
             self::$config_manager = new Config_Manager();
         }
 
-        if (self::$config_manager->get_option('sandbox_mode') === 'yes') {
-            Api_Client::$host = self::COMFINO_SANDBOX_HOST;
-            Api_Client::$key = self::$config_manager->get_option('sandbox_key');
-            Api_Client::$frontend_script_url = self::COMFINO_FRONTEND_JS_SANDBOX;
-            Api_Client::$widget_script_url = self::COMFINO_WIDGET_JS_SANDBOX;
-        } else {
-            Api_Client::$host = self::COMFINO_PRODUCTION_HOST;
-            Api_Client::$key = self::$config_manager->get_option('production_key');
-            Api_Client::$frontend_script_url = self::COMFINO_FRONTEND_JS_PRODUCTION;
-            Api_Client::$widget_script_url = self::COMFINO_WIDGET_JS_PRODUCTION;
-        }
+        Api_Client::init(self::$config_manager);
     }
 
     public static function get_shop_domain(): string
@@ -104,9 +94,47 @@ class Core
         return get_rest_url(null, 'comfino/notification');
     }
 
+    public static function get_available_offer_types_url(): string
+    {
+        return get_rest_url(null, 'comfino/availableoffertypes');
+    }
+
     public static function get_configuration_url(): string
     {
         return get_rest_url(null, 'comfino/configuration');
+    }
+
+    /**
+     * Prepare product data.
+     *
+     * @return array
+     */
+    public static function get_products(): array
+    {
+        $products = [];
+
+        foreach (WC()->cart->get_cart() as $item) {
+            /** @var \WC_Product_Simple $product */
+            $product = $item['data'];
+            $image_id = $product->get_image_id();
+
+            if ($image_id !== '') {
+                $image_url = wp_get_attachment_image_url($image_id, 'full');
+            } else {
+                $image_url = null;
+            }
+
+            $products[] = [
+                'name' => $product->get_name(),
+                'quantity' => (int)$item['quantity'],
+                'price' => (int)(wc_get_price_including_tax($product) * 100),
+                'photoUrl' => $image_url,
+                'externalId' => (string)$product->get_id(),
+                'category' => implode(',', $product->get_category_ids())
+            ];
+        }
+
+        return $products;
     }
 
     public static function process_notification(\WP_REST_Request $request): \WP_REST_Response
@@ -162,6 +190,14 @@ class Core
         $payment_offers = [];
 
         foreach ($offers as $offer) {
+            // Check product category filters.
+            if (!self::$config_manager->is_financial_product_available(
+                $offer['type'],
+                array_map(static function ($item) { return $item['data']; }, WC()->cart->get_cart())
+            )) {
+                continue;
+            }
+
             $payment_offers[] = [
                 'name' => $offer['name'],
                 'description' => $offer['description'],
@@ -196,6 +232,33 @@ class Core
         }
 
         return new \WP_REST_Response($payment_offers, 200);
+    }
+
+    public static function get_available_offer_types(\WP_REST_Request $request): \WP_REST_Response
+    {
+        self::init();
+
+        $available_product_types = array_keys(self::$config_manager->get_offer_types());
+
+        if (empty($product_id = $request->get_query_params()['product_id'] ?? '')) {
+            return new \WP_REST_Response($available_product_types, 200);
+        }
+
+        $product = wc_get_product($product_id);
+
+        if (!$product) {
+            return new \WP_REST_Response($available_product_types, 200);
+        }
+
+        $filtered_product_types = [];
+
+        foreach ($available_product_types as $product_type) {
+            if (self::$config_manager->is_financial_product_available($product_type, [$product])) {
+                $filtered_product_types[] = $product_type;
+            }
+        }
+
+        return new \WP_REST_Response($filtered_product_types, 200);
     }
 
     public static function get_configuration(\WP_REST_Request $request): \WP_REST_Response
@@ -272,36 +335,40 @@ class Core
         return self::get_header_by_name('X_CR_SIGNATURE');
     }
 
-    public static function get_widget_init_code(Comfino_Gateway $comfino_gateway): string
+    public static function get_widget_init_code(Comfino_Gateway $comfino_gateway, $product_id): string
     {
         self::init();
 
+        $widget_variables = self::$config_manager->get_widget_variables($product_id);
+
         $code = str_replace(
-            [
-                '{WIDGET_KEY}',
-                '{WIDGET_PRICE_SELECTOR}',
-                '{WIDGET_TARGET_SELECTOR}',
-                '{WIDGET_TYPE}',
-                '{OFFER_TYPE}',
-                '{EMBED_METHOD}',
-                '{WIDGET_PRICE_OBSERVER_LEVEL}',
-                '{WIDGET_PRICE_OBSERVER_SELECTOR}',
-                '{WIDGET_SCRIPT_URL}',
-                '{PLUGIN_VERSION}',
-            ],
-            [
-                $comfino_gateway->get_option('widget_key'),
-                html_entity_decode($comfino_gateway->get_option('widget_price_selector')),
-                html_entity_decode($comfino_gateway->get_option('widget_target_selector')),
-                $comfino_gateway->get_option('widget_type'),
-                $comfino_gateway->get_option('widget_offer_type'),
-                $comfino_gateway->get_option('widget_embed_method'),
-                $comfino_gateway->get_option('widget_price_observer_level'),
-                $comfino_gateway->get_option('widget_price_observer_selector'),
-                Api_Client::get_widget_script_url(),
-                \Comfino_Payment_Gateway::VERSION,
-            ],
-            $comfino_gateway->get_option('widget_js_code')
+            array_merge(
+                [
+                    '{WIDGET_KEY}',
+                    '{WIDGET_PRICE_SELECTOR}',
+                    '{WIDGET_TARGET_SELECTOR}',
+                    '{WIDGET_PRICE_OBSERVER_SELECTOR}',
+                    '{WIDGET_PRICE_OBSERVER_LEVEL}',
+                    '{WIDGET_TYPE}',
+                    '{OFFER_TYPE}',
+                    '{EMBED_METHOD}',
+                ],
+                array_keys($widget_variables)
+            ),
+            array_merge(
+                [
+                    $comfino_gateway->get_option('widget_key'),
+                    html_entity_decode($comfino_gateway->get_option('widget_price_selector')),
+                    html_entity_decode($comfino_gateway->get_option('widget_target_selector')),
+                    $comfino_gateway->get_option('widget_price_observer_selector'),
+                    $comfino_gateway->get_option('widget_price_observer_level'),
+                    $comfino_gateway->get_option('widget_type'),
+                    $comfino_gateway->get_option('widget_offer_type'),
+                    $comfino_gateway->get_option('widget_embed_method'),
+                ],
+                array_values($widget_variables)
+            ),
+            self::$config_manager->get_current_widget_code($product_id)
         );
 
         return '<script>' . str_replace(

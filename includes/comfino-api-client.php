@@ -19,6 +19,21 @@ class Api_Client
     /** @var string */
     public static $api_language;
 
+    public static function init(Config_Manager $config_manager)
+    {
+        if ($config_manager->get_option('sandbox_mode') === 'yes') {
+            self::$host = Core::COMFINO_SANDBOX_HOST;
+            self::$key = $config_manager->get_option('sandbox_key');
+            self::$frontend_script_url = Core::COMFINO_FRONTEND_JS_SANDBOX;
+            self::$widget_script_url = Core::COMFINO_WIDGET_JS_SANDBOX;
+        } else {
+            self::$host = Core::COMFINO_PRODUCTION_HOST;
+            self::$key = $config_manager->get_option('production_key');
+            self::$frontend_script_url = Core::COMFINO_FRONTEND_JS_PRODUCTION;
+            self::$widget_script_url = Core::COMFINO_WIDGET_JS_PRODUCTION;
+        }
+    }
+
     /**
      * Fetch products.
      *
@@ -67,8 +82,6 @@ class Api_Client
 
     public static function process_payment(\WC_Abstract_Order $order, string $return_url, string $notify_url): array
     {
-        global $woocommerce;
-
         $loan_term = sanitize_text_field($_POST['comfino_loan_term']);
         $type = sanitize_text_field($_POST['comfino_type']);
 
@@ -76,10 +89,10 @@ class Api_Client
             return ['result' => 'failure', 'redirect' => ''];
         }
 
-        $total = (int)($order->get_total() * 100);
-        $delivery = (int)($order->get_shipping_total() * 100);
+        $total = (int) ($order->get_total() * 100);
+        $delivery = (int) ($order->get_shipping_total() * 100);
 
-        $products = self::get_products();
+        $products = Core::get_products();
         $cart_total = 0;
 
         foreach ($products as $product) {
@@ -112,7 +125,27 @@ class Api_Client
             ];
         }
 
-        $body = wp_json_encode([
+        $config_manager = new Config_Manager();
+
+        $allowed_product_types = null;
+        $disabled_product_types = [];
+        $available_product_types = array_keys($config_manager->get_offer_types());
+
+        // Check product category filters.
+        foreach ($available_product_types as $product_type) {
+            if (!$config_manager->is_financial_product_available(
+                $product_type,
+                array_map(static function ($item) { return $item['data']; }, WC()->cart->get_cart())
+            )) {
+                $disabled_product_types[] = $product_type;
+            }
+        }
+
+        if (count($disabled_product_types)) {
+            $allowed_product_types = array_values(array_diff($available_product_types, $disabled_product_types));
+        }
+
+        $data = [
             'orderId' => (string)$order->get_id(),
             'returnUrl' => $return_url,
             'notifyUrl' => $notify_url,
@@ -126,7 +159,13 @@ class Api_Client
                 'products' => $products,
             ],
             'customer' => self::get_customer($order),
-        ]);
+        ];
+
+        if ($allowed_product_types !== null) {
+            $data['loanParameters']['allowedProductTypes'] = $allowed_product_types;
+        }
+
+        $body = wp_json_encode($data);
 
         $url = self::get_api_host() . '/v1/orders';
         $args = [
@@ -161,7 +200,7 @@ class Api_Client
             $order->add_order_note(__("Comfino create order", 'comfino-payment-gateway'));
             $order->reduce_order_stock();
 
-            $woocommerce->cart->empty_cart();
+            WC()->cart->empty_cart();
 
             return ['result' => 'success', 'redirect' => $decoded['applicationUrl']];
         }
@@ -486,38 +525,6 @@ class Api_Client
         }
 
         return $api_host ?? self::$host;
-    }
-
-    /**
-     * Prepare product data.
-     *
-     * @return array
-     */
-    private static function get_products(): array
-    {
-        $products = [];
-
-        foreach (WC()->cart->get_cart() as $item) {
-            /** @var \WC_Product_Simple $product */
-            $product = $item['data'];
-            $image_id = $product->get_image_id();
-
-            if ($image_id !== '') {
-                $image_url = wp_get_attachment_image_url($image_id, 'full');
-            } else {
-                $image_url = null;
-            }
-
-            $products[] = [
-                'name' => $product->get_name(),
-                'quantity' => (int)$item['quantity'],
-                'photoUrl' => $image_url,
-                'externalId' => (string)$product->get_id(),
-                'price' => (int)(wc_get_price_including_tax($product) * 100),
-            ];
-        }
-
-        return $products;
     }
 
     /**

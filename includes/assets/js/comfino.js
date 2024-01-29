@@ -5,7 +5,7 @@ window.Comfino = {
     initialized: false,
 
     init(frontendScriptURL) {
-        if (Comfino.initialized) {
+        if (Comfino.initialized && typeof ComfinoFrontendRenderer !== 'undefined') {
             ComfinoFrontendRenderer.init(Comfino.options);
 
             return;
