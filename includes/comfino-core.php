@@ -191,7 +191,10 @@ class Core
 
         foreach ($offers as $offer) {
             // Check product category filters.
-            if (!self::$config_manager->is_financial_product_available($offer['type'], WC()->cart->get_cart())) {
+            if (!self::$config_manager->is_financial_product_available(
+                $offer['type'],
+                array_map(static function ($item) { return $item['data']; }, WC()->cart->get_cart())
+            )) {
                 continue;
             }
 
@@ -250,7 +253,7 @@ class Core
         $filtered_product_types = [];
 
         foreach ($available_product_types as $product_type) {
-            if (self::$config_manager->is_financial_product_available($product_type, [$product->get_data()])) {
+            if (self::$config_manager->is_financial_product_available($product_type, [$product])) {
                 $filtered_product_types[] = $product_type;
             }
         }

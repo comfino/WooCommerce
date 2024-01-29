@@ -133,7 +133,10 @@ class Api_Client
 
         // Check product category filters.
         foreach ($available_product_types as $product_type) {
-            if (!$config_manager->is_financial_product_available($product_type, WC()->cart->get_cart())) {
+            if (!$config_manager->is_financial_product_available(
+                $product_type,
+                array_map(static function ($item) { return $item['data']; }, WC()->cart->get_cart())
+            )) {
                 $disabled_product_types[] = $product_type;
             }
         }
