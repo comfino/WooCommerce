@@ -472,11 +472,11 @@ class Config_Manager extends \WC_Settings_API
         $categories = [];
         $categoriesStr = $this->get_option('product_category_filters');
 
-        if (!empty($categoriesStr)) {
-            $categories = json_decode($categoriesStr, true);
+        if (empty($categoriesStr)) {
+            return [];
         }
 
-        return $categories;
+        return json_decode($categoriesStr, true);
     }
 
     /**
