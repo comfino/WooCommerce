@@ -495,7 +495,11 @@ class Config_Manager extends \WC_Settings_API
             $excluded_cat_ids = $product_category_filters[$product_type];
 
             foreach ($products as $product) {
-                foreach (is_array($product) ? $product['data']->get_category_ids() : $product->get_category_ids() as $category_id) {
+                if (($product_instance = is_array($product) ? $product['data'] : $product) === null) {
+                    continue;
+                }
+
+                foreach ($product_instance->get_category_ids() as $category_id) {
                     if (in_array($category_id, $excluded_cat_ids, true) ||
                         count(array_intersect($excluded_cat_ids, get_term_children($category_id, 'product_cat')))
                     ) {
