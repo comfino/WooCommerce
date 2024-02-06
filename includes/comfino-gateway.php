@@ -435,7 +435,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
 </script>');
     }
 
-    public function change_order($order_id, $status_old, $status_new): void
+    public function change_order($order_id, $status_old, $status_new):
     {
         $order = wc_get_order($order_id);
 

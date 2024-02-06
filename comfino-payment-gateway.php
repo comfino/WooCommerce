@@ -3,7 +3,7 @@
  * Plugin Name: Comfino Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
  * Description: Comfino (Comperia) - Comfino Payment Gateway for WooCommerce.
- * Version: 3.3.1
+ * Version: 3.3.2
  * Author: Comfino (Comperia)
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
@@ -24,7 +24,7 @@ defined('ABSPATH') or exit;
 
 class Comfino_Payment_Gateway
 {
-    const VERSION = '3.3.1';
+    const VERSION = '3.3.2';
 
     /**
      * @var Comfino_Payment_Gateway
@@ -79,14 +79,16 @@ class Comfino_Payment_Gateway
                 [
                     'methods' => WP_REST_Server::READABLE,
                     'callback' => [Core::class, 'get_offers'],
+                    'args' => ['total' => ['sanitize_callback' => 'absint']],
                     'permission_callback' => '__return_true',
                 ],
             ]);
 
-            register_rest_route('comfino', '/availableoffertypes', [
+            register_rest_route('comfino', '/availableoffertypes.*', [
                 [
                     'methods' => WP_REST_Server::READABLE,
                     'callback' => [Core::class, 'get_available_offer_types'],
+                    'args' => ['product_id' => ['sanitize_callback' => 'absint']],
                     'permission_callback' => '__return_true',
                 ],
             ]);
@@ -95,6 +97,7 @@ class Comfino_Payment_Gateway
                 [
                     'methods' => WP_REST_Server::READABLE,
                     'callback' => [Core::class, 'get_configuration'],
+                    'args' => ['vkey' => ['sanitize_callback' => 'sanitize_key']],
                     'permission_callback' => '__return_true',
                 ],
                 [
@@ -177,8 +180,14 @@ class Comfino_Payment_Gateway
         if (is_single() && is_product()) {
             $comfino = new Comfino_Gateway();
 
+            if ($product instanceof WC_Product) {
+                $product_id = $product->get_id();
+            } else {
+                $product_id = get_the_ID();
+            }
+
             if ($comfino->get_option('widget_enabled') === 'yes' && $comfino->get_option('widget_key') !== '') {
-                echo Core::get_widget_init_code($comfino, !empty($product) && ($product instanceof WC_Product) ? $product->get_id() : null);
+                echo Core::get_widget_init_code($comfino, !empty($product_id) ? $product_id : null);
             }
         }
     }

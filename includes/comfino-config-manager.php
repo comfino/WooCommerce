@@ -685,12 +685,9 @@ document.getElementsByTagName('head')[0].appendChild(script);
 
         if ($product_id !== null) {
             $avail_offers_url .= "?product_id=$product_id";
-            $product = wc_get_product($product_id);
 
-            if (($price = (!empty($product) ? $product->get_price() : null)) === null) {
-                $price = 'null';
-            } else {
-                //$price = (new \Comfino\Tools($context))->getFormattedPrice($price);
+            if (($product = wc_get_product($product_id)) instanceof \WC_Product) {
+                $price = (float)preg_replace(['/[^\d,.]/', '/,/'], ['', '.'], $product->get_price());
             }
         } else {
             $product_id = 'null';
