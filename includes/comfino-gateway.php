@@ -159,7 +159,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
             'platformVersion' => WC_VERSION,
             'platformDomain' => Core::get_shop_domain(),
             'pluginVersion' => \Comfino_Payment_Gateway::VERSION,
-            'offersURL' => Core::get_offers_url() . '?total=' . $total,
+            'offersURL' => Core::get_offers_url() . "/$total",
             'language' => substr(get_locale(), 0, 2),
             'currency' => get_woocommerce_currency(),
             'cartTotal' => (float)$total,

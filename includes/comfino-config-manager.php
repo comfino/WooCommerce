@@ -684,13 +684,14 @@ document.getElementsByTagName('head')[0].appendChild(script);
         $price = 'null';
 
         if ($product_id !== null) {
-            $avail_offers_url .= "?product_id=$product_id";
+            $avail_offers_url .= "/$product_id";
 
             if (($product = wc_get_product($product_id)) instanceof \WC_Product) {
                 $price = (float)preg_replace(['/[^\d,.]/', '/,/'], ['', '.'], $product->get_price());
             }
         } else {
             $product_id = 'null';
+            //$avail_offers_url .= '/0';
         }
 
         return [

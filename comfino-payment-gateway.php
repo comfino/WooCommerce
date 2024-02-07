@@ -75,16 +75,22 @@ class Comfino_Payment_Gateway
                 ],
             ]);
 
-            register_rest_route('comfino', '/offers', [
+            register_rest_route('comfino', '/offers/(?P<total>[.\d]+)', [
                 [
                     'methods' => WP_REST_Server::READABLE,
                     'callback' => [Core::class, 'get_offers'],
-                    'args' => ['total' => ['sanitize_callback' => 'absint']],
+                    'args' => [
+                        'total' => [
+                            'validate_callback' => function ($param, $request, $key) {
+                                return is_numeric($param);
+                            }
+                        ]
+                    ],
                     'permission_callback' => '__return_true',
                 ],
             ]);
 
-            register_rest_route('comfino', '/availableoffertypes.*', [
+            register_rest_route('comfino', '/availableoffertypes(?:/(?P<product_id>\d+))?', [
                 [
                     'methods' => WP_REST_Server::READABLE,
                     'callback' => [Core::class, 'get_available_offer_types'],
@@ -93,7 +99,7 @@ class Comfino_Payment_Gateway
                 ],
             ]);
 
-            register_rest_route('comfino', '/configuration', [
+            register_rest_route('comfino', '/configuration(?:/(?P<vkey>[a-f0-9]+))?', [
                 [
                     'methods' => WP_REST_Server::READABLE,
                     'callback' => [Core::class, 'get_configuration'],

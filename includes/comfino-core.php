@@ -240,7 +240,7 @@ class Core
 
         $available_product_types = array_keys(self::$config_manager->get_offer_types());
 
-        if (empty($product_id = $request->get_query_params()['product_id'] ?? '')) {
+        if (empty($product_id = $request->get_param('product_id') ?? '')) {
             return new \WP_REST_Response($available_product_types, 200);
         }
 
@@ -267,7 +267,7 @@ class Core
 
         self::init();
 
-        if (empty($verification_key = $request->get_query_params()['vkey'] ?? '')) {
+        if (empty($verification_key = $request->get_param('vkey') ?? '')) {
             return new \WP_REST_Response('Access not allowed.', 403);
         }
 
