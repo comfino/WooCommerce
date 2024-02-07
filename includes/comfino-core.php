@@ -72,14 +72,12 @@ class Core
 
     public static function get_shop_domain(): string
     {
-        $url_parts = parse_url(get_permalink(wc_get_page_id('shop')));
-
-        return $url_parts['host'];
+        return parse_url(wc_get_page_permalink('shop'), PHP_URL_HOST);
     }
 
     public static function get_shop_url(): string
     {
-        $url_parts = parse_url(get_permalink(wc_get_page_id('shop')));
+        $url_parts = parse_url(wc_get_page_permalink('shop'));
 
         return $url_parts['host'] . (isset($url_parts['port']) ? ':' . $url_parts['port'] : '');
     }
