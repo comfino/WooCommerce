@@ -72,14 +72,12 @@ class Core
 
     public static function get_shop_domain(): string
     {
-        $url_parts = parse_url(get_permalink(wc_get_page_id('shop')));
-
-        return $url_parts['host'];
+        return parse_url(wc_get_page_permalink('shop'), PHP_URL_HOST);
     }
 
     public static function get_shop_url(): string
     {
-        $url_parts = parse_url(get_permalink(wc_get_page_id('shop')));
+        $url_parts = parse_url(wc_get_page_permalink('shop'));
 
         return $url_parts['host'] . (isset($url_parts['port']) ? ':' . $url_parts['port'] : '');
     }
@@ -240,7 +238,7 @@ class Core
 
         $available_product_types = array_keys(self::$config_manager->get_offer_types());
 
-        if (empty($product_id = $request->get_query_params()['product_id'] ?? '')) {
+        if (empty($product_id = $request->get_param('product_id') ?? '')) {
             return new \WP_REST_Response($available_product_types, 200);
         }
 
@@ -267,7 +265,7 @@ class Core
 
         self::init();
 
-        if (empty($verification_key = $request->get_query_params()['vkey'] ?? '')) {
+        if (empty($verification_key = $request->get_param('vkey') ?? '')) {
             return new \WP_REST_Response('Access not allowed.', 403);
         }
 
