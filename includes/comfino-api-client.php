@@ -5,79 +5,53 @@ namespace Comfino;
 class Api_Client
 {
     /** @var string */
-    public static $host;
+    public static $api_host;
 
     /** @var string */
-    public static $key;
+    public static $api_key;
+
+    /** @var string */
+    private static $api_paywall_host;
 
     /** @var string */
     public static $frontend_script_url;
 
     /** @var string */
+    public static $paywall_frontend_script_url;
+
+    /** @var string */
+    public static $paywall_frontend_style_url;
+
+    /** @var string */
     public static $widget_script_url;
+
+    /** @var string */
+    public static $widget_key;
 
     /** @var string */
     public static $api_language;
 
     public static function init(Config_Manager $config_manager)
     {
+        self::$widget_key = $config_manager->get_option('widget_key');
+
         if ($config_manager->get_option('sandbox_mode') === 'yes') {
-            self::$host = Core::COMFINO_SANDBOX_HOST;
-            self::$key = $config_manager->get_option('sandbox_key');
+            self::$api_host = Core::COMFINO_SANDBOX_HOST;
+            self::$api_key = $config_manager->get_option('sandbox_key');
             self::$frontend_script_url = Core::COMFINO_FRONTEND_JS_SANDBOX;
+            self::$api_paywall_host = Core::COMFINO_PAYWALL_SANDBOX_HOST;
+            self::$paywall_frontend_script_url = Core::COMFINO_PAYWALL_FRONTEND_JS_SANDBOX;
+            self::$paywall_frontend_style_url = Core::COMFINO_PAYWALL_FRONTEND_CSS_SANDBOX;
             self::$widget_script_url = Core::COMFINO_WIDGET_JS_SANDBOX;
         } else {
-            self::$host = Core::COMFINO_PRODUCTION_HOST;
-            self::$key = $config_manager->get_option('production_key');
+            self::$api_host = Core::COMFINO_PRODUCTION_HOST;
+            self::$api_key = $config_manager->get_option('production_key');
             self::$frontend_script_url = Core::COMFINO_FRONTEND_JS_PRODUCTION;
+            self::$api_paywall_host = Core::COMFINO_PAYWALL_PRODUCTION_HOST;
+            self::$paywall_frontend_script_url = Core::COMFINO_PAYWALL_FRONTEND_JS_PRODUCTION;
+            self::$paywall_frontend_style_url = Core::COMFINO_PAYWALL_FRONTEND_CSS_PRODUCTION;
             self::$widget_script_url = Core::COMFINO_WIDGET_JS_PRODUCTION;
         }
-    }
-
-    /**
-     * Fetch products.
-     *
-     * @param int $loanAmount
-     * @return array
-     */
-    public static function fetch_offers(int $loanAmount): array
-    {
-        $url = self::get_api_host() . '/v1/financial-products' . '?' . http_build_query(['loanAmount' => $loanAmount]);
-        $args = ['headers' => self::get_request_headers()];
-
-        $response = wp_remote_get($url, $args);
-
-        if (!is_wp_error($response)) {
-            $decoded = json_decode(wp_remote_retrieve_body($response), true);
-
-            if (!is_array($decoded) || isset($decoded['errors'])) {
-                Error_Logger::send_error(
-                    'Payment error',
-                    wp_remote_retrieve_response_code($response),
-                    is_array($decoded) && isset($decoded['errors'])
-                        ? implode(', ', $decoded['errors'])
-                        : 'API call error ' . wp_remote_retrieve_response_code($response),
-                    $url,
-                    self::get_api_request_for_log($args['headers']),
-                    wp_remote_retrieve_body($response)
-                );
-
-                $decoded = [];
-            }
-
-            return $decoded;
-        }
-
-        Error_Logger::send_error(
-            'Communication error',
-            implode(', ', $response->get_error_codes()),
-            implode(', ', $response->get_error_messages()),
-            $url,
-            self::get_api_request_for_log($args['headers']),
-            wp_remote_retrieve_body($response)
-        );
-
-        return [];
     }
 
     public static function process_payment(\WC_Abstract_Order $order, string $return_url, string $notify_url): array
@@ -234,12 +208,12 @@ class Api_Client
      */
     public static function get_widget_key(string $api_host, string $api_key): string
     {
-        self::$host = $api_host;
-        self::$key = $api_key;
+        self::$api_host = $api_host;
+        self::$api_key = $api_key;
 
         $widget_key = '';
 
-        if (!empty(self::$key)) {
+        if (!empty(self::$api_key)) {
             $headers = self::get_request_headers();
 
             $response = wp_remote_get(
@@ -356,12 +330,12 @@ class Api_Client
 
     public static function is_api_key_valid(string $api_host, string $api_key): bool
     {
-        self::$host = $api_host;
-        self::$key = $api_key;
+        self::$api_host = $api_host;
+        self::$api_key = $api_key;
 
         $api_key_valid = false;
 
-        if (!empty(self::$key)) {
+        if (!empty(self::$api_key)) {
             $response = wp_remote_get(
                 self::get_api_host() . '/v1/user/is-active',
                 ['headers' => self::get_request_headers()]
@@ -377,7 +351,12 @@ class Api_Client
 
     public static function get_logo_url(): string
     {
-        return self::get_api_host(true) . '/v1/get-logo-url';
+        return self::get_api_host(true) . '/v1/get-logo-url?auth=' . self::get_logo_auth_hash();
+    }
+
+    public static function get_paywall_logo_url(): string
+    {
+        return self::get_api_host(true) . '/v1/get-paywall-logo?auth=' . self::get_logo_auth_hash(true);
     }
 
     public static function cancel_order(\WC_Abstract_Order $order)
@@ -409,19 +388,12 @@ class Api_Client
         }
     }
 
-    /**
-     * @param string $order_id
-     */
-    public static function resign_order(string $order_id)
+    public static function notify_plugin_removal()
     {
-        $order = wc_get_order($order_id);
+        $url = self::get_api_host() . '/v1/log-plugin-remove';
 
-        $body = wp_json_encode(['amount' => (int)$order->get_total() * 100]);
-
-        $url = self::get_api_host() . "/v1/orders/{$order->get_id()}/resign";
         $args = [
-            'headers' => self::get_request_headers('PUT', $body),
-            'body' => $body,
+            'headers' => self::get_request_headers('PUT'),
             'method' => 'PUT'
         ];
 
@@ -435,17 +407,10 @@ class Api_Client
                 implode(', ', $response->get_error_codes()),
                 implode(', ', $response->get_error_messages()),
                 $url,
-                self::get_api_request_for_log($args['headers'], $body),
+                self::get_api_request_for_log($args['headers']),
                 wp_remote_retrieve_body($response)
             );
-
-            wc_add_notice(
-                'Communication error: ' . $timestamp . '. Please contact with support and note this error id.',
-                'error'
-            );
         }
-
-        $order->add_order_note(__("Send to Comfino resign order", 'comfino-payment-gateway'));
     }
 
     public static function abandoned_cart(string $type)
@@ -463,6 +428,14 @@ class Api_Client
         ];
 
         wp_remote_request($url, $args);
+    }
+
+    /**
+     * @return string
+     */
+    public static function get_api_key(): string
+    {
+        return self::$api_key;
     }
 
     public static function get_frontend_script_url(): string
@@ -524,7 +497,21 @@ class Api_Client
             }
         }
 
-        return $api_host ?? self::$host;
+        return $api_host ?? self::$api_host;
+    }
+
+    /**
+     * @return string
+     */
+    public static function get_paywall_api_host()
+    {
+        if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV_API_PAYWALL_HOST')
+            && getenv('COMFINO_DEV') === 'WC_' . WC_VERSION . '_' . Core::get_shop_url()
+        ) {
+            return getenv('COMFINO_DEV_API_PAYWALL_HOST');
+        }
+
+        return self::$api_paywall_host;
     }
 
     /**
@@ -614,7 +601,7 @@ class Api_Client
         }
 
         return array_merge($headers, [
-            'Api-Key' => self::$key,
+            'Api-Key' => self::$api_key,
             'Api-Language' => !empty(self::$api_language) ? self::$api_language : substr(get_locale(), 0, 2),
             'User-Agent' => self::get_user_agent_header(),
         ]);
@@ -628,5 +615,28 @@ class Api_Client
             'WP Comfino [%s], WP [%s], WC [%s], PHP [%s], %s',
             \Comfino_Payment_Gateway::VERSION, $wp_version, WC_VERSION, PHP_VERSION, Core::get_shop_domain()
         );
+    }
+
+    /**
+     * @param bool $paywall_logo
+     * @return string
+     */
+    private static function get_logo_auth_hash(bool $paywall_logo = false): string
+    {
+        $platformVersion = array_map('intval', explode('.', WC_VERSION));
+        $pluginVersion = array_map('intval', explode('.', \Comfino_Payment_Gateway::VERSION));
+        $packedPlatformVersion = pack('c*', ...$platformVersion);
+        $packedPluginVersion = pack('c*', ...$pluginVersion);
+        $platformVersionLength = pack('c', strlen($packedPlatformVersion));
+        $pluginVersionLength = pack('c', strlen($packedPluginVersion));
+
+        $authHash = "WP$platformVersionLength$pluginVersionLength$packedPlatformVersion$packedPluginVersion";
+
+        if ($paywall_logo) {
+            $authHash .= self::$widget_key;
+            $authHash .= hash_hmac('sha3-256', $authHash, self::get_api_key(), true);
+        }
+
+        return urlencode(base64_encode($authHash));
     }
 }

@@ -12,6 +12,15 @@ class Core
     const COMFINO_FRONTEND_JS_SANDBOX = 'https://widget.craty.pl/comfino-frontend.min.js';
     const COMFINO_FRONTEND_JS_PRODUCTION = 'https://widget.comfino.pl/comfino-frontend.min.js';
 
+    const COMFINO_PAYWALL_PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
+    const COMFINO_PAYWALL_SANDBOX_HOST = 'https://api-ecommerce.ecraty.pl';
+
+    const COMFINO_PAYWALL_FRONTEND_JS_SANDBOX = 'https://widget.craty.pl/paywall-frontend.min.js';
+    const COMFINO_PAYWALL_FRONTEND_JS_PRODUCTION = 'https://widget.comfino.pl/paywall-frontend.min.js';
+
+    const COMFINO_PAYWALL_FRONTEND_CSS_SANDBOX = 'https://widget.craty.pl/css/paywall-frontend.css';
+    const COMFINO_PAYWALL_FRONTEND_CSS_PRODUCTION = 'https://widget.comfino.pl/css/paywall-frontend.css';
+
     const COMFINO_WIDGET_JS_SANDBOX = 'https://widget.craty.pl/comfino.min.js';
     const COMFINO_WIDGET_JS_PRODUCTION = 'https://widget.comfino.pl/comfino.min.js';
 
@@ -177,61 +186,6 @@ class Core
         return new \WP_REST_Response('OK', 200);
     }
 
-    public static function get_offers(\WP_REST_Request $request): \WP_REST_Response
-    {
-        self::init();
-
-        Api_Client::$api_language = substr(get_locale(), 0, 2);
-
-        $total = (int)round($request->has_param('total') ? (float)$request->get_param('total') * 100 : 0);
-        $offers = Api_Client::fetch_offers($total);
-        $payment_offers = [];
-
-        foreach ($offers as $offer) {
-            // Check product category filters.
-            if (!self::$config_manager->is_financial_product_available(
-                $offer['type'],
-                array_map(static function ($item) { return $item['data']; }, WC()->cart->get_cart())
-            )) {
-                continue;
-            }
-
-            $payment_offers[] = [
-                'name' => $offer['name'],
-                'description' => $offer['description'],
-                'icon' => str_ireplace('<?xml version="1.0" encoding="UTF-8"?>', '', $offer['icon']),
-                'type' => $offer['type'],
-                'representativeExample' => $offer['representativeExample'],
-                'loanTerm' => $offer['loanTerm'],
-                'instalmentAmount' => number_format(((float)$offer['instalmentAmount']) / 100, 2, ',', ' '),
-                'instalmentAmountFormatted' => wc_price(((float)$offer['instalmentAmount']) / 100, ['currency' => get_woocommerce_currency()]),
-                'sumAmount' => number_format($total / 100, 2, ',', ' '),
-                'sumAmountFormatted' => wc_price($total / 100, ['currency' => get_woocommerce_currency()]),
-                'toPay' => number_format(((float)$offer['toPay']) / 100, 2, ',', ' '),
-                'toPayFormatted' => wc_price(((float)$offer['toPay']) / 100, ['currency' => get_woocommerce_currency()]),
-                'commission' => number_format(((int)$offer['toPay'] - $total) / 100, 2, ',', ' '),
-                'commissionFormatted' => wc_price(((int)$offer['toPay'] - $total) / 100, ['currency' => get_woocommerce_currency()]),
-                'rrso' => number_format(((float)$offer['rrso']) * 100, 2, ',', ' '),
-                'loanParameters' => array_map(static function ($loan_params) use ($total) {
-                    return [
-                        'loanTerm' => $loan_params['loanTerm'],
-                        'instalmentAmount' => number_format(((float)$loan_params['instalmentAmount']) / 100, 2, ',', ' '),
-                        'instalmentAmountFormatted' => wc_price(((float)$loan_params['instalmentAmount']) / 100, ['currency' => get_woocommerce_currency()]),
-                        'sumAmount' => number_format($total / 100, 2, ',', ' '),
-                        'sumAmountFormatted' => wc_price($total / 100, ['currency' => get_woocommerce_currency()]),
-                        'toPay' => number_format(((float)$loan_params['toPay']) / 100, 2, ',', ' '),
-                        'toPayFormatted' => wc_price(((float)$loan_params['toPay']) / 100, ['currency' => get_woocommerce_currency()]),
-                        'commission' => number_format(((int)$loan_params['toPay'] - $total) / 100, 2, ',', ' '),
-                        'commissionFormatted' => wc_price(((int)$loan_params['toPay'] - $total) / 100, ['currency' => get_woocommerce_currency()]),
-                        'rrso' => number_format($loan_params['rrso'] * 100, 2, ',', ' '),
-                    ];
-                }, $offer['loanParameters']),
-            ];
-        }
-
-        return new \WP_REST_Response($payment_offers, 200);
-    }
-
     public static function get_available_offer_types(\WP_REST_Request $request): \WP_REST_Response
     {
         self::init();
@@ -378,7 +332,7 @@ class Core
 
     private static function valid_signature(string $signature, string $request_data): bool
     {
-        return hash_equals(hash('sha3-256', Api_Client::$key . $request_data), $signature);
+        return hash_equals(hash('sha3-256', Api_Client::$api_key . $request_data), $signature);
     }
 
     private static function get_header_by_name(string $name): string

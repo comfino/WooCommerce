@@ -51,11 +51,11 @@ class Comfino_Gateway extends WC_Payment_Gateway
         self::$show_logo = ($this->get_option('show_logo') === 'yes');
 
         if ($this->get_option('sandbox_mode') === 'yes') {
-            Api_Client::$host = Core::COMFINO_SANDBOX_HOST;
-            Api_Client::$key = $this->get_option('sandbox_key');
+            Api_Client::$api_host = Core::COMFINO_SANDBOX_HOST;
+            Api_Client::$api_key = $this->get_option('sandbox_key');
         } else {
-            Api_Client::$host = Core::COMFINO_PRODUCTION_HOST;
-            Api_Client::$key = $this->get_option('production_key');
+            Api_Client::$api_host = Core::COMFINO_PRODUCTION_HOST;
+            Api_Client::$api_key = $this->get_option('production_key');
         }
 
         add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
@@ -63,8 +63,6 @@ class Comfino_Gateway extends WC_Payment_Gateway
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
         add_action('woocommerce_api_comfino_gateway', [$this, 'webhook']);
         add_action('woocommerce_order_status_cancelled', [$this, 'cancel_order']);
-        add_action('woocommerce_order_item_add_action_buttons', [$this, 'order_buttons'], 10, 1);
-        add_action('save_post', [$this, 'update_order'], 10, 3);
         add_action('woocommerce_order_status_changed', [$this, 'change_order'], 10, 3);
         add_filter('woocommerce_available_payment_gateways', [$this, 'filter_gateways'], 1);
     }
@@ -147,38 +145,19 @@ class Comfino_Gateway extends WC_Payment_Gateway
     {
         \Comfino\Core::init();
 
-        $total = WC()->cart->get_total('');
+        $cart = WC()->cart;
+        $total = $cart->get_total('');
 
         if (is_wc_endpoint_url('order-pay')) {
             $order = wc_get_order(absint(get_query_var('order-pay')));
             $total = $order->get_total('');
         }
 
-        $options = [
-            'platform' => 'woocommerce',
-            'platformVersion' => WC_VERSION,
-            'platformDomain' => Core::get_shop_domain(),
-            'pluginVersion' => \Comfino_Payment_Gateway::VERSION,
-            'offersURL' => Core::get_offers_url() . "/$total",
-            'language' => substr(get_locale(), 0, 2),
-            'currency' => get_woocommerce_currency(),
-            'cartTotal' => (float)$total,
-            'cartTotalFormatted' => wc_price($total, ['currency' => get_woocommerce_currency()]),
-        ];
-
-        echo '
-        <div id="comfino-payment-container">
-            <input id="comfino-loan-term" name="comfino_loan_term" type="hidden" />
-            <input id="comfino-type" name="comfino_type" type="hidden" />
-            <div id="comfino-payment-subcontainer" style="display: none"></div>            
-            <script>
-                Comfino.options = ' . json_encode($options) . ';
-                Comfino.options.frontendInitElement = document.getElementById(\'payment_method_comfino\');
-                Comfino.options.frontendTargetElement = document.getElementById(\'comfino-payment-subcontainer\');                
-                Comfino.init(\'' . Api_Client::get_frontend_script_url() . '\');
-            </script>
-        </div>
-        ';
+        echo $this->prepare_paywall_iframe(
+            (float) $total,
+            $this->get_product_types_filter($cart, new Config_Manager()),
+            Api_Client::$widget_key
+        );
     }
 
     /**
@@ -261,55 +240,12 @@ class Comfino_Gateway extends WC_Payment_Gateway
     public function get_icon(): string
     {
         if (self::$show_logo) {
-            $icon = '<img style="height: 18px; margin: 0 5px;" src="//widget.comfino.pl/image/comfino/ecommerce/woocommerce/comfino.png" alt="Comfino Logo" />';
+            $icon = '<img style="height: 18px; margin: 0 5px;" src="' . Api_Client::get_paywall_logo_url() . '" alt="Comfino Logo" />';
         } else {
             $icon = '';
         }
 
         return apply_filters('woocommerce_gateway_icon', $icon, $this->id);
-    }
-
-    /**
-     * Show buttons order
-     *
-     * @param $order
-     */
-    public function order_buttons($order)
-    {
-        echo '<input type="hidden" id="comfino_action" value="" name="comfino_action" />';
-
-        if ($order->get_payment_method() === 'comfino' && !($order->has_status(['cancelled', 'resigned', 'rejected']))) {
-            echo '<button type="button" class="button cancel-items" onclick="if(confirm(\'' . __('Are you sure you want to cancel?', 'comfino-payment-gateway') . '\')){document.getElementById(\'comfino_action\').value = \'cancel\'; document.post.submit();}">' . __('Cancel', 'comfino-payment-gateway') . wc_help_tip(__('Attention: You are cancelling a customer order. Check if you do not have to return the money to Comfino.', 'comfino-payment-gateway')) . '</button>';
-        }
-
-        if ($this->is_active_resign($order)) {
-            echo '<button type="button" class="button cancel-items" onclick="if(confirm(\'' . __('Are you sure you want to resign?', 'comfino-payment-gateway') . '\')){document.getElementById(\'comfino_action\').value = \'resign\'; document.post.submit();}">' . __('Resign', 'comfino-payment-gateway') . wc_help_tip(__('Attention: you are initiating a resignation of the Customer\'s contract. Required refund to Comfino.', 'comfino-payment-gateway')) . '</button>';
-        }
-    }
-
-    /**
-     * @param $post_id
-     * @param $post
-     * @param $update
-     */
-    public function update_order($post_id, $post, $update)
-    {
-        if (is_admin()) {
-            if ('shop_order' !== $post->post_type) {
-                return;
-            }
-
-            if (isset($_POST['comfino_action']) && $_POST['comfino_action']) {
-                $order = wc_get_order($post->ID);
-                $action = sanitize_text_field($_POST['comfino_action']);
-
-                if ($action === 'cancel') {
-                    $this->cancel_order($order->ID);
-                } elseif ($action === 'resign') {
-                    Api_Client::resign_order($order->ID);
-                }
-            }
-        }
     }
 
     public function generate_hidden_html($key, $data)
@@ -502,5 +438,112 @@ class Comfino_Gateway extends WC_Payment_Gateway
         }
 
         return $gateways;
+    }
+
+    /**
+     * @param WC_Cart $cart
+     * @param Config_Manager $config_manager
+     * @return array|null
+     */
+    private function get_product_types_filter($cart, $config_manager)
+    {
+        if (empty($config_manager->get_product_category_filters())) {
+            // Product category filters not set.
+            return null;
+        }
+
+        $available_product_types = array_keys($config_manager->get_offer_types());
+        $filtered_product_types = [];
+
+        // Check product category filters.
+        foreach ($available_product_types as $product_type) {
+            if ($config_manager->is_financial_product_available($product_type, $cart->get_cart())) {
+                $filtered_product_types[] = $product_type;
+            }
+        }
+
+        return $filtered_product_types;
+    }
+
+    /**
+     * @param float $total
+     * @return array
+     */
+    private function get_paywall_options($total)
+    {
+        return [
+            'platform' => 'woocommerce',
+            'platformName' => 'WooCommerce',
+            'platformVersion' => WC_VERSION,
+            'platformDomain' => Core::get_shop_domain(),
+            'pluginVersion' => \Comfino_Payment_Gateway::VERSION,
+            'offersURL' => Core::get_offers_url() . "/$total",
+            'language' => substr(get_locale(), 0, 2),
+            'currency' => get_woocommerce_currency(),
+            'cartTotal' => (float)$total,
+            'cartTotalFormatted' => wc_price($total, ['currency' => get_woocommerce_currency()]),
+        ];
+    }
+
+    /**
+     * @param float $total
+     * @param array|null $product_types_filter
+     * @param string $widget_key
+     * @return string
+     */
+    private function prepare_paywall_iframe($total, $product_types_filter, $widget_key): string
+    {
+        if (is_array($product_types_filter)) {
+            if (count($product_types_filter)) {
+                $product_types = implode(',', $product_types_filter);
+                $product_types_length = strlen($product_types);
+            } else {
+                $product_types = "\0";
+                $product_types_length = 1;
+            }
+        } else {
+            $product_types = '';
+            $product_types_length = 0;
+        }
+
+        $loan_amount = (int) ($total * 100);
+
+        $request_data = $loan_amount . $product_types . $widget_key;
+        $request_params = pack('V', $loan_amount) . pack('v', $product_types_length) . $product_types . $widget_key;
+
+        $hash = hash_hmac('sha3-256', $request_data, Api_Client::get_api_key(), true);
+        $auth = urlencode(base64_encode($request_params . $hash));
+
+        $paywall_options = $this->get_paywall_options($total);
+        $paywall_api_url = Api_Client::get_paywall_api_host() . '/v1/paywall?auth=' . $auth;
+
+        $iframe_template = '
+<iframe id="comfino-paywall-container" src="' . $paywall_api_url . '" referrerpolicy="strict-origin" loading="lazy" class="comfino-paywall" scrolling="no" onload="ComfinoPaywallFrontend.onload(this, \'' . $paywall_options['platformName'] . '\', \'' . $paywall_options['platformVersion'] . '\')"></iframe>
+<input id="comfino-loan-term" name="comfino_loan_term" type="hidden" />
+<input id="comfino-type" name="comfino_type" type="hidden" />
+<script>
+    document.addEventListener(\'readystatechange\', () => {
+        if (document.readyState === \'complete\') {
+            let paywallOptions = ' . json_encode($paywall_options) . ';
+
+            paywallOptions.onUpdateOrderPaymentState = (loanParams) => {
+                ComfinoPaywallFrontend.logEvent(\'updateOrderPaymentState WooCommerce\', \'debug\', loanParams);
+
+                if (loanParams.loanTerm !== 0) {
+                    document.getElementById(\'comfino-type\').value = loanParams.loanType;
+                    document.getElementById(\'comfino-loan-term\').value = loanParams.loanTerm;
+                }
+            }
+
+            ComfinoPaywallFrontend.init(
+                document.getElementById(\'payment_method_comfino\'),
+                document.getElementById(\'comfino-paywall-container\'),
+                paywallOptions
+            );
+        }
+    });
+</script>';
+
+        return trim($iframe_template);
     }
 }

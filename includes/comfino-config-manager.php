@@ -62,9 +62,9 @@ class Config_Manager extends \WC_Settings_API
         $this->id = 'comfino';
 
         if ($this->get_option('sandbox_mode') === 'yes') {
-            Api_Client::$key = $this->get_option('sandbox_key');
+            Api_Client::$api_key = $this->get_option('sandbox_key');
         } else {
-            Api_Client::$key = $this->get_option('production_key');
+            Api_Client::$api_key = $this->get_option('production_key');
         }
 
         Api_Client::$api_language = substr(get_bloginfo('language'), 0, 2);
@@ -428,6 +428,16 @@ class Config_Manager extends \WC_Settings_API
         );
     }
 
+    public function remove_configuration_options()
+    {
+        // Remove plugin options.
+        delete_option($this->get_option_key());
+
+        // Remove plugin transients.
+        delete_transient('COMFINO_PRODUCT_TYPES');
+        delete_transient('COMFINO_WIDGET_TYPES');
+    }
+
     public function filter_configuration_options(array $configuration_options): array
     {
         $filtered_config_options = [];
@@ -469,7 +479,6 @@ class Config_Manager extends \WC_Settings_API
 
     public function get_product_category_filters(): array
     {
-        $categories = [];
         $categoriesStr = $this->get_option('product_category_filters');
 
         if (empty($categoriesStr)) {
