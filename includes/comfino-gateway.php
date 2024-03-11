@@ -531,10 +531,10 @@ class Comfino_Gateway extends WC_Payment_Gateway
         );
     } else {
         window.Comfino = { paywallOptions: ' . json_encode($paywall_options) . ' };
-    
+
         Comfino.paywallOptions.onUpdateOrderPaymentState = (loanParams) => {
             ComfinoPaywallFrontend.logEvent(\'updateOrderPaymentState WooCommerce\', \'debug\', loanParams);
-    
+
             if (loanParams.loanTerm !== 0) {
                 document.getElementById(\'comfino-type\').value = loanParams.loanType;
                 document.getElementById(\'comfino-loan-term\').value = loanParams.loanTerm;
