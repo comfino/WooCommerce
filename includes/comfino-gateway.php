@@ -169,7 +169,8 @@ class Comfino_Gateway extends WC_Payment_Gateway
             return;
         }
 
-        wp_enqueue_script('comfino', plugins_url('assets/js/comfino.js', __FILE__), [], null);
+        wp_enqueue_script('comfino-paywall-frontend-script', Api_Client::get_paywall_frontend_script_url(), [], null);
+        wp_enqueue_style('comfino-paywall-frontend-style', Api_Client::get_paywall_frontend_style_url(), [], null);
     }
 
     /**

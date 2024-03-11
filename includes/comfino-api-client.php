@@ -483,6 +483,34 @@ class Api_Client
             wp_remote_retrieve_response_code($response) < 400;
     }
 
+    /**
+     * @return string
+     */
+    public static function get_paywall_frontend_script_url()
+    {
+        if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV_PAYWALL_FRONTEND_SCRIPT_URL')
+            && getenv('COMFINO_DEV') === 'WC_' . WC_VERSION . '_' . Core::get_shop_url()
+        ) {
+            return getenv('COMFINO_DEV_PAYWALL_FRONTEND_SCRIPT_URL');
+        }
+
+        return self::$paywall_frontend_script_url;
+    }
+
+    /**
+     * @return string
+     */
+    public static function get_paywall_frontend_style_url()
+    {
+        if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV_PAYWALL_FRONTEND_STYLE_URL')
+            && getenv('COMFINO_DEV') === 'WC_' . WC_VERSION . '_' . Core::get_shop_url()
+        ) {
+            return getenv('COMFINO_DEV_PAYWALL_FRONTEND_STYLE_URL');
+        }
+
+        return self::$paywall_frontend_style_url;
+    }
+
     public static function get_api_host($frontend_host = false, $api_host = null)
     {
         if (getenv('COMFINO_DEV') && getenv('COMFINO_DEV') === 'WC_' . WC_VERSION . '_' . Core::get_shop_url()) {
@@ -612,7 +640,7 @@ class Api_Client
         global $wp_version;
 
         return sprintf(
-            'WP Comfino [%s], WP [%s], WC [%s], PHP [%s], %s',
+            'WC Comfino [%s], WP [%s], WC [%s], PHP [%s], %s',
             \Comfino_Payment_Gateway::VERSION, $wp_version, WC_VERSION, PHP_VERSION, Core::get_shop_domain()
         );
     }
