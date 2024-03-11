@@ -523,26 +523,34 @@ class Comfino_Gateway extends WC_Payment_Gateway
 <input id="comfino-loan-term" name="comfino_loan_term" type="hidden" />
 <input id="comfino-type" name="comfino_type" type="hidden" />
 <script>
-    document.addEventListener(\'readystatechange\', () => {
-        if (document.readyState === \'complete\') {
-            let paywallOptions = ' . json_encode($paywall_options) . ';
-
-            paywallOptions.onUpdateOrderPaymentState = (loanParams) => {
-                ComfinoPaywallFrontend.logEvent(\'updateOrderPaymentState WooCommerce\', \'debug\', loanParams);
-
-                if (loanParams.loanTerm !== 0) {
-                    document.getElementById(\'comfino-type\').value = loanParams.loanType;
-                    document.getElementById(\'comfino-loan-term\').value = loanParams.loanTerm;
-                }
+    if (ComfinoPaywallFrontend.isInitialized()) {
+        ComfinoPaywallFrontend.init(
+            document.getElementById(\'payment_method_comfino\'),
+            document.getElementById(\'comfino-paywall-container\'),
+            Comfino.paywallOptions
+        );
+    } else {
+        window.Comfino = { paywallOptions: ' . json_encode($paywall_options) . ' };
+    
+        Comfino.paywallOptions.onUpdateOrderPaymentState = (loanParams) => {
+            ComfinoPaywallFrontend.logEvent(\'updateOrderPaymentState WooCommerce\', \'debug\', loanParams);
+    
+            if (loanParams.loanTerm !== 0) {
+                document.getElementById(\'comfino-type\').value = loanParams.loanType;
+                document.getElementById(\'comfino-loan-term\').value = loanParams.loanTerm;
             }
-
-            ComfinoPaywallFrontend.init(
-                document.getElementById(\'payment_method_comfino\'),
-                document.getElementById(\'comfino-paywall-container\'),
-                paywallOptions
-            );
         }
-    });
+
+        document.addEventListener(\'readystatechange\', () => {
+            if (document.readyState === \'complete\') {
+                ComfinoPaywallFrontend.init(
+                    document.getElementById(\'payment_method_comfino\'),
+                    document.getElementById(\'comfino-paywall-container\'),
+                    Comfino.paywallOptions
+                );
+            }
+        });
+    }
 </script>';
 
         return trim($iframe_template);
