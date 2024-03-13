@@ -524,13 +524,18 @@ class Comfino_Gateway extends WC_Payment_Gateway
 <input id="comfino-type" name="comfino_type" type="hidden" />
 <script>
     if (ComfinoPaywallFrontend.isInitialized()) {
-        ComfinoPaywallFrontend.init(
-            document.getElementById(\'payment_method_comfino\'),
-            document.getElementById(\'comfino-paywall-container\'),
-            Comfino.paywallOptions
-        );
+        Comfino.init();
     } else {
-        window.Comfino = { paywallOptions: ' . json_encode($paywall_options) . ' };
+        window.Comfino = {
+            paywallOptions: ' . json_encode($paywall_options) . ',
+            init: () => {
+                ComfinoPaywallFrontend.init(
+                    document.getElementById(\'payment_method_comfino\'),
+                    document.getElementById(\'comfino-paywall-container\'),
+                    Comfino.paywallOptions
+                );
+            }
+        }
 
         Comfino.paywallOptions.onUpdateOrderPaymentState = (loanParams) => {
             ComfinoPaywallFrontend.logEvent(\'updateOrderPaymentState WooCommerce\', \'debug\', loanParams);
@@ -541,15 +546,15 @@ class Comfino_Gateway extends WC_Payment_Gateway
             }
         }
 
-        document.addEventListener(\'readystatechange\', () => {
-            if (document.readyState === \'complete\') {
-                ComfinoPaywallFrontend.init(
-                    document.getElementById(\'payment_method_comfino\'),
-                    document.getElementById(\'comfino-paywall-container\'),
-                    Comfino.paywallOptions
-                );
-            }
-        });
+        if (document.readyState === \'complete\') {
+            Comfino.init();
+        } else {
+            document.addEventListener(\'readystatechange\', () => {
+                if (document.readyState === \'complete\') {
+                    Comfino.init();
+                }
+            });
+        }
     }
 </script>';
 
