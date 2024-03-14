@@ -12,8 +12,6 @@ Go to the `"Plugins"` tab, then click the `"Add new -> Upload plugin"` button. S
 ![Installation](images/en/installation-2.png "Installation")
 ![Installation](images/en/installation-3.png "Installation")
 
-![Konfiguracja](images/en/configuration-1.png "Configuration")
-
 ## CONFIGURATION
 
 The configuration parameters of the module are grouped by categories corresponding to the tabs of the configuration panel: `"Payment settings"`, `"Sale settings"`, `"Widget settings"`, `"Developer settings"`.

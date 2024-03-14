@@ -12,8 +12,6 @@ Przejdź do zakładki `"Wtyczki"`, następnie kliknij przycisk `"Dodaj nową -> 
 ![Instalacja](images/pl/installation-2.png "Instalacja")
 ![Instalacja](images/pl/installation-3.png "Instalacja")
 
-![Konfiguracja](images/pl/configuration-1.png "Konfiguracja")
-
 ## KONFIGURACJA
 Parametry konfiguracyjne modułu są pogrupowane kategoriami odpowiadającymi zakładkom panelu konfiguracyjnego: `"Ustawienia płatności"`, `"Ustawienia sprzedaży"`, `"Ustawienia widgetu"`, `"Ustawienia deweloperskie"`.
 Ostatnia zakładka `"Diagnostyka wtyczki"` nie zawiera żadnych parametrów do ustawienia i pełni funkcję informacyjno-diagnostyczną. Zawiera między innymi lokalny dziennik błędów (log błędów).
