@@ -50,13 +50,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
         self::$show_logo = ($this->get_option('show_logo') === 'yes');
 
-        if ($this->get_option('sandbox_mode') === 'yes') {
-            Api_Client::$api_host = Core::COMFINO_SANDBOX_HOST;
-            Api_Client::$api_key = $this->get_option('sandbox_key');
-        } else {
-            Api_Client::$api_host = Core::COMFINO_PRODUCTION_HOST;
-            Api_Client::$api_key = $this->get_option('production_key');
-        }
+        Api_Client::init($this->config_manager);
 
         add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
         add_action('admin_enqueue_scripts', [$this, 'admin_scripts']);

@@ -658,7 +658,7 @@ class Api_Client
         $platformVersionLength = pack('c', strlen($packedPlatformVersion));
         $pluginVersionLength = pack('c', strlen($packedPluginVersion));
 
-        $authHash = "WP$platformVersionLength$pluginVersionLength$packedPlatformVersion$packedPluginVersion";
+        $authHash = "WC$platformVersionLength$pluginVersionLength$packedPlatformVersion$packedPluginVersion";
 
         if ($paywall_logo) {
             $authHash .= self::$widget_key;
