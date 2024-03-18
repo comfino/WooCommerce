@@ -55,9 +55,10 @@ class Comfino_Payment_Gateway
         }
 
         require_once __DIR__ . '/includes/comfino-config-manager.php';
-        require_once __DIR__ . '/includes/comfino-error-logger.php';
         require_once __DIR__ . '/includes/comfino-core.php';
+        require_once __DIR__ . '/includes/comfino-api-client.php';
         require_once __DIR__ . '/includes/comfino-gateway.php';
+        require_once __DIR__ . '/includes/comfino-error-logger.php';
 
         add_filter('woocommerce_payment_gateways', [$this, 'add_gateway']);
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'plugin_action_links']);

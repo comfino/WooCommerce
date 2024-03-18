@@ -2,10 +2,8 @@
 
 namespace Comfino;
 
-require_once 'comfino-api-client.php';
-require_once 'comfino-core.php';
-require_once 'comfino-shop-plugin-error.php';
-require_once 'comfino-shop-plugin-error-request.php';
+require_once __DIR__ . '/comfino-shop-plugin-error.php';
+require_once __DIR__ . '/comfino-shop-plugin-error-request.php';
 
 class Error_Logger
 {
