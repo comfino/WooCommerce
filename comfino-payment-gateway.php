@@ -241,9 +241,7 @@ class Comfino_Payment_Gateway
                 WC()->session->init();
             }
 
-            /**
-             * For logged in customers, pull data from their account rather than the session which may contain incomplete data.
-             */
+            // For logged in customers, pull data from their account rather than the session which may contain incomplete data.
             if (WC()->customer === null) {
                 if (is_user_logged_in()) {
                     WC()->customer = new WC_Customer(get_current_user_id());

@@ -608,7 +608,11 @@ class Config_Manager extends \WC_Settings_API
             $cat_filter_avail_prod_types[strtoupper(trim($prod_type))] = null;
         }
 
-        return array_intersect_key($prod_types, $cat_filter_avail_prod_types);
+        if (empty($avail_prod_types = array_intersect_key($prod_types, $cat_filter_avail_prod_types))) {
+            $avail_prod_types = $prod_types;
+        }
+
+        return $avail_prod_types;
     }
 
     private function get_option_type(string $opt_name): string
