@@ -103,7 +103,7 @@ class Api_Client
 
         $allowed_product_types = null;
         $disabled_product_types = [];
-        $available_product_types = array_keys($config_manager->get_offer_types());
+        $available_product_types = array_keys($config_manager->get_offer_types('paywall'));
 
         // Check product category filters.
         foreach ($available_product_types as $product_type) {

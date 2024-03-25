@@ -190,7 +190,7 @@ class Core
     {
         self::init();
 
-        $available_product_types = array_keys(self::$config_manager->get_offer_types());
+        $available_product_types = array_keys(self::$config_manager->get_offer_types('paywall'));
 
         if (empty($product_id = $request->get_param('product_id') ?? '')) {
             return new \WP_REST_Response($available_product_types, 200);

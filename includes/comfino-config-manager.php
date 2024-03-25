@@ -72,12 +72,12 @@ class Config_Manager extends \WC_Settings_API
 
         if (($this->product_types['widget'] = get_transient('COMFINO_PRODUCT_TYPES_widget_' . Api_Client::$api_language)) === false) {
             $this->product_types['widget'] = Api_Client::get_product_types('widget');
-            set_transient('COMFINO_PRODUCT_TYPES_widget_' . Api_Client::$api_language, $this->product_types, DAY_IN_SECONDS);
+            set_transient('COMFINO_PRODUCT_TYPES_widget_' . Api_Client::$api_language, $this->product_types['widget'], DAY_IN_SECONDS);
         }
 
         if (($this->product_types['paywall'] = get_transient('COMFINO_PRODUCT_TYPES_paywall_' . Api_Client::$api_language)) === false) {
             $this->product_types['paywall'] = Api_Client::get_product_types('paywall');
-            set_transient('COMFINO_PRODUCT_TYPES_paywall_' . Api_Client::$api_language, $this->product_types, DAY_IN_SECONDS);
+            set_transient('COMFINO_PRODUCT_TYPES_paywall_' . Api_Client::$api_language, $this->product_types['paywall'], DAY_IN_SECONDS);
         }
 
         if (empty($this->product_types['widget'])) {
@@ -432,8 +432,10 @@ class Config_Manager extends \WC_Settings_API
             $this->settings['widget_key'] = Api_Client::get_widget_key($api_host, $api_key);
         }
 
-        delete_transient('COMFINO_PRODUCT_TYPES_pl');
-        delete_transient('COMFINO_PRODUCT_TYPES_en');
+        delete_transient('COMFINO_PRODUCT_TYPES_widget_pl');
+        delete_transient('COMFINO_PRODUCT_TYPES_paywall_pl');
+        delete_transient('COMFINO_PRODUCT_TYPES_widget_en');
+        delete_transient('COMFINO_PRODUCT_TYPES_paywall_en');
         delete_transient('COMFINO_WIDGET_TYPES_pl');
         delete_transient('COMFINO_WIDGET_TYPES_en');
 
@@ -492,9 +494,9 @@ class Config_Manager extends \WC_Settings_API
         return $prepared_config_options;
     }
 
-    public function get_offer_types(): array
+    public function get_offer_types($list_type): array
     {
-        return $this->product_types;
+        return $this->product_types[$list_type];
     }
 
     public function get_product_category_filters(): array

@@ -447,7 +447,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
             return null;
         }
 
-        $available_product_types = array_keys($config_manager->get_offer_types());
+        $available_product_types = array_keys($config_manager->get_offer_types('paywall'));
         $filtered_product_types = [];
 
         // Check product category filters.
