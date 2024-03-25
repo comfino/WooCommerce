@@ -55,7 +55,7 @@ class Config_Manager extends \WC_Settings_API
         'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL' => 'int',
     ];
 
-    private $product_types;
+    private $product_types = [];
 
     public function __construct()
     {
@@ -68,15 +68,28 @@ class Config_Manager extends \WC_Settings_API
         }
 
         Api_Client::$api_language = substr(get_bloginfo('language'), 0, 2);
+        Api_Client::init($this);
 
-        if (($this->product_types = get_transient('COMFINO_PRODUCT_TYPES_' . Api_Client::$api_language)) === false) {
-            Api_Client::init($this);
-            $this->product_types = Api_Client::get_product_types();
-            set_transient('COMFINO_PRODUCT_TYPES_' . Api_Client::$api_language, $this->product_types, DAY_IN_SECONDS);
+        if (($this->product_types['widget'] = get_transient('COMFINO_PRODUCT_TYPES_widget_' . Api_Client::$api_language)) === false) {
+            $this->product_types['widget'] = Api_Client::get_product_types('widget');
+            set_transient('COMFINO_PRODUCT_TYPES_widget_' . Api_Client::$api_language, $this->product_types, DAY_IN_SECONDS);
         }
 
-        if (empty($this->product_types)) {
-            $this->product_types = [
+        if (($this->product_types['paywall'] = get_transient('COMFINO_PRODUCT_TYPES_paywall_' . Api_Client::$api_language)) === false) {
+            $this->product_types['paywall'] = Api_Client::get_product_types('paywall');
+            set_transient('COMFINO_PRODUCT_TYPES_paywall_' . Api_Client::$api_language, $this->product_types, DAY_IN_SECONDS);
+        }
+
+        if (empty($this->product_types['widget'])) {
+            $this->product_types['widget'] = [
+                'INSTALLMENTS_ZERO_PERCENT' => __('Zero percent installments', 'comfino-payment-gateway'),
+                'CONVENIENT_INSTALLMENTS' => __('Convenient installments', 'comfino-payment-gateway'),
+                'PAY_LATER' => __('Pay later', 'comfino-payment-gateway'),
+            ];
+        }
+
+        if (empty($this->product_types['paywall'])) {
+            $this->product_types['paywall'] = [
                 'INSTALLMENTS_ZERO_PERCENT' => __('Zero percent installments', 'comfino-payment-gateway'),
                 'CONVENIENT_INSTALLMENTS' => __('Convenient installments', 'comfino-payment-gateway'),
                 'PAY_LATER' => __('Pay later', 'comfino-payment-gateway'),
@@ -167,7 +180,7 @@ class Config_Manager extends \WC_Settings_API
             'widget_offer_type' => [
                 'title' => __('Widget offer type', 'comfino-payment-gateway'),
                 'type' => 'select',
-                'options' => $this->product_types,
+                'options' => $this->product_types['widget'],
                 'description' => __('Other payment methods (Installments 0%, Buy now, pay later, Installments for Companies) available after consulting a Comfino advisor (kontakt@comfino.pl).', 'comfino-payment-gateway'),
             ],
             'widget_settings_advanced' => [
@@ -260,7 +273,7 @@ class Config_Manager extends \WC_Settings_API
 
                 $product_categories = $this->get_all_product_categories();
                 $product_category_filters = $this->get_product_category_filters();
-                $cat_filter_avail_prod_types = $this->get_cat_filter_avail_prod_types($this->product_types);
+                $cat_filter_avail_prod_types = $this->get_cat_filter_avail_prod_types($this->product_types['paywall']);
 
                 foreach ($cat_filter_avail_prod_types as $product_type_code => $product_type_name) {
                     if (isset($product_category_filters[$product_type_code])) {
@@ -437,8 +450,10 @@ class Config_Manager extends \WC_Settings_API
         delete_option($this->get_option_key());
 
         // Remove plugin transients.
-        delete_transient('COMFINO_PRODUCT_TYPES_pl');
-        delete_transient('COMFINO_PRODUCT_TYPES_en');
+        delete_transient('COMFINO_PRODUCT_TYPES_widget_pl');
+        delete_transient('COMFINO_PRODUCT_TYPES_paywall_pl');
+        delete_transient('COMFINO_PRODUCT_TYPES_widget_en');
+        delete_transient('COMFINO_PRODUCT_TYPES_paywall_en');
         delete_transient('COMFINO_WIDGET_TYPES_pl');
         delete_transient('COMFINO_WIDGET_TYPES_en');
     }

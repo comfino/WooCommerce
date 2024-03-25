@@ -269,29 +269,27 @@ class Api_Client
     /**
      * @return string[]|bool
      */
-    public static function get_product_types()
+    public static function get_product_types($list_type)
     {
-        static $product_types = null;
+        static $product_types = [];
 
-        if ($product_types !== null) {
-            return $product_types;
-        }
+        if (!isset($product_types[$list_type])) {
+            $response = wp_remote_get(
+                self::get_api_host() . '/v1/product-types?listType=' . $list_type,
+                ['headers' => self::get_request_headers()]
+            );
 
-        $response = wp_remote_get(
-            self::get_api_host() . '/v1/product-types',
-            ['headers' => self::get_request_headers()]
-        );
+            if (!is_wp_error($response)) {
+                $json_response = wp_remote_retrieve_body($response);
 
-        if (!is_wp_error($response)) {
-            $json_response = wp_remote_retrieve_body($response);
-
-            if (strpos($json_response, 'errors') === false) {
-                $product_types = json_decode($json_response, true);
+                if (strpos($json_response, 'errors') === false) {
+                    $product_types = json_decode($json_response, true);
+                } else {
+                    $product_types = false;
+                }
             } else {
                 $product_types = false;
             }
-        } else {
-            $product_types = false;
         }
 
         return $product_types;
