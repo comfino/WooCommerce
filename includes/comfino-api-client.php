@@ -341,6 +341,11 @@ class Api_Client
 
             if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
                 $api_key_valid = strpos(wp_remote_retrieve_body($response), 'errors') === false;
+            } elseif (is_wp_error($response)) {
+                Error_Logger::log_error(
+                    'Comfino API communication error',
+                    implode(' ', $response->get_error_messages()) . ' [' . implode(', ', $response->get_error_codes()) . ']'
+                );
             }
         }
 
