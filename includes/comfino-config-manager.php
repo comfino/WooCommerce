@@ -521,6 +521,7 @@ class Config_Manager extends \WC_Settings_API
 
         if (isset($product_category_filters[$product_type]) && count($product_category_filters[$product_type])) {
             $excluded_cat_ids = $product_category_filters[$product_type];
+            $available_cat_ids =  array_diff(array_keys($this->get_all_product_categories()), $excluded_cat_ids);
 
             foreach ($products as $product) {
                 if (!($product instanceof \WC_Product_Simple)) {
@@ -534,9 +535,13 @@ class Config_Manager extends \WC_Settings_API
                 }
 
                 foreach ($product_category_ids as $category_id) {
-                    if (in_array($category_id, $excluded_cat_ids, true) ||
-                        count(array_intersect($excluded_cat_ids, get_term_children($category_id, 'product_cat')))
-                    ) {
+                    if (in_array($category_id, $excluded_cat_ids, true)) {
+                        foreach (array_diff($available_cat_ids, [$category_id]) as $cat_id) {
+                            if (term_is_ancestor_of($category_id, $cat_id, 'product_cat')) {
+                                continue 2;
+                            }
+                        }
+
                         return false;
                     }
                 }
