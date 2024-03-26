@@ -391,10 +391,7 @@ class Config_Manager extends \WC_Settings_API
                     $is_error = true;
                 }
             } elseif ($subsection === 'sale_settings') {
-                $product_categories = array_map(
-                    static function (array $category) { return (int) $category['id']; },
-                    $this->get_category_tree_leafs()
-                );
+                $product_categories = array_keys($this->get_all_product_categories());
                 $product_category_filters = [];
 
                 foreach ($configuration_options['product_categories'] as $product_type => $category_ids) {
@@ -527,10 +524,16 @@ class Config_Manager extends \WC_Settings_API
 
             foreach ($products as $product) {
                 if (!($product instanceof \WC_Product_Simple)) {
-                    continue;
+                    if (is_array($product) && isset($product['data']) && $product['data'] instanceof \WC_Product_Simple) {
+                        $product_category_ids = $product['data']->get_category_ids();
+                    } else {
+                        continue;
+                    }
+                } else {
+                    $product_category_ids = $product->get_category_ids();
                 }
 
-                foreach ($product->get_category_ids() as $category_id) {
+                foreach ($product_category_ids as $category_id) {
                     if (in_array($category_id, $excluded_cat_ids, true) ||
                         count(array_intersect($excluded_cat_ids, get_term_children($category_id, 'product_cat')))
                     ) {
