@@ -3,7 +3,7 @@
  * Plugin Name: Comfino Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
  * Description: Comfino (Comperia) - Comfino Payment Gateway for WooCommerce.
- * Version: 3.3.2
+ * Version: 3.4.0
  * Author: Comfino (Comperia)
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
@@ -24,7 +24,7 @@ defined('ABSPATH') or exit;
 
 class Comfino_Payment_Gateway
 {
-    const VERSION = '3.3.2';
+    const VERSION = '3.4.0';
 
     /**
      * @var Comfino_Payment_Gateway
@@ -55,9 +55,10 @@ class Comfino_Payment_Gateway
         }
 
         require_once __DIR__ . '/includes/comfino-config-manager.php';
-        require_once __DIR__ . '/includes/comfino-error-logger.php';
         require_once __DIR__ . '/includes/comfino-core.php';
+        require_once __DIR__ . '/includes/comfino-api-client.php';
         require_once __DIR__ . '/includes/comfino-gateway.php';
+        require_once __DIR__ . '/includes/comfino-error-logger.php';
 
         add_filter('woocommerce_payment_gateways', [$this, 'add_gateway']);
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'plugin_action_links']);
@@ -71,21 +72,6 @@ class Comfino_Payment_Gateway
                 [
                     'methods' => WP_REST_Server::EDITABLE,
                     'callback' => [Core::class, 'process_notification'],
-                    'permission_callback' => '__return_true',
-                ],
-            ]);
-
-            register_rest_route('comfino', '/offers/(?P<total>[.\d]+)', [
-                [
-                    'methods' => WP_REST_Server::READABLE,
-                    'callback' => [Core::class, 'get_offers'],
-                    'args' => [
-                        'total' => [
-                            'validate_callback' => function ($param, $request, $key) {
-                                return is_numeric($param);
-                            }
-                        ]
-                    ],
                     'permission_callback' => '__return_true',
                 ],
             ]);
@@ -255,9 +241,7 @@ class Comfino_Payment_Gateway
                 WC()->session->init();
             }
 
-            /**
-             * For logged in customers, pull data from their account rather than the session which may contain incomplete data.
-             */
+            // For logged in customers, pull data from their account rather than the session which may contain incomplete data.
             if (WC()->customer === null) {
                 if (is_user_logged_in()) {
                     WC()->customer = new WC_Customer(get_current_user_id());
