@@ -521,7 +521,7 @@ class Config_Manager extends \WC_Settings_API
 
         if (isset($product_category_filters[$product_type]) && count($product_category_filters[$product_type])) {
             $excluded_cat_ids = $product_category_filters[$product_type];
-            $available_cat_ids =  array_diff(array_keys($this->get_all_product_categories()), $excluded_cat_ids);
+            $available_cat_ids = array_diff(array_keys($this->get_all_product_categories()), $excluded_cat_ids);
 
             foreach ($products as $product) {
                 if (!($product instanceof \WC_Product_Simple)) {
