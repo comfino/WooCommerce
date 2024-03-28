@@ -12,7 +12,7 @@ License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 3.4.0
- * New paywall frontend architecture based on iframe.
+ * New paywall frontend architecture based on iframe. Improved filtering of financial products by cart item categories.
 
 3.3.2
  * Fix bugs in the plugin REST endpoints and core logic.
