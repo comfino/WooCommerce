@@ -24,6 +24,8 @@ class Config_Manager extends \WC_Settings_API
         'COMFINO_WIDGET_EMBED_METHOD' => 'widget_embed_method',
         'COMFINO_WIDGET_CODE' => 'widget_js_code',
         'COMFINO_ABANDONED_CART_ENABLED' => 'abandoned_cart_enabled',
+        'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => 'widget_prod_script_version',
+        'COMFINO_WIDGET_DEV_SCRIPT_VERSION' => 'widget_dev_script_version',
     ];
 
     const ACCESSIBLE_CONFIG_OPTIONS = [
@@ -44,6 +46,8 @@ class Config_Manager extends \WC_Settings_API
         'COMFINO_WIDGET_EMBED_METHOD',
         'COMFINO_WIDGET_CODE',
         'COMFINO_ABANDONED_CART_ENABLED',
+        'COMFINO_WIDGET_PROD_SCRIPT_VERSION',
+        'COMFINO_WIDGET_DEV_SCRIPT_VERSION',
     ];
 
     const CONFIG_OPTIONS_TYPES = [
@@ -230,6 +234,14 @@ class Config_Manager extends \WC_Settings_API
                 'css' => 'width: 800px; height: 400px',
                 'default' => $this->get_initial_widget_code(),
             ],
+            'widget_prod_script_version' => [
+                'type' => 'hidden',
+                'default' => '',
+            ],
+            'widget_dev_script_version' => [
+                'type' => 'hidden',
+                'default' => '',
+            ],
             'abandoned_cart_enabled' => [
                 'title' => __('Enable/Disable', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
@@ -305,6 +317,7 @@ class Config_Manager extends \WC_Settings_API
                         'widget_settings_advanced',
                         'widget_price_selector', 'widget_target_selector', 'widget_price_observer_selector',
                         'widget_price_observer_level', 'widget_embed_method', 'widget_js_code',
+                        'widget_prod_script_version', 'widget_dev_script_version'
                     ])
                 );
                 break;

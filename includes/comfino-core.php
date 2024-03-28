@@ -21,8 +21,8 @@ class Core
     const COMFINO_PAYWALL_FRONTEND_CSS_SANDBOX = 'https://widget.craty.pl/css/paywall-frontend.css';
     const COMFINO_PAYWALL_FRONTEND_CSS_PRODUCTION = 'https://widget.comfino.pl/css/paywall-frontend.css';
 
-    const COMFINO_WIDGET_JS_SANDBOX = 'https://widget.craty.pl/comfino.min.js';
-    const COMFINO_WIDGET_JS_PRODUCTION = 'https://widget.comfino.pl/comfino.min.js';
+    const COMFINO_WIDGET_JS_SANDBOX_HOST = 'https://widget.craty.pl';
+    const COMFINO_WIDGET_JS_PRODUCTION_HOST = 'https://widget.comfino.pl';
 
     const WAITING_FOR_PAYMENT_STATUS = "WAITING_FOR_PAYMENT";
     const ACCEPTED_STATUS = "ACCEPTED";

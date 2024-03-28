@@ -42,7 +42,15 @@ class Api_Client
             self::$api_paywall_host = Core::COMFINO_PAYWALL_SANDBOX_HOST;
             self::$paywall_frontend_script_url = Core::COMFINO_PAYWALL_FRONTEND_JS_SANDBOX;
             self::$paywall_frontend_style_url = Core::COMFINO_PAYWALL_FRONTEND_CSS_SANDBOX;
-            self::$widget_script_url = Core::COMFINO_WIDGET_JS_SANDBOX;
+            self::$widget_script_url = Core::COMFINO_WIDGET_JS_SANDBOX_HOST;
+
+            $widget_dev_script_version = $config_manager->get_option('widget_dev_script_version', '');
+
+            if (empty($widget_dev_script_version)) {
+                self::$widget_script_url .= '/comfino.min.js';
+            } else {
+                self::$widget_script_url .= ('/' . trim($widget_dev_script_version, '/'));
+            }
         } else {
             self::$api_host = Core::COMFINO_PRODUCTION_HOST;
             self::$api_key = $config_manager->get_option('production_key');
@@ -50,7 +58,15 @@ class Api_Client
             self::$api_paywall_host = Core::COMFINO_PAYWALL_PRODUCTION_HOST;
             self::$paywall_frontend_script_url = Core::COMFINO_PAYWALL_FRONTEND_JS_PRODUCTION;
             self::$paywall_frontend_style_url = Core::COMFINO_PAYWALL_FRONTEND_CSS_PRODUCTION;
-            self::$widget_script_url = Core::COMFINO_WIDGET_JS_PRODUCTION;
+            self::$widget_script_url = Core::COMFINO_WIDGET_JS_PRODUCTION_HOST;
+
+            $widget_prod_script_version = $config_manager->get_option('widget_prod_script_version', '');
+
+            if (empty($widget_prod_script_version)) {
+                self::$widget_script_url .= '/comfino.min.js';
+            } else {
+                self::$widget_script_url .= ('/' . trim($widget_prod_script_version, '/'));
+            }
         }
     }
 
