@@ -12,10 +12,8 @@ Przejdź do zakładki `"Wtyczki"`, następnie kliknij przycisk `"Dodaj nową -> 
 ![Instalacja](images/pl/installation-2.png "Instalacja")
 ![Instalacja](images/pl/installation-3.png "Instalacja")
 
-![Konfiguracja](images/pl/configuration-1.png "Konfiguracja")
-
 ## KONFIGURACJA
-Parametry konfiguracyjne modułu są pogrupowane kategoriami odpowiadającymi zakładkom panelu konfiguracyjnego: `"Ustawienia płatności"`, `"Ustawienia widgetu"`, `"Ustawienia deweloperskie"`.
+Parametry konfiguracyjne modułu są pogrupowane kategoriami odpowiadającymi zakładkom panelu konfiguracyjnego: `"Ustawienia płatności"`, `"Ustawienia sprzedaży"`, `"Ustawienia widgetu"`, `"Ustawienia deweloperskie"`.
 Ostatnia zakładka `"Diagnostyka wtyczki"` nie zawiera żadnych parametrów do ustawienia i pełni funkcję informacyjno-diagnostyczną. Zawiera między innymi lokalny dziennik błędów (log błędów).
 
 Przed użyciem płatności Comfino, moduł musi zostać skonfigurowany. Możesz to zrobić, klikając `"Ustawienia"` w panelu informacyjnym modułu.
@@ -33,6 +31,16 @@ Pola parametrów konfiguracyjnych:
 * **Wyświetlanie logo** — status widoczności logo Comfino obok tytułu na liście metod płatności (domyślnie: włączone)
 
 ![Konfiguracja](images/pl/configuration1.png "Konfiguracja")
+
+**USTAWIENIA SPRZEDAŻY**
+
+Zakładka zawiera ustawienia dotyczące zarządzania sprzedażą.
+
+Reguły dostępności produktów finansowych (filtry kategorii produktowych) umożliwiają przypisanie płatności Comfino do określonych kategorii produktów. Filtry kategorii są podzielone na sekcje odpowiadające dostępnym metodom finansowania zakupów w ramach umowy zawartej z Comfino. Ponadto zarządzanie dostępnością płatności Comfino jest możliwe tylko dla następujących typów produktów finansowych: "Raty zero procent", "Zapłać później". Jeśli zawarta umowa nie zawiera jednej z tych pozycji lub wszystkich, to zakładka będzie zawierała listę drzew ograniczonych do tej jednej metody finansowania lub będzie zawierać listę drzew dla pozostałych typów produktów z umowy, w przypadku braku obecności w umowie produktów "Raty zero procent" i "Zapłać później".
+
+Domyślnie płatności Comfino są dostępne bezwarunkowo dla wszystkich typów produktów. W celu wyłączenia Comfino dla wybranych typów produktów należy odznaczyć odpowiednie kategorie w drzewie kategorii dla każdego typu oferty finansowej i kliknąć "Zapisz".
+
+![Konfiguracja](images/pl/configuration5.png "Konfiguracja")
 
 **USTAWIENIA WIDGETU**
 

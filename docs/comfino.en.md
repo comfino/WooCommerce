@@ -12,11 +12,9 @@ Go to the `"Plugins"` tab, then click the `"Add new -> Upload plugin"` button. S
 ![Installation](images/en/installation-2.png "Installation")
 ![Installation](images/en/installation-3.png "Installation")
 
-![Konfiguracja](images/en/configuration-1.png "Configuration")
-
 ## CONFIGURATION
 
-The configuration parameters of the module are grouped by categories corresponding to the tabs of the configuration panel: `"Payment settings"`, `"Widget settings"`, `"Developer settings"`.
+The configuration parameters of the module are grouped by categories corresponding to the tabs of the configuration panel: `"Payment settings"`, `"Sale settings"`, `"Widget settings"`, `"Developer settings"`.
 The last tab `"Plugin diagnostics"` does not contain any parameters to be set and has an information-diagnostic function. Among other things, it contains a local error log.
 
 Before using Comfino payments, the module must be configured. You can do this by clicking `"Settings"` in the module info panel.
@@ -34,6 +32,16 @@ Configuration parameter fields:
 * **Show logo** - visibility status of the Comfino logo next to the title at the list of payment methods (default: enabled)
 
 ![Configuration](images/en/configuration1.png "Configuration")
+
+**SALE SETTINGS**
+
+The tab contains settings related to sales management.
+
+Financial product availability rules (product category filters) enable Comfino payments to be assigned to specific product categories. Category filters are divided into sections corresponding to available methods of financing purchases under the contract concluded with Comfino. Moreover, managing the availability of Comfino payments is only possible for the following types of financial products: "Zero percent installments", "Pay later". If the concluded contract does not include one or all of these items, the tab will contain a list of trees limited to this one financing method or it will contain a list of trees for other types of products from the contract, if the contract does not include the "Zero percent installments" and "Pay later" products.
+
+By default, Comfino payments are available unconditionally for all product types. To disable Comfino for selected product types, uncheck the appropriate categories in the category tree for each type of financial offer and click "Save".
+
+![Konfiguracja](images/en/configuration5.png "Konfiguracja")
 
 **WIDGET SETTINGS**
 

@@ -24,6 +24,8 @@ class Config_Manager extends \WC_Settings_API
         'COMFINO_WIDGET_EMBED_METHOD' => 'widget_embed_method',
         'COMFINO_WIDGET_CODE' => 'widget_js_code',
         'COMFINO_ABANDONED_CART_ENABLED' => 'abandoned_cart_enabled',
+        'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => 'widget_prod_script_version',
+        'COMFINO_WIDGET_DEV_SCRIPT_VERSION' => 'widget_dev_script_version',
     ];
 
     const ACCESSIBLE_CONFIG_OPTIONS = [
@@ -44,6 +46,8 @@ class Config_Manager extends \WC_Settings_API
         'COMFINO_WIDGET_EMBED_METHOD',
         'COMFINO_WIDGET_CODE',
         'COMFINO_ABANDONED_CART_ENABLED',
+        'COMFINO_WIDGET_PROD_SCRIPT_VERSION',
+        'COMFINO_WIDGET_DEV_SCRIPT_VERSION',
     ];
 
     const CONFIG_OPTIONS_TYPES = [
@@ -55,37 +59,50 @@ class Config_Manager extends \WC_Settings_API
         'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL' => 'int',
     ];
 
-    private $product_types;
+    private $product_types = [];
 
     public function __construct()
     {
         $this->id = 'comfino';
 
         if ($this->get_option('sandbox_mode') === 'yes') {
-            Api_Client::$key = $this->get_option('sandbox_key');
+            Api_Client::$api_key = $this->get_option('sandbox_key');
         } else {
-            Api_Client::$key = $this->get_option('production_key');
+            Api_Client::$api_key = $this->get_option('production_key');
         }
 
         Api_Client::$api_language = substr(get_bloginfo('language'), 0, 2);
+        Api_Client::init($this);
 
-        if (($this->product_types = get_transient('COMFINO_PRODUCT_TYPES')) === false) {
-            Api_Client::init($this);
-            $this->product_types = Api_Client::get_product_types();
-            set_transient('COMFINO_PRODUCT_TYPES', $this->product_types, DAY_IN_SECONDS);
+        if (($this->product_types['widget'] = get_transient('COMFINO_PRODUCT_TYPES_widget_' . Api_Client::$api_language)) === false) {
+            $this->product_types['widget'] = Api_Client::get_product_types('widget');
+            set_transient('COMFINO_PRODUCT_TYPES_widget_' . Api_Client::$api_language, $this->product_types['widget'], DAY_IN_SECONDS);
         }
 
-        if (empty($this->product_types)) {
-            $this->product_types = [
+        if (($this->product_types['paywall'] = get_transient('COMFINO_PRODUCT_TYPES_paywall_' . Api_Client::$api_language)) === false) {
+            $this->product_types['paywall'] = Api_Client::get_product_types('paywall');
+            set_transient('COMFINO_PRODUCT_TYPES_paywall_' . Api_Client::$api_language, $this->product_types['paywall'], DAY_IN_SECONDS);
+        }
+
+        if (empty($this->product_types['widget'])) {
+            $this->product_types['widget'] = [
                 'INSTALLMENTS_ZERO_PERCENT' => __('Zero percent installments', 'comfino-payment-gateway'),
                 'CONVENIENT_INSTALLMENTS' => __('Convenient installments', 'comfino-payment-gateway'),
                 'PAY_LATER' => __('Pay later', 'comfino-payment-gateway'),
             ];
         }
 
-        if (($widget_types = get_transient('COMFINO_WIDGET_TYPES')) === false) {
+        if (empty($this->product_types['paywall'])) {
+            $this->product_types['paywall'] = [
+                'INSTALLMENTS_ZERO_PERCENT' => __('Zero percent installments', 'comfino-payment-gateway'),
+                'CONVENIENT_INSTALLMENTS' => __('Convenient installments', 'comfino-payment-gateway'),
+                'PAY_LATER' => __('Pay later', 'comfino-payment-gateway'),
+            ];
+        }
+
+        if (($widget_types = get_transient('COMFINO_WIDGET_TYPES_' . Api_Client::$api_language)) === false) {
             $widget_types = Api_Client::get_widget_types();
-            set_transient('COMFINO_WIDGET_TYPES', $widget_types, DAY_IN_SECONDS);
+            set_transient('COMFINO_WIDGET_TYPES_' . Api_Client::$api_language, $widget_types, DAY_IN_SECONDS);
         }
 
         $this->id = 'comfino';
@@ -167,7 +184,7 @@ class Config_Manager extends \WC_Settings_API
             'widget_offer_type' => [
                 'title' => __('Widget offer type', 'comfino-payment-gateway'),
                 'type' => 'select',
-                'options' => $this->product_types,
+                'options' => $this->product_types['widget'],
                 'description' => __('Other payment methods (Installments 0%, Buy now, pay later, Installments for Companies) available after consulting a Comfino advisor (kontakt@comfino.pl).', 'comfino-payment-gateway'),
             ],
             'widget_settings_advanced' => [
@@ -217,6 +234,14 @@ class Config_Manager extends \WC_Settings_API
                 'css' => 'width: 800px; height: 400px',
                 'default' => $this->get_initial_widget_code(),
             ],
+            'widget_prod_script_version' => [
+                'type' => 'hidden',
+                'default' => '',
+            ],
+            'widget_dev_script_version' => [
+                'type' => 'hidden',
+                'default' => '',
+            ],
             'abandoned_cart_enabled' => [
                 'title' => __('Enable/Disable', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
@@ -260,7 +285,7 @@ class Config_Manager extends \WC_Settings_API
 
                 $product_categories = $this->get_all_product_categories();
                 $product_category_filters = $this->get_product_category_filters();
-                $cat_filter_avail_prod_types = $this->get_cat_filter_avail_prod_types($this->product_types);
+                $cat_filter_avail_prod_types = $this->get_cat_filter_avail_prod_types($this->product_types['paywall']);
 
                 foreach ($cat_filter_avail_prod_types as $product_type_code => $product_type_name) {
                     if (isset($product_category_filters[$product_type_code])) {
@@ -292,6 +317,7 @@ class Config_Manager extends \WC_Settings_API
                         'widget_settings_advanced',
                         'widget_price_selector', 'widget_target_selector', 'widget_price_observer_selector',
                         'widget_price_observer_level', 'widget_embed_method', 'widget_js_code',
+                        'widget_prod_script_version', 'widget_dev_script_version'
                     ])
                 );
                 break;
@@ -378,10 +404,7 @@ class Config_Manager extends \WC_Settings_API
                     $is_error = true;
                 }
             } elseif ($subsection === 'sale_settings') {
-                $product_categories = array_map(
-                    static function (array $category) { return (int) $category['id']; },
-                    $this->get_category_tree_leafs()
-                );
+                $product_categories = array_keys($this->get_all_product_categories());
                 $product_category_filters = [];
 
                 foreach ($configuration_options['product_categories'] as $product_type => $category_ids) {
@@ -419,13 +442,32 @@ class Config_Manager extends \WC_Settings_API
             $this->settings['widget_key'] = Api_Client::get_widget_key($api_host, $api_key);
         }
 
-        delete_transient('COMFINO_PRODUCT_TYPES');
+        delete_transient('COMFINO_PRODUCT_TYPES_widget_pl');
+        delete_transient('COMFINO_PRODUCT_TYPES_paywall_pl');
+        delete_transient('COMFINO_PRODUCT_TYPES_widget_en');
+        delete_transient('COMFINO_PRODUCT_TYPES_paywall_en');
+        delete_transient('COMFINO_WIDGET_TYPES_pl');
+        delete_transient('COMFINO_WIDGET_TYPES_en');
 
         return update_option(
             $this->get_option_key(),
             apply_filters('woocommerce_settings_api_sanitized_fields_' . $this->id, $this->settings),
             'yes'
         );
+    }
+
+    public function remove_configuration_options()
+    {
+        // Remove plugin options.
+        delete_option($this->get_option_key());
+
+        // Remove plugin transients.
+        delete_transient('COMFINO_PRODUCT_TYPES_widget_pl');
+        delete_transient('COMFINO_PRODUCT_TYPES_paywall_pl');
+        delete_transient('COMFINO_PRODUCT_TYPES_widget_en');
+        delete_transient('COMFINO_PRODUCT_TYPES_paywall_en');
+        delete_transient('COMFINO_WIDGET_TYPES_pl');
+        delete_transient('COMFINO_WIDGET_TYPES_en');
     }
 
     public function filter_configuration_options(array $configuration_options): array
@@ -462,14 +504,13 @@ class Config_Manager extends \WC_Settings_API
         return $prepared_config_options;
     }
 
-    public function get_offer_types(): array
+    public function get_offer_types($list_type): array
     {
-        return $this->product_types;
+        return $this->product_types[$list_type];
     }
 
     public function get_product_category_filters(): array
     {
-        $categories = [];
         $categoriesStr = $this->get_option('product_category_filters');
 
         if (empty($categoriesStr)) {
@@ -493,16 +534,27 @@ class Config_Manager extends \WC_Settings_API
 
         if (isset($product_category_filters[$product_type]) && count($product_category_filters[$product_type])) {
             $excluded_cat_ids = $product_category_filters[$product_type];
+            $available_cat_ids = array_diff(array_keys($this->get_all_product_categories()), $excluded_cat_ids);
 
             foreach ($products as $product) {
                 if (!($product instanceof \WC_Product_Simple)) {
-                    continue;
+                    if (is_array($product) && isset($product['data']) && $product['data'] instanceof \WC_Product_Simple) {
+                        $product_category_ids = $product['data']->get_category_ids();
+                    } else {
+                        continue;
+                    }
+                } else {
+                    $product_category_ids = $product->get_category_ids();
                 }
 
-                foreach ($product->get_category_ids() as $category_id) {
-                    if (in_array($category_id, $excluded_cat_ids, true) ||
-                        count(array_intersect($excluded_cat_ids, get_term_children($category_id, 'product_cat')))
-                    ) {
+                foreach ($product_category_ids as $category_id) {
+                    if (in_array($category_id, $excluded_cat_ids, true)) {
+                        foreach (array_diff($available_cat_ids, [$category_id]) as $cat_id) {
+                            if (term_is_ancestor_of($category_id, $cat_id, 'product_cat')) {
+                                continue 2;
+                            }
+                        }
+
                         return false;
                     }
                 }
@@ -594,7 +646,11 @@ class Config_Manager extends \WC_Settings_API
             $cat_filter_avail_prod_types[strtoupper(trim($prod_type))] = null;
         }
 
-        return array_intersect_key($prod_types, $cat_filter_avail_prod_types);
+        if (empty($avail_prod_types = array_intersect_key($prod_types, $cat_filter_avail_prod_types))) {
+            $avail_prod_types = $prod_types;
+        }
+
+        return $avail_prod_types;
     }
 
     private function get_option_type(string $opt_name): string

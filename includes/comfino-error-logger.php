@@ -2,10 +2,8 @@
 
 namespace Comfino;
 
-require_once 'comfino-api-client.php';
-require_once 'comfino-core.php';
-require_once 'comfino-shop-plugin-error.php';
-require_once 'comfino-shop-plugin-error-request.php';
+require_once __DIR__ . '/comfino-shop-plugin-error.php';
+require_once __DIR__ . '/comfino-shop-plugin-error-request.php';
 
 class Error_Logger
 {
@@ -63,7 +61,7 @@ class Error_Logger
     {
         global $wp_version, $wpdb;
 
-        if (preg_match('/Error .*in \//', $error_message) && strpos($error_message, 'plugins/comfino') === false) {
+        if (preg_match('/Error .*in \/|Exception .*in \//', $error_message) && strpos($error_message, 'plugins/comfino') === false) {
             // Ignore all errors outside the plugin code.
             return;
         }
