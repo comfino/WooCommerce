@@ -12,7 +12,7 @@ License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 3.4.1
-    * Change bookmark address retrieval to a solution using site_url
+   * Change bookmark address retrieval to a solution using site_url
 
 3.4.0
  * New paywall frontend architecture based on iframe. Improved filtering of financial products by cart item categories.
