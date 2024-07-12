@@ -3,12 +3,12 @@
  * Plugin Name: Comfino Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
  * Description: Comfino (Comperia) - Comfino Payment Gateway for WooCommerce.
- * Version: 3.4.1
+ * Version: 3.4.2
  * Author: Comfino (Comperia)
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
  * Text Domain: comfino-payment-gateway
- * WC tested up to: 8.1.1
+ * WC tested up to: 9.0.2
  * WC requires at least: 3.0
  * Tested up to: 6.3.1
  * Requires at least: 5.0
@@ -24,7 +24,7 @@ defined('ABSPATH') or exit;
 
 class Comfino_Payment_Gateway
 {
-    const VERSION = '3.4.1';
+    const VERSION = '3.4.2';
 
     /**
      * @var Comfino_Payment_Gateway
@@ -98,6 +98,12 @@ class Comfino_Payment_Gateway
                     'permission_callback' => '__return_true',
                 ]
             ]);
+        });
+
+        add_action('before_woocommerce_init', static function () {
+            if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+                \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__);
+            }
         });
 
         load_plugin_textdomain('comfino-payment-gateway', false, basename(__DIR__) . '/languages');
