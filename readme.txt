@@ -4,12 +4,15 @@ Donate link: https://comfino.pl/
 Tags: comfino, woocommerce, gateway, payment, bank, deferred payments, installments
 WC tested up to: 8.1.1
 WC requires at least: 3.0
-Stable tag: 3.4.1
+Stable tag: 4.0.0
 Tested up to: 6.3.1
 Requires at least: 5.0
-Requires PHP: 7.0
+Requires PHP: 7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
+
+4.0.0
+ * Complete plugin refactoring: redesigned plugin architecture, improved errors handling, stability and reliability, code clean up (lowest supported PHP version is 7.1).
 
 3.4.1
    * Change bookmark address retrieval to a solution using site_url
@@ -21,7 +24,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
  * Fix bugs in the plugin REST endpoints and core logic.
 
 3.3.1
- *  Fix bug on product page.
+ * Fix bug on product page.
 
 3.3.0
  * New functionality: filtering of financial products (offers) by cart item category.

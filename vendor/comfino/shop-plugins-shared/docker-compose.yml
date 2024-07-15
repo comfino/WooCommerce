@@ -1,0 +1,9 @@
+version: '3.5'
+services:
+    shop-plugins-shared-php:
+        image: gcr.io/comperia-fintech/php-debug:7.1.33-2-fpm-alpine
+        working_dir: /shop-plugins-shared
+        tty: true
+        volumes:
+            - ./:/shop-plugins-shared
+            - ~/.composer:/home/vagrant/.composer

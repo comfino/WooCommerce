@@ -1,9 +1,20 @@
 <?php
 
+use Comfino\Api\ApiService;
+use Comfino\Api\Dto\Payment\LoanTypeEnum;
 use Comfino\Api_Client;
+use Comfino\Common\Backend\Factory\OrderFactory;
+use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Config_Manager;
+use Comfino\Configuration\SettingsManager;
 use Comfino\Core;
 use Comfino\Error_Logger;
+use Comfino\FinancialProduct\ProductTypesListTypeEnum;
+use Comfino\Order\OrderManager;
+
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 class Comfino_Gateway extends WC_Payment_Gateway
 {
@@ -33,8 +44,13 @@ class Comfino_Gateway extends WC_Payment_Gateway
         $this->id = 'comfino';
         $this->icon = $this->get_icon();
         $this->has_fields = true;
-        $this->method_title = __('Comfino Gateway', 'comfino-payment-gateway');
-        $this->method_description = __('Comfino payment gateway', 'comfino-payment-gateway');
+        $this->method_title = __('Comfino payments', 'comfino-payment-gateway');
+        $this->method_description = __(
+            'Comfino is an innovative payment method for customers of e-commerce stores! ' .
+            'These are installment payments, deferred (buy now, pay later) and corporate ' .
+            'payments available on one platform with the help of quick integration. Grow your business with Comfino!',
+            'comfino-payment-gateway'
+        );
 
         $this->supports = ['products'];
 
@@ -181,14 +197,85 @@ class Comfino_Gateway extends WC_Payment_Gateway
         }
     }
 
-    public function process_payment($order_id): array
+    public function process_payment($orderId): array
     {
         \Comfino\Core::init();
+
+        //----
+        $shopCart = OrderManager::getShopCart(WC()->cart, (int) sanitize_text_field($_POST['comfino_loan_amount']));
+
+        $wcOrder = wc_get_order($orderId);
+        $phoneNumber = $wcOrder->get_billing_phone();
+
+        if (empty($phoneNumber)) {
+            // Try to find phone number in order metadata
+            $orderMetadata = $wcOrder->get_meta_data();
+
+            foreach ($orderMetadata as $metaDataItem) {
+                /** @var \WC_Meta_Data $metaDataItem */
+                $metaData = $metaDataItem->get_data();
+
+                if (stripos($metaData['key'], 'tel') !== false || stripos($metaData['key'], 'phone') !== false) {
+                    $metaValue = str_replace(['-', ' ', '(', ')'], '', $metaData['value']);
+
+                    if (preg_match('/^(?:\+?\d{1,2})?\d{9}$|^(?:\d{2,3})?\d{7}$/', $metaValue)) {
+                        $phoneNumber = $metaValue;
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        $firstName = $wcOrder->get_billing_first_name();
+        $lastName = $wcOrder->get_billing_last_name();
+
+        if ($lastName === '') {
+            $name = explode(' ', $firstName);
+
+            if (count($name) > 1) {
+                $firstName = $name[0];
+                $lastName = $name[1];
+                [$firstName, $lastName] = $name;
+            }
+        }
+
+        $order = (new OrderFactory())->createOrder(
+            $orderId,
+            $shopCart->getTotalValue(),
+            $shopCart->getDeliveryCost(),
+            (int) sanitize_text_field($_POST['comfino_loan_term']),
+            new LoanTypeEnum(sanitize_text_field($_POST['comfino_loan_type'])),
+            $shopCart->getCartItems(),
+            new Customer(
+                $firstName,
+                $lastName,
+                $wcOrder->get_billing_email(),
+                $phoneNumber,
+                \WC_Geolocation::get_ip_address(),
+                preg_match('/^[A-Z]{0,3}\d{7,}$/', $customerTaxId) ? $customerTaxId : null,
+                !$customer->is_guest,
+                $customer->isLogged(),
+                new Address(
+                    $addressParts[0],
+                    $buildingNumber,
+                    null,
+                    $addresses[$cart->id_address_delivery]->postcode,
+                    $addresses[$cart->id_address_delivery]->city,
+                    'PL'
+                )
+            ),
+            $returnUrl,
+            ApiService::getEndpointUrl('transactionStatus'),
+            SettingsManager::getAllowedProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL, $shopCart)
+        );
+
+        //----
 
         Api_Client::$api_language = substr(get_locale(), 0, 2);
 
         return Api_Client::process_payment(
-            $order = wc_get_order($order_id),
+            $order = wc_get_order($orderId),
             $this->get_return_url($order),
             Core::get_notify_url()
         );
@@ -196,7 +283,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
     public function cancel_order(string $order_id)
     {
-        if (!$this->get_status_note($order_id, [Core::CANCELLED_BY_SHOP_STATUS, Core::RESIGN_STATUS])) {
+        if (!$this->get_status_note($order_id, [StatusManager::STATUS_CANCELLED_BY_SHOP, StatusManager::STATUS_RESIGN])) {
             $order = wc_get_order($order_id);
 
             if (stripos($order->get_payment_method(), 'comfino') !== false) {

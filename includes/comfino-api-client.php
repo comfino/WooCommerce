@@ -70,10 +70,10 @@ class Api_Client
         }
     }
 
-    public static function process_payment(\WC_Abstract_Order $order, string $return_url, string $notify_url): array
+    public static function process_payment(\WC_Order $order, string $return_url, string $notify_url): array
     {
         $loan_term = sanitize_text_field($_POST['comfino_loan_term']);
-        $type = sanitize_text_field($_POST['comfino_type']);
+        $type = sanitize_text_field($_POST['comfino_loan_type']);
 
         if (!ctype_digit($loan_term)) {
             return ['result' => 'failure', 'redirect' => ''];
@@ -188,7 +188,8 @@ class Api_Client
             }
 
             $order->add_order_note(__("Comfino create order", 'comfino-payment-gateway'));
-            $order->reduce_order_stock();
+
+            wc_reduce_stock_levels($order);
 
             WC()->cart->empty_cart();
 

@@ -1,31 +1,11 @@
-version: "3.2"
-
+version: '3.5'
 services:
-  wordpress_db:
-    image: mysql:5.7
-    volumes:
-      - db_data:/var/lib/mysql
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: wordpress
-      MYSQL_DATABASE: wordpress
-      MYSQL_USER: wordpress
-      MYSQL_PASSWORD: wordpress
-
-  wordpress:
-    depends_on:
-      - wordpress_db
-    image: wordpress:6.4.2
-    ports:
-      - "8000:80"
-    restart: always
-    environment:
-      WORDPRESS_DB_HOST: wordpress_db:3306
-      WORDPRESS_DB_USER: wordpress
-      WORDPRESS_DB_PASSWORD: wordpress
-      WORDPRESS_DB_NAME: wordpress
-      WORDPRESS_DEBUG: 1
-    volumes:
-      - ./:/var/www/html/wp-content/plugins/comfino-payment-gateway
-volumes:
-  db_data: {}
+    comfino-prestashop-php:
+        build:
+            context: ./
+            dockerfile: docker/Dockerfile
+        working_dir: /comfino-woocommerce
+        tty: true
+        volumes:
+            - ./:/comfino-woocommerce
+            - ~/.composer:/home/vagrant/.composer
