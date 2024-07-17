@@ -12,10 +12,6 @@ use Comfino\ErrorLogger;
 use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
 use Comfino\Order\ShopStatusManager;
 use Comfino\Tools;
-use const Comfino\_PS_VERSION_;
-use const Comfino\COMFINO_PS_17;
-use const Comfino\COMFINO_VERSION;
-use const Comfino\WC_VERSION;
 
 if (!defined('ABSPATH')) {
     exit;

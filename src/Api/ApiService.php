@@ -12,7 +12,6 @@ use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Core;
 use Comfino\Order\StatusAdapter;
-use const Comfino\WC_VERSION;
 
 if (!defined('ABSPATH')) {
     exit;

@@ -55,47 +55,18 @@ final class Main
         CacheManager::init($pluginDirectory);
     }
 
-    public static function install(\Comfino_Payment_Gateway $module): bool
+    public static function uninstall(string $pluginDirectory, string $pluginFile): bool
     {
-        ErrorLogger::init($module);
+        /*$config_manager = new Config_Manager();
 
-        ConfigManager::initConfigurationValues();
-        ShopStatusManager::addCustomOrderStatuses();
+        Api_Client::init($config_manager);
+        Api_Client::notify_plugin_removal();
 
-        if (!COMFINO_PS_17) {
-            $module->registerHook('payment');
-            $module->registerHook('displayPaymentEU');
-        }
+        $config_manager->remove_configuration_options();*/
 
-        $module->registerHook('paymentOptions');
-        $module->registerHook('paymentReturn');
-        $module->registerHook('displayBackofficeComfinoForm');
-        $module->registerHook('actionOrderStatusPostUpdate');
-        $module->registerHook('actionValidateCustomerAddressForm');
-        $module->registerHook('header');
-        $module->registerHook('actionAdminControllerSetMedia');
-
-        return true;
-    }
-
-    public static function uninstall(\PaymentModule $module): bool
-    {
         ConfigManager::deleteConfigurationValues();
 
-        if (!COMFINO_PS_17) {
-            $module->unregisterHook('payment');
-            $module->unregisterHook('displayPaymentEU');
-        }
-
-        $module->unregisterHook('paymentOptions');
-        $module->unregisterHook('paymentReturn');
-        $module->unregisterHook('displayBackofficeComfinoForm');
-        $module->unregisterHook('actionOrderStatusPostUpdate');
-        $module->unregisterHook('actionValidateCustomerAddressForm');
-        $module->unregisterHook('header');
-        $module->unregisterHook('actionAdminControllerSetMedia');
-
-        ErrorLogger::init($module);
+        ErrorLogger::init($pluginDirectory, $pluginFile);
         ApiClient::getInstance()->notifyPluginRemoval();
 
         return true;

@@ -14,7 +14,6 @@ use Comfino\Extended\Api\Client;
 use Comfino\Main;
 use Comfino\View\FrontendManager;
 use Psr\Http\Client\NetworkExceptionInterface;
-use const Comfino\WC_VERSION;
 
 if (!defined('ABSPATH')) {
     exit;
