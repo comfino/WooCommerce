@@ -743,7 +743,17 @@ document.getElementsByTagName('head')[0].appendChild(script);
             $avail_offers_url .= "/$product_id";
 
             if (($product = wc_get_product($product_id)) instanceof \WC_Product) {
-                $price = (float)preg_replace(['/[^\d,.]/', '/,/'], ['', '.'], $product->get_price());
+                $price= (float)preg_replace([
+                    '/[^\d,.]/',
+                    '/(?<=\d),(?=\d{3}(?:[^\d]|$))/',
+                    '/,00$/',
+                    '/,/'
+                ], [
+                    '',
+                    '',
+                    '',
+                    '.'
+                ], $product->get_price());
             }
         } else {
             $product_id = 'null';
