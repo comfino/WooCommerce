@@ -24,7 +24,7 @@ defined('ABSPATH') or exit;
 
 class Comfino_Payment_Gateway
 {
-    const VERSION = '3.4.2';
+    public const VERSION = '3.4.2';
 
     /**
      * @var Comfino_Payment_Gateway
@@ -43,6 +43,22 @@ class Comfino_Payment_Gateway
     public function __construct()
     {
         add_action('plugins_loaded', [$this, 'init']);
+    }
+
+    /**
+     * Plugin URL.
+     */
+    public static function plugin_url(): string
+    {
+        return untrailingslashit(plugins_url('/', __FILE__));
+    }
+
+    /**
+     * Plugin absolute path.
+     */
+    public static function plugin_abspath(): string
+    {
+        return trailingslashit(plugin_dir_path(__FILE__));
     }
 
     /**
@@ -100,9 +116,24 @@ class Comfino_Payment_Gateway
             ]);
         });
 
+        // Declares compatibility with WooCommerce HPOS.
         add_action('before_woocommerce_init', static function () {
             if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
-                \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__);
+                Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__);
+            }
+        });
+
+        // Registers WooCommerce Blocks integration.
+        add_action('woocommerce_blocks_loaded', static function () {
+            if (class_exists('\Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+                require_once __DIR__ . '/includes/blocks/comfino-payment-gateway-blocks.php';
+
+                add_action(
+                    'woocommerce_blocks_payment_method_type_registration',
+                    static function (Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry) {
+                        $payment_method_registry->register( new Comfino_Payment_Gateway_Blocks_Support());
+                    }
+                );
             }
         });
 
