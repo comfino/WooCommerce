@@ -64,6 +64,22 @@ class Comfino_Payment_Gateway
     }
 
     /**
+     * Plugin URL.
+     */
+    public static function plugin_url(): string
+    {
+        return untrailingslashit(plugins_url('/', __FILE__));
+    }
+
+    /**
+     * Plugin absolute path.
+     */
+    public static function plugin_abspath(): string
+    {
+        return trailingslashit(plugin_dir_path(__FILE__));
+    }
+
+    /**
      * Plugin initialization.
      */
     public function init(): void
@@ -75,6 +91,74 @@ class Comfino_Payment_Gateway
         if (is_readable(__DIR__ . '/vendor/autoload.php')) {
             require_once __DIR__ . '/vendor/autoload.php';
         }
+        require_once __DIR__ . '/includes/comfino-config-manager.php';
+        require_once __DIR__ . '/includes/comfino-core.php';
+        require_once __DIR__ . '/includes/comfino-api-client.php';
+        require_once __DIR__ . '/includes/comfino-gateway.php';
+        require_once __DIR__ . '/includes/comfino-error-logger.php';
+
+        add_filter('woocommerce_payment_gateways', [$this, 'add_gateway']);
+        add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'plugin_action_links']);
+        add_filter('wc_order_statuses', [$this, 'filter_order_status']);
+
+        add_action('wp_loaded', [$this, 'comfino_rest_load_cart'], 5);
+        add_action('wp_head', [$this, 'render_widget']);
+
+        add_action('rest_api_init', static function () {
+            register_rest_route('comfino', '/notification', [
+                [
+                    'methods' => WP_REST_Server::EDITABLE,
+                    'callback' => [Core::class, 'process_notification'],
+                    'permission_callback' => '__return_true',
+                ],
+            ]);
+
+            register_rest_route('comfino', '/availableoffertypes(?:/(?P<product_id>\d+))?', [
+                [
+                    'methods' => WP_REST_Server::READABLE,
+                    'callback' => [Core::class, 'get_available_offer_types'],
+                    'args' => ['product_id' => ['sanitize_callback' => 'absint']],
+                    'permission_callback' => '__return_true',
+                ],
+            ]);
+
+            register_rest_route('comfino', '/configuration(?:/(?P<vkey>[a-f0-9]+))?', [
+                [
+                    'methods' => WP_REST_Server::READABLE,
+                    'callback' => [Core::class, 'get_configuration'],
+                    'args' => ['vkey' => ['sanitize_callback' => 'sanitize_key']],
+                    'permission_callback' => '__return_true',
+                ],
+                [
+                    'methods' => WP_REST_Server::EDITABLE,
+                    'callback' => [Core::class, 'update_configuration'],
+                    'permission_callback' => '__return_true',
+                ]
+            ]);
+        });
+
+        // Declares compatibility with WooCommerce HPOS.
+        add_action('before_woocommerce_init', static function () {
+            if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+                Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__);
+            }
+        });
+
+        // Registers WooCommerce Blocks integration.
+        add_action('woocommerce_blocks_loaded', static function () {
+            if (class_exists('\Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+                require_once __DIR__ . '/includes/blocks/comfino-payment-gateway-blocks.php';
+
+                add_action(
+                    'woocommerce_blocks_payment_method_type_registration',
+                    static function (Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry) {
+                        $payment_method_registry->register( new Comfino_Payment_Gateway_Blocks_Support());
+                    }
+                );
+            }
+        });
+
+        load_plugin_textdomain('comfino-payment-gateway', false, basename(__DIR__) . '/languages');
 
         // Initialize Comfino plugin.
         Comfino\Main::init($this, __DIR__, __FILE__);
