@@ -1,8 +1,10 @@
 <?php
 
+namespace Comfino\View\Block;
+
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 
-final class Comfino_Payment_Gateway_Blocks_Support extends AbstractPaymentMethodType
+final class PaymentGateway extends AbstractPaymentMethodType
 {
     /**
      * The gateway instance.
@@ -41,23 +43,27 @@ final class Comfino_Payment_Gateway_Blocks_Support extends AbstractPaymentMethod
      */
     public function get_payment_method_script_handles(): array
     {
-        $script_path = '/assets/js/frontend/blocks.js';
-        $script_asset_path = Comfino_Payment_Gateway::plugin_abspath() . 'assets/js/frontend/blocks.asset.php';
-        $script_asset = is_readable($script_asset_path)
-            ? require $script_asset_path
-            : ['dependencies' => [], 'version' => Comfino_Payment_Gateway::VERSION];
-        $script_url = Comfino_Payment_Gateway::plugin_url() . $script_path;
+        $scriptPath = '/assets/js/frontend/blocks.js';
+        $scriptAssetPath = \Comfino_Payment_Gateway::plugin_abspath() . 'assets/js/frontend/blocks.asset.php';
+        $scriptAsset = is_readable($scriptAssetPath)
+            ? require $scriptAssetPath
+            : ['dependencies' => [], 'version' => \Comfino_Payment_Gateway::VERSION];
+        $scriptUrl = \Comfino_Payment_Gateway::plugin_url() . $scriptPath;
 
         wp_register_script(
             'comfino-payment-gateway-blocks',
-            $script_url,
-            $script_asset['dependencies'],
-            $script_asset['version'],
+            $scriptUrl,
+            $scriptAsset['dependencies'],
+            $scriptAsset['version'],
             true
         );
 
-        if ( function_exists( 'wp_set_script_translations' ) ) {
-            wp_set_script_translations( 'wc-dummy-payments-blocks', 'woocommerce-gateway-dummy', WC_Dummy_Payments::plugin_abspath() . 'languages/' );
+        if (function_exists('wp_set_script_translations')) {
+            wp_set_script_translations(
+                'comfino-payment-gateway-blocks',
+                'comfino-payment-gateway',
+                \Comfino_Payment_Gateway::plugin_abspath() . 'languages/'
+            );
         }
 
         return ['comfino-payment-gateway-blocks'];

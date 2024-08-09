@@ -34,22 +34,131 @@ final class Main
 
     public static function init(\Comfino_Payment_Gateway $module, string $pluginDirectory, string $pluginFile): void
     {
-        add_filter('woocommerce_payment_gateways', [$module, 'add_gateway']);
-        add_filter('plugin_action_links_' . plugin_basename($pluginFile), [$module, 'plugin_action_links']);
-        add_filter('wc_order_statuses', [$module, 'filter_order_status']);
+        self::$pluginDirectory = $pluginDirectory;
+        self::$pluginFile = $pluginFile;
+        self::$errorLogger = ErrorLogger::getLoggerInstance($pluginFile);
+        self::$debugLogFilePath = "$pluginDirectory/var/log/debug.log";
 
-        add_action('wp_loaded', [$module, 'comfino_rest_load_cart'], 5);
+        ErrorLogger::init($pluginDirectory, $pluginFile);
+
+        /*
+         * Loads the cart, session and notices should it be required.
+         *
+         * Workaround for WC bug:
+         * https://github.com/woocommerce/woocommerce/issues/27160
+         * https://github.com/woocommerce/woocommerce/issues/27157
+         * https://github.com/woocommerce/woocommerce/issues/23792
+         *
+         * Note: Only needed should the site be running WooCommerce 3.6 or higher as they are not included during a REST request.
+         *
+         * @see https://plugins.trac.wordpress.org/browser/cart-rest-api-for-woocommerce/trunk/includes/class-cocart-init.php#L145
+         * @since 2.0.0
+         * @version 2.0.3
+         */
+        add_action('wp_loaded', static function (): void {
+            if (version_compare(WC_VERSION, '3.6.0', '>=') && WC()->is_rest_api_request()) {
+                if (empty($_SERVER['REQUEST_URI'])) {
+                    return;
+                }
+
+                $restPrefix = 'comfino/offers';
+                $requestUri = esc_url_raw(wp_unslash($_SERVER['REQUEST_URI']));
+
+                if (strpos($requestUri, $restPrefix) === false) {
+                    return;
+                }
+
+                require_once WC_ABSPATH . 'includes/wc-cart-functions.php';
+                require_once WC_ABSPATH . 'includes/wc-notice-functions.php';
+
+                if (WC()->session === null) {
+                    $sessionClass = apply_filters('woocommerce_session_handler', 'WC_Session_Handler'); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+
+                    // Prefix session class with global namespace if not already namespaced.
+                    if (strpos($sessionClass, '\\') === false) {
+                        $sessionClass = '\\' . $sessionClass;
+                    }
+
+                    WC()->session = new $sessionClass();
+                    WC()->session->init();
+                }
+
+                // For logged in customers, pull data from their account rather than the session which may contain incomplete data.
+                if (WC()->customer === null) {
+                    try {
+                        if (is_user_logged_in()) {
+                            WC()->customer = new \WC_Customer(get_current_user_id());
+                        } else {
+                            WC()->customer = new \WC_Customer(get_current_user_id(), true);
+                        }
+
+                        // Customer should be saved during shutdown.
+                        add_action('shutdown', [WC()->customer, 'save'], 10);
+                    } catch (\Exception $e) {
+                        ErrorLogger::logError('wp_loaded:comfino_rest_load_cart', $e->getMessage());
+                    }
+                }
+
+                // Load cart.
+                if (WC()->cart === null) {
+                    WC()->cart = new \WC_Cart();
+                }
+            }
+        }, 5);
+
         add_action('wp_head', [$module, 'render_widget']);
 
         // Register module API endpoints.
         add_action('rest_api_init', [ApiService::class, 'init']);
 
-        load_plugin_textdomain('comfino-payment-gateway', false, basename($pluginDirectory) . '/languages');
+        // Declare compatibility with WooCommerce HPOS.
+        add_action('before_woocommerce_init', static function () {
+            if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+                \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__);
+            }
+        });
 
-        self::$pluginDirectory = $pluginDirectory;
-        self::$pluginFile = $pluginFile;
-        self::$errorLogger = ErrorLogger::getLoggerInstance($pluginFile);
-        self::$debugLogFilePath = "$pluginDirectory/var/log/debug.log";
+        // Register WooCommerce Blocks integration.
+        add_action('woocommerce_blocks_loaded', static function () {
+            if (class_exists('\Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+                add_action(
+                    'woocommerce_blocks_payment_method_type_registration',
+                    static function (\Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $paymentMethodRegistry) {
+                        $paymentMethodRegistry->register(new View\Block\PaymentGateway());
+                    }
+                );
+            }
+        });
+
+        // Add a Comfino gateway to the WooCommerce payment methods available for customer.
+        add_filter('woocommerce_payment_gateways', static function (array $methods): array {
+            $methods[] = 'Comfino_Gateway';
+
+            return $methods;
+        });
+
+        add_filter('plugin_action_links_' . plugin_basename($pluginFile), static function (array $links): array {
+            return array_merge([
+                '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino') . '">' .
+                __('Settings', 'comfino-payment-gateway') . '</a>',
+            ], $links);
+        });
+
+        add_filter('wc_order_statuses', static function (array $statuses): array {
+            global $post;
+
+            if (isset($post) && 'shop_order' === $post->post_type) {
+                $order = wc_get_order($post->ID);
+
+                if (isset($statuses['wc-cancelled']) && $order->get_payment_method() === 'comfino' && $order->has_status('completed')) {
+                    unset($statuses['wc-cancelled']);
+                }
+            }
+
+            return $statuses;
+        });
+
+        load_plugin_textdomain('comfino-payment-gateway', false, basename($pluginDirectory) . '/languages');
 
         // Initialize cache system.
         CacheManager::init($pluginDirectory);

@@ -136,6 +136,11 @@ final class ApiClient
         return $widgetScriptUrl;
     }
 
+    public static function isDevEnv(): bool
+    {
+        return getenv('COMFINO_DEV') === 'WC_' . WC_VERSION . '_' . Main::getShopUrl();
+    }
+
     private static function getApiHost(?string $apiHost = null): ?string
     {
         if (self::isDevEnv() && getenv('COMFINO_DEV_API_HOST')) {
@@ -143,10 +148,5 @@ final class ApiClient
         }
 
         return $apiHost;
-    }
-
-    private static function isDevEnv(): bool
-    {
-        return getenv('COMFINO_DEV') === 'WC_' . WC_VERSION . '_' . Main::getShopUrl();
     }
 }
