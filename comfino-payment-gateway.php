@@ -157,68 +157,6 @@ class Comfino_Payment_Gateway
             }
         }
     }
-
-    /**
-     * Loads the cart, session and notices should it be required.
-     *
-     * Workaround for WC bug:
-     * https://github.com/woocommerce/woocommerce/issues/27160
-     * https://github.com/woocommerce/woocommerce/issues/27157
-     * https://github.com/woocommerce/woocommerce/issues/23792
-     *
-     * Note: Only needed should the site be running WooCommerce 3.6 or higher as they are not included during a REST request.
-     *
-     * @see https://plugins.trac.wordpress.org/browser/cart-rest-api-for-woocommerce/trunk/includes/class-cocart-init.php#L145
-     * @since 2.0.0
-     * @version 2.0.3
-     */
-    public function comfino_rest_load_cart(): void
-    {
-        if (version_compare(WC_VERSION, '3.6.0', '>=') && WC()->is_rest_api_request()) {
-            if (empty($_SERVER['REQUEST_URI'])) {
-                return;
-            }
-
-            $rest_prefix = 'comfino/offers';
-            $req_uri = esc_url_raw(wp_unslash($_SERVER['REQUEST_URI']));
-
-            if (strpos($req_uri, $rest_prefix) === false) {
-                return;
-            }
-
-            require_once WC_ABSPATH . 'includes/wc-cart-functions.php';
-            require_once WC_ABSPATH . 'includes/wc-notice-functions.php';
-
-            if (WC()->session === null) {
-                $session_class = apply_filters('woocommerce_session_handler', 'WC_Session_Handler'); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
-
-                // Prefix session class with global namespace if not already namespaced.
-                if (strpos($session_class, '\\') === false) {
-                    $session_class = '\\' . $session_class;
-                }
-
-                WC()->session = new $session_class();
-                WC()->session->init();
-            }
-
-            // For logged in customers, pull data from their account rather than the session which may contain incomplete data.
-            if (WC()->customer === null) {
-                if (is_user_logged_in()) {
-                    WC()->customer = new WC_Customer(get_current_user_id());
-                } else {
-                    WC()->customer = new WC_Customer(get_current_user_id(), true);
-                }
-
-                // Customer should be saved during shutdown.
-                add_action('shutdown', [WC()->customer, 'save'], 10);
-            }
-
-            // Load cart.
-            if (WC()->cart === null) {
-                WC()->cart = new WC_Cart();
-            }
-        }
-    }
 }
 
 global $comfino_payment_gateway;
