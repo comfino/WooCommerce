@@ -2,6 +2,6 @@
 
 namespace Comfino\Common\Exception;
 
-class InvalidRequest extends ComfinoExternal\\InvalidArgumentException
+class InvalidRequest extends \InvalidArgumentException
 {
 }

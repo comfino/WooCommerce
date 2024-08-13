@@ -6,13 +6,13 @@ use Comfino\Common\Backend\ConfigurationManager;
 use Comfino\Common\Backend\RestEndpoint;
 use Comfino\Common\Exception\InvalidEndpoint;
 use Comfino\Common\Exception\InvalidRequest;
-use Psr\Http\Message\ServerRequestInterface;
+use ComfinoExternal\Psr\Http\Message\ServerRequestInterface;
 
 final class Configuration extends RestEndpoint
 {
     /**
      * @readonly
-     * @var ComfinoExternal\\Comfino\Common\Backend\ConfigurationManager
+     * @var \Comfino\Common\Backend\ConfigurationManager
      */
     private $configurationManager;
     /**
@@ -55,7 +55,7 @@ final class Configuration extends RestEndpoint
     }
 
     /**
-     * @param ComfinoExternal\\Psr\Http\Message\ServerRequestInterface $serverRequest
+     * @param \ComfinoExternal\Psr\Http\Message\ServerRequestInterface $serverRequest
      * @param string|null $endpointName
      */
     public function processRequest($serverRequest, $endpointName = null): ?array
@@ -71,7 +71,7 @@ final class Configuration extends RestEndpoint
                     'platform_version' => $this->platformVersion,
                     'plugin_version' => $this->pluginVersion,
                     'symfony_version' => class_exists('\Symfony\Component\HttpKernel\Kernel')
-                        ? ComfinoExternal\\Symfony\Component\HttpKernel\Kernel::VERSION
+                        ? \Symfony\Component\HttpKernel\Kernel::VERSION
                         : 'n/a',
                     'php_version' => PHP_VERSION,
                     'server_software' => $serverRequest->getServerParams()['SERVER_SOFTWARE'],

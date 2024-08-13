@@ -2,7 +2,7 @@
 
 namespace Comfino\Common\Frontend;
 
-use Cache\TagInterop\TaggableCacheItemPoolInterface;
+use ComfinoExternal\Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Comfino\Api\Client;
 use Comfino\Common\Frontend\TemplateRenderer\RendererStrategyInterface;
 
@@ -10,7 +10,7 @@ final class PaywallIframeRenderer extends FrontendRenderer
 {
     /**
      * @readonly
-     * @var ComfinoExternal\\Comfino\Common\Frontend\TemplateRenderer\RendererStrategyInterface
+     * @var \Comfino\Common\Frontend\TemplateRenderer\RendererStrategyInterface
      */
     private $rendererStrategy;
     /**
@@ -45,7 +45,7 @@ final class PaywallIframeRenderer extends FrontendRenderer
         }
 
         return sprintf(
-            '<style>%s</style><iframe id="comfino-paywall-container" src="%s" referrerpolicy="strict-origin" loading="lazy" class="comfino-paywall" scrolling="no" onload="ComfinoPaywallFrontend.onload(this, ComfinoExternal\\'%s\', ComfinoExternal\\'%s\')"></iframe><script>%s</script>',
+            '<style>%s</style><iframe id="comfino-paywall-container" src="%s" referrerpolicy="strict-origin" loading="lazy" class="comfino-paywall" scrolling="no" onload="ComfinoPaywallFrontend.onload(this, \'%s\', \'%s\')"></iframe><script>%s</script>',
             $fragments['frontend_style'] ?? '',
             $iframeUrl,
             $this->platformName,

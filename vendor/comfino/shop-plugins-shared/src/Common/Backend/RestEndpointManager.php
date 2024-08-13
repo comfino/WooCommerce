@@ -7,12 +7,12 @@ use Comfino\Api\Exception\AuthorizationError;
 use Comfino\Api\SerializerInterface;
 use Comfino\Common\Exception\InvalidEndpoint;
 use Comfino\Common\Exception\InvalidRequest;
-use Psr\Http\Message\ResponseFactoryInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestFactoryInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Message\UriFactoryInterface;
+use ComfinoExternal\Psr\Http\Message\ResponseFactoryInterface;
+use ComfinoExternal\Psr\Http\Message\ResponseInterface;
+use ComfinoExternal\Psr\Http\Message\ServerRequestFactoryInterface;
+use ComfinoExternal\Psr\Http\Message\ServerRequestInterface;
+use ComfinoExternal\Psr\Http\Message\StreamFactoryInterface;
+use ComfinoExternal\Psr\Http\Message\UriFactoryInterface;
 
 final class RestEndpointManager
 {
@@ -38,27 +38,27 @@ final class RestEndpointManager
     protected $apiKeys;
     /**
      * @readonly
-     * @var ComfinoExternal\\Psr\Http\Message\ServerRequestFactoryInterface
+     * @var \ComfinoExternal\Psr\Http\Message\ServerRequestFactoryInterface
      */
     protected $serverRequestFactory;
     /**
      * @readonly
-     * @var ComfinoExternal\\Psr\Http\Message\StreamFactoryInterface
+     * @var \ComfinoExternal\Psr\Http\Message\StreamFactoryInterface
      */
     protected $streamFactory;
     /**
      * @readonly
-     * @var ComfinoExternal\\Psr\Http\Message\UriFactoryInterface
+     * @var \ComfinoExternal\Psr\Http\Message\UriFactoryInterface
      */
     protected $uriFactory;
     /**
      * @readonly
-     * @var ComfinoExternal\\Psr\Http\Message\ResponseFactoryInterface
+     * @var \ComfinoExternal\Psr\Http\Message\ResponseFactoryInterface
      */
     protected $responseFactory;
     /**
      * @readonly
-     * @var ComfinoExternal\\Comfino\Api\SerializerInterface
+     * @var \Comfino\Api\SerializerInterface
      */
     protected $serializer;
     /**
@@ -132,7 +132,7 @@ final class RestEndpointManager
         $endpoints = [];
 
         foreach ($this->registeredEndpoints as $endpoint) {
-            $endpoints[(new ComfinoExternal\\ReflectionClass($endpoint))->getShortName()] = [
+            $endpoints[(new \ReflectionClass($endpoint))->getShortName()] = [
                 'url' => $endpoint->getEndpointUrl(),
                 'methods' => $endpoint->getMethods(),
             ];

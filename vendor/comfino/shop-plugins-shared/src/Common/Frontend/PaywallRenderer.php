@@ -2,7 +2,7 @@
 
 namespace Comfino\Common\Frontend;
 
-use Cache\TagInterop\TaggableCacheItemPoolInterface;
+use ComfinoExternal\Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Comfino\Api\Client;
 use Comfino\Api\Dto\Payment\LoanQueryCriteria;
 use Comfino\Common\Frontend\TemplateRenderer\RendererStrategyInterface;
@@ -12,7 +12,7 @@ final class PaywallRenderer extends FrontendRenderer
 {
     /**
      * @readonly
-     * @var ComfinoExternal\\Comfino\Common\Frontend\TemplateRenderer\RendererStrategyInterface
+     * @var \Comfino\Common\Frontend\TemplateRenderer\RendererStrategyInterface
      */
     private $rendererStrategy;
     private const PAYWALL_FRAGMENTS = ['template', 'style', 'script'];
@@ -29,7 +29,7 @@ final class PaywallRenderer extends FrontendRenderer
     }
 
     /**
-     * @param ComfinoExternal\\Comfino\Api\Dto\Payment\LoanQueryCriteria $queryCriteria
+     * @param \Comfino\Api\Dto\Payment\LoanQueryCriteria $queryCriteria
      */
     public function renderPaywall($queryCriteria): string
     {

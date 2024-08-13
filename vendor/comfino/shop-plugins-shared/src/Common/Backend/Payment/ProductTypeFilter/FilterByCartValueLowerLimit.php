@@ -22,7 +22,7 @@ class FilterByCartValueLowerLimit implements ProductTypeFilterInterface
 
     /**
      * @param mixed[] $availableProductTypes
-     * @param ComfinoExternal\\Comfino\Common\Shop\Cart $cart
+     * @param \Comfino\Common\Shop\Cart $cart
      */
     public function getAllowedProductTypes($availableProductTypes, $cart): array
     {

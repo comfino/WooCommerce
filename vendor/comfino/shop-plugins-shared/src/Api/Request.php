@@ -3,9 +3,9 @@
 namespace Comfino\Api;
 
 use Comfino\Api\Exception\RequestValidationError;
-use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\StreamFactoryInterface;
+use ComfinoExternal\Psr\Http\Message\RequestFactoryInterface;
+use ComfinoExternal\Psr\Http\Message\RequestInterface;
+use ComfinoExternal\Psr\Http\Message\StreamFactoryInterface;
 
 /**
  * API request abstraction.
@@ -28,7 +28,7 @@ abstract class Request
     private $requestBody;
 
     /**
-     * @param ComfinoExternal\\Comfino\Api\SerializerInterface $serializer
+     * @param \Comfino\Api\SerializerInterface $serializer
      */
     final public function setSerializer($serializer): self
     {

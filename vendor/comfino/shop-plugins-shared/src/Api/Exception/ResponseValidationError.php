@@ -2,7 +2,7 @@
 
 namespace Comfino\Api\Exception;
 
-class ResponseValidationError extends ComfinoExternal\\RuntimeException
+class ResponseValidationError extends \RuntimeException
 {
     /** @var string */
     private $url;

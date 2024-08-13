@@ -2,7 +2,7 @@
 
 namespace Comfino\Api\Exception;
 
-class ServiceUnavailable extends ComfinoExternal\\RuntimeException
+class ServiceUnavailable extends \RuntimeException
 {
     /** @var string */
     private $url;

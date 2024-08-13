@@ -6,11 +6,11 @@ use Comfino\Api\Client;
 use Comfino\Extended\Api\Dto\Plugin\ShopPluginError;
 use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
 use Http\Message\RequestMatcher\RequestMatcher;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
-use Sunrise\Http\Factory\RequestFactory;
-use Sunrise\Http\Factory\ResponseFactory;
-use Sunrise\Http\Factory\StreamFactory;
+use ComfinoExternal\Psr\Http\Message\RequestInterface;
+use ComfinoExternal\Psr\Http\Message\ResponseInterface;
+use ComfinoExternal\Sunrise\Http\Factory\RequestFactory;
+use ComfinoExternal\Sunrise\Http\Factory\ResponseFactory;
+use ComfinoExternal\Sunrise\Http\Factory\StreamFactory;
 
 trait ExtendedClientTestTrait
 {
@@ -51,7 +51,7 @@ trait ExtendedClientTestTrait
 
     private function initApiClient(string $endpointPath, string $method, ?array $queryParameters = null, ?string $requestBody = null, $responseData = null, ?string $apiKey = null, bool $isPublicEndpoint = false, int $responseStatus = 200): Extended\Api\Client
     {
-        $client = new ComfinoExternal\\Http\Mock\Client();
+        $client = new \Http\Mock\Client();
         $client->on(
             new RequestMatcher($endpointPath, $this->productionApiHost, $method, 'https'),
             function (RequestInterface $request) use ($queryParameters, $requestBody, $responseData, $apiKey, $isPublicEndpoint, $responseStatus) {

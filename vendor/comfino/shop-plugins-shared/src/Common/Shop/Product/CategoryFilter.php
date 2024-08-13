@@ -8,7 +8,7 @@ class CategoryFilter
 {
     /**
      * @readonly
-     * @var ComfinoExternal\\Comfino\Common\Shop\Product\CategoryTree
+     * @var \Comfino\Common\Shop\Product\CategoryTree
      */
     private $categoryTree;
     public function __construct(CategoryTree $categoryTree)
@@ -45,7 +45,7 @@ class CategoryFilter
 
     /**
      * @param int[] $excludedCategoryIds
-     * @param ComfinoExternal\\Comfino\Common\Shop\Cart $cart
+     * @param \Comfino\Common\Shop\Cart $cart
      */
     public function isCartValid($cart, $excludedCategoryIds): bool
     {

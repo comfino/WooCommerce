@@ -10,11 +10,11 @@ final class CategoryTree
 {
     /**
      * @readonly
-     * @var ComfinoExternal\\Comfino\Common\Shop\Product\CategoryTree\BuildStrategyInterface
+     * @var \Comfino\Common\Shop\Product\CategoryTree\BuildStrategyInterface
      */
     private $buildStrategy;
     /**
-     * @var ComfinoExternal\\Comfino\Common\Shop\Product\CategoryTree\NodeIterator|null
+     * @var \Comfino\Common\Shop\Product\CategoryTree\NodeIterator|null
      */
     private $nodes;
 

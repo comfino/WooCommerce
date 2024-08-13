@@ -2,19 +2,19 @@
 
 namespace Comfino\Common\Backend\RestEndpoint;
 
-use Cache\TagInterop\TaggableCacheItemPoolInterface;
+use ComfinoExternal\Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Comfino\Common\Backend\Cache\ItemTypeEnum;
 use Comfino\Common\Backend\RestEndpoint;
 use Comfino\Common\Exception\InvalidEndpoint;
 use Comfino\Common\Exception\InvalidRequest;
-use Psr\Cache\InvalidArgumentException;
-use Psr\Http\Message\ServerRequestInterface;
+use ComfinoExternal\Psr\Cache\InvalidArgumentException;
+use ComfinoExternal\Psr\Http\Message\ServerRequestInterface;
 
 class CacheInvalidate extends RestEndpoint
 {
     /**
      * @readonly
-     * @var ComfinoExternal\\Cache\TagInterop\TaggableCacheItemPoolInterface
+     * @var \ComfinoExternal\Cache\TagInterop\TaggableCacheItemPoolInterface
      */
     private $cache;
     public function __construct(
@@ -30,7 +30,7 @@ class CacheInvalidate extends RestEndpoint
 
     /**
      * @throws InvalidArgumentException
-     * @param ComfinoExternal\\Psr\Http\Message\ServerRequestInterface $serverRequest
+     * @param \ComfinoExternal\Psr\Http\Message\ServerRequestInterface $serverRequest
      * @param string|null $endpointName
      */
     public function processRequest($serverRequest, $endpointName = null): ?array

@@ -10,7 +10,7 @@ use Comfino\Api\Exception\ServiceUnavailable;
 use Comfino\Api\Request;
 use Comfino\Api\Response;
 use Comfino\Api\SerializerInterface;
-use Psr\Http\Message\ResponseInterface;
+use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 
 class Base extends Response
 {

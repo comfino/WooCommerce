@@ -3,9 +3,9 @@
 namespace Comfino\Common\Backend\Factory;
 
 use Comfino\Extended\Api\Client;
-use Sunrise\Http\Factory\RequestFactory;
-use Sunrise\Http\Factory\ResponseFactory;
-use Sunrise\Http\Factory\StreamFactory;
+use ComfinoExternal\Sunrise\Http\Factory\RequestFactory;
+use ComfinoExternal\Sunrise\Http\Factory\ResponseFactory;
+use ComfinoExternal\Sunrise\Http\Factory\StreamFactory;
 
 final class ApiClientFactory
 {
@@ -19,7 +19,7 @@ final class ApiClientFactory
         $client = new Client(
             new RequestFactory(),
             new StreamFactory(),
-            new ComfinoExternal\\Sunrise\Http\Client\Curl\Client(new ResponseFactory(), $curlOptions),
+            new \ComfinoExternal\Sunrise\Http\Client\Curl\Client(new ResponseFactory(), $curlOptions),
             $apiKey
         );
 

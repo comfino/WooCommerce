@@ -19,7 +19,7 @@ class ItemTypeEnum extends Enum
      * @param bool $strict
      * @return $this
      */
-    public static function from($value, $strict = true): ComfinoExternal\\Comfino\Enum
+    public static function from($value, $strict = true): \Comfino\Enum
     {
         return new self($value, $strict);
     }

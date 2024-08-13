@@ -30,12 +30,12 @@ final class ErrorLogger
     private $environment;
     /**
      * @readonly
-     * @var ComfinoExternal\\Comfino\Extended\Api\Client
+     * @var \Comfino\Extended\Api\Client
      */
     private $apiClient;
     /**
      * @readonly
-     * @var ComfinoExternal\\Comfino\Common\Backend\Logger\StorageAdapterInterface
+     * @var \Comfino\Common\Backend\Logger\StorageAdapterInterface
      */
     private $storageAdapter;
     private const ERROR_TYPES = [
@@ -89,7 +89,7 @@ final class ErrorLogger
         ?string $apiResponse = null,
         ?string $stackTrace = null
     ): void {
-        if (preg_match('/Error .*in ComfinoExternal\\/|Exception .*in ComfinoExternal\\//', $errorMessage) && strpos($errorMessage, $this->modulePath) === false
+        if (preg_match('/Error .*in \/|Exception .*in \//', $errorMessage) && strpos($errorMessage, $this->modulePath) === false
         ) {
             // Ignore all errors and exceptions outside the plugin code.
             return;
@@ -146,12 +146,12 @@ final class ErrorLogger
         $errorsLog = '';
 
         if (file_exists($logFilePath)) {
-            $file = new ComfinoExternal\\SplFileObject($logFilePath, 'r');
+            $file = new \SplFileObject($logFilePath, 'r');
             $file->seek(PHP_INT_MAX);
 
             $lastLine = $file->key();
 
-            $lines = new ComfinoExternal\\LimitIterator(
+            $lines = new \LimitIterator(
                 $file,
                 $lastLine > $numLines ? $lastLine - $numLines : 0,
                 $lastLine ?: 1

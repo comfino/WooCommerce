@@ -13,6 +13,13 @@
         }
     ],
     "config": {
+        "preferred-install": "dist",
+        "platform-check": false,
+        "platform": {
+            "php": "7.1"
+        },
+        "classmap-authoritative": true,
+        "optimize-autoloader": true,
         "prepend-autoloader": false,
         "allow-plugins": {
             "php-http/discovery": true
@@ -20,14 +27,32 @@
     },
     "autoload": {
         "psr-4": {
-            "Comfino\\": "src/"
+            "Comfino\\": "src/",
+            "ComfinoExternal\\Sunrise\\Http\\Client\\Curl\\": "vendor/sunrise/http-client-curl/src/",
+            "ComfinoExternal\\Sunrise\\Http\\ServerRequest\\": "vendor/sunrise/http-server-request/src/",
+            "ComfinoExternal\\Sunrise\\Http\\Header\\": "vendor/sunrise/http-header/src/",
+            "ComfinoExternal\\Sunrise\\Http\\Factory\\": "vendor/sunrise/http-factory/src/",
+            "ComfinoExternal\\Sunrise\\Stream\\": "vendor/sunrise/stream/src/",
+            "ComfinoExternal\\Sunrise\\Uri\\": "vendor/sunrise/uri/src/",
+            "ComfinoExternal\\Sunrise\\Http\\Message\\": "vendor/sunrise/http-message/src/",
+            "ComfinoExternal\\Psr\\Cache\\": "vendor/psr/cache/src/",
+            "ComfinoExternal\\Psr\\Http\\Message\\": [
+                "vendor/psr/http-factory/src/",
+                "vendor/psr/http-message/src/"
+            ],
+            "ComfinoExternal\\Psr\\Http\\Client\\": "vendor/psr/http-client/src/",
+            "ComfinoExternal\\Psr\\SimpleCache\\": "vendor/psr/simple-cache/src/",
+            "ComfinoExternal\\Psr\\Log\\": "vendor/psr/log/Psr/Log/",
+            "ComfinoExternal\\Cache\\TagInterop\\": "vendor/cache/tag-interop/",
+            "ComfinoExternal\\Cache\\Hierarchy\\": "vendor/cache/hierarchical-cache/",
+            "ComfinoExternal\\Cache\\Adapter\\PHPArray\\": "vendor/cache/array-adapter/",
+            "ComfinoExternal\\Cache\\Adapter\\Common\\": "vendor/cache/adapter-common/",
+            "ComfinoExternal\\Cache\\Adapter\\Filesystem\\": "vendor/cache/filesystem-adapter/",
+            "ComfinoExternal\\Fig\\Http\\Message\\": "vendor/fig/http-message-util/src/",
+            "ComfinoExternal\\League\\Flysystem\\": "vendor/league/flysystem/src/",
+            "ComfinoExternal\\League\\MimeTypeDetection\\": "vendor/league/mime-type-detection/src/"
         },
-        "classmap": [
-        ],
-        "config": {
-            "preferred-install": "dist",
-            "prepend-autoloader": false
-        }
+        "classmap": []
     },
     "require": {
         "php": ">=7.1",

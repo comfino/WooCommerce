@@ -8,14 +8,14 @@ use Comfino\Extended\Api\Dto\Plugin\ShopPluginError;
 use Comfino\Extended\Api\Request\NotifyShopPluginRemoval;
 use Comfino\Extended\Api\Request\ReportShopPluginError;
 use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
+use ComfinoExternal\Psr\Http\Client\ClientInterface;
+use ComfinoExternal\Psr\Http\Message\RequestFactoryInterface;
+use ComfinoExternal\Psr\Http\Message\StreamFactoryInterface;
 
 /**
  * Extended Comfino API client PHP 7.1+ compatible.
  */
-class Client extends ComfinoExternal\\Comfino\Api\Client
+class Client extends \Comfino\Api\Client
 {
     public function __construct(
         RequestFactoryInterface $requestFactory,

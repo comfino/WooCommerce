@@ -32,11 +32,11 @@ use Comfino\Api\Serializer\Json as JsonSerializer;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Paywall\PaywallViewTypeEnum;
 use Comfino\Shop\Order\OrderInterface;
-use Psr\Http\Client\ClientExceptionInterface;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamFactoryInterface;
+use ComfinoExternal\Psr\Http\Client\ClientExceptionInterface;
+use ComfinoExternal\Psr\Http\Client\ClientInterface;
+use ComfinoExternal\Psr\Http\Message\RequestFactoryInterface;
+use ComfinoExternal\Psr\Http\Message\ResponseInterface;
+use ComfinoExternal\Psr\Http\Message\StreamFactoryInterface;
 
 /**
  * Comfino API client.
@@ -70,7 +70,7 @@ class Client
      */
     protected $apiVersion = 1;
     /**
-     * @var ComfinoExternal\\Comfino\Api\SerializerInterface|null
+     * @var \Comfino\Api\SerializerInterface|null
      */
     protected $serializer;
     protected const CLIENT_VERSION = '1.0';
@@ -368,7 +368,7 @@ class Client
      * @throws AccessDenied
      * @throws ServiceUnavailable
      * @throws ClientExceptionInterface
-     * @param ComfinoExternal\\Comfino\FinancialProduct\ProductTypesListTypeEnum $listType
+     * @param \Comfino\FinancialProduct\ProductTypesListTypeEnum $listType
      */
     public function getProductTypes($listType): GetProductTypesResponse
     {
@@ -494,7 +494,7 @@ class Client
      * @throws RequestValidationError
      * @throws ResponseValidationError
      * @throws ClientExceptionInterface
-     * @param ComfinoExternal\\Comfino\Api\Request $request
+     * @param \Comfino\Api\Request $request
      */
     protected function sendRequest($request): ResponseInterface
     {

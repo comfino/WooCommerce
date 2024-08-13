@@ -5,7 +5,7 @@ namespace Comfino\Common\Backend;
 use Comfino\Api\SerializerInterface;
 use Comfino\Common\Exception\InvalidEndpoint;
 use Comfino\Common\Exception\InvalidRequest;
-use Psr\Http\Message\ServerRequestInterface;
+use ComfinoExternal\Psr\Http\Message\ServerRequestInterface;
 
 interface RestEndpointInterface
 {
@@ -16,14 +16,14 @@ interface RestEndpointInterface
     public function getEndpointUrl(): string;
 
     /**
-     * @param ComfinoExternal\\Comfino\Api\SerializerInterface $serializer
+     * @param \Comfino\Api\SerializerInterface $serializer
      */
     public function setSerializer($serializer): void;
 
     /**
      * @throws InvalidEndpoint
      * @throws InvalidRequest
-     * @param ComfinoExternal\\Psr\Http\Message\ServerRequestInterface $serverRequest
+     * @param \ComfinoExternal\Psr\Http\Message\ServerRequestInterface $serverRequest
      * @param string|null $endpointName
      */
     public function processRequest($serverRequest, $endpointName = null): ?array;

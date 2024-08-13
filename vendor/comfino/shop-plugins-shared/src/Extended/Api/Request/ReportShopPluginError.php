@@ -13,7 +13,7 @@ class ReportShopPluginError extends Request
 {
     /**
      * @readonly
-     * @var ComfinoExternal\\Comfino\Extended\Api\Dto\Plugin\ShopPluginError
+     * @var \Comfino\Extended\Api\Dto\Plugin\ShopPluginError
      */
     private $shopPluginError;
     /**

@@ -4,10 +4,10 @@ namespace Comfino\Common\Backend\Factory;
 
 use Comfino\Common\Backend\RestEndpointManager;
 use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
-use Sunrise\Http\Factory\ResponseFactory;
-use Sunrise\Http\Factory\ServerRequestFactory;
-use Sunrise\Http\Factory\StreamFactory;
-use Sunrise\Http\Factory\UriFactory;
+use ComfinoExternal\Sunrise\Http\Factory\ResponseFactory;
+use ComfinoExternal\Sunrise\Http\Factory\ServerRequestFactory;
+use ComfinoExternal\Sunrise\Http\Factory\StreamFactory;
+use ComfinoExternal\Sunrise\Http\Factory\UriFactory;
 
 final class ApiServiceFactory
 {

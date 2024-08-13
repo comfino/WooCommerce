@@ -6,7 +6,7 @@ final class Descriptor
 {
     /**
      * @readonly
-     * @var ComfinoExternal\\Comfino\Common\Shop\Product\CategoryTree\NodeIterator
+     * @var \Comfino\Common\Shop\Product\CategoryTree\NodeIterator
      */
     public $nodes;
 

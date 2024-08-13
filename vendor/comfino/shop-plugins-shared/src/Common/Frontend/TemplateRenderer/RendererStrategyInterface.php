@@ -9,7 +9,7 @@ interface RendererStrategyInterface
      */
     public function renderPaywallTemplate($paywallContents): string;
     /**
-     * @param ComfinoExternal\\Throwable $exception
+     * @param \Throwable $exception
      */
     public function renderErrorTemplate($exception): string;
 }
