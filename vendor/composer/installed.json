@@ -354,12 +354,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:comfino/shop-plugins-shared.git",
-                "reference": "4a90bf44aca871a2fb9ca3e6bbf3c1684b01fff6"
+                "reference": "a1779c2fb1c843d001da5d7bbe2591f642bf2102"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/comfino/shop-plugins-shared/zipball/4a90bf44aca871a2fb9ca3e6bbf3c1684b01fff6",
-                "reference": "4a90bf44aca871a2fb9ca3e6bbf3c1684b01fff6",
+                "url": "https://api.github.com/repos/comfino/shop-plugins-shared/zipball/a1779c2fb1c843d001da5d7bbe2591f642bf2102",
+                "reference": "a1779c2fb1c843d001da5d7bbe2591f642bf2102",
                 "shasum": ""
             },
             "require": {
@@ -379,7 +379,7 @@
                 "phpspec/prophecy-phpunit": "^1.1",
                 "phpunit/phpunit": "^5.7"
             },
-            "time": "2024-06-28T11:55:25+00:00",
+            "time": "2024-08-13T08:31:08+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "dist",

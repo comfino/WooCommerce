@@ -51,7 +51,7 @@ trait ExtendedClientTestTrait
 
     private function initApiClient(string $endpointPath, string $method, ?array $queryParameters = null, ?string $requestBody = null, $responseData = null, ?string $apiKey = null, bool $isPublicEndpoint = false, int $responseStatus = 200): Extended\Api\Client
     {
-        $client = new \Http\Mock\Client();
+        $client = new ComfinoExternal\\Http\Mock\Client();
         $client->on(
             new RequestMatcher($endpointPath, $this->productionApiHost, $method, 'https'),
             function (RequestInterface $request) use ($queryParameters, $requestBody, $responseData, $apiKey, $isPublicEndpoint, $responseStatus) {

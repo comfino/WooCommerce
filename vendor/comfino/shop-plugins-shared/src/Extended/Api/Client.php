@@ -15,7 +15,7 @@ use Psr\Http\Message\StreamFactoryInterface;
 /**
  * Extended Comfino API client PHP 7.1+ compatible.
  */
-class Client extends \Comfino\Api\Client
+class Client extends ComfinoExternal\\Comfino\Api\Client
 {
     public function __construct(
         RequestFactoryInterface $requestFactory,

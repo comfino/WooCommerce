@@ -1,21 +1,18 @@
 <?php
 
-namespace League\Flysystem\Adapter;
+namespace ComfinoExternal\League\Flysystem\Adapter;
 
-use League\Flysystem\AdapterInterface;
-
+use ComfinoExternal\League\Flysystem\AdapterInterface;
 abstract class AbstractAdapter implements AdapterInterface
 {
     /**
      * @var string|null path prefix
      */
     protected $pathPrefix;
-
     /**
      * @var string
      */
     protected $pathSeparator = '/';
-
     /**
      * Set the path prefix.
      *
@@ -26,16 +23,12 @@ abstract class AbstractAdapter implements AdapterInterface
     public function setPathPrefix($prefix)
     {
         $prefix = (string) $prefix;
-
         if ($prefix === '') {
             $this->pathPrefix = null;
-
             return;
         }
-
-        $this->pathPrefix = rtrim($prefix, '\\/') . $this->pathSeparator;
+        $this->pathPrefix = rtrim($prefix, '\/') . $this->pathSeparator;
     }
-
     /**
      * Get the path prefix.
      *
@@ -45,7 +38,6 @@ abstract class AbstractAdapter implements AdapterInterface
     {
         return $this->pathPrefix;
     }
-
     /**
      * Prefix a path.
      *
@@ -55,9 +47,8 @@ abstract class AbstractAdapter implements AdapterInterface
      */
     public function applyPathPrefix($path)
     {
-        return $this->getPathPrefix() . ltrim($path, '\\/');
+        return $this->getPathPrefix() . ltrim($path, '\/');
     }
-
     /**
      * Remove a path prefix.
      *

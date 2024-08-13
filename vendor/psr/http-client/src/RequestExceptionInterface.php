@@ -1,9 +1,8 @@
 <?php
 
-namespace Psr\Http\Client;
+namespace ComfinoExternal\Psr\Http\Client;
 
-use Psr\Http\Message\RequestInterface;
-
+use ComfinoExternal\Psr\Http\Message\RequestInterface;
 /**
  * Exception for when a request failed.
  *

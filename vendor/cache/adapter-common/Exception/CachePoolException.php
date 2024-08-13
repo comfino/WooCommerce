@@ -8,8 +8,7 @@
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
-
-namespace Cache\Adapter\Common\Exception;
+namespace ComfinoExternal\Cache\Adapter\Common\Exception;
 
 /**
  * If an exception is caused by a pool or by the cache storage.

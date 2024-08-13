@@ -8,11 +8,9 @@
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+namespace ComfinoExternal\Cache\Hierarchy;
 
-namespace Cache\Hierarchy;
-
-use Psr\Cache\CacheItemPoolInterface;
-
+use ComfinoExternal\Psr\Cache\CacheItemPoolInterface;
 /**
  * Let you use hierarchy if you start your tag key with the HIERARCHY_SEPARATOR.
  *

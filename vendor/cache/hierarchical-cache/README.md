@@ -32,3 +32,4 @@ Read the [documentation on implementation](http://www.php-cache.com/en/latest/im
 
 Contributions are very welcome! Send a pull request to the [main repository](https://github.com/php-cache/cache) or 
 report any issues you find on the [issue tracker](http://issues.php-cache.com).
+

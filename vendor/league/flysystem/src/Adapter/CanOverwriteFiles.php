@@ -1,7 +1,6 @@
 <?php
 
-
-namespace League\Flysystem\Adapter;
+namespace ComfinoExternal\League\Flysystem\Adapter;
 
 /**
  * Adapters that implement this interface let the Filesystem know that files can be overwritten using the write

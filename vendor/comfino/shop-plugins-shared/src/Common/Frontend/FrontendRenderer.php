@@ -16,12 +16,12 @@ abstract class FrontendRenderer
 {
     /**
      * @readonly
-     * @var \Comfino\Api\Client
+     * @var ComfinoExternal\\Comfino\Api\Client
      */
     protected $client;
     /**
      * @readonly
-     * @var \Cache\TagInterop\TaggableCacheItemPoolInterface
+     * @var ComfinoExternal\\Cache\TagInterop\TaggableCacheItemPoolInterface
      */
     protected $cache;
     /**
@@ -75,10 +75,8 @@ abstract class FrontendRenderer
             $fragments = $paywallFragments->paywallFragments;
             $fragmentsCacheTtl = [];
 
-            if ($paywallFragments->hasHeader('Cache-TTL')) {
-                if (($fragmentsCacheTtl = json_decode($paywallFragments->getHeader('Cache-TTL'), true)) === null) {
-                    $fragmentsCacheTtl = [];
-                }
+            if ($paywallFragments->hasHeader('Cache-TTL') && ($fragmentsCacheTtl = json_decode($paywallFragments->getHeader('Cache-TTL'), true)) === null) {
+                $fragmentsCacheTtl = [];
             }
 
             $this->savePaywallFragments($fragments, $fragmentsCacheTtl, $language);
@@ -108,6 +106,20 @@ abstract class FrontendRenderer
         ];
 
         return implode($authKeyParts);
+    }
+
+    /**
+     * @param string[] $cacheKeysToDelete
+     * @param string $language
+     */
+    protected function deleteFragmentsCacheEntries($cacheKeysToDelete, $language): void
+    {
+        try {
+            $this->cache->deleteItems(array_map(function (string $fragmentName) use ($language) : string {
+                return $this->getItemKey($fragmentName, $language);
+            }, $cacheKeysToDelete));
+        } catch (InvalidArgumentException $exception) {
+        }
     }
 
     /**

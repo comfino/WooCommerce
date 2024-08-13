@@ -1,5 +1,6 @@
-<?php declare(strict_types=1);
+<?php
 
+declare (strict_types=1);
 /**
  * It's free open-source software released under the MIT License.
  *
@@ -8,8 +9,7 @@
  * @license https://github.com/sunrise-php/http-message/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-message
  */
-
-namespace Sunrise\Http\Message;
+namespace ComfinoExternal\Sunrise\Http\Message;
 
 /**
  * List of Reason Phrases
@@ -19,13 +19,11 @@ namespace Sunrise\Http\Message;
  * @link http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
  */
 const REASON_PHRASES = [
-
     // 1xx
     100 => 'Continue',
     101 => 'Switching Protocols',
     102 => 'Processing',
     103 => 'Early Hints',
-
     // 2xx
     200 => 'OK',
     201 => 'Created',
@@ -37,7 +35,6 @@ const REASON_PHRASES = [
     207 => 'Multi-Status',
     208 => 'Already Reported',
     226 => 'IM Used',
-
     // 3xx
     300 => 'Multiple Choices',
     301 => 'Moved Permanently',
@@ -47,7 +44,6 @@ const REASON_PHRASES = [
     305 => 'Use Proxy',
     307 => 'Temporary Redirect',
     308 => 'Permanent Redirect',
-
     // 4xx
     400 => 'Bad Request',
     401 => 'Unauthorized',
@@ -77,7 +73,6 @@ const REASON_PHRASES = [
     429 => 'Too Many Requests',
     431 => 'Request Header Fields Too Large',
     451 => 'Unavailable For Legal Reasons',
-
     // 5xx
     500 => 'Internal Server Error',
     501 => 'Not Implemented',

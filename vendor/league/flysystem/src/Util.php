@@ -1,12 +1,10 @@
 <?php
 
-namespace League\Flysystem;
+namespace ComfinoExternal\League\Flysystem;
 
-use League\Flysystem\Util\MimeType;
+use ComfinoExternal\League\Flysystem\Util\MimeType;
 use LogicException;
-
 use function strcmp;
-
 class Util
 {
     /**
@@ -19,18 +17,13 @@ class Util
     public static function pathinfo($path)
     {
         $pathinfo = compact('path');
-
         if ('' !== $dirname = dirname($path)) {
             $pathinfo['dirname'] = static::normalizeDirname($dirname);
         }
-
         $pathinfo['basename'] = static::basename($path);
-
         $pathinfo += pathinfo($pathinfo['basename']);
-
         return $pathinfo + ['dirname' => ''];
     }
-
     /**
      * Normalize a dirname return value.
      *
@@ -42,7 +35,6 @@ class Util
     {
         return $dirname === '.' ? '' : $dirname;
     }
-
     /**
      * Get a normalized dirname from a path.
      *
@@ -54,7 +46,6 @@ class Util
     {
         return static::normalizeDirname(dirname($path));
     }
-
     /**
      * Map result arrays.
      *
@@ -66,18 +57,14 @@ class Util
     public static function map(array $object, array $map)
     {
         $result = [];
-
         foreach ($map as $from => $to) {
-            if ( ! isset($object[$from])) {
+            if (!isset($object[$from])) {
                 continue;
             }
-
             $result[$to] = $object[$from];
         }
-
         return $result;
     }
-
     /**
      * Normalize path.
      *
@@ -91,7 +78,6 @@ class Util
     {
         return static::normalizeRelativePath($path);
     }
-
     /**
      * Normalize relative directories in a path.
      *
@@ -104,35 +90,27 @@ class Util
     public static function normalizeRelativePath($path)
     {
         $path = str_replace('\\', '/', $path);
-        $path =  static::removeFunkyWhiteSpace($path);
+        $path = static::removeFunkyWhiteSpace($path);
         $parts = [];
-
         foreach (explode('/', $path) as $part) {
             switch ($part) {
                 case '':
                 case '.':
-                break;
-
-            case '..':
-                if (empty($parts)) {
-                    throw new LogicException(
-                        'Path is outside of the defined root, path: [' . $path . ']'
-                    );
-                }
-                array_pop($parts);
-                break;
-
-            default:
-                $parts[] = $part;
-                break;
+                    break;
+                case '..':
+                    if (empty($parts)) {
+                        throw new LogicException('Path is outside of the defined root, path: [' . $path . ']');
+                    }
+                    array_pop($parts);
+                    break;
+                default:
+                    $parts[] = $part;
+                    break;
             }
         }
-
         $path = implode('/', $parts);
-
         return $path;
     }
-
     /**
      * Rejects unprintable characters and invalid unicode characters.
      *
@@ -145,10 +123,8 @@ class Util
         if (preg_match('#\p{C}+#u', $path)) {
             throw CorruptedPathDetected::forPath($path);
         }
-
         return $path;
     }
-
     /**
      * Normalize prefix.
      *
@@ -161,7 +137,6 @@ class Util
     {
         return rtrim($prefix, $separator) . $separator;
     }
-
     /**
      * Get content size.
      *
@@ -173,7 +148,6 @@ class Util
     {
         return defined('MB_OVERLOAD_STRING') ? mb_strlen($contents, '8bit') : strlen($contents);
     }
-
     /**
      * Guess MIME Type based on the path of the file and it's content.
      *
@@ -185,14 +159,11 @@ class Util
     public static function guessMimeType($path, $content)
     {
         $mimeType = MimeType::detectByContent($content);
-
-        if ( ! (empty($mimeType) || in_array($mimeType, ['application/x-empty', 'text/plain', 'text/x-asm']))) {
+        if (!(empty($mimeType) || in_array($mimeType, ['application/x-empty', 'text/plain', 'text/x-asm']))) {
             return $mimeType;
         }
-
         return MimeType::detectByFilename($path);
     }
-
     /**
      * Emulate directories.
      *
@@ -204,20 +175,15 @@ class Util
     {
         $directories = [];
         $listedDirectories = [];
-
         foreach ($listing as $object) {
             [$directories, $listedDirectories] = static::emulateObjectDirectories($object, $directories, $listedDirectories);
         }
-
         $directories = array_diff(array_unique($directories), array_unique($listedDirectories));
-
         foreach ($directories as $directory) {
             $listing[] = static::pathinfo($directory) + ['type' => 'dir'];
         }
-
         return $listing;
     }
-
     /**
      * Ensure a Config instance.
      *
@@ -232,18 +198,14 @@ class Util
         if ($config === null) {
             return new Config();
         }
-
         if ($config instanceof Config) {
             return $config;
         }
-
         if (is_array($config)) {
             return new Config($config);
         }
-
         throw new LogicException('A config should either be an array or a Flysystem\Config object.');
     }
-
     /**
      * Rewind a stream.
      *
@@ -255,14 +217,11 @@ class Util
             rewind($resource);
         }
     }
-
     public static function isSeekableStream($resource)
     {
         $metadata = stream_get_meta_data($resource);
-
         return $metadata['seekable'];
     }
-
     /**
      * Get the size of a stream.
      *
@@ -273,14 +232,11 @@ class Util
     public static function getStreamSize($resource)
     {
         $stat = fstat($resource);
-
-        if ( ! is_array($stat) || ! isset($stat['size'])) {
+        if (!is_array($stat) || !isset($stat['size'])) {
             return null;
         }
-
         return $stat['size'];
     }
-
     /**
      * Emulate the directories of a single object.
      *
@@ -295,27 +251,20 @@ class Util
         if ($object['type'] === 'dir') {
             $listedDirectories[] = $object['path'];
         }
-
-        if ( ! isset($object['dirname']) || trim($object['dirname']) === '') {
+        if (!isset($object['dirname']) || trim($object['dirname']) === '') {
             return [$directories, $listedDirectories];
         }
-
         $parent = $object['dirname'];
-
-        while (isset($parent) && trim($parent) !== '' && ! in_array($parent, $directories)) {
+        while (isset($parent) && trim($parent) !== '' && !in_array($parent, $directories)) {
             $directories[] = $parent;
             $parent = static::dirname($parent);
         }
-
         if (isset($object['type']) && $object['type'] === 'dir') {
             $listedDirectories[] = $object['path'];
-
             return [$directories, $listedDirectories];
         }
-
         return [$directories, $listedDirectories];
     }
-
     /**
      * Returns the trailing name component of the path.
      *
@@ -325,29 +274,23 @@ class Util
      */
     private static function basename($path)
     {
-        $separators = DIRECTORY_SEPARATOR === '/' ? '/' : '\/';
-
+        $separators = \DIRECTORY_SEPARATOR === '/' ? '/' : '\/';
         $path = rtrim($path, $separators);
-
         $basename = preg_replace('#.*?([^' . preg_quote($separators, '#') . ']+$)#', '$1', $path);
-
-        if (DIRECTORY_SEPARATOR === '/') {
+        if (\DIRECTORY_SEPARATOR === '/') {
             return $basename;
         }
         // @codeCoverageIgnoreStart
         // Extra Windows path munging. This is tested via AppVeyor, but code
         // coverage is not reported.
-
         // Handle relative paths with drive letters. c:file.txt.
-        while (preg_match('#^[a-zA-Z]{1}:[^\\\/]#', $basename)) {
+        while (preg_match('#^[a-zA-Z]{1}:[^\\\\/]#', $basename)) {
             $basename = substr($basename, 2);
         }
-
         // Remove colon for standalone drive letter names.
         if (preg_match('#^[a-zA-Z]{1}:$#', $basename)) {
             $basename = rtrim($basename, ':');
         }
-
         return $basename;
         // @codeCoverageIgnoreEnd
     }

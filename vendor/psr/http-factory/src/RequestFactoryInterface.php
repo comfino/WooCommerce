@@ -1,6 +1,6 @@
 <?php
 
-namespace Psr\Http\Message;
+namespace ComfinoExternal\Psr\Http\Message;
 
 interface RequestFactoryInterface
 {

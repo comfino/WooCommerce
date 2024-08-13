@@ -1,9 +1,8 @@
 <?php
 
-namespace League\Flysystem;
+namespace ComfinoExternal\League\Flysystem;
 
 use InvalidArgumentException;
-
 interface FilesystemInterface
 {
     /**
@@ -14,7 +13,6 @@ interface FilesystemInterface
      * @return bool
      */
     public function has($path);
-
     /**
      * Read a file.
      *
@@ -25,7 +23,6 @@ interface FilesystemInterface
      * @return string|false The file contents or false on failure.
      */
     public function read($path);
-
     /**
      * Retrieves a read-stream for a path.
      *
@@ -36,7 +33,6 @@ interface FilesystemInterface
      * @return resource|false The path resource or false on failure.
      */
     public function readStream($path);
-
     /**
      * List contents of a directory.
      *
@@ -45,8 +41,7 @@ interface FilesystemInterface
      *
      * @return array A list of file metadata.
      */
-    public function listContents($directory = '', $recursive = false);
-
+    public function listContents($directory = '', $recursive = \false);
     /**
      * Get a file's metadata.
      *
@@ -57,7 +52,6 @@ interface FilesystemInterface
      * @return array|false The file metadata or false on failure.
      */
     public function getMetadata($path);
-
     /**
      * Get a file's size.
      *
@@ -68,7 +62,6 @@ interface FilesystemInterface
      * @return int|false The file size or false on failure.
      */
     public function getSize($path);
-
     /**
      * Get a file's mime-type.
      *
@@ -79,7 +72,6 @@ interface FilesystemInterface
      * @return string|false The file mime-type or false on failure.
      */
     public function getMimetype($path);
-
     /**
      * Get a file's timestamp.
      *
@@ -90,7 +82,6 @@ interface FilesystemInterface
      * @return int|false The timestamp or false on failure.
      */
     public function getTimestamp($path);
-
     /**
      * Get a file's visibility.
      *
@@ -101,7 +92,6 @@ interface FilesystemInterface
      * @return string|false The visibility (public|private) or false on failure.
      */
     public function getVisibility($path);
-
     /**
      * Write a new file.
      *
@@ -114,7 +104,6 @@ interface FilesystemInterface
      * @return bool True on success, false on failure.
      */
     public function write($path, $contents, array $config = []);
-
     /**
      * Write a new file using a stream.
      *
@@ -128,7 +117,6 @@ interface FilesystemInterface
      * @return bool True on success, false on failure.
      */
     public function writeStream($path, $resource, array $config = []);
-
     /**
      * Update an existing file.
      *
@@ -141,7 +129,6 @@ interface FilesystemInterface
      * @return bool True on success, false on failure.
      */
     public function update($path, $contents, array $config = []);
-
     /**
      * Update an existing file using a stream.
      *
@@ -155,7 +142,6 @@ interface FilesystemInterface
      * @return bool True on success, false on failure.
      */
     public function updateStream($path, $resource, array $config = []);
-
     /**
      * Rename a file.
      *
@@ -168,7 +154,6 @@ interface FilesystemInterface
      * @return bool True on success, false on failure.
      */
     public function rename($path, $newpath);
-
     /**
      * Copy a file.
      *
@@ -181,7 +166,6 @@ interface FilesystemInterface
      * @return bool True on success, false on failure.
      */
     public function copy($path, $newpath);
-
     /**
      * Delete a file.
      *
@@ -192,7 +176,6 @@ interface FilesystemInterface
      * @return bool True on success, false on failure.
      */
     public function delete($path);
-
     /**
      * Delete a directory.
      *
@@ -203,7 +186,6 @@ interface FilesystemInterface
      * @return bool True on success, false on failure.
      */
     public function deleteDir($dirname);
-
     /**
      * Create a directory.
      *
@@ -213,7 +195,6 @@ interface FilesystemInterface
      * @return bool True on success, false on failure.
      */
     public function createDir($dirname, array $config = []);
-
     /**
      * Set the visibility for a file.
      *
@@ -225,7 +206,6 @@ interface FilesystemInterface
      * @return bool True on success, false on failure.
      */
     public function setVisibility($path, $visibility);
-
     /**
      * Create a file or update if exists.
      *
@@ -236,7 +216,6 @@ interface FilesystemInterface
      * @return bool True on success, false on failure.
      */
     public function put($path, $contents, array $config = []);
-
     /**
      * Create a file or update if exists.
      *
@@ -249,7 +228,6 @@ interface FilesystemInterface
      * @return bool True on success, false on failure.
      */
     public function putStream($path, $resource, array $config = []);
-
     /**
      * Read and delete a file.
      *
@@ -260,7 +238,6 @@ interface FilesystemInterface
      * @return string|false The file contents, or false on failure.
      */
     public function readAndDelete($path);
-
     /**
      * Get a file/directory handler.
      *
@@ -272,7 +249,6 @@ interface FilesystemInterface
      * @return Handler Either a file or directory handler.
      */
     public function get($path, Handler $handler = null);
-
     /**
      * Register a plugin.
      *

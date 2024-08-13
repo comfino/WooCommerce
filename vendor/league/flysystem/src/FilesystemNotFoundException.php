@@ -1,9 +1,8 @@
 <?php
 
-namespace League\Flysystem;
+namespace ComfinoExternal\League\Flysystem;
 
 use LogicException;
-
 /**
  * Thrown when the MountManager cannot find a filesystem.
  */

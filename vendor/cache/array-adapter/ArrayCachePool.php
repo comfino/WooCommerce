@@ -8,15 +8,13 @@
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+namespace ComfinoExternal\Cache\Adapter\PHPArray;
 
-namespace Cache\Adapter\PHPArray;
-
-use Cache\Adapter\Common\AbstractCachePool;
-use Cache\Adapter\Common\CacheItem;
-use Cache\Adapter\Common\PhpCacheItem;
-use Cache\Hierarchy\HierarchicalCachePoolTrait;
-use Cache\Hierarchy\HierarchicalPoolInterface;
-
+use ComfinoExternal\Cache\Adapter\Common\AbstractCachePool;
+use ComfinoExternal\Cache\Adapter\Common\CacheItem;
+use ComfinoExternal\Cache\Adapter\Common\PhpCacheItem;
+use ComfinoExternal\Cache\Hierarchy\HierarchicalCachePoolTrait;
+use ComfinoExternal\Cache\Hierarchy\HierarchicalPoolInterface;
 /**
  * Array cache pool. You could set a limit of how many items you want to be stored to avoid memory leaks.
  *
@@ -25,37 +23,31 @@ use Cache\Hierarchy\HierarchicalPoolInterface;
 class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterface
 {
     use HierarchicalCachePoolTrait;
-
     /**
      * @type PhpCacheItem[]
      */
     private $cache;
-
     /**
      * @type array A map to hold keys
      */
     private $keyMap = [];
-
     /**
      * @type int The maximum number of keys in the map
      */
     private $limit;
-
     /**
      * @type int The next key that we should remove from the cache
      */
     private $currentPosition = 0;
-
     /**
      * @param int   $limit the amount if items stored in the cache. Using a limit will reduce memory leaks.
      * @param array $cache
      */
     public function __construct($limit = null, array &$cache = [])
     {
-        $this->cache = &$cache;
+        $this->cache =& $cache;
         $this->limit = $limit;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -65,44 +57,34 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
             /** @type CacheItem $item */
             $item = clone $this->deferred[$key];
             $item->moveTagsToPrevious();
-
             return $item;
         }
-
         return $this->fetchObjectFromCache($key);
     }
-
     /**
      * {@inheritdoc}
      */
     protected function fetchObjectFromCache($key)
     {
         $keys = $this->getHierarchyKey($key);
-
         if (!$this->cacheIsset($keys)) {
-            return [false, null, [], null];
+            return [\false, null, [], null];
         }
-
-        $element                       = $this->cacheToolkit($keys);
+        $element = $this->cacheToolkit($keys);
         list($data, $tags, $timestamp) = $element;
-
         if (is_object($data)) {
             $data = clone $data;
         }
-
-        return [true, $data, $tags, $timestamp];
+        return [\true, $data, $tags, $timestamp];
     }
-
     /**
      * {@inheritdoc}
      */
     protected function clearAllObjectsFromCache()
     {
         $this->cache = [];
-
-        return true;
+        return \true;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -110,41 +92,33 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     {
         $this->commit();
         $keys = $this->getHierarchyKey($key);
-
         $this->clearHierarchyKeyCache();
-        $this->cacheToolkit($keys, null, true);
-
-        return true;
+        $this->cacheToolkit($keys, null, \true);
+        return \true;
     }
-
     /**
      * {@inheritdoc}
      */
     protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
-        $keys   = $this->getHierarchyKey($item->getKey());
-        $value  = $item->get();
+        $keys = $this->getHierarchyKey($item->getKey());
+        $value = $item->get();
         if (is_object($value)) {
             $value = clone $value;
         }
         $this->cacheToolkit($keys, [$value, $item->getTags(), $item->getExpirationTimestamp()]);
-
         if ($this->limit !== null) {
             // Remove the oldest value
             if (isset($this->keyMap[$this->currentPosition])) {
                 unset($this->cache[$this->keyMap[$this->currentPosition]]);
             }
-
             // Add the new key to the current position
             $this->keyMap[$this->currentPosition] = implode(HierarchicalPoolInterface::HIERARCHY_SEPARATOR, $keys);
-
             // Increase the current position
             $this->currentPosition = ($this->currentPosition + 1) % $this->limit;
         }
-
-        return true;
+        return \true;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -154,7 +128,6 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
             return $this->cache[$key];
         }
     }
-
     /**
      * {@inheritdoc}
      */
@@ -163,20 +136,16 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         if (!isset($this->cache[$name])) {
             $this->cache[$name] = [];
         }
-
         return $this->cache[$name];
     }
-
     /**
      * {@inheritdoc}
      */
     protected function removeList($name)
     {
         unset($this->cache[$name]);
-
-        return true;
+        return \true;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -184,7 +153,6 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
     {
         $this->cache[$name][] = $key;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -198,7 +166,6 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
             }
         }
     }
-
     /**
      * Used to manipulate cached data by extracting, inserting or deleting value.
      *
@@ -208,27 +175,23 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      *
      * @return mixed
      */
-    private function cacheToolkit($keys, $value = null, $unset = false)
+    private function cacheToolkit($keys, $value = null, $unset = \false)
     {
-        $element = &$this->cache;
-
-        while ($keys && ($key = array_shift($keys))) {
+        $element =& $this->cache;
+        while ($keys && $key = array_shift($keys)) {
             if (!$keys && is_null($value) && $unset) {
                 unset($element[$key]);
                 unset($element);
                 $element = null;
             } else {
-                $element =&$element[$key];
+                $element =& $element[$key];
             }
         }
-
         if (!$unset && !is_null($value)) {
             $element = $value;
         }
-
         return $element;
     }
-
     /**
      * Checking if given keys exists and is valid.
      *
@@ -238,22 +201,18 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
      */
     private function cacheIsset($keys)
     {
-        $has   = false;
+        $has = \false;
         $array = $this->cache;
-
         foreach ($keys as $key) {
             if ($has = array_key_exists($key, $array)) {
                 $array = $array[$key];
             }
         }
-
         if (is_array($array)) {
             $has = $has && array_key_exists(0, $array);
         }
-
         return $has;
     }
-
     /**
      * Get a key to use with the hierarchy. If the key does not start with HierarchicalPoolInterface::SEPARATOR
      * this will return an unalterered key. This function supports a tagged key. Ie "foo:bar".
@@ -268,7 +227,6 @@ class ArrayCachePool extends AbstractCachePool implements HierarchicalPoolInterf
         if (!$this->isHierarchyKey($key)) {
             return [$key];
         }
-
         return $this->explodeKey($key);
     }
 }

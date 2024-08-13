@@ -8,8 +8,7 @@
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
-
-namespace Cache\Adapter\Common;
+namespace ComfinoExternal\Cache\Adapter\Common;
 
 /**
  * This trait could be used by adapters that do not have a native support for lists.
@@ -26,7 +25,6 @@ trait TagSupportWithArray
      * @return mixed
      */
     abstract public function getDirectValue($name);
-
     /**
      * Set a value to the storage.
      *
@@ -34,7 +32,6 @@ trait TagSupportWithArray
      * @param mixed  $value
      */
     abstract public function setDirectValue($name, $value);
-
     /**
      * {@inheritdoc}
      */
@@ -47,7 +44,6 @@ trait TagSupportWithArray
         $data[] = $value;
         $this->setDirectValue($name, $data);
     }
-
     /**
      * {@inheritdoc}
      */
@@ -57,20 +53,16 @@ trait TagSupportWithArray
         if (!is_array($data)) {
             $data = [];
         }
-
         return $data;
     }
-
     /**
      * {@inheritdoc}
      */
     protected function removeList($name)
     {
         $this->setDirectValue($name, []);
-
-        return true;
+        return \true;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -82,7 +74,6 @@ trait TagSupportWithArray
                 unset($data[$i]);
             }
         }
-
         return $this->setDirectValue($name, $data);
     }
 }

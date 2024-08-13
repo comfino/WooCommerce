@@ -12,7 +12,7 @@ final class StatusNotification extends RestEndpoint
 {
     /**
      * @readonly
-     * @var \Comfino\Common\Shop\Order\StatusManager
+     * @var ComfinoExternal\\Comfino\Common\Shop\Order\StatusManager
      */
     private $statusManager;
     /**

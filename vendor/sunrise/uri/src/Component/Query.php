@@ -1,5 +1,6 @@
-<?php declare(strict_types=1);
+<?php
 
+declare (strict_types=1);
 /**
  * It's free open-source software released under the MIT License.
  *
@@ -8,21 +9,18 @@
  * @license https://github.com/sunrise-php/uri/blob/master/LICENSE
  * @link https://github.com/sunrise-php/uri
  */
-
-namespace Sunrise\Uri\Component;
+namespace ComfinoExternal\Sunrise\Uri\Component;
 
 /**
  * Import classes
  */
-use Sunrise\Uri\Exception\InvalidUriComponentException;
-
+use ComfinoExternal\Sunrise\Uri\Exception\InvalidUriComponentException;
 /**
  * Import functions
  */
 use function is_string;
 use function preg_replace_callback;
 use function rawurlencode;
-
 /**
  * URI component "query"
  *
@@ -30,21 +28,18 @@ use function rawurlencode;
  */
 class Query implements ComponentInterface
 {
-
     /**
      * Regular expression to normalize the component value
      *
      * @var string
      */
     private const NORMALIZE_REGEX = '/(?:(?:%[0-9A-Fa-f]{2}|[0-9A-Za-z\-\._~\!\$&\'\(\)\*\+,;\=\:@\/\?]+)|(.?))/u';
-
     /**
      * The component value
      *
      * @var string
      */
     protected $value = '';
-
     /**
      * Constructor of the class
      *
@@ -57,22 +52,18 @@ class Query implements ComponentInterface
         if ($value === '') {
             return;
         }
-
         if (!is_string($value)) {
             throw new InvalidUriComponentException('URI component "query" must be a string');
         }
-
-        $this->value = preg_replace_callback(self::NORMALIZE_REGEX, function (array $match) : string {
+        $this->value = preg_replace_callback(self::NORMALIZE_REGEX, function (array $match): string {
             /** @var array{0: string, 1?: string} $match */
-
             return isset($match[1]) ? rawurlencode($match[1]) : $match[0];
         }, $value);
     }
-
     /**
      * @return string
      */
-    public function present() : string
+    public function present(): string
     {
         return $this->value;
     }

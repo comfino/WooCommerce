@@ -1,10 +1,9 @@
 <?php
 
-namespace League\Flysystem;
+namespace ComfinoExternal\League\Flysystem;
 
 use RuntimeException;
 use SplFileInfo;
-
 class NotSupportedException extends RuntimeException implements FilesystemException
 {
     /**
@@ -17,10 +16,8 @@ class NotSupportedException extends RuntimeException implements FilesystemExcept
     public static function forLink(SplFileInfo $file)
     {
         $message = 'Links are not supported, encountered link at ';
-
         return new static($message . $file->getPathname());
     }
-
     /**
      * Create a new exception for a link.
      *
@@ -30,8 +27,7 @@ class NotSupportedException extends RuntimeException implements FilesystemExcept
      */
     public static function forFtpSystemType($systemType)
     {
-        $message = "The FTP system type '$systemType' is currently not supported.";
-
+        $message = "The FTP system type '{$systemType}' is currently not supported.";
         return new static($message);
     }
 }

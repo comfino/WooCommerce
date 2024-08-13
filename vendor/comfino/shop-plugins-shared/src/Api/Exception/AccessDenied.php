@@ -2,7 +2,7 @@
 
 namespace Comfino\Api\Exception;
 
-class AccessDenied extends \RuntimeException
+class AccessDenied extends ComfinoExternal\\RuntimeException
 {
     /** @var string */
     private $url;

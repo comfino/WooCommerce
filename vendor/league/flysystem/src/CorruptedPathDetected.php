@@ -1,9 +1,8 @@
 <?php
 
-namespace League\Flysystem;
+namespace ComfinoExternal\League\Flysystem;
 
 use LogicException;
-
 class CorruptedPathDetected extends LogicException implements FilesystemException
 {
     /**

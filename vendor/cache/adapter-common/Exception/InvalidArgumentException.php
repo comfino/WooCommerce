@@ -8,12 +8,10 @@
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+namespace ComfinoExternal\Cache\Adapter\Common\Exception;
 
-namespace Cache\Adapter\Common\Exception;
-
-use Psr\Cache\InvalidArgumentException as CacheInvalidArgumentException;
-use Psr\SimpleCache\InvalidArgumentException as SimpleCacheInvalidArgumentException;
-
+use ComfinoExternal\Psr\Cache\InvalidArgumentException as CacheInvalidArgumentException;
+use ComfinoExternal\Psr\SimpleCache\InvalidArgumentException as SimpleCacheInvalidArgumentException;
 class InvalidArgumentException extends CacheException implements CacheInvalidArgumentException, SimpleCacheInvalidArgumentException
 {
 }

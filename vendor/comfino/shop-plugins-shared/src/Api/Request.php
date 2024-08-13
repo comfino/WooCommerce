@@ -28,7 +28,7 @@ abstract class Request
     private $requestBody;
 
     /**
-     * @param \Comfino\Api\SerializerInterface $serializer
+     * @param ComfinoExternal\\Comfino\Api\SerializerInterface $serializer
      */
     final public function setSerializer($serializer): self
     {

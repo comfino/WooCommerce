@@ -19,7 +19,7 @@ final class ApiClientFactory
         $client = new Client(
             new RequestFactory(),
             new StreamFactory(),
-            new \Sunrise\Http\Client\Curl\Client(new ResponseFactory(), $curlOptions),
+            new ComfinoExternal\\Sunrise\Http\Client\Curl\Client(new ResponseFactory(), $curlOptions),
             $apiKey
         );
 

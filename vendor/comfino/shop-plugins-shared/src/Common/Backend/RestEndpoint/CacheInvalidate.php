@@ -14,7 +14,7 @@ class CacheInvalidate extends RestEndpoint
 {
     /**
      * @readonly
-     * @var \Cache\TagInterop\TaggableCacheItemPoolInterface
+     * @var ComfinoExternal\\Cache\TagInterop\TaggableCacheItemPoolInterface
      */
     private $cache;
     public function __construct(
@@ -30,7 +30,7 @@ class CacheInvalidate extends RestEndpoint
 
     /**
      * @throws InvalidArgumentException
-     * @param \Psr\Http\Message\ServerRequestInterface $serverRequest
+     * @param ComfinoExternal\\Psr\Http\Message\ServerRequestInterface $serverRequest
      * @param string|null $endpointName
      */
     public function processRequest($serverRequest, $endpointName = null): ?array

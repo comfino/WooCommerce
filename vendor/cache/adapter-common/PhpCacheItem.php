@@ -8,11 +8,9 @@
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+namespace ComfinoExternal\Cache\Adapter\Common;
 
-namespace Cache\Adapter\Common;
-
-use Cache\TagInterop\TaggableCacheItemInterface;
-
+use ComfinoExternal\Cache\TagInterop\TaggableCacheItemInterface;
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */

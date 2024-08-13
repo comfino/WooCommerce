@@ -8,11 +8,9 @@
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+namespace ComfinoExternal\Cache\Adapter\Common\Exception;
 
-namespace Cache\Adapter\Common\Exception;
-
-use Psr\Cache\CacheException as CacheExceptionInterface;
-
+use ComfinoExternal\Psr\Cache\CacheException as CacheExceptionInterface;
 /**
  * A base exception. All exceptions in this organization will extend this exception.
  *

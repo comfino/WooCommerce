@@ -70,7 +70,7 @@ class Client
      */
     protected $apiVersion = 1;
     /**
-     * @var \Comfino\Api\SerializerInterface|null
+     * @var ComfinoExternal\\Comfino\Api\SerializerInterface|null
      */
     protected $serializer;
     protected const CLIENT_VERSION = '1.0';
@@ -368,7 +368,7 @@ class Client
      * @throws AccessDenied
      * @throws ServiceUnavailable
      * @throws ClientExceptionInterface
-     * @param \Comfino\FinancialProduct\ProductTypesListTypeEnum $listType
+     * @param ComfinoExternal\\Comfino\FinancialProduct\ProductTypesListTypeEnum $listType
      */
     public function getProductTypes($listType): GetProductTypesResponse
     {
@@ -494,7 +494,7 @@ class Client
      * @throws RequestValidationError
      * @throws ResponseValidationError
      * @throws ClientExceptionInterface
-     * @param \Comfino\Api\Request $request
+     * @param ComfinoExternal\\Comfino\Api\Request $request
      */
     protected function sendRequest($request): ResponseInterface
     {

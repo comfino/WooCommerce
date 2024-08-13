@@ -19,12 +19,12 @@ final class ConfigurationManager
     private $accessibleConfigOptions;
     /**
      * @readonly
-     * @var \Comfino\Common\Backend\Configuration\StorageAdapterInterface
+     * @var ComfinoExternal\\Comfino\Common\Backend\Configuration\StorageAdapterInterface
      */
     private $storageAdapter;
     /**
      * @readonly
-     * @var \Comfino\Api\SerializerInterface
+     * @var ComfinoExternal\\Comfino\Api\SerializerInterface
      */
     private $serializer;
     // Data types of configuration options as bit masks.

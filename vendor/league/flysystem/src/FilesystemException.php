@@ -1,6 +1,6 @@
 <?php
 
-namespace League\Flysystem;
+namespace ComfinoExternal\League\Flysystem;
 
 interface FilesystemException
 {

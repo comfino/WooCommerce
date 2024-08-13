@@ -8,7 +8,7 @@ final class StatusManager
 {
     /**
      * @readonly
-     * @var \Comfino\Common\Shop\OrderStatusAdapterInterface
+     * @var ComfinoExternal\\Comfino\Common\Shop\OrderStatusAdapterInterface
      */
     private $orderStatusAdapter;
     public const STATUS_CREATED = 'CREATED';

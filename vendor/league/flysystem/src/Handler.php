@@ -1,9 +1,8 @@
 <?php
 
-namespace League\Flysystem;
+namespace ComfinoExternal\League\Flysystem;
 
 use BadMethodCallException;
-
 /**
  * @deprecated
  */
@@ -13,12 +12,10 @@ abstract class Handler
      * @var string
      */
     protected $path;
-
     /**
      * @var FilesystemInterface
      */
     protected $filesystem;
-
     /**
      * Constructor.
      *
@@ -30,7 +27,6 @@ abstract class Handler
         $this->path = $path;
         $this->filesystem = $filesystem;
     }
-
     /**
      * Check whether the entree is a directory.
      *
@@ -40,7 +36,6 @@ abstract class Handler
     {
         return $this->getType() === 'dir';
     }
-
     /**
      * Check whether the entree is a file.
      *
@@ -50,7 +45,6 @@ abstract class Handler
     {
         return $this->getType() === 'file';
     }
-
     /**
      * Retrieve the entree type (file|dir).
      *
@@ -59,10 +53,8 @@ abstract class Handler
     public function getType()
     {
         $metadata = $this->filesystem->getMetadata($this->path);
-
         return $metadata ? $metadata['type'] : 'dir';
     }
-
     /**
      * Set the Filesystem object.
      *
@@ -73,10 +65,8 @@ abstract class Handler
     public function setFilesystem(FilesystemInterface $filesystem)
     {
         $this->filesystem = $filesystem;
-
         return $this;
     }
-    
     /**
      * Retrieve the Filesystem object.
      *
@@ -86,7 +76,6 @@ abstract class Handler
     {
         return $this->filesystem;
     }
-
     /**
      * Set the entree path.
      *
@@ -97,10 +86,8 @@ abstract class Handler
     public function setPath($path)
     {
         $this->path = $path;
-
         return $this;
     }
-
     /**
      * Retrieve the entree path.
      *
@@ -110,7 +97,6 @@ abstract class Handler
     {
         return $this->path;
     }
-
     /**
      * Plugins pass-through.
      *
@@ -123,15 +109,10 @@ abstract class Handler
     {
         array_unshift($arguments, $this->path);
         $callback = [$this->filesystem, $method];
-
         try {
             return call_user_func_array($callback, $arguments);
         } catch (BadMethodCallException $e) {
-            throw new BadMethodCallException(
-                'Call to undefined method '
-                . get_called_class()
-                . '::' . $method
-            );
+            throw new BadMethodCallException('Call to undefined method ' . get_called_class() . '::' . $method);
         }
     }
 }

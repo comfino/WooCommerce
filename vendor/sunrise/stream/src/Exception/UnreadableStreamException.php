@@ -1,5 +1,6 @@
-<?php declare(strict_types=1);
+<?php
 
+declare (strict_types=1);
 /**
  * It's free open-source software released under the MIT License.
  *
@@ -8,14 +9,12 @@
  * @license https://github.com/sunrise-php/stream/blob/master/LICENSE
  * @link https://github.com/sunrise-php/stream
  */
-
-namespace Sunrise\Stream\Exception;
+namespace ComfinoExternal\Sunrise\Stream\Exception;
 
 /**
  * Import classes
  */
 use RuntimeException;
-
 /**
  * UnreadableStreamException
  */

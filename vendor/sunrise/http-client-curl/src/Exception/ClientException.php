@@ -1,5 +1,6 @@
-<?php declare(strict_types=1);
+<?php
 
+declare (strict_types=1);
 /**
  * It's free open-source software released under the MIT License.
  *
@@ -8,15 +9,13 @@
  * @license https://github.com/sunrise-php/http-client-curl/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-client-curl
  */
-
-namespace Sunrise\Http\Client\Curl\Exception;
+namespace ComfinoExternal\Sunrise\Http\Client\Curl\Exception;
 
 /**
  * Import classes
  */
-use Psr\Http\Client\ClientExceptionInterface;
+use ComfinoExternal\Psr\Http\Client\ClientExceptionInterface;
 use RuntimeException;
-
 /**
  * ClientException
  */

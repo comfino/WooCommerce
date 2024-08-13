@@ -3,7 +3,7 @@
 namespace Comfino;
 
 /** Replacement of enum type to maintain source code compatibility with PHP 7.1 (workaround for Rector transpilation bug). */
-abstract class Enum implements \JsonSerializable
+abstract class Enum implements ComfinoExternal\\JsonSerializable
 {
     /**
      * @readonly
@@ -13,8 +13,8 @@ abstract class Enum implements \JsonSerializable
 
     public function __construct(string $value, bool $strict = true)
     {
-        if ($strict && !in_array($value, (new \ReflectionObject($this))->getConstants(), true)) {
-            throw new \InvalidArgumentException("Value '$value' does not exist.");
+        if ($strict && !in_array($value, (new ComfinoExternal\\ReflectionObject($this))->getConstants(), true)) {
+            throw new ComfinoExternal\\InvalidArgumentException("Value '$value' does not exist.");
         }
 
         $this->value = $value;
@@ -22,12 +22,12 @@ abstract class Enum implements \JsonSerializable
 
     public static function values(): array
     {
-        return array_values((new \ReflectionClass(static::class))->getConstants());
+        return array_values((new ComfinoExternal\\ReflectionClass(static::class))->getConstants());
     }
 
     public static function names(): array
     {
-        return array_keys((new \ReflectionClass(static::class))->getConstants());
+        return array_keys((new ComfinoExternal\\ReflectionClass(static::class))->getConstants());
     }
 
     /**

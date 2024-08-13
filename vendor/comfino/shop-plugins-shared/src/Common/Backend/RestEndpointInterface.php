@@ -16,14 +16,14 @@ interface RestEndpointInterface
     public function getEndpointUrl(): string;
 
     /**
-     * @param \Comfino\Api\SerializerInterface $serializer
+     * @param ComfinoExternal\\Comfino\Api\SerializerInterface $serializer
      */
     public function setSerializer($serializer): void;
 
     /**
      * @throws InvalidEndpoint
      * @throws InvalidRequest
-     * @param \Psr\Http\Message\ServerRequestInterface $serverRequest
+     * @param ComfinoExternal\\Psr\Http\Message\ServerRequestInterface $serverRequest
      * @param string|null $endpointName
      */
     public function processRequest($serverRequest, $endpointName = null): ?array;

@@ -1,6 +1,6 @@
 <?php
 
-namespace League\Flysystem\Plugin;
+namespace ComfinoExternal\League\Flysystem\Plugin;
 
 class ListPaths extends AbstractPlugin
 {
@@ -13,7 +13,6 @@ class ListPaths extends AbstractPlugin
     {
         return 'listPaths';
     }
-
     /**
      * List all paths.
      *
@@ -22,15 +21,13 @@ class ListPaths extends AbstractPlugin
      *
      * @return string[] paths
      */
-    public function handle($directory = '', $recursive = false)
+    public function handle($directory = '', $recursive = \false)
     {
         $result = [];
         $contents = $this->filesystem->listContents($directory, $recursive);
-
         foreach ($contents as $object) {
             $result[] = $object['path'];
         }
-
         return $result;
     }
 }

@@ -12,7 +12,7 @@ final class Configuration extends RestEndpoint
 {
     /**
      * @readonly
-     * @var \Comfino\Common\Backend\ConfigurationManager
+     * @var ComfinoExternal\\Comfino\Common\Backend\ConfigurationManager
      */
     private $configurationManager;
     /**
@@ -55,7 +55,7 @@ final class Configuration extends RestEndpoint
     }
 
     /**
-     * @param \Psr\Http\Message\ServerRequestInterface $serverRequest
+     * @param ComfinoExternal\\Psr\Http\Message\ServerRequestInterface $serverRequest
      * @param string|null $endpointName
      */
     public function processRequest($serverRequest, $endpointName = null): ?array
@@ -71,7 +71,7 @@ final class Configuration extends RestEndpoint
                     'platform_version' => $this->platformVersion,
                     'plugin_version' => $this->pluginVersion,
                     'symfony_version' => class_exists('\Symfony\Component\HttpKernel\Kernel')
-                        ? \Symfony\Component\HttpKernel\Kernel::VERSION
+                        ? ComfinoExternal\\Symfony\Component\HttpKernel\Kernel::VERSION
                         : 'n/a',
                     'php_version' => PHP_VERSION,
                     'server_software' => $serverRequest->getServerParams()['SERVER_SOFTWARE'],

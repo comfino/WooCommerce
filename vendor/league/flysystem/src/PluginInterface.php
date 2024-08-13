@@ -1,6 +1,6 @@
 <?php
 
-namespace League\Flysystem;
+namespace ComfinoExternal\League\Flysystem;
 
 interface PluginInterface
 {
@@ -10,7 +10,6 @@ interface PluginInterface
      * @return string
      */
     public function getMethod();
-
     /**
      * Set the Filesystem object.
      *

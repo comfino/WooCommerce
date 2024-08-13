@@ -1,6 +1,6 @@
 <?php
 
-namespace Fig\Http\Message;
+namespace ComfinoExternal\Fig\Http\Message;
 
 /**
  * Defines constants for common HTTP status code.

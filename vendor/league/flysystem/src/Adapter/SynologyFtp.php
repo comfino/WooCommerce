@@ -1,6 +1,6 @@
 <?php
 
-namespace League\Flysystem\Adapter;
+namespace ComfinoExternal\League\Flysystem\Adapter;
 
 class SynologyFtp extends Ftpd
 {

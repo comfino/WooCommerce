@@ -14,7 +14,7 @@ class TestedEnum extends Enum
      * @param string $value
      * @param bool $strict
      */
-    public static function from($value, $strict = true): \Comfino\Enum
+    public static function from($value, $strict = true): ComfinoExternal\\Comfino\Enum
     {
         return new self($value, $strict);
     }

@@ -1,4 +1,3 @@
-version: '3.5'
 services:
     shop-plugins-shared-php:
         image: gcr.io/comperia-fintech/php-debug:7.1.33-2-fpm-alpine

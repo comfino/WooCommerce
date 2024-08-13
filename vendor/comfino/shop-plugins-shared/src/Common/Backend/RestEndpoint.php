@@ -22,7 +22,7 @@ abstract class RestEndpoint implements RestEndpointInterface
      */
     protected $methods;
     /**
-     * @var \Comfino\Api\SerializerInterface|null
+     * @var ComfinoExternal\\Comfino\Api\SerializerInterface|null
      */
     protected $serializer;
 
@@ -48,7 +48,7 @@ abstract class RestEndpoint implements RestEndpointInterface
     }
 
     /**
-     * @param \Comfino\Api\SerializerInterface $serializer
+     * @param ComfinoExternal\\Comfino\Api\SerializerInterface $serializer
      */
     public function setSerializer($serializer): void
     {
@@ -56,7 +56,7 @@ abstract class RestEndpoint implements RestEndpointInterface
     }
 
     /**
-     * @param \Psr\Http\Message\ServerRequestInterface $serverRequest
+     * @param ComfinoExternal\\Psr\Http\Message\ServerRequestInterface $serverRequest
      * @param string|null $endpointName
      */
     protected function endpointPathMatch($serverRequest, $endpointName = null): bool
@@ -71,7 +71,7 @@ abstract class RestEndpoint implements RestEndpointInterface
     }
 
     /**
-     * @param \Psr\Http\Message\ServerRequestInterface $serverRequest
+     * @param ComfinoExternal\\Psr\Http\Message\ServerRequestInterface $serverRequest
      * @return mixed[]|string|null
      */
     protected function getParsedRequestBody($serverRequest)

@@ -11,17 +11,17 @@ trait ReflectionTrait
      */
     public function getConstantFromObject($object, $name)
     {
-        return (new \ReflectionObject($object))->getConstant($name);
+        return (new ComfinoExternal\\ReflectionObject($object))->getConstant($name);
     }
 
     /**
-     * @throws \ReflectionException
+     * @throws ComfinoExternal\\ReflectionException
      * @param string $class
      * @param string $name
      * @return mixed
      */
     public function getConstantFromClass($class, $name)
     {
-        return (new \ReflectionClass($class))->getConstant($name);
+        return (new ComfinoExternal\\ReflectionClass($class))->getConstant($name);
     }
 }

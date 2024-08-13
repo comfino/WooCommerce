@@ -8,16 +8,14 @@
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+namespace ComfinoExternal\Cache\Adapter\Filesystem;
 
-namespace Cache\Adapter\Filesystem;
-
-use Cache\Adapter\Common\AbstractCachePool;
-use Cache\Adapter\Common\Exception\InvalidArgumentException;
-use Cache\Adapter\Common\PhpCacheItem;
-use League\Flysystem\FileExistsException;
-use League\Flysystem\FileNotFoundException;
-use League\Flysystem\FilesystemInterface;
-
+use ComfinoExternal\Cache\Adapter\Common\AbstractCachePool;
+use ComfinoExternal\Cache\Adapter\Common\Exception\InvalidArgumentException;
+use ComfinoExternal\Cache\Adapter\Common\PhpCacheItem;
+use ComfinoExternal\League\Flysystem\FileExistsException;
+use ComfinoExternal\League\Flysystem\FileNotFoundException;
+use ComfinoExternal\League\Flysystem\FilesystemInterface;
 /**
  * @author Tobias Nyholm <tobias.nyholm@gmail.com>
  */
@@ -27,14 +25,12 @@ class FilesystemCachePool extends AbstractCachePool
      * @type FilesystemInterface
      */
     private $filesystem;
-
     /**
      * The folder should not begin nor end with a slash. Example: path/to/cache.
      *
      * @type string
      */
     private $folder;
-
     /**
      * @param FilesystemInterface $filesystem
      * @param string              $folder
@@ -42,11 +38,9 @@ class FilesystemCachePool extends AbstractCachePool
     public function __construct(FilesystemInterface $filesystem, $folder = 'cache')
     {
         $this->folder = $folder;
-
         $this->filesystem = $filesystem;
         $this->filesystem->createDir($this->folder);
     }
-
     /**
      * @param string $folder
      */
@@ -54,24 +48,21 @@ class FilesystemCachePool extends AbstractCachePool
     {
         $this->folder = $folder;
     }
-
     /**
      * {@inheritdoc}
      */
     protected function fetchObjectFromCache($key)
     {
-        $empty = [false, null, [], null];
-        $file  = $this->getFilePath($key);
-
+        $empty = [\false, null, [], null];
+        $file = $this->getFilePath($key);
         try {
             $data = @unserialize($this->filesystem->read($file));
-            if ($data === false) {
+            if ($data === \false) {
                 return $empty;
             }
         } catch (FileNotFoundException $e) {
             return $empty;
         }
-
         // Determine expirationTimestamp from data, remove items if expired
         $expirationTimestamp = $data[2] ?: null;
         if ($expirationTimestamp !== null && time() > $expirationTimestamp) {
@@ -79,13 +70,10 @@ class FilesystemCachePool extends AbstractCachePool
                 $this->removeListItem($this->getTagKey($tag), $key);
             }
             $this->forceClear($key);
-
             return $empty;
         }
-
-        return [true, $data[0], $data[1], $expirationTimestamp];
+        return [\true, $data[0], $data[1], $expirationTimestamp];
     }
-
     /**
      * {@inheritdoc}
      */
@@ -93,10 +81,8 @@ class FilesystemCachePool extends AbstractCachePool
     {
         $this->filesystem->deleteDir($this->folder);
         $this->filesystem->createDir($this->folder);
-
-        return true;
+        return \true;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -104,26 +90,17 @@ class FilesystemCachePool extends AbstractCachePool
     {
         return $this->forceClear($key);
     }
-
     /**
      * {@inheritdoc}
      */
     protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
-        $data = serialize(
-            [
-                $item->get(),
-                $item->getTags(),
-                $item->getExpirationTimestamp(),
-            ]
-        );
-
+        $data = serialize([$item->get(), $item->getTags(), $item->getExpirationTimestamp()]);
         $file = $this->getFilePath($item->getKey());
         if ($this->filesystem->has($file)) {
             // Update file if it exists
             return $this->filesystem->update($file, $data);
         }
-
         try {
             return $this->filesystem->write($file, $data);
         } catch (FileExistsException $e) {
@@ -131,7 +108,6 @@ class FilesystemCachePool extends AbstractCachePool
             return $this->filesystem->update($file, $data);
         }
     }
-
     /**
      * @param string $key
      *
@@ -144,24 +120,19 @@ class FilesystemCachePool extends AbstractCachePool
         if (!preg_match('|^[a-zA-Z0-9_\.! ]+$|', $key)) {
             throw new InvalidArgumentException(sprintf('Invalid key "%s". Valid filenames must match [a-zA-Z0-9_\.! ].', $key));
         }
-
         return sprintf('%s/%s', $this->folder, $key);
     }
-
     /**
      * {@inheritdoc}
      */
     protected function getList($name)
     {
         $file = $this->getFilePath($name);
-
         if (!$this->filesystem->has($file)) {
             $this->filesystem->write($file, serialize([]));
         }
-
         return unserialize($this->filesystem->read($file));
     }
-
     /**
      * {@inheritdoc}
      */
@@ -170,18 +141,15 @@ class FilesystemCachePool extends AbstractCachePool
         $file = $this->getFilePath($name);
         $this->filesystem->delete($file);
     }
-
     /**
      * {@inheritdoc}
      */
     protected function appendListItem($name, $key)
     {
-        $list   = $this->getList($name);
+        $list = $this->getList($name);
         $list[] = $key;
-
         return $this->filesystem->update($this->getFilePath($name), serialize($list));
     }
-
     /**
      * {@inheritdoc}
      */
@@ -193,10 +161,8 @@ class FilesystemCachePool extends AbstractCachePool
                 unset($list[$i]);
             }
         }
-
         return $this->filesystem->update($this->getFilePath($name), serialize($list));
     }
-
     /**
      * @param $key
      *
@@ -207,7 +173,7 @@ class FilesystemCachePool extends AbstractCachePool
         try {
             return $this->filesystem->delete($this->getFilePath($key));
         } catch (FileNotFoundException $e) {
-            return true;
+            return \true;
         }
     }
 }

@@ -12,7 +12,7 @@ final class PaywallRenderer extends FrontendRenderer
 {
     /**
      * @readonly
-     * @var \Comfino\Common\Frontend\TemplateRenderer\RendererStrategyInterface
+     * @var ComfinoExternal\\Comfino\Common\Frontend\TemplateRenderer\RendererStrategyInterface
      */
     private $rendererStrategy;
     private const PAYWALL_FRAGMENTS = ['template', 'style', 'script'];
@@ -29,7 +29,7 @@ final class PaywallRenderer extends FrontendRenderer
     }
 
     /**
-     * @param \Comfino\Api\Dto\Payment\LoanQueryCriteria $queryCriteria
+     * @param ComfinoExternal\\Comfino\Api\Dto\Payment\LoanQueryCriteria $queryCriteria
      */
     public function renderPaywall($queryCriteria): string
     {
@@ -40,10 +40,45 @@ final class PaywallRenderer extends FrontendRenderer
         }
 
         try {
-            $paywallProductsList = $this->client->getPaywall(
-                $queryCriteria,
-                new PaywallViewTypeEnum(PaywallViewTypeEnum::PAYWALL_VIEW_LIST)
-            )->paywallPage;
+            $paywallResponse = $this->client->getPaywall($queryCriteria, new PaywallViewTypeEnum(PaywallViewTypeEnum::PAYWALL_VIEW_LIST));
+            $paywallProductsList = $paywallResponse->paywallPage;
+            $fragmentsCacheMTime = [];
+
+            if ($paywallResponse->hasHeader('Cache-MTime') && ($fragmentsCacheMTime = json_decode($paywallResponse->getHeader('Cache-MTime'), true)) === null) {
+                $fragmentsCacheMTime = [];
+            }
+
+            if (count($fragmentsCacheMTime) > 0) {
+                $fragmentsCacheKeysToDelete = [];
+
+                foreach ($fragments as $fragmentName => $fragmentContents) {
+                    $matches = [];
+                    $regExpPattern = '';
+
+                    switch ($fragmentName) {
+                        case 'template':
+                            $regExpPattern = '/<!--\[rendered:(\d+)\]-->/';
+                            break;
+
+                        case 'style':
+                        case 'script':
+                            $regExpPattern = '/\/\*\[cached:(\d+)\]\*\//';
+                            break;
+                    }
+
+                    if ($regExpPattern !== '' && preg_match($regExpPattern, $fragmentContents, $matches)) {
+                        $storedCacheMTime = (int) $matches[1];
+
+                        if (isset($fragmentsCacheMTime[$fragmentName]) && $storedCacheMTime < $fragmentsCacheMTime[$fragmentName]) {
+                            $fragmentsCacheKeysToDelete[] = $fragmentName;
+                        }
+                    }
+                }
+
+                if (count($fragmentsCacheKeysToDelete) > 0) {
+                    $this->deleteFragmentsCacheEntries($fragmentsCacheKeysToDelete, $this->client->getApiLanguage());
+                }
+            }
 
             return $this->rendererStrategy->renderPaywallTemplate(
                 str_replace(

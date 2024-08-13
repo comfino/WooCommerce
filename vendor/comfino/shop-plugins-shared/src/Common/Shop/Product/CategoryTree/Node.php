@@ -13,11 +13,11 @@ final class Node
      */
     private $name;
     /**
-     * @var \Comfino\Common\Shop\Product\CategoryTree\Node|null
+     * @var ComfinoExternal\\Comfino\Common\Shop\Product\CategoryTree\Node|null
      */
     private $parent;
     /**
-     * @var \Comfino\Common\Shop\Product\CategoryTree\NodeIterator|null
+     * @var ComfinoExternal\\Comfino\Common\Shop\Product\CategoryTree\NodeIterator|null
      */
     private $children;
 

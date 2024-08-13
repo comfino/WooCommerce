@@ -2,6 +2,6 @@
 
 namespace Comfino\Common\Exception;
 
-class InvalidEndpoint extends \BadMethodCallException
+class InvalidEndpoint extends ComfinoExternal\\BadMethodCallException
 {
 }

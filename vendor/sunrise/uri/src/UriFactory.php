@@ -1,5 +1,6 @@
-<?php declare(strict_types=1);
+<?php
 
+declare (strict_types=1);
 /**
  * It's free open-source software released under the MIT License.
  *
@@ -8,15 +9,13 @@
  * @license https://github.com/sunrise-php/uri/blob/master/LICENSE
  * @link https://github.com/sunrise-php/uri
  */
-
-namespace Sunrise\Uri;
+namespace ComfinoExternal\Sunrise\Uri;
 
 /**
  * Import classes
  */
-use Psr\Http\Message\UriFactoryInterface;
-use Psr\Http\Message\UriInterface;
-
+use ComfinoExternal\Psr\Http\Message\UriFactoryInterface;
+use ComfinoExternal\Psr\Http\Message\UriInterface;
 /**
  * UriFactory
  *
@@ -24,11 +23,10 @@ use Psr\Http\Message\UriInterface;
  */
 class UriFactory implements UriFactoryInterface
 {
-
     /**
      * {@inheritdoc}
      */
-    public function createUri(string $uri = '') : UriInterface
+    public function createUri(string $uri = ''): UriInterface
     {
         return new Uri($uri);
     }

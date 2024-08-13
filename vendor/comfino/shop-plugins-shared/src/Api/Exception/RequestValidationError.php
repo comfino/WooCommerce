@@ -2,7 +2,7 @@
 
 namespace Comfino\Api\Exception;
 
-class RequestValidationError extends \LogicException
+class RequestValidationError extends ComfinoExternal\\LogicException
 {
     /** @var string */
     private $url;

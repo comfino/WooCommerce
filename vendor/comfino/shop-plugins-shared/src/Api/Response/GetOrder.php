@@ -16,7 +16,7 @@ class GetOrder extends Base
     /** @var string
      * @readonly */
     public $status;
-    /** @var \DateTime|null
+    /** @var ComfinoExternal\\DateTime|null
      * @readonly */
     public $createdAt;
     /** @var string
@@ -48,7 +48,7 @@ class GetOrder extends Base
         }
 
         try {
-            $createdAt = new \DateTime($deserializedResponseBody['createdAt']);
+            $createdAt = new ComfinoExternal\\DateTime($deserializedResponseBody['createdAt']);
         } catch (\Exception $exception)  {
             $createdAt = null;
         }

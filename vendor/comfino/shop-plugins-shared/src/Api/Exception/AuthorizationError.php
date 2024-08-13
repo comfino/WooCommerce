@@ -2,7 +2,7 @@
 
 namespace Comfino\Api\Exception;
 
-class AuthorizationError extends \RuntimeException
+class AuthorizationError extends ComfinoExternal\\RuntimeException
 {
     /** @var string */
     private $url;

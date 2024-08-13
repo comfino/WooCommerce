@@ -1,10 +1,9 @@
 <?php
 
-namespace League\Flysystem\Plugin;
+namespace ComfinoExternal\League\Flysystem\Plugin;
 
-use League\Flysystem\FileExistsException;
-use League\Flysystem\FileNotFoundException;
-
+use ComfinoExternal\League\Flysystem\FileExistsException;
+use ComfinoExternal\League\Flysystem\FileNotFoundException;
 class ForcedCopy extends AbstractPlugin
 {
     /**
@@ -14,7 +13,6 @@ class ForcedCopy extends AbstractPlugin
     {
         return 'forceCopy';
     }
-
     /**
      * Copies a file, overwriting any existing files.
      *
@@ -32,13 +30,11 @@ class ForcedCopy extends AbstractPlugin
             $deleted = $this->filesystem->delete($newpath);
         } catch (FileNotFoundException $e) {
             // The destination path does not exist. That's ok.
-            $deleted = true;
+            $deleted = \true;
         }
-
         if ($deleted) {
             return $this->filesystem->copy($path, $newpath);
         }
-
-        return false;
+        return \false;
     }
 }

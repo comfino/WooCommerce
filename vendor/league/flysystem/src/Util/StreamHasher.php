@@ -1,6 +1,6 @@
 <?php
 
-namespace League\Flysystem\Util;
+namespace ComfinoExternal\League\Flysystem\Util;
 
 class StreamHasher
 {
@@ -8,7 +8,6 @@ class StreamHasher
      * @var string
      */
     private $algo;
-
     /**
      * StreamHasher constructor.
      *
@@ -18,7 +17,6 @@ class StreamHasher
     {
         $this->algo = $algo;
     }
-
     /**
      * @param resource $resource
      *
@@ -30,7 +28,6 @@ class StreamHasher
         $context = hash_init($this->algo);
         hash_update_stream($context, $resource);
         fclose($resource);
-
         return hash_final($context);
     }
 }

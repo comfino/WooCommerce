@@ -2,7 +2,7 @@
 
 namespace Comfino\Common\Shop\Product\CategoryTree;
 
-class NodeIterator implements \Iterator, \Countable
+class NodeIterator implements ComfinoExternal\\Iterator, ComfinoExternal\\Countable
 {
     /** @var Node[]  */
     private $nodes;

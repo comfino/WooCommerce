@@ -1,6 +1,6 @@
 <?php
 
-namespace League\Flysystem;
+namespace ComfinoExternal\League\Flysystem;
 
 class Exception extends \Exception implements FilesystemException
 {

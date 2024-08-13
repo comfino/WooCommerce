@@ -38,27 +38,27 @@ final class RestEndpointManager
     protected $apiKeys;
     /**
      * @readonly
-     * @var \Psr\Http\Message\ServerRequestFactoryInterface
+     * @var ComfinoExternal\\Psr\Http\Message\ServerRequestFactoryInterface
      */
     protected $serverRequestFactory;
     /**
      * @readonly
-     * @var \Psr\Http\Message\StreamFactoryInterface
+     * @var ComfinoExternal\\Psr\Http\Message\StreamFactoryInterface
      */
     protected $streamFactory;
     /**
      * @readonly
-     * @var \Psr\Http\Message\UriFactoryInterface
+     * @var ComfinoExternal\\Psr\Http\Message\UriFactoryInterface
      */
     protected $uriFactory;
     /**
      * @readonly
-     * @var \Psr\Http\Message\ResponseFactoryInterface
+     * @var ComfinoExternal\\Psr\Http\Message\ResponseFactoryInterface
      */
     protected $responseFactory;
     /**
      * @readonly
-     * @var \Comfino\Api\SerializerInterface
+     * @var ComfinoExternal\\Comfino\Api\SerializerInterface
      */
     protected $serializer;
     /**
@@ -132,7 +132,7 @@ final class RestEndpointManager
         $endpoints = [];
 
         foreach ($this->registeredEndpoints as $endpoint) {
-            $endpoints[(new \ReflectionClass($endpoint))->getShortName()] = [
+            $endpoints[(new ComfinoExternal\\ReflectionClass($endpoint))->getShortName()] = [
                 'url' => $endpoint->getEndpointUrl(),
                 'methods' => $endpoint->getMethods(),
             ];
@@ -141,9 +141,11 @@ final class RestEndpointManager
         return $endpoints;
     }
 
-    public function processRequest(?string $endpointName = null): ResponseInterface
+    public function processRequest(?string $endpointName = null, ?ServerRequestInterface $serverRequest = null): ResponseInterface
     {
-        $serverRequest = $this->getServerRequest();
+        if ($serverRequest === null) {
+            $serverRequest = $this->getServerRequest();
+        }
 
         try {
             $this->verifyRequest($serverRequest);
