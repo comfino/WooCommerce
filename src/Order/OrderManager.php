@@ -26,7 +26,7 @@ final class OrderManager
             $total,
             (int) ($cart->get_shipping_total() * 100),
             array_map(static function (array $item): CartItemInterface {
-                /** @var \WC_Product_Simple $product */
+                /** @var \WC_Product $product */
                 $product = $item['data'];
                 $imageId = $product->get_image_id();
 
@@ -52,7 +52,7 @@ final class OrderManager
         );
     }
 
-    public static function getShopCartFromProduct(\WC_Product_Simple $product): Cart
+    public static function getShopCartFromProduct(\WC_Product $product): Cart
     {
         return new Cart(
             (int) (wc_get_price_including_tax($product) * 100),
