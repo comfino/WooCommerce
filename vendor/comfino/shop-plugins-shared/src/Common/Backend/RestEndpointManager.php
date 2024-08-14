@@ -182,7 +182,7 @@ final class RestEndpointManager
         return $this->getPreparedResponse($this->responseFactory->createResponse(404, 'Endpoint not found.'));
     }
 
-    protected function getServerRequest(): ServerRequestInterface
+    public function getServerRequest(): ServerRequestInterface
     {
         $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 

@@ -274,7 +274,7 @@ return array(
     'Comfino\\Shop\\Order\\OrderInterface' => $vendorDir . '/comfino/shop-plugins-shared/src/Shop/Order/OrderInterface.php',
     'Comfino\\Shop\\Order\\Seller' => $vendorDir . '/comfino/shop-plugins-shared/src/Shop/Order/Seller.php',
     'Comfino\\Shop\\Order\\SellerInterface' => $vendorDir . '/comfino/shop-plugins-shared/src/Shop/Order/SellerInterface.php',
-    'Comfino\\TemplateRenderer\\PluginRendererStrategy' => $baseDir . '/src/TemplateRenderer/ModuleRendererStrategy.php',
+    'Comfino\\TemplateRenderer\\PluginRendererStrategy' => $baseDir . '/src/TemplateRenderer/PluginRendererStrategy.php',
     'Comfino\\Tools' => $baseDir . '/src/Tools.php',
     'Comfino\\View\\Block\\PaymentGateway' => $baseDir . '/src/View/Block/PaymentGateway.php',
     'Comfino\\View\\FormManager' => $baseDir . '/src/View/FormManager.php',
