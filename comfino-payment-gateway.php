@@ -55,12 +55,12 @@ class Comfino_Payment_Gateway
             require_once __DIR__ . '/src/Main.php';
         }
 
-        $environmentWarning = Comfino\Main::getEnvironmentWarning(true);
+        $environment_warning = Comfino\Main::getEnvironmentWarning(true);
 
-        if ($environmentWarning) {
+        if ($environment_warning) {
             deactivate_plugins(plugin_basename(__FILE__));
             /** @noinspection ForgottenDebugOutputInspection */
-            wp_die($environmentWarning);
+            wp_die($environment_warning);
         }
     }
 
