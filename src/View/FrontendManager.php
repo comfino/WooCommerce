@@ -31,8 +31,7 @@ use Comfino\Api\ApiService;
 use Comfino\CacheManager;
 use Comfino\Common\Frontend\PaywallIframeRenderer;
 use Comfino\Common\Frontend\PaywallRenderer;
-use Comfino\TemplateRenderer\ModuleRendererStrategy;
-use const Comfino\_PS_VERSION_;
+use Comfino\TemplateRenderer\PluginRendererStrategy;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -40,25 +39,25 @@ if (!defined('_PS_VERSION_')) {
 
 final class FrontendManager
 {
-    public static function getPaywallRenderer(\PaymentModule $module): PaywallRenderer
+    public static function getPaywallRenderer(): PaywallRenderer
     {
         return new PaywallRenderer(
             ApiClient::getInstance(),
             CacheManager::getCachePool(),
-            new ModuleRendererStrategy($module),
+            new PluginRendererStrategy(),
             ApiService::getEndpointUrl('cacheInvalidate'),
             ApiService::getEndpointUrl('configuration')
         );
     }
 
-    public static function getPaywallIframeRenderer(\PaymentModule $module): PaywallIframeRenderer
+    public static function getPaywallIframeRenderer(): PaywallIframeRenderer
     {
         return new PaywallIframeRenderer(
             ApiClient::getInstance(),
             CacheManager::getCachePool(),
-            new ModuleRendererStrategy($module),
-            'PrestaShop',
-            _PS_VERSION_,
+            new PluginRendererStrategy(),
+            'WooCommerce',
+            WC_VERSION,
             ApiService::getEndpointUrl('cacheInvalidate'),
             ApiService::getEndpointUrl('configuration')
         );
