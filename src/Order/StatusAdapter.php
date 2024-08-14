@@ -1,28 +1,4 @@
 <?php
-/**
- * Copyright since 2007 PrestaShop SA and Contributors
- * PrestaShop is an International Registered Trademark & Property of PrestaShop SA
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the Open Software License (OSL 3.0)
- * that is bundled with this package in the file LICENSE.md.
- * It is also available through the world-wide-web at this URL:
- * https://opensource.org/licenses/OSL-3.0
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@prestashop.com so we can send you a copy immediately.
- *
- * DISCLAIMER
- *
- * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
- * versions in the future. If you wish to customize PrestaShop for your
- * needs please refer to https://devdocs.prestashop.com/ for more information.
- *
- * @author    PrestaShop SA and Contributors <contact@prestashop.com>
- * @copyright Since 2007 PrestaShop SA and Contributors
- * @license   https://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
- */
 
 namespace Comfino\Order;
 
@@ -30,49 +6,48 @@ use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Common\Shop\OrderStatusAdapterInterface;
 use Comfino\Configuration\ConfigManager;
 
-if (!defined('_PS_VERSION_')) {
+if (!defined('ABSPATH')) {
     exit;
 }
 
 class StatusAdapter implements OrderStatusAdapterInterface
 {
+    private static $loggedStates = [
+        StatusManager::STATUS_ACCEPTED,
+        StatusManager::STATUS_CANCELLED,
+        StatusManager::STATUS_CANCELLED_BY_SHOP,
+        StatusManager::STATUS_REJECTED,
+        StatusManager::STATUS_RESIGN,
+    ];
+
     public function setStatus($orderId, $status): void
     {
-        $order = new \Order($orderId);
+        $order = wc_get_order($orderId);
 
-        if (!\ValidateCore::isLoadedObject($order)) {
+        if (!$order) {
             throw new \RuntimeException(sprintf('Order not found by id: %s', $orderId));
         }
 
-        $inputStatus = \Tools::strtoupper($status);
+        $inputStatus = strtoupper($status);
 
-        if (in_array($inputStatus, StatusManager::STATUSES, true)) {
-            $custom_status_new = "COMFINO_$inputStatus";
-        } else {
+        if (!in_array($inputStatus, StatusManager::STATUSES, true)) {
             return;
         }
 
-        $currentInternalStatusId = (int) $order->getCurrentState();
-        $newCustomStatusId = (int) \Configuration::get($custom_status_new);
+        if (in_array($inputStatus, self::$loggedStates, true)) {
+            $order->add_order_note(__('Comfino status', 'comfino-payment-gateway') . ": " . __($inputStatus, 'comfino-payment-gateway'));
+        }
 
-        if ($newCustomStatusId !== $currentInternalStatusId) {
-            $order->setCurrentState($newCustomStatusId);
+        $statusMap = ConfigManager::getStatusMap();
 
-            $statusMap = ConfigManager::getStatusMap();
+        if (!array_key_exists($inputStatus, $statusMap)) {
+            return;
+        }
 
-            if (!array_key_exists($inputStatus, $statusMap)) {
-                return;
-            }
-
-            $newInternalStatusId = (int) \Configuration::get($statusMap[$inputStatus]);
-
-            foreach ($order->getHistory(0) as $historyEntry) {
-                if ($historyEntry['id_order_state'] === $newInternalStatusId) {
-                    return;
-                }
-            }
-
-            $order->setCurrentState($newInternalStatusId);
+        if ($statusMap[$inputStatus] === 'completed') {
+            $order->payment_complete();
+        } elseif ($statusMap[$inputStatus] === 'cancelled') {
+            $order->update_status('cancelled');
         }
     }
 }

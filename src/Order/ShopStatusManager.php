@@ -1,180 +1,85 @@
 <?php
-/**
- * Copyright since 2007 PrestaShop SA and Contributors
- * PrestaShop is an International Registered Trademark & Property of PrestaShop SA
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the Open Software License (OSL 3.0)
- * that is bundled with this package in the file LICENSE.md.
- * It is also available through the world-wide-web at this URL:
- * https://opensource.org/licenses/OSL-3.0
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@prestashop.com so we can send you a copy immediately.
- *
- * DISCLAIMER
- *
- * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
- * versions in the future. If you wish to customize PrestaShop for your
- * needs please refer to https://devdocs.prestashop.com/ for more information.
- *
- * @author    PrestaShop SA and Contributors <contact@prestashop.com>
- * @copyright Since 2007 PrestaShop SA and Contributors
- * @license   https://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
- */
 
 namespace Comfino\Order;
 
 use Comfino\Api\ApiClient;
 use Comfino\Common\Shop\Order\StatusManager;
+use Comfino\Configuration\ConfigManager;
 use Comfino\ErrorLogger;
 use Comfino\Main;
+use Comfino\View\TemplateManager;
 
-if (!defined('_PS_VERSION_')) {
+if (!defined('ABSPATH')) {
     exit;
 }
 
 final class ShopStatusManager
 {
     public const DEFAULT_STATUS_MAP = [
-        StatusManager::STATUS_ACCEPTED => 'PS_OS_WS_PAYMENT',
-        StatusManager::STATUS_CANCELLED => 'PS_OS_CANCELED',
-        StatusManager::STATUS_REJECTED => 'PS_OS_CANCELED',
+        StatusManager::STATUS_ACCEPTED => 'completed',
+        StatusManager::STATUS_CANCELLED => 'cancelled',
+        StatusManager::STATUS_REJECTED => 'cancelled',
     ];
 
-    private const CUSTOM_ORDER_STATUSES = [
-        'COMFINO_' . StatusManager::STATUS_CREATED => [
-            'name' => 'Order created - waiting for payment (Comfino)',
-            'name_pl' => 'Zamówienie utworzone - oczekiwanie na płatność (Comfino)',
-            'color' => '#87b921',
-            'paid' => false,
-            'deleted' => false,
-        ],
-        'COMFINO_' . StatusManager::STATUS_ACCEPTED => [
-            'name' => 'Credit granted (Comfino)',
-            'name_pl' => 'Kredyt udzielony (Comfino)',
-            'color' => '#227b34',
-            'paid' => true,
-            'deleted' => false,
-        ],
-        'COMFINO_' . StatusManager::STATUS_REJECTED => [
-            'name' => 'Credit rejected (Comfino)',
-            'name_pl' => 'Wniosek kredytowy odrzucony (Comfino)',
-            'color' => '#ba3f1d',
-            'paid' => false,
-            'deleted' => false,
-        ],
-        'COMFINO_' . StatusManager::STATUS_CANCELLED => [
-            'name' => 'Cancelled (Comfino)',
-            'name_pl' => 'Anulowano (Comfino)',
-            'color' => '#ba3f1d',
-            'paid' => false,
-            'deleted' => false,
-        ],
-    ];
-
-    public static function addCustomOrderStatuses(): void
+    public static function orderStatusUpdateEventHandler(\WC_Order $order, string $oldStatus, string $newStatus): void
     {
-        $languages = \Language::getLanguages(false);
-
-        foreach (self::CUSTOM_ORDER_STATUSES as $statusCode => $statusDetails) {
-            $comfinoStatusId = \Configuration::get($statusCode);
-
-            if (!empty($comfinoStatusId) && \Validate::isInt($comfinoStatusId)) {
-                $orderStatus = new \OrderState($comfinoStatusId);
-
-                if (\Validate::isLoadedObject($orderStatus)) {
-                    // Update existing status definition.
-                    $orderStatus->color = $statusDetails['color'];
-                    $orderStatus->paid = $statusDetails['paid'];
-                    $orderStatus->deleted = $statusDetails['deleted'];
-
-                    $orderStatus->update();
-
-                    continue;
-                }
-            } elseif ($statusDetails['deleted']) {
-                // Ignore deleted statuses in first time plugin installations.
-                continue;
-            }
-
-            // Add a new status definition.
-            $orderStatus = new \OrderState();
-            $orderStatus->send_email = false;
-            $orderStatus->invoice = false;
-            $orderStatus->color = $statusDetails['color'];
-            $orderStatus->unremovable = false;
-            $orderStatus->logable = false;
-            $orderStatus->module_name = 'comfino';
-            $orderStatus->paid = $statusDetails['paid'];
-
-            foreach ($languages as $language) {
-                $status_name = $language['iso_code'] === 'pl' ? $statusDetails['name_pl'] : $statusDetails['name'];
-                $orderStatus->name[$language['id_lang']] = $status_name;
-            }
-
-            if ($orderStatus->add()) {
-                \Configuration::updateValue($statusCode, $orderStatus->id);
-            }
+        if (!ConfigManager::isEnabled()) {
+            return;
         }
-    }
 
-    public static function updateOrderStatuses(): void
-    {
-        $languages = \Language::getLanguages(false);
+        switch ($newStatus) {
+            case 'failed':
+                if (ConfigManager::isAbandonedCartEnabled() && $order->get_payment_method() !== 'comfino' && in_array($oldStatus, ['on-hold', 'pending'], true)) {
+                    // Send e-mail and API notifications about abandoned cart not paid by Comfino.
+                    self::sendEmail($order);
+                    ApiClient::getInstance()->notifyAbandonedCart('send-mail');
+                }
 
-        foreach (self::CUSTOM_ORDER_STATUSES as $statusCode => $statusDetails) {
-            $comfinoStatusId = \Configuration::get($statusCode);
+                break;
 
-            if (!empty($comfinoStatusId) && \Validate::isInt($comfinoStatusId)) {
-                $orderStatus = new \OrderState($comfinoStatusId);
+            case 'cancelled':
+                if ($order->get_payment_method() === 'comfino') {
+                    // Process orders paid by Comfino only.
 
-                if (\Validate::isLoadedObject($orderStatus)) {
-                    // Update existing status definition.
-                    foreach ($languages as $language) {
-                        if ($language['iso_code'] === 'pl') {
-                            $orderStatus->name[$language['id_lang']] = $statusDetails['name_pl'];
-                        } else {
-                            $orderStatus->name[$language['id_lang']] = $statusDetails['name'];
-                        }
+                    if (count(OrderManager::getOrderStatusNotes($order->get_id(), [StatusManager::STATUS_CANCELLED_BY_SHOP, StatusManager::STATUS_RESIGN]))) {
+                        break;
                     }
 
-                    $orderStatus->color = $statusDetails['color'];
-                    $orderStatus->paid = $statusDetails['paid'];
-                    $orderStatus->deleted = $statusDetails['deleted'];
+                    ErrorLogger::init(Main::getPluginDirectory(),Main::getPluginFile());
 
-                    $orderStatus->save();
+                    try {
+                        // Send notification about cancelled order paid by Comfino.
+                        ApiClient::getInstance()->cancelOrder((string) $order->get_id());
+                    } catch (\Throwable $e) {
+                        ApiClient::processApiError('Order cancellation error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)', $e);
+                    }
+
+                    $order->add_order_note(__('Order cancellation sent to Comfino.', 'comfino-payment-gateway'));
                 }
-            }
+
+                break;
         }
     }
 
-    public static function orderStatusUpdateEventHandler(\PaymentModule $module, array $params): void
+    private static function sendEmail(\WC_Order $order): void
     {
-        $order = new \Order($params['id_order']);
+        $recipient = $order->get_billing_email();
 
-        if (stripos($order->payment, 'comfino') !== false) {
-            // Process orders paid by Comfino only.
+        $headers = "Content-Type: text/html\r\n";
+        $subject = __('Order reminder', 'comfino-payment-gateway');
+        $contents = TemplateManager::renderView(
+            'failed_order',
+            'emails',
+            [
+                'order' => $order,
+                'email_heading' => false,
+                'sent_to_admin' => false,
+                'plain_text' => false,
+                'email' => $recipient,
+                'additional_content' => false,
+            ]
+        );
 
-            /** @var \OrderState $newOrderState */
-            $newOrderState = $params['newOrderStatus'];
-
-            $newOrderStateId = (int) $newOrderState->id;
-            $canceledOrderStateId = (int) \Configuration::get('PS_OS_CANCELED');
-
-            if ($newOrderStateId === $canceledOrderStateId) {
-                // Send notification about cancelled order paid by Comfino.
-                ErrorLogger::init(Main::getPluginDirectory());
-
-                try {
-                    ApiClient::getInstance()->cancelOrder($params['id_order']);
-                } catch (\Throwable $e) {
-                    ApiClient::processApiError(
-                        'Order cancellation error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)', $e
-                    );
-                }
-            }
-        }
+        (WC()->mailer())->send($recipient, $subject, $contents, $headers);
     }
 }
