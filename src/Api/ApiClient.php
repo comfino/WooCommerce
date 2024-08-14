@@ -12,8 +12,9 @@ use Comfino\Configuration\ConfigManager;
 use Comfino\ErrorLogger;
 use Comfino\Extended\Api\Client;
 use Comfino\Main;
+use Comfino\PaymentGateway;
 use Comfino\View\FrontendManager;
-use Psr\Http\Client\NetworkExceptionInterface;
+use ComfinoExternal\Psr\Http\Client\NetworkExceptionInterface;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -54,12 +55,15 @@ final class ApiClient
                     )
                 ),
                 self::getApiHost(),
-                \Context::getContext()->language->iso_code,//substr(get_locale(), 0, 2), substr(get_bloginfo('language'), 0, 2)
-                [CURLOPT_CONNECTTIMEOUT => 1, CURLOPT_TIMEOUT => 3]
+                substr(get_locale(), 0, 2),
+                [
+                    CURLOPT_CONNECTTIMEOUT => ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_TIMEOUT', 1),
+                    CURLOPT_TIMEOUT => ConfigManager::getConfigurationValue('COMFINO_API_TIMEOUT', 3),
+                ]
             );
         } else {
             self::$apiClient->setApiKey($apiKey);
-            self::$apiClient->setApiLanguage(\Context::getContext()->language->iso_code);
+            self::$apiClient->setApiLanguage(substr(get_locale(), 0, 2));
         }
 
         return self::$apiClient;
@@ -102,19 +106,19 @@ final class ApiClient
         );
     }
 
-    public static function getLogoUrl(\PaymentModule $module): string
+    public static function getLogoUrl(): string
     {
         return self::getApiHost(self::getInstance()->getApiHost())
             . '/v1/get-logo-url?auth='
-            . FrontendManager::getPaywallRenderer($module)->getLogoAuthHash('WC', WC_VERSION, \Comfino_Payment_Gateway::VERSION);
+            . FrontendManager::getPaywallRenderer()->getLogoAuthHash('WC', WC_VERSION, PaymentGateway::VERSION);
     }
 
-    public static function getPaywallLogoUrl(\PaymentModule $module): string
+    public static function getPaywallLogoUrl(): string
     {
         return self::getApiHost(self::getInstance()->getApiHost())
             . '/v1/get-paywall-logo?auth='
-            . FrontendManager::getPaywallRenderer($module)->getPaywallLogoAuthHash(
-                'WC', WC_VERSION, \Comfino_Payment_Gateway::VERSION, self::getInstance()->getApiKey(), ConfigManager::getWidgetKey()
+            . FrontendManager::getPaywallRenderer()->getPaywallLogoAuthHash(
+                'WC', WC_VERSION, PaymentGateway::VERSION, self::getInstance()->getApiKey(), ConfigManager::getWidgetKey()
             );
     }
 
@@ -138,7 +142,7 @@ final class ApiClient
 
     public static function isDevEnv(): bool
     {
-        return getenv('COMFINO_DEV') === 'WC_' . WC_VERSION . '_' . Main::getShopUrl();
+        return ((string) getenv('COMFINO_DEV')) === ('WC_' . WC_VERSION . '_' . Main::getShopUrl());
     }
 
     private static function getApiHost(?string $apiHost = null): ?string
