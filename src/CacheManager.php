@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class CacheManager
+final class CacheManager
 {
     /** @var string */
     private static $cacheRootPath;
