@@ -5,6 +5,7 @@ namespace Comfino\Extended\Api;
 use Comfino\Api\Response\Base as BaseApiResponse;
 use Comfino\Api\SerializerInterface;
 use Comfino\Extended\Api\Dto\Plugin\ShopPluginError;
+use Comfino\Extended\Api\Request\NotifyAbandonedCart;
 use Comfino\Extended\Api\Request\NotifyShopPluginRemoval;
 use Comfino\Extended\Api\Request\ReportShopPluginError;
 use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
@@ -57,6 +58,23 @@ class Client extends \Comfino\Api\Client
     {
         try {
             $this->sendRequest((new NotifyShopPluginRemoval())->setSerializer($this->serializer));
+        } catch (\Throwable $exception) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Sends notification about abandoned cart.
+     *
+     * @param string $type
+     * @return bool
+     */
+    public function notifyAbandonedCart($type): bool
+    {
+        try {
+            $this->sendRequest((new NotifyAbandonedCart($type))->setSerializer($this->serializer));
         } catch (\Throwable $exception) {
             return false;
         }
