@@ -10,8 +10,12 @@ use Comfino\Common\Backend\RestEndpoint\StatusNotification;
 use Comfino\Common\Backend\RestEndpointManager;
 use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Configuration\ConfigManager;
-use Comfino\Core;
+use Comfino\Configuration\SettingsManager;
+use Comfino\FinancialProduct\ProductTypesListTypeEnum;
+use Comfino\Order\OrderManager;
 use Comfino\Order\StatusAdapter;
+use Comfino\PaymentGateway;
+use ComfinoExternal\Psr\Http\Message\ServerRequestInterface;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -21,15 +25,21 @@ final class ApiService
 {
     /** @var RestEndpointManager */
     private static $endpointManager;
-    /** @var array */
+    /** @var string[] */
     private static $endpoints = [];
+    /** @var callable[] */
+    private static $requestCallbacks = [
+        'availableOfferTypes' => [self::class, 'getAvailableOfferTypes'],
+    ];
 
     public static function init(): void
     {
         self::registerWordPressApiEndpoint('availableOfferTypes', '/availableoffertypes(?:/(?P<product_id>\d+))?', [
             [
                 'methods' => \WP_REST_Server::READABLE,
-                'callback' => [Core::class, 'get_available_offer_types'],
+                'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
+                    return self::processRequest('availableOfferTypes', $request);
+                },
                 'args' => ['product_id' => ['sanitize_callback' => 'absint']],
             ],
         ]);
@@ -37,7 +47,7 @@ final class ApiService
         self::$endpointManager = (new ApiServiceFactory())->createService(
             'WooCommerce',
             WC_VERSION,
-            \Comfino_Payment_Gateway::VERSION,
+            PaymentGateway::VERSION,
             [
                 ConfigManager::getConfigurationValue('COMFINO_API_KEY'),
                 ConfigManager::getConfigurationValue('COMFINO_SANDBOX_API_KEY'),
@@ -50,7 +60,9 @@ final class ApiService
                 self::registerWordPressApiEndpoint('transactionStatus', 'transactionstatus', [
                     [
                         'methods' => \WP_REST_Server::EDITABLE,
-                        'callback' => [Core::class, 'process_notification'],
+                        'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
+                            return self::processRequest('transactionStatus', $request);
+                        },
                     ],
                 ]),
                 StatusManager::getInstance(new StatusAdapter()),
@@ -65,12 +77,16 @@ final class ApiService
                 self::registerWordPressApiEndpoint('configuration', '/configuration(?:/(?P<vkey>[a-f0-9]+))?', [
                     [
                         'methods' => \WP_REST_Server::READABLE,
-                        'callback' => [Core::class, 'get_configuration'],
+                        'callback' =>  function (\WP_REST_Request $request): \WP_REST_Response {
+                            return self::processRequest('configuration', $request);
+                        },
                         'args' => ['vkey' => ['sanitize_callback' => 'sanitize_key']],
                     ],
                     [
                         'methods' => \WP_REST_Server::EDITABLE,
-                        'callback' => [Core::class, 'update_configuration'],
+                        'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
+                            return self::processRequest('configuration', $request);
+                        },
                     ],
                 ]),
                 ConfigManager::getInstance(),
@@ -87,23 +103,14 @@ final class ApiService
                 self::registerWordPressApiEndpoint('cacheInvalidate', 'cacheinvalidate', [
                     [
                         'methods' => \WP_REST_Server::EDITABLE,
-                        'callback' => [Core::class, 'cache_invalidate'],
+                        'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
+                            return self::processRequest('cacheInvalidate', $request);
+                        },
                     ],
                 ]),
                 CacheManager::getCachePool()
             )
         );
-    }
-
-    public static function getControllerUrl(
-        \PaymentModule $module,
-        string $controllerName,
-        array $params = [],
-        bool $withLangId = true
-    ): string {
-        $url = \Context::getContext()->link->getModuleLink($module->name, $controllerName, $params, true);
-
-        return $withLangId ? $url : preg_replace('/&?id_lang=\d+&?/', '', $url);
     }
 
     public static function getEndpointUrl(string $endpointName): string
@@ -115,27 +122,32 @@ final class ApiService
         return self::$endpoints[$endpointName] ?? '';
     }
 
-    public static function processRequest(string $endpointName): string
+    public static function processRequest(string $endpointName, \WP_REST_Request $request): \WP_REST_Response
     {
-        if (self::$endpointManager === null || empty(self::$endpointManager->getRegisteredEndpoints())) {
-            http_response_code(503);
-
-            return 'Endpoint manager not initialized.';
+        if (isset(self::$endpoints[$endpointName])) {
+            return isset(self::$requestCallbacks[$endpointName]) ? call_user_func(self::$requestCallbacks[$endpointName], $request) : new \WP_REST_Response();
         }
 
-        $response = self::$endpointManager->processRequest($endpointName);
+        if (self::$endpointManager === null || empty(self::$endpointManager->getRegisteredEndpoints())) {
+            return new \WP_REST_Response('Endpoint manager not initialized.', 503);
+        }
+
+        $apiResponse = new \WP_REST_Response();
+
+        $response = self::$endpointManager->processRequest($endpointName, self::createServerRequest($request));
 
         foreach ($response->getHeaders() as $headerName => $headerValues) {
             foreach ($headerValues as $headerValue) {
-                header(sprintf('%s: %s', $headerName, $headerValue), false);
+                $apiResponse->header($headerName, $headerValue, false);
             }
         }
 
         $responseBody = $response->getBody()->getContents();
 
-        http_response_code($response->getStatusCode());
+        $apiResponse->set_status($response->getStatusCode());
+        $apiResponse->set_data(!empty($responseBody) ? $responseBody : $response->getReasonPhrase());
 
-        return !empty($responseBody) ? $responseBody : $response->getReasonPhrase();
+        return $apiResponse;
     }
 
     private static function registerWordPressApiEndpoint(string $endpointName, string $endpointPath, array $endpointCallbacks): string
@@ -172,5 +184,27 @@ final class ApiService
         self::$endpoints[$endpointName] = get_rest_url(null, $restEndpointPath);
 
         return self::$endpoints[$endpointName];
+    }
+
+    private static function createServerRequest(\WP_REST_Request $request): ?ServerRequestInterface
+    {
+        return count($requestParams = $request->get_params()) ? self::$endpointManager->getServerRequest()->withQueryParams($requestParams) : null;
+    }
+
+    private static function getAvailableOfferTypes(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $availableProductTypes = SettingsManager::getProductTypesStrings(ProductTypesListTypeEnum::LIST_TYPE_WIDGET);
+
+        if (empty($productId = $request->get_param('product_id') ?? '')) {
+            return new \WP_REST_Response($availableProductTypes, 200);
+        }
+
+        $product = wc_get_product($productId);
+
+        if (!$product) {
+            return new \WP_REST_Response($availableProductTypes, 200);
+        }
+
+        return new \WP_REST_Response(SettingsManager::getAllowedProductTypes('widget', OrderManager::getShopCartFromProduct($product), true), 200);
     }
 }
