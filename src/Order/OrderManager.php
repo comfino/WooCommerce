@@ -15,7 +15,7 @@ final class OrderManager
 {
     public static function getShopCart(\WC_Cart $cart, int $loanAmount): Cart
     {
-        $total = (int) ($cart->get_total() * 100);
+        $total = (int) ($cart->get_total('edit') * 100);
 
         if ($loanAmount > $total) {
             // Loan amount with price modifier (e.g. custom commission).
