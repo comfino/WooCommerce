@@ -55,7 +55,7 @@ final class ApiClient
                     )
                 ),
                 self::getApiHost(),
-                substr(get_locale(), 0, 2),
+                Main::getShopLanguage(),
                 [
                     CURLOPT_CONNECTTIMEOUT => ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_TIMEOUT', 1),
                     CURLOPT_TIMEOUT => ConfigManager::getConfigurationValue('COMFINO_API_TIMEOUT', 3),
@@ -63,7 +63,7 @@ final class ApiClient
             );
         } else {
             self::$apiClient->setApiKey($apiKey);
-            self::$apiClient->setApiLanguage(substr(get_locale(), 0, 2));
+            self::$apiClient->setApiLanguage(Main::getShopLanguage());
         }
 
         return self::$apiClient;
