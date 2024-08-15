@@ -8,7 +8,6 @@ use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Order\OrderManager;
-use Comfino\Order\ShopStatusManager;
 use Comfino\View\FrontendManager;
 use Comfino\View\SettingsForm;
 use Comfino\View\TemplateManager;
@@ -166,13 +165,6 @@ final class Main
 
     public static function uninstall(string $pluginDirectory, string $pluginFile): bool
     {
-        /*$config_manager = new Config_Manager();
-
-        Api_Client::init($config_manager);
-        Api_Client::notify_plugin_removal();
-
-        $config_manager->remove_configuration_options();*/
-
         ConfigManager::deleteConfigurationValues();
 
         ErrorLogger::init($pluginDirectory, $pluginFile);
@@ -181,37 +173,10 @@ final class Main
         return true;
     }
 
-    /**
-     * Renders configuration form.
-     */
-    public static function getContent(\PaymentModule $module): string
+    public static function renderPaywallIframe(\WC_Cart $cart, int $loanAmount): string
     {
-        return TemplateManager::renderModuleView($module, 'configuration', 'admin', SettingsForm::processForm($module));
-    }
-
-    /**
-     * @return \PrestaShop\PrestaShop\Core\Payment\PaymentOption[]|string|void
-     */
-    public static function renderPaywallIframe(\PaymentModule $module, array $params)
-    {
-        /** @var \Cart $cart */
-        $cart = $params['cart'];
-
-        if (!self::paymentIsAvailable($module, $cart)
-            || ($paywallIframe = self::preparePaywallIframe($module, $cart)) === null
-        ) {
-            return;
-        }
-
-        if (COMFINO_PS_17) {
-            $comfinoPaymentOption = new \PrestaShop\PrestaShop\Core\Payment\PaymentOption();
-            $comfinoPaymentOption->setModuleName($module->name)
-                ->setAction(ApiService::getControllerUrl($module, 'payment'))
-                ->setCallToActionText(ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'))
-                ->setLogo(ApiClient::getPaywallLogoUrl($module))
-                ->setAdditionalInformation($paywallIframe);
-
-            return [$comfinoPaymentOption];
+        if (!self::paymentIsAvailable($cart, $loanAmount) || ($paywallIframe = self::preparePaywallIframe($cart)) === null) {
+            return '';
         }
 
         return $paywallIframe;
@@ -243,52 +208,62 @@ final class Main
             $tplVariables['status'] = 'failed';
         }
 
-        return TemplateManager::renderModuleView($module, 'payment_return', 'front', $tplVariables);
+        return TemplateManager::renderView('payment_return', 'front', $tplVariables);
+    }
+//-----------------------------------------------------------
+    public static function debugLog(string $debugPrefix, string $debugMessage): void
+    {
+        if (ConfigManager::isDebugMode()) {
+            @file_put_contents(
+                self::$debugLogFilePath,
+                '[' . date('Y-m-d H:i:s') . "] $debugPrefix: $debugMessage\n",
+                FILE_APPEND
+            );
+        }
     }
 
-    private static function paymentIsAvailable(\PaymentModule $module, \WC_Cart $cart): bool
+    public static function getDebugLog(int $numLines): string
     {
-        if (!$module->active || !OrderManager::checkCartCurrency($module, $cart) || empty(ConfigManager::getApiKey())) {
+        return self::$errorLogger->getErrorLog(self::$debugLogFilePath, $numLines);
+    }
+
+    private static function paymentIsAvailable(\WC_Cart $cart, int $loanAmount): bool
+    {
+        if (!ConfigManager::isEnabled() || empty(ConfigManager::getApiKey())) {
             return false;
         }
 
-        ErrorLogger::init($module);
-
         return SettingsManager::getAllowedProductTypes(
             ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
-            OrderManager::getShopCart($cart, (int) \Context::getContext()->cookie->loan_amount)
+            OrderManager::getShopCart($cart, $loanAmount)
         ) !== [];
     }
 
-    private static function preparePaywallIframe(\PaymentModule $module, \Cart $cart): ?string
+    private static function preparePaywallIframe(\WC_Cart $cart): ?string
     {
-        $total = $cart->getOrderTotal();
-        $tools = new Tools(\Context::getContext());
+        $total = $cart->get_total('edit');
 
         try {
-            return TemplateManager::renderModuleView(
-                $module,
+            return TemplateManager::renderView(
                 'payment',
                 'front',
                 [
-                    'paywall_iframe' => FrontendManager::getPaywallIframeRenderer($module)
-                        ->renderPaywallIframe(ApiService::getControllerUrl($module, 'paywall')),
-                    'payment_state_url' => ApiService::getControllerUrl($module, 'paymentstate', [], false),
+                    'paywall_iframe' => FrontendManager::getPaywallIframeRenderer()
+                        ->renderPaywallIframe(ApiService::getEndpointUrl('paywall')),
                     'paywall_options' => [
-                        'platform' => 'prestashop',
-                        'platformName' => 'PrestaShop',
-                        'platformVersion' => _PS_VERSION_,
-                        'platformDomain' => \Tools::getShopDomain(),
-                        'pluginVersion' => COMFINO_VERSION,
-                        'language' => $tools->getLanguageIsoCode($cart->id_lang),
-                        'currency' => $tools->getCurrencyIsoCode($cart->id_currency),
+                        'platform' => 'woocommerce',
+                        'platformName' => 'WooCommerce',
+                        'platformVersion' => WC_VERSION,
+                        'platformDomain' => self::getShopDomain(),
+                        'pluginVersion' => PaymentGateway::VERSION,
+                        'language' => self::getShopLanguage(),
+                        'currency' => self::getShopCurrency(),
                         'cartTotal' => (float) $total,
-                        'cartTotalFormatted' => $tools->formatPrice($total, $cart->id_currency),
+                        'cartTotalFormatted' => wc_price($total, ['currency' => self::getShopCurrency()]),
                     ],
-                    'is_ps_16' => !COMFINO_PS_17,
-                    'comfino_logo_url' => ApiClient::getPaywallLogoUrl($module),
+                    'comfino_logo_url' => ApiClient::getPaywallLogoUrl(),
                     'comfino_label' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
-                    'comfino_redirect_url' => ApiService::getControllerUrl($module, 'payment'),
+                    'comfino_redirect_url' => ApiService::getEndpointUrl('payment'),
                 ]
             );
         } catch (\Throwable $e) {
@@ -298,7 +273,6 @@ final class Main
         return null;
     }
 
-//-----------------------------------------------------------
     public static function getPluginDirectory(): string
     {
         return self::$pluginDirectory;
@@ -319,6 +293,16 @@ final class Main
         $urlParts = parse_url(wc_get_page_permalink('shop'));
 
         return $urlParts['host'] . (isset($urlParts['port']) ? ':' . $urlParts['port'] : '');
+    }
+
+    public static function getShopLanguage(): string
+    {
+        return substr(get_locale(), 0, 2);
+    }
+
+    public static function getShopCurrency(): string
+    {
+        return get_woocommerce_currency();
     }
 
     /**
@@ -361,8 +345,10 @@ final class Main
 
         if (!extension_loaded('curl')) {
             return $duringActivation
-                ? __('The plugin could not be activated. cURL is not installed.', 'comfino-payment-gateway')
-                : __('The Comfino plugin has been deactivated. cURL is not installed.', 'comfino-payment-gateway');
+                ? __('The plugin could not be activated. It requires PHP cURL extension which is not installed. ' .
+                     'More details: https://www.php.net/manual/en/book.curl.php', 'comfino-payment-gateway')
+                : __('The Comfino plugin has been deactivated. It requires PHP cURL extension which is not installed. ' .
+                     'More details: https://www.php.net/manual/en/book.curl.php', 'comfino-payment-gateway');
         }
 
         return false;
