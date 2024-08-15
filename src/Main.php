@@ -117,7 +117,7 @@ final class Main
             }
         });
 
-        // Register WooCommerce Blocks integration.
+        // Declare compatibility with WooCommerce Payment Blocks and register integration hook.
         add_action('woocommerce_blocks_loaded', static function () {
             if (class_exists('\Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
                 add_action(
