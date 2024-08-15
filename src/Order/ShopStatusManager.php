@@ -45,8 +45,6 @@ final class ShopStatusManager
                         break;
                     }
 
-                    ErrorLogger::init(Main::getPluginDirectory(),Main::getPluginFile());
-
                     try {
                         // Send notification about cancelled order paid by Comfino.
                         ApiClient::getInstance()->cancelOrder((string) $order->get_id());
