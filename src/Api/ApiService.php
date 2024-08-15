@@ -2,6 +2,7 @@
 
 namespace Comfino\Api;
 
+use Comfino\Api\Dto\Payment\LoanQueryCriteria;
 use Comfino\CacheManager;
 use Comfino\Common\Backend\Factory\ApiServiceFactory;
 use Comfino\Common\Backend\RestEndpoint\CacheInvalidate;
@@ -15,6 +16,8 @@ use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Order\OrderManager;
 use Comfino\Order\StatusAdapter;
 use Comfino\PaymentGateway;
+use Comfino\View\FrontendManager;
+use Comfino\View\TemplateManager;
 use ComfinoExternal\Psr\Http\Message\ServerRequestInterface;
 
 if (!defined('ABSPATH')) {
@@ -30,6 +33,7 @@ final class ApiService
     /** @var callable[] */
     private static $requestCallbacks = [
         'availableOfferTypes' => [self::class, 'getAvailableOfferTypes'],
+        'paywall' => [self::class, 'getPaywall'],
     ];
 
     public static function init(): void
@@ -41,6 +45,15 @@ final class ApiService
                     return self::processRequest('availableOfferTypes', $request);
                 },
                 'args' => ['product_id' => ['sanitize_callback' => 'absint']],
+            ],
+        ]);
+
+        self::registerWordPressApiEndpoint('paywall', '/paywall', [
+            [
+                'methods' => \WP_REST_Server::READABLE,
+                'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
+                    return self::processRequest('paywall', $request);
+                },
             ],
         ]);
 
@@ -125,7 +138,9 @@ final class ApiService
     public static function processRequest(string $endpointName, \WP_REST_Request $request): \WP_REST_Response
     {
         if (isset(self::$endpoints[$endpointName])) {
-            return isset(self::$requestCallbacks[$endpointName]) ? call_user_func(self::$requestCallbacks[$endpointName], $request) : new \WP_REST_Response();
+            return isset(self::$requestCallbacks[$endpointName])
+                ? call_user_func(self::$requestCallbacks[$endpointName], $request)
+                : new \WP_REST_Response();
         }
 
         if (self::$endpointManager === null || empty(self::$endpointManager->getRegisteredEndpoints())) {
@@ -188,7 +203,9 @@ final class ApiService
 
     private static function createServerRequest(\WP_REST_Request $request): ?ServerRequestInterface
     {
-        return count($requestParams = $request->get_params()) ? self::$endpointManager->getServerRequest()->withQueryParams($requestParams) : null;
+        return count($requestParams = $request->get_params())
+            ? self::$endpointManager->getServerRequest()->withQueryParams($requestParams)
+            : null;
     }
 
     private static function getAvailableOfferTypes(\WP_REST_Request $request): \WP_REST_Response
@@ -205,6 +222,46 @@ final class ApiService
             return new \WP_REST_Response($availableProductTypes, 200);
         }
 
-        return new \WP_REST_Response(SettingsManager::getAllowedProductTypes('widget', OrderManager::getShopCartFromProduct($product), true), 200);
+        return new \WP_REST_Response(
+            SettingsManager::getAllowedProductTypes('widget', OrderManager::getShopCartFromProduct($product), true),
+            200
+        );
+    }
+
+    private static function getPaywall(\WP_REST_Request $request): void
+    {
+        header('Content-Type: text/html');
+
+        if (!ConfigManager::isEnabled()) {
+            echo TemplateManager::renderView('module_disabled', 'front');
+
+            exit;
+        }
+
+        $loanAmount = (int) (WC()->cart->get_total() * 100);
+        $allowedProductTypes = SettingsManager::getAllowedProductTypes(
+            ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
+            OrderManager::getShopCart(WC()->cart, $loanAmount)
+        );
+
+        if ($allowedProductTypes === []) {
+            // Filters active - all product types disabled.
+            echo TemplateManager::renderView('paywall_disabled', 'front');
+
+            exit;
+        }
+
+        if ($request->has_param('priceModifier') && is_numeric($request->get_param('priceModifier'))) {
+            $priceModifier = (float) $request->get_param('priceModifier');
+
+            if ($priceModifier > 0) {
+                $loanAmount += ((int) ($priceModifier * 100));
+            }
+        }
+
+        echo FrontendManager::getPaywallRenderer()
+            ->renderPaywall(new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes));
+
+        exit;
     }
 }
