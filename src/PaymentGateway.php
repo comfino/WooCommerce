@@ -5,6 +5,7 @@ namespace Comfino;
 use Comfino\Api\ApiClient;
 use Comfino\Api\ApiService;
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
+use Comfino\Common\Backend\ConfigurationManager;
 use Comfino\Common\Backend\Factory\OrderFactory;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
@@ -237,6 +238,85 @@ class PaymentGateway extends \WC_Payment_Gateway
         $this->form_fields = SettingsForm::getFormFields();
     }
 
+    public function process_admin_options(): bool
+    {
+        //$this->init_settings();
+
+        $subsection = $this->get_subsection();
+
+        $configurationOptions = $this->get_post_data();
+        $configurationOptionsToSave = [];
+        $optionsMap = array_flip(ConfigManager::CONFIG_OPTIONS_MAP);
+        $isError = false;
+
+        foreach (SettingsForm::getFormFields($subsection) as $key => $field) {
+            $fieldKey = $this->get_field_key($key);
+
+            if (isset($optionsMap[$key]) && (ConfigManager::getConfigurationValueType($optionsMap[$key]) & ConfigurationManager::OPT_VALUE_TYPE_BOOL)) {
+                if (isset($configurationOptions[$fieldKey])) {
+                    $configurationOptions[$fieldKey] = 'yes';
+                } else {
+                    $configurationOptions[$fieldKey] = 'no';
+                }
+            }
+
+            if (array_key_exists($fieldKey, $configurationOptions) && $this->get_field_type($field) !== 'title') {
+                try {
+                    if ($configurationOptions[$fieldKey] === 'yes' || $configurationOptions[$fieldKey] === 'no') {
+                        //$this->settings[$key] = $configurationOptions[$fieldKey];
+                        $configurationOptionsToSave[$optionsMap[$key]] = ($configurationOptions[$fieldKey] === 'yes');
+                    } else {
+                        //$this->settings[$key] = $this->get_field_value($key, $field, $configurationOptions);
+                        $configurationOptionsToSave[$optionsMap[$key]] = $this->get_field_value($key, $field, $configurationOptions);
+                    }
+                } catch (\Exception $e) {
+                    $this->add_error($e->getMessage());
+
+                    $isError = true;
+                }
+            } elseif ($subsection === 'sale_settings') {
+                $productCategories = array_keys(ConfigManager::getAllProductCategories());
+                $productCategoryFilters = [];
+
+                foreach ($configurationOptions['product_categories'] as $productType => $categoryIds) {
+                    $productCategoryFilters[$productType] = array_values(array_diff(
+                        $productCategories,
+                        explode(',', $configurationOptions['product_categories'][$productType])
+                    ));
+                }
+
+                //$this->settings['product_category_filters'] = json_encode($productCategoryFilters);
+                $configurationOptionsToSave[$optionsMap['product_category_filters']] = $productCategoryFilters;
+            }
+        }
+
+        $is_sandbox = ($this->settings['sandbox_mode'] === 'yes');
+        $api_host = $is_sandbox ? Api_Client::get_api_host(false, Core::COMFINO_SANDBOX_HOST) : Core::COMFINO_PRODUCTION_HOST;
+        $api_key = $is_sandbox ? $this->settings['sandbox_key'] : $this->settings['production_key'];
+
+        if (!Api_Client::is_api_key_valid($api_host, $api_key)) {
+            $this->add_error(sprintf(__('API key %s is not valid.', 'comfino-payment-gateway'), $api_key));
+
+            $isError = true;
+        }
+
+        if ($isError) {
+            $this->display_errors();
+
+            return false;
+        }
+
+        $this->settings['widget_key'] = Api_Client::get_widget_key($api_host, $api_key);
+
+        // Update plugin configuration.
+        ConfigManager::updateConfiguration($configurationOptionsToSave, false);
+
+        // Clear configuration and frontend cache.
+        CacheManager::getCachePool()->clear();
+
+        return true;
+    }
+
     public function admin_scripts($hook): void
     {
         if ($this->enabled === 'no') {
@@ -303,5 +383,27 @@ class PaymentGateway extends \WC_Payment_Gateway
         <?php
 
         return ob_get_clean();
+    }
+
+    private function get_subsection(): string
+    {
+        $subsection = $_GET['subsection'] ?? 'payment_settings';
+
+        if (!in_array(
+            $subsection,
+            [
+                'payment_settings',
+                'sale_settings',
+                'widget_settings',
+                'abandoned_cart_settings',
+                'developer_settings',
+                'plugin_diagnostics',
+            ],
+            true
+        )) {
+            $subsection = 'payment_settings';
+        }
+
+        return $subsection;
     }
 }
