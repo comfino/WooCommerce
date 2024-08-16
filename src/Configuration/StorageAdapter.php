@@ -17,6 +17,7 @@ class StorageAdapter extends \WC_Settings_API implements StorageAdapterInterface
         'COMFINO_SHOW_LOGO' => 'show_logo',
         'COMFINO_PAYMENT_TEXT' => 'title',
         'COMFINO_IS_SANDBOX' => 'sandbox_mode',
+        'COMFINO_DEBUG' => 'debug_mode',
         'COMFINO_SANDBOX_API_KEY' => 'sandbox_key',
         'COMFINO_PRODUCT_CATEGORY_FILTERS' => 'product_category_filters',
         'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => 'cat_filter_avail_prod_types',
