@@ -13,6 +13,7 @@ use Comfino\Order\OrderManager;
 use Comfino\Order\ShopStatusManager;
 use Comfino\Shop\Order\Customer;
 use Comfino\Shop\Order\Customer\Address;
+use Comfino\View\SettingsForm;
 
 class PaymentGateway extends \WC_Payment_Gateway
 {
@@ -39,12 +40,9 @@ class PaymentGateway extends \WC_Payment_Gateway
         $this->title = $this->get_option('title');
         $this->enabled = $this->get_option('enabled');
 
-        add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
         add_action('admin_enqueue_scripts', [$this, 'admin_scripts']);
 
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
-        //add_action('woocommerce_api_comfino_gateway', [$this, 'webhook']);
-        //add_action('woocommerce_order_status_cancelled', [ShopStatusManager::class, 'orderStatusCancelEventHandler']);
         add_action('woocommerce_order_status_changed', [$this, 'order_status_changed'], 10, 3);
 
         add_filter(
@@ -78,6 +76,8 @@ class PaymentGateway extends \WC_Payment_Gateway
         );
     }
 
+    /* Shop cart checkout frontend logic. */
+
     public function get_icon(): string
     {
         if (ConfigManager::getConfigurationValue('COMFINO_SHOW_LOGO')) {
@@ -100,11 +100,6 @@ class PaymentGateway extends \WC_Payment_Gateway
         }
 
         echo Main::renderPaywallIframe($cart, $total);
-        /*echo $this->prepare_paywall_iframe(
-            (float) $total,
-            $this->get_product_types_filter($cart, new Config_Manager()),
-            Api_Client::$widget_key
-        );*/
     }
 
     public function process_payment($order_id): array
@@ -198,11 +193,115 @@ class PaymentGateway extends \WC_Payment_Gateway
             SettingsManager::getAllowedProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL, $shopCart)
         );
 
-        return [];
+        try {
+            $response = ApiClient::getInstance()->createOrder($order);
+
+            if ($wcOrder->get_status() === 'failed') {
+                $wcOrder->update_status('pending');
+            }
+
+            $wcOrder->add_order_note(__("Comfino create order", 'comfino-payment-gateway'));
+
+            wc_reduce_stock_levels($wcOrder);
+
+            WC()->cart->empty_cart();
+
+            $result = ['result' => 'success', 'redirect' => $response->applicationUrl];
+        } catch (\Throwable $e) {
+            //$order = new Order($this->module->currentOrder);
+            //$order->setCurrentState((int) Configuration::get('PS_OS_ERROR'));
+            //$order->save();
+
+            ApiClient::processApiError(
+                'Order creation error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)',
+                $e
+            );
+
+            wc_add_notice($e->getMessage(), 'error');
+
+            $result = ['result' => 'failure', 'redirect' => ''];
+        }
+
+        return $result;
     }
 
     public function order_status_changed(int $order_id, string $status_old, string $status_new): void
     {
         ShopStatusManager::orderStatusUpdateEventHandler(wc_get_order($order_id), $status_old, $status_new);
+    }
+
+    /* Shop admin backend logic. */
+
+    public function init_form_fields(): void
+    {
+        $this->form_fields = SettingsForm::getFormFields();
+    }
+
+    public function admin_scripts($hook): void
+    {
+        if ($this->enabled === 'no') {
+            return;
+        }
+
+        if ($hook === 'woocommerce_page_wc-settings') {
+            wp_enqueue_script('prod_cat_tree', plugins_url('views/js/tree.min.js', __FILE__), [], null);
+        }
+    }
+
+    public function generate_hidden_html($key, $data)
+    {
+        $field_key = $this->get_field_key($key);
+        $defaults = [
+            'title' => '',
+            'disabled' => false,
+            'class' => '',
+            'css' => '',
+            'placeholder' => '',
+            'type' => 'text',
+            'desc_tip' => false,
+            'description' => '',
+            'custom_attributes' => [],
+        ];
+
+        $data = wp_parse_args($data, $defaults);
+
+        ob_start();
+        ?>
+        <input class="input-text regular-input <?php echo esc_attr($data['class']); ?>" type="<?php echo esc_attr($data['type']); ?>" name="<?php echo esc_attr($field_key); ?>" id="<?php echo esc_attr($field_key); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr($this->get_option($key)); ?>" placeholder="<?php echo esc_attr($data['placeholder']); ?>" <?php disabled($data['disabled'], true); ?> <?php echo $this->get_custom_attribute_html($data); // WPCS: XSS ok. ?> />
+        <?php
+
+        return ob_get_clean();
+    }
+
+    public function generate_product_category_tree_html($key, $data)
+    {
+        $defaults = [
+            'title' => '',
+            'disabled' => false,
+            'class' => '',
+            'css' => '',
+            'placeholder' => '',
+            'type' => 'text',
+            'desc_tip' => false,
+            'description' => '',
+            'custom_attributes' => [],
+            'id' => '',
+            'product_type' => '',
+            'selected_categories' => [],
+        ];
+
+        $data = wp_parse_args($data, $defaults);
+
+        ob_start();
+        ?>
+        <tr valign="top">
+            <td class="forminp" colspan="2">
+                <h3><?php echo esc_html($data['title']); ?></h3>
+                <?php echo SettingsForm::renderCategoryTree($data['id'], $data['product_type'], $data['selected_categories']); ?>
+            </td>
+        </tr>
+        <?php
+
+        return ob_get_clean();
     }
 }
