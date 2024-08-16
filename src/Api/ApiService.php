@@ -238,7 +238,7 @@ final class ApiService
             exit;
         }
 
-        $loanAmount = (int) (WC()->cart->get_total() * 100);
+        $loanAmount = (int) (WC()->cart->get_total('edit') * 100);
         $allowedProductTypes = SettingsManager::getAllowedProductTypes(
             ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
             OrderManager::getShopCart(WC()->cart, $loanAmount)
