@@ -26,36 +26,12 @@ final class SettingsManager
 
     public static function getProductTypesSelectList(string $listType): array
     {
-        $productTypes = self::getProductTypes($listType, true);
-
-        if (isset($productTypes['error'])) {
-            $productTypesList = [['key' => 'error', 'name' => $productTypes['error']]];
-        } else {
-            $productTypesList = [];
-
-            foreach ($productTypes as $productTypeCode => $productTypeName) {
-                $productTypesList[] = ['key' => $productTypeCode, 'name' => $productTypeName];
-            }
-        }
-
-        return $productTypesList;
+        return self::getProductTypes($listType, true);
     }
 
     public static function getWidgetTypesSelectList(): array
     {
-        $widgetTypes = self::getWidgetTypes(true);
-
-        if (isset($widgetTypes['error'])) {
-            $widgetTypesList = [['key' => 'error', 'name' => $widgetTypes['error']]];
-        } else {
-            $widgetTypesList = [];
-
-            foreach ($widgetTypes as $widgetTypeCode => $widgetTypeName) {
-                $widgetTypesList[] = ['key' => $widgetTypeCode, 'name' => $widgetTypeName];
-            }
-        }
-
-        return $widgetTypesList;
+        return self::getWidgetTypes(true);
     }
 
     /**
@@ -229,7 +205,7 @@ final class SettingsManager
     {
         $filters = [];
 
-        if (($minAmount = ConfigManager::getConfigurationValue('COMFINO_MINIMAL_CART_AMOUNT')) > 0) {
+        if (($minAmount = ConfigManager::getConfigurationValue('COMFINO_MINIMAL_CART_AMOUNT', 0)) > 0) {
             $availableProductTypes = self::getProductTypesStrings($listType);
             $filters[] = new FilterByCartValueLowerLimit(
                 array_combine($availableProductTypes, array_fill(0, count($availableProductTypes), $minAmount))
