@@ -9,8 +9,13 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class StorageAdapter extends \WC_Settings_API implements StorageAdapterInterface
+class StorageAdapter extends \WC_Payment_Gateway implements StorageAdapterInterface
 {
+    public function __construct()
+    {
+        $this->id = 'comfino';
+    }
+
     public function load(): array
     {
         $configuration = [];
