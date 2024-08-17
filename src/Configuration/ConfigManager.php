@@ -5,13 +5,15 @@ namespace Comfino\Configuration;
 use Comfino\Api\ApiClient;
 use Comfino\Api\ApiService;
 use Comfino\CategoryTree\BuildStrategy;
+use Comfino\Common\Backend\Configuration\StorageAdapterInterface;
 use Comfino\Common\Backend\ConfigurationManager;
 use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Common\Shop\Product\CategoryTree;
 use Comfino\ErrorLogger;
 use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
+use Comfino\Main;
 use Comfino\Order\ShopStatusManager;
-use Comfino\Tools;
+use Comfino\PaymentGateway;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -19,6 +21,37 @@ if (!defined('ABSPATH')) {
 
 final class ConfigManager
 {
+    public const CONFIG_OPTIONS_MAP = [
+        'COMFINO_ENABLED' => 'enabled',
+        'COMFINO_API_KEY' => 'production_key',
+        'COMFINO_SHOW_LOGO' => 'show_logo',
+        'COMFINO_PAYMENT_TEXT' => 'title',
+        'COMFINO_IS_SANDBOX' => 'sandbox_mode',
+        'COMFINO_DEBUG' => 'debug_mode',
+        'COMFINO_SANDBOX_API_KEY' => 'sandbox_key',
+        'COMFINO_PRODUCT_CATEGORY_FILTERS' => 'product_category_filters',
+        'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => 'cat_filter_avail_prod_types',
+        'COMFINO_WIDGET_ENABLED' => 'widget_enabled',
+        'COMFINO_WIDGET_KEY' => 'widget_key',
+        'COMFINO_WIDGET_PRICE_SELECTOR' => 'widget_price_selector',
+        'COMFINO_WIDGET_TARGET_SELECTOR' => 'widget_target_selector',
+        'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR' => 'widget_price_observer_selector',
+        'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL' => 'widget_price_observer_level',
+        'COMFINO_WIDGET_TYPE' => 'widget_type',
+        'COMFINO_WIDGET_OFFER_TYPE' => 'widget_offer_type',
+        'COMFINO_WIDGET_EMBED_METHOD' => 'widget_embed_method',
+        'COMFINO_WIDGET_CODE' => 'widget_js_code',
+        'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => 'widget_prod_script_version',
+        'COMFINO_WIDGET_DEV_SCRIPT_VERSION' => 'widget_dev_script_version',
+        'COMFINO_ABANDONED_CART_ENABLED' => 'abandoned_cart_enabled',
+        'COMFINO_ABANDONED_PAYMENTS' => 'abandoned_payments',
+        'COMFINO_IGNORED_STATUSES' => 'ignored_statuses',
+        'COMFINO_FORBIDDEN_STATUSES' => 'forbidden_statuses',
+        'COMFINO_STATUS_MAP' => 'status_map',
+        'COMFINO_API_CONNECT_TIMEOUT' => 'api_connect_timeout',
+        'COMFINO_API_TIMEOUT' => 'api_timeout',
+    ];
+
     public const CONFIG_OPTIONS = [
         'payment_settings' => [
             'COMFINO_API_KEY' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
@@ -40,9 +73,14 @@ final class ConfigManager
             'COMFINO_WIDGET_EMBED_METHOD' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_WIDGET_CODE' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
         ],
+        'abandoned_cart_settings' => [
+            'COMFINO_ABANDONED_CART_ENABLED' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
+            'COMFINO_ABANDONED_PAYMENTS' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
+        ],
         'developer_settings' => [
             'COMFINO_IS_SANDBOX' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_SANDBOX_API_KEY' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
+            'COMFINO_DEBUG' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
         ],
         'hidden_settings' => [
             'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
@@ -57,6 +95,7 @@ final class ConfigManager
         'COMFINO_PAYMENT_TEXT',
         'COMFINO_MINIMAL_CART_AMOUNT',
         'COMFINO_IS_SANDBOX',
+        'COMFINO_DEBUG',
         'COMFINO_PRODUCT_CATEGORY_FILTERS',
         'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES',
         'COMFINO_WIDGET_ENABLED',
@@ -71,6 +110,8 @@ final class ConfigManager
         'COMFINO_WIDGET_CODE',
         'COMFINO_WIDGET_PROD_SCRIPT_VERSION',
         'COMFINO_WIDGET_DEV_SCRIPT_VERSION',
+        'COMFINO_ABANDONED_CART_ENABLED',
+        'COMFINO_ABANDONED_PAYMENTS',
         'COMFINO_IGNORED_STATUSES',
         'COMFINO_FORBIDDEN_STATUSES',
         'COMFINO_STATUS_MAP',
@@ -80,14 +121,21 @@ final class ConfigManager
 
     /** @var ConfigurationManager */
     private static $configurationManager;
+    /** @var StorageAdapterInterface */
+    private static $storageAdapter;
+    /** @var int[] */
+    private static $availConfigOptions;
 
     public static function getInstance(): ConfigurationManager
     {
         if (self::$configurationManager === null) {
+            self::$storageAdapter = new StorageAdapter();
+            self::$availConfigOptions = array_merge(array_merge(...array_values(self::CONFIG_OPTIONS)));
+
             self::$configurationManager = ConfigurationManager::getInstance(
-                array_merge(array_merge(...array_values(self::CONFIG_OPTIONS))),
+                self::$availConfigOptions,
                 self::ACCESSIBLE_CONFIG_OPTIONS,
-                new StorageAdapter(),
+                self::$storageAdapter,
                 new JsonSerializer()
             );
         }
@@ -104,7 +152,7 @@ final class ConfigManager
         global $wp_version, $wpdb;
 
         $envFields = [
-            'plugin_version' => \Comfino_Payment_Gateway::VERSION,
+            'plugin_version' => PaymentGateway::VERSION,
             'shop_version' => WC_VERSION,
             'wordpress_version' => $wp_version,
             'php_version' => PHP_VERSION,
@@ -138,9 +186,11 @@ final class ConfigManager
 
         if ($categories === null) {
             $categories = [];
+            $terms = get_terms(['taxonomy' => 'product_cat', 'hide_empty' => false, 'orderby' => 'name']);
 
-            foreach (\Category::getSimpleCategories(\Context::getContext()->language->id) as $category) {
-                $categories[$category['id_category']] = $category['name'];
+            foreach ($terms as $term) {
+                /** @var \WP_Term $term */
+                $categories[$term->term_id] = $term->name;
             }
         }
 
@@ -159,9 +209,19 @@ final class ConfigManager
         return $categoriesTree;
     }
 
-    public static function getConfigurationValue(string $optionName)
+    public static function getConfigurationValue(string $optionName, $defaultValue = null)
     {
-        return self::getInstance()->getConfigurationValue($optionName);
+        return self::getInstance()->getConfigurationValue($optionName) ?? $defaultValue;
+    }
+
+    public static function getConfigurationValueType(string $optionName): int
+    {
+        return self::$availConfigOptions[$optionName] ?? ConfigurationManager::OPT_VALUE_TYPE_STRING;
+    }
+
+    public static function isEnabled(): bool
+    {
+        return self::getInstance()->getConfigurationValue('COMFINO_ENABLED');
     }
 
     public static function isSandboxMode(): bool
@@ -172,6 +232,16 @@ final class ConfigManager
     public static function isWidgetEnabled(): bool
     {
         return self::getInstance()->getConfigurationValue('COMFINO_WIDGET_ENABLED');
+    }
+
+    public static function isDebugMode(): bool
+    {
+        return self::getInstance()->getConfigurationValue('COMFINO_DEBUG') ?? false;
+    }
+
+    public static function isAbandonedCartEnabled(): bool
+    {
+        return self::getInstance()->getConfigurationValue('COMFINO_ABANDONED_CART_ENABLED');
     }
 
     public static function getApiKey(): ?string
@@ -210,6 +280,12 @@ final class ConfigManager
         return self::getConfigurationValue('COMFINO_STATUS_MAP') ?? ShopStatusManager::DEFAULT_STATUS_MAP;
     }
 
+    public static function updateConfigurationValue(string $optionName, $optionValue): void
+    {
+        self::getInstance()->setConfigurationValue($optionName, $optionValue);
+        self::getInstance()->persist();
+    }
+
     public static function updateConfiguration($configurationOptions, $onlyAccessibleOptions = true): void
     {
         if ($onlyAccessibleOptions) {
@@ -223,28 +299,20 @@ final class ConfigManager
 
     public static function deleteConfigurationValues(): bool
     {
-        $result = true;
-
-        foreach (self::CONFIG_OPTIONS as $options) {
-            foreach ($options as $optionName) {
-                $result &= \Configuration::deleteByName($optionName);
-            }
-        }
-
-        return $result;
+        return delete_option(self::$storageAdapter->get_option_key());
     }
 
-    public static function updateWidgetCode(\PaymentModule $module, string $lastWidgetCodeHash): void
+    public static function updateWidgetCode(string $lastWidgetCodeHash): void
     {
-        ErrorLogger::init($module);
+        ErrorLogger::init(Main::getPluginDirectory(), Main::getPluginFile());
 
         try {
             $initialWidgetCode = self::getInitialWidgetCode();
-            $currentWidgetCode = self::getCurrentWidgetCode($module);
+            $currentWidgetCode = self::getCurrentWidgetCode();
 
             if (md5($currentWidgetCode) === $lastWidgetCodeHash) {
                 // Widget code not changed since last installed version - safely replace with new one.
-                \Configuration::updateValue('COMFINO_WIDGET_CODE', $initialWidgetCode);
+                self::updateConfigurationValue('COMFINO_WIDGET_CODE', $initialWidgetCode);
             }
         } catch (\Throwable $e) {
             ErrorLogger::sendError(
@@ -259,13 +327,10 @@ final class ConfigManager
         }
     }
 
-    /**
-     * @throws \PrestaShop\PrestaShop\Core\Localization\Exception\LocalizationException
-     */
-    public static function getCurrentWidgetCode(\PaymentModule $module, $productId = null): string
+    public static function getCurrentWidgetCode(?int $productId = null): string
     {
-        $widgetCode = trim(str_replace("\r", '', \Configuration::get('COMFINO_WIDGET_CODE')));
-        $productData = self::getProductData($module, $productId);
+        $widgetCode = trim(str_replace("\r", '', self::getConfigurationValue('COMFINO_WIDGET_CODE')));
+        $productData = self::getProductData($productId);
 
         $optionsToInject = [];
 
@@ -285,21 +350,18 @@ final class ConfigManager
         return $widgetCode;
     }
 
-    /**
-     * @throws \PrestaShop\PrestaShop\Core\Localization\Exception\LocalizationException
-     */
-    public static function getWidgetVariables(\PaymentModule $module, $productId = null): array
+    public static function getWidgetVariables(?int $productId = null): array
     {
-        $productData = self::getProductData($module, $productId);
+        $productData = self::getProductData($productId);
 
         return [
             '{WIDGET_SCRIPT_URL}' => ApiClient::getWidgetScriptUrl(),
             '{PRODUCT_ID}' => $productData['product_id'],
             '{PRODUCT_PRICE}' => $productData['price'],
-            '{PLATFORM}' => 'prestashop',
-            '{PLATFORM_VERSION}' => _PS_VERSION_,
-            '{PLATFORM_DOMAIN}' => \Tools::getShopDomain(),
-            '{PLUGIN_VERSION}' => COMFINO_VERSION,
+            '{PLATFORM}' => 'woocommerce',
+            '{PLATFORM_VERSION}' => WC_VERSION,
+            '{PLATFORM_DOMAIN}' => Main::getShopDomain(),
+            '{PLUGIN_VERSION}' => PaymentGateway::VERSION,
             '{AVAILABLE_OFFER_TYPES}' => $productData['avail_offers_url'],
         ];
     }
@@ -313,40 +375,6 @@ final class ConfigManager
         return count($optionsToReturn)
             ? self::getInstance()->getConfigurationValues($optionsToReturn)
             : self::getInstance()->getConfigurationValues(self::CONFIG_OPTIONS[$optionsGroup]);
-    }
-
-    public static function initConfigurationValues(): void
-    {
-        if (\Configuration::hasKey('COMFINO_API_KEY')) {
-            // Avoid overwriting of existing configuration if plugin is reinstalled/upgraded.
-            return;
-        }
-
-        $initialConfigValues = [
-            'COMFINO_PAYMENT_TEXT' => '(Raty | Kup Teraz, Zapłać Później | Finansowanie dla Firm)',
-            'COMFINO_MINIMAL_CART_AMOUNT' => 30,
-            'COMFINO_PRODUCT_CATEGORY_FILTERS' => '',
-            'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => 'INSTALLMENTS_ZERO_PERCENT,PAY_LATER',
-            'COMFINO_WIDGET_ENABLED' => false,
-            'COMFINO_WIDGET_KEY' => '',
-            'COMFINO_WIDGET_PRICE_SELECTOR' => COMFINO_PS_17 ? 'span.current-price-value' : 'span[itemprop=price]',
-            'COMFINO_WIDGET_TARGET_SELECTOR' => 'div.product-actions',
-            'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR' => '',
-            'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL' => 0,
-            'COMFINO_WIDGET_TYPE' => 'with-modal',
-            'COMFINO_WIDGET_OFFER_TYPE' => 'CONVENIENT_INSTALLMENTS',
-            'COMFINO_WIDGET_EMBED_METHOD' => 'INSERT_INTO_LAST',
-            'COMFINO_WIDGET_CODE' => self::getInitialWidgetCode(),
-            'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => '',
-            'COMFINO_WIDGET_DEV_SCRIPT_VERSION' => '',
-            'COMFINO_IGNORED_STATUSES' => implode(',', StatusManager::DEFAULT_IGNORED_STATUSES),
-            'COMFINO_FORBIDDEN_STATUSES' => implode(',', StatusManager::DEFAULT_FORBIDDEN_STATUSES),
-            'COMFINO_STATUS_MAP' => json_encode(ShopStatusManager::DEFAULT_STATUS_MAP),
-        ];
-
-        foreach ($initialConfigValues as $optName => $optValue) {
-            \Configuration::updateValue($optName, $optValue);
-        }
     }
 
     public static function getDefaultConfigurationValues(): array
@@ -368,6 +396,8 @@ final class ConfigManager
             'COMFINO_WIDGET_CODE' => self::getInitialWidgetCode(),
             'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => '',
             'COMFINO_WIDGET_DEV_SCRIPT_VERSION' => '',
+            'COMFINO_ABANDONED_CART_ENABLED' => false,
+            'COMFINO_ABANDONED_PAYMENTS' => 'comfino',
             'COMFINO_IGNORED_STATUSES' => implode(',', StatusManager::DEFAULT_IGNORED_STATUSES),
             'COMFINO_FORBIDDEN_STATUSES' => implode(',', StatusManager::DEFAULT_FORBIDDEN_STATUSES),
             'COMFINO_STATUS_MAP' => json_encode(ShopStatusManager::DEFAULT_STATUS_MAP),
@@ -376,23 +406,27 @@ final class ConfigManager
         ];
     }
 
-    /**
-     * @throws \PrestaShop\PrestaShop\Core\Localization\Exception\LocalizationException
-     */
-    private static function getProductData(\PaymentModule $module, $productId): array
+    private static function getProductData(?int $productId): array
     {
-        $context = \Context::getContext();
         $availOffersUrl = ApiService::getEndpointUrl('availableOfferTypes');
 
         $price = 'null';
 
         if ($productId !== null) {
-            $availOffersUrl .= ((strpos($availOffersUrl, '?') === false ? '?' : '&') . "product_id=$productId");
+            $availOffersUrl .= "/$productId";
 
-            if (($price = \Product::getPriceStatic($productId)) === null) {
-                $price = 'null';
-            } else {
-                $price = (new Tools($context))->getFormattedPrice($price);
+            if (($product = wc_get_product($productId)) instanceof \WC_Product) {
+                $price = (float) preg_replace([
+                    '/[^\d,.]/',
+                    '/(?<=\d),(?=\d{3}(?:[^\d]|$))/',
+                    '/,00$/',
+                    '/,/'
+                ], [
+                    '',
+                    '',
+                    '',
+                    '.'
+                ], $product->get_price());
             }
         } else {
             $productId = 'null';
