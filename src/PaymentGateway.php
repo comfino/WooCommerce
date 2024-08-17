@@ -238,6 +238,10 @@ class PaymentGateway extends \WC_Payment_Gateway
         $this->form_fields = SettingsForm::getFormFields();
     }
 
+    public function admin_options(): void
+    {
+    }
+
     public function process_admin_options(): bool
     {
         //$this->init_settings();
@@ -247,7 +251,7 @@ class PaymentGateway extends \WC_Payment_Gateway
         $configurationOptions = $this->get_post_data();
         $configurationOptionsToSave = [];
         $optionsMap = array_flip(ConfigManager::CONFIG_OPTIONS_MAP);
-        $isError = false;
+        $errorMessages = [];
 
         foreach (SettingsForm::getFormFields($subsection) as $key => $field) {
             $fieldKey = $this->get_field_key($key);
@@ -270,9 +274,7 @@ class PaymentGateway extends \WC_Payment_Gateway
                         $configurationOptionsToSave[$optionsMap[$key]] = $this->get_field_value($key, $field, $configurationOptions);
                     }
                 } catch (\Exception $e) {
-                    $this->add_error($e->getMessage());
-
-                    $isError = true;
+                    $errorMessages[] = $e->getMessage();
                 }
             } elseif ($subsection === 'sale_settings') {
                 $productCategories = array_keys(ConfigManager::getAllProductCategories());
@@ -290,29 +292,20 @@ class PaymentGateway extends \WC_Payment_Gateway
             }
         }
 
-        $is_sandbox = ($this->settings['sandbox_mode'] === 'yes');
-        $api_host = $is_sandbox ? Api_Client::get_api_host(false, Core::COMFINO_SANDBOX_HOST) : Core::COMFINO_PRODUCTION_HOST;
-        $api_key = $is_sandbox ? $this->settings['sandbox_key'] : $this->settings['production_key'];
+        $result = SettingsForm::processForm($subsection, $configurationOptionsToSave);
+        $errorMessages = array_merge($errorMessages, $result['errorMessages']);
 
-        if (!Api_Client::is_api_key_valid($api_host, $api_key)) {
-            $this->add_error(sprintf(__('API key %s is not valid.', 'comfino-payment-gateway'), $api_key));
+        if (count($errorMessages) > 0) {
+            foreach ($errorMessages as $errorMessage) {
+                $this->add_error($errorMessage);
+            }
 
-            $isError = true;
-        }
-
-        if ($isError) {
             $this->display_errors();
 
-            return false;
+            if (!$result['success']) {
+                return false;
+            }
         }
-
-        $this->settings['widget_key'] = Api_Client::get_widget_key($api_host, $api_key);
-
-        // Update plugin configuration.
-        ConfigManager::updateConfiguration($configurationOptionsToSave, false);
-
-        // Clear configuration and frontend cache.
-        CacheManager::getCachePool()->clear();
 
         return true;
     }

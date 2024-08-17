@@ -2,6 +2,10 @@
 
 namespace Comfino\View;
 
+use Comfino\Api\ApiClient;
+use Comfino\Api\Exception\AccessDenied;
+use Comfino\Api\Exception\AuthorizationError;
+use Comfino\CacheManager;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
@@ -16,6 +20,173 @@ final class SettingsForm
     private const DEBUG_LOG_NUM_LINES = 200;
     private const COMFINO_SUPPORT_EMAIL = 'pomoc@comfino.pl';
     private const COMFINO_SUPPORT_PHONE = '887-106-027';
+
+    public static function processForm(string $activeTab, array $configurationOptionsToSave): array
+    {
+        $errorMessages = [];
+        $widgetKeyError = false;
+        $widgetKey = '';
+
+        $errorEmptyMsg = __("Field '%s' can not be empty.", 'comfino-payment-gateway');
+        $errorNumericFormatMsg = __("Field '%s' has wrong numeric format.", 'comfino-payment-gateway');
+
+        switch ($activeTab) {
+            case 'payment_settings':
+            case 'developer_settings':
+                if ($activeTab === 'payment_settings') {
+                    $sandboxMode = ConfigManager::isSandboxMode();
+                    $apiKey = $sandboxMode
+                        ? ConfigManager::getConfigurationValue('COMFINO_SANDBOX_API_KEY')
+                        : $configurationOptionsToSave['COMFINO_API_KEY'];
+
+                    if (empty($configurationOptionsToSave['COMFINO_API_KEY'])) {
+                        $errorMessages[] = sprintf($errorEmptyMsg, __('Production environment API key', 'comfino-payment-gateway'));
+                    }
+                    if (empty($configurationOptionsToSave['COMFINO_PAYMENT_TEXT'])) {
+                        $errorMessages[] = sprintf($errorEmptyMsg, __('Payment text', 'comfino-payment-gateway'));
+                    }
+                    if (empty($configurationOptionsToSave['COMFINO_MINIMAL_CART_AMOUNT'])) {
+                        $errorMessages[] = sprintf($errorEmptyMsg, __('Minimal amount in cart', 'comfino-payment-gateway'));
+                    } elseif (!is_numeric($configurationOptionsToSave['COMFINO_MINIMAL_CART_AMOUNT'])) {
+                        $errorMessages[] = sprintf($errorNumericFormatMsg, __('Minimal amount in cart', 'comfino-payment-gateway'));
+                    }
+                } else {
+                    $sandboxMode = (bool) $configurationOptionsToSave['COMFINO_IS_SANDBOX'];
+                    $apiKey = $sandboxMode
+                        ? $configurationOptionsToSave['COMFINO_SANDBOX_API_KEY']
+                        : ConfigManager::getConfigurationValue('COMFINO_API_KEY');
+                }
+
+                if (!empty($apiKey) && !count($errorMessages)) {
+                    try {
+                        // Check if passed API key is valid.
+                        ApiClient::getInstance($sandboxMode, $apiKey)->isShopAccountActive();
+
+                        try {
+                            // If API key is valid fetch widget key from API endpoint.
+                            $widgetKey = ApiClient::getInstance($sandboxMode, $apiKey)->getWidgetKey();
+                        } catch (\Throwable $e) {
+                            ApiClient::processApiError(
+                                ($activeTab === 'payment_settings' ? 'Payment' : 'Developer') .
+                                ' settings error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)',
+                                $e
+                            );
+
+                            $errorMessages[] = $e->getMessage();
+                            $widgetKeyError = true;
+
+                            if (!empty(getenv('COMFINO_DEV'))) {
+                                $errorMessages[] = sprintf('Comfino API host: %s', ApiClient::getInstance()->getApiHost());
+                            }
+                        }
+                    } catch (AuthorizationError|AccessDenied $e) {
+                        $errorMessages[] = sprintf(__('API key %s is not valid.', 'comfino-payment-gateway'), $apiKey);
+
+                        if (!empty(getenv('COMFINO_DEV'))) {
+                            $errorMessages[] = sprintf('Comfino API host: %s', ApiClient::getInstance()->getApiHost());
+                        }
+                    } catch (\Throwable $e) {
+                        ApiClient::processApiError(
+                            ($activeTab === 'payment_settings' ? 'Payment' : 'Developer') .
+                            ' settings error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)',
+                            $e
+                        );
+
+                        $errorMessages[] = $e->getMessage();
+
+                        if (!empty(getenv('COMFINO_DEV'))) {
+                            $errorMessages[] = sprintf('Comfino API host: %s', ApiClient::getInstance()->getApiHost());
+                        }
+                    }
+                }
+
+                $configurationOptionsToSave['COMFINO_WIDGET_KEY'] = $widgetKey;
+                break;
+
+            case 'sale_settings':
+                $categoriesTree = ConfigManager::getCategoriesTree();
+                $productCategories = array_keys(ConfigManager::getAllProductCategories());
+                $productCategoryFilters = [];
+
+                foreach ($configurationOptionsToSave['product_categories'] as $productType => $categoryIds) {
+                    $nodeIds = [];
+
+                    foreach (explode(',', $categoryIds) as $categoryId) {
+                        if (($categoryNode = $categoriesTree->getNodeById((int) $categoryId)) !== null
+                            && count($pathNodes = $categoryNode->getPathToRoot()) > 0
+                        ) {
+                            $nodeIds[] = $categoriesTree->getPathNodeIds($pathNodes);
+                        }
+                    }
+
+                    if (count($nodeIds) > 0) {
+                        $productCategoryFilters[$productType] = array_values(array_diff(
+                            $productCategories,
+                            ...$nodeIds
+                        ));
+                    } else {
+                        $productCategoryFilters[$productType] = $productCategories;
+                    }
+                }
+
+                $configurationOptionsToSave['COMFINO_PRODUCT_CATEGORY_FILTERS'] = $productCategoryFilters;
+                break;
+
+            case 'widget_settings':
+                if (!is_numeric($configurationOptionsToSave['COMFINO_WIDGET_PRICE_OBSERVER_LEVEL'])) {
+                    $errorMessages[] = sprintf(
+                        $errorNumericFormatMsg,
+                        __('Price change detection - container hierarchy level', 'comfino-payment-gateway')
+                    );
+                }
+
+                if (!count($errorMessages) && !empty($apiKey = ConfigManager::getApiKey())) {
+                    // Update widget key.
+                    try {
+                        // Check if passed API key is valid.
+                        ApiClient::getInstance()->isShopAccountActive();
+
+                        try {
+                            $widgetKey = ApiClient::getInstance()->getWidgetKey();
+                        } catch (\Throwable $e) {
+                            ApiClient::processApiError(
+                                'Widget settings error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)',
+                                $e
+                            );
+
+                            $errorMessages[] = $e->getMessage();
+                            $widgetKeyError = true;
+                        }
+                    } catch (AuthorizationError|AccessDenied $e) {
+                        $errorMessages[] = sprintf(__('API key %s is not valid.', 'comfino-payment-gateway'), $apiKey);
+                    } catch (\Throwable $e) {
+                        ApiClient::processApiError(
+                            'Widget settings error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)',
+                            $e
+                        );
+
+                        $errorMessages[] = $e->getMessage();
+                    }
+                }
+
+                $configurationOptionsToSave['COMFINO_WIDGET_KEY'] = $widgetKey;
+                break;
+        }
+
+        if (!$widgetKeyError && count($errorMessages)) {
+            $success = false;
+        } else {
+            // Update plugin configuration.
+            ConfigManager::updateConfiguration($configurationOptionsToSave, false);
+
+            $success = true;
+        }
+
+        // Clear configuration and frontend cache.
+        CacheManager::getCachePool()->clear();
+
+        return ['success' => $success, 'errorMessages' => $errorMessages];
+    }
 
     public static function getFormFields(?string $subsection = null): array
     {
@@ -101,7 +272,7 @@ final class SettingsForm
     public static function renderCategoryTree(string $treeId, string $productType, array $selectedCategories): string {
         return TemplateManager::renderView(
             'product_category_filter',
-            'admin',
+            'admin/_configure',
             [
                 'tree_id' => $treeId,
                 'tree_nodes' => json_encode(self::buildCategoriesTree($selectedCategories)),
