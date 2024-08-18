@@ -15,6 +15,7 @@ use Comfino\Order\ShopStatusManager;
 use Comfino\Shop\Order\Customer;
 use Comfino\Shop\Order\Customer\Address;
 use Comfino\View\SettingsForm;
+use Comfino\View\TemplateManager;
 
 class PaymentGateway extends \WC_Payment_Gateway
 {
@@ -240,20 +241,61 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function admin_options(): void
     {
+        global $wp_version;
+
+        $activeTab = $this->get_subsection();
+        $supportContact = sprintf(
+            __('Do you want to ask about something? Write to us at %s or contact us by phone. We are waiting on the number: %s. We will answer all your questions!', 'comfino-payment-gateway'),
+            '<a href="mailto:pomoc@comfino.pl?subject=' . sprintf(__('WordPress %s WooCommerce %s Comfino %s - question', 'comfino-payment-gateway'), $wp_version, WC_VERSION, self::VERSION) .
+            '&body=' . str_replace(',', '%2C', sprintf(__('WordPress %s WooCommerce %s Comfino %s, PHP %s', 'comfino-payment-gateway'), $wp_version, WC_VERSION, self::VERSION, PHP_VERSION)) . '">' . SettingsForm::COMFINO_SUPPORT_EMAIL . '</a>', SettingsForm::COMFINO_SUPPORT_PHONE
+        );
+
+        $viewVariables = [
+            'title' => $this->method_title,
+            'description' => $this->method_description,
+            'active_tab' => $activeTab,
+            'support_contact' => $supportContact,
+            'logo_url' => ApiClient::getLogoUrl(),
+            'plugin_version' => self::VERSION,
+        ];
+
+        if ($activeTab === 'plugin_diagnostics') {
+            $viewVariables['shop_info'] = sprintf(
+                'WooCommerce Comfino %s, WordPress %s, WooCommerce %s, PHP %s, web server %s, database %s',
+                ...array_values(ConfigManager::getEnvironmentInfo([
+                    'plugin_version',
+                    'wordpress_version',
+                    'shop_version',
+                    'php_version',
+                    'server_software',
+                    'database_version',
+                ]))
+            );
+            $viewVariables['errors_log'] = ErrorLogger::getErrorLog(SettingsForm::ERROR_LOG_NUM_LINES);
+            $viewVariables['debug_log'] = Main::getDebugLog(SettingsForm::DEBUG_LOG_NUM_LINES);
+            $viewVariables['api_host'] = ApiClient::getInstance()->getApiHost();
+            $viewVariables['shop_domain'] = Main::getShopDomain();
+            $viewVariables['widget_key'] = ConfigManager::getWidgetKey();
+            $viewVariables['is_dev_env'] = ApiClient::isDevEnv() ? 'Yes' : 'No';
+        } else {
+            $viewVariables['settings_html'] = $this->generate_settings_html(SettingsForm::getFormFields($activeTab));
+        }
+
+        echo TemplateManager::renderView('configuration', 'admin', $viewVariables);
     }
 
     public function process_admin_options(): bool
     {
         //$this->init_settings();
 
-        $subsection = $this->get_subsection();
+        $activeTab = $this->get_subsection();
 
         $configurationOptions = $this->get_post_data();
         $configurationOptionsToSave = [];
         $optionsMap = array_flip(ConfigManager::CONFIG_OPTIONS_MAP);
         $errorMessages = [];
 
-        foreach (SettingsForm::getFormFields($subsection) as $key => $field) {
+        foreach (SettingsForm::getFormFields($activeTab) as $key => $field) {
             $fieldKey = $this->get_field_key($key);
 
             if (isset($optionsMap[$key]) && (ConfigManager::getConfigurationValueType($optionsMap[$key]) & ConfigurationManager::OPT_VALUE_TYPE_BOOL)) {
@@ -276,7 +318,7 @@ class PaymentGateway extends \WC_Payment_Gateway
                 } catch (\Exception $e) {
                     $errorMessages[] = $e->getMessage();
                 }
-            } elseif ($subsection === 'sale_settings') {
+            } elseif ($activeTab === 'sale_settings') {
                 $productCategories = array_keys(ConfigManager::getAllProductCategories());
                 $productCategoryFilters = [];
 
@@ -292,7 +334,7 @@ class PaymentGateway extends \WC_Payment_Gateway
             }
         }
 
-        $result = SettingsForm::processForm($subsection, $configurationOptionsToSave);
+        $result = SettingsForm::processForm($activeTab, $configurationOptionsToSave);
         $errorMessages = array_merge($errorMessages, $result['errorMessages']);
 
         if (count($errorMessages) > 0) {
@@ -380,10 +422,10 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     private function get_subsection(): string
     {
-        $subsection = $_GET['subsection'] ?? 'payment_settings';
+        $active_tab = $_GET['subsection'] ?? 'payment_settings';
 
         if (!in_array(
-            $subsection,
+            $active_tab,
             [
                 'payment_settings',
                 'sale_settings',
@@ -394,9 +436,9 @@ class PaymentGateway extends \WC_Payment_Gateway
             ],
             true
         )) {
-            $subsection = 'payment_settings';
+            $active_tab = 'payment_settings';
         }
 
-        return $subsection;
+        return $active_tab;
     }
 }
