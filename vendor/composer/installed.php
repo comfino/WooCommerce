@@ -3,7 +3,7 @@
         'name' => 'comfino/woocommerce',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'fd9182af573468f6b4dcc8d38059ba44e6cc4005',
+        'reference' => '10bb6585e9d58bc09ddaa346c6846c194e6e19e9',
         'type' => 'woocommerce-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -69,7 +69,7 @@
         'comfino/woocommerce' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'fd9182af573468f6b4dcc8d38059ba44e6cc4005',
+            'reference' => '10bb6585e9d58bc09ddaa346c6846c194e6e19e9',
             'type' => 'woocommerce-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
