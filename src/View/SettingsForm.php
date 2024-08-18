@@ -188,15 +188,15 @@ final class SettingsForm
         return ['success' => $success, 'errorMessages' => $errorMessages];
     }
 
-    public static function getFormFields(?string $subsection = null): array
+    public static function getFormFields(?string $activeTab = null): array
     {
-        if (empty($subsection)) {
+        if (empty($activeTab)) {
             return self::getFormFieldsDefinitions();
         }
 
         $formFields = [];
 
-        switch ($subsection) {
+        switch ($activeTab) {
             case 'payment_settings':
                 $formFields = array_intersect_key(
                     self::getFormFieldsDefinitions(),
@@ -326,13 +326,13 @@ final class SettingsForm
                 'title' => __('Enable/Disable', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
                 'label' => __('Enable Comfino payment module', 'comfino-payment-gateway'),
-                'default' => 'no',
+                'default' => ConfigManager::getDefaultValue('enabled') === true ? 'yes' : 'no',
                 'description' => __('Shows Comfino payment option at the payment list.', 'comfino-payment-gateway'),
             ],
             'title' => [
                 'title' => __('Title', 'comfino-payment-gateway'),
                 'type' => 'text',
-                'default' => 'Comfino',
+                'default' => ConfigManager::getDefaultValue('title'),
             ],
             'production_key' => [
                 'title' => __('Production environment API key', 'comfino-payment-gateway'),
@@ -343,13 +343,13 @@ final class SettingsForm
                 'title' => __('Show logo', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
                 'label' => __('Show logo on payment method', 'comfino-payment-gateway'),
-                'default' => 'yes',
+                'default' => ConfigManager::getDefaultValue('show_logo') === true ? 'yes' : 'no',
             ],
             'sandbox_mode' => [
                 'title' => __('Test environment', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
                 'label' => __('Use test environment', 'comfino-payment-gateway'),
-                'default' => 'no',
+                'default' => ConfigManager::getDefaultValue('sandbox_mode') === true ? 'yes' : 'no',
                 'description' => __(
                     'The test environment allows the store owner to get acquainted with the ' .
                     'functionality of the Comfino module. This is a Comfino simulator, thanks ' .
@@ -367,7 +367,7 @@ final class SettingsForm
                 'title' => __('Debug mode', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
                 'label' => __('Enable debug mode', 'comfino-payment-gateway'),
-                'default' => 'no',
+                'default' => ConfigManager::getDefaultValue('debug_mode') === true ? 'yes' : 'no',
                 'description' => __(
                     'Debug mode is useful in case of problems with Comfino payment availability. ' .
                     'In this mode module logs details of internal process responsible for ' .
@@ -377,7 +377,7 @@ final class SettingsForm
             ],
             'cat_filter_avail_prod_types' => [
                 'type' => 'hidden',
-                'default' => 'INSTALLMENTS_ZERO_PERCENT,PAY_LATER',
+                'default' => ConfigManager::getDefaultValue('cat_filter_avail_prod_types'),
             ],
             'sale_settings_fin_prods_avail_rules' => [
                 'title' => __('Rules for the availability of financial products', 'comfino-payment-gateway'),
@@ -391,7 +391,7 @@ final class SettingsForm
                 'title' => __('Widget enable', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
                 'label' => __('Enable Comfino widget', 'comfino-payment-gateway'),
-                'default' => 'no',
+                'default' => ConfigManager::getDefaultValue('debug_mode') === true ? 'yes' : 'no',
                 'description' => __('Show Comfino widget in the product.', 'comfino-payment-gateway'),
             ],
             'widget_key' => [
@@ -416,16 +416,17 @@ final class SettingsForm
             'widget_price_selector' => [
                 'title' => __('Widget price selector', 'comfino-payment-gateway'),
                 'type' => 'text',
-                'default' => '.price .woocommerce-Price-amount bdi',
+                'default' => ConfigManager::getDefaultValue('widget_price_selector'),
             ],
             'widget_target_selector' => [
                 'title' => __('Widget target selector', 'comfino-payment-gateway'),
                 'type' => 'text',
-                'default' => '.summary .product_meta',
+                'default' => ConfigManager::getDefaultValue('widget_target_selector'),
             ],
             'widget_price_observer_selector' => [
                 'title' => __('Price change detection - container selector', 'comfino-payment-gateway'),
                 'type' => 'text',
+                'default' => ConfigManager::getDefaultValue('widget_price_observer_selector'),
                 'description' => __(
                     'Selector of observed parent element which contains price element.',
                     'comfino-payment-gateway'
@@ -434,7 +435,7 @@ final class SettingsForm
             'widget_price_observer_level' => [
                 'title' => __('Price change detection - container hierarchy level', 'comfino-payment-gateway'),
                 'type' => 'number',
-                'default' => 0,
+                'default' => ConfigManager::getDefaultValue('widget_price_observer_level'),
                 'description' => __(
                     'Hierarchy level of observed parent element relative to the price element.',
                     'comfino-payment-gateway'
@@ -454,7 +455,7 @@ final class SettingsForm
                 'title' => __('Widget code', 'comfino-payment-gateway'),
                 'type' => 'textarea',
                 'css' => 'width: 800px; height: 400px',
-                'default' => ConfigManager::getDefaultConfigurationValues()['COMFINO_WIDGET_CODE'],
+                'default' => ConfigManager::getDefaultValue('widget_js_code'),
             ],
             'widget_prod_script_version' => [
                 'type' => 'hidden',
@@ -468,7 +469,7 @@ final class SettingsForm
                 'title' => __('Enable/Disable', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
                 'label' => __('By enabling "Saving shopping cart", you agree and accept <a href="https://cdn.comfino.pl/regulamin/Regulamin-Ratowanie-Koszyka.pdf">Regulations</a>', 'comfino-payment-gateway'),
-                'default' => 'no',
+                'default' => ConfigManager::getDefaultValue('abandoned_cart_enabled') === true ? 'yes' : 'no',
                 'description' => __('Saving shopping cart info', 'comfino-payment-gateway'),
             ],
             'abandoned_payments' => [

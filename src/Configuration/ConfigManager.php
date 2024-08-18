@@ -24,8 +24,8 @@ final class ConfigManager
     public const CONFIG_OPTIONS_MAP = [
         'COMFINO_ENABLED' => 'enabled',
         'COMFINO_API_KEY' => 'production_key',
-        'COMFINO_SHOW_LOGO' => 'show_logo',
         'COMFINO_PAYMENT_TEXT' => 'title',
+        'COMFINO_SHOW_LOGO' => 'show_logo',
         'COMFINO_IS_SANDBOX' => 'sandbox_mode',
         'COMFINO_DEBUG' => 'debug_mode',
         'COMFINO_SANDBOX_API_KEY' => 'sandbox_key',
@@ -93,6 +93,7 @@ final class ConfigManager
     public const ACCESSIBLE_CONFIG_OPTIONS = [
         'COMFINO_ENABLED',
         'COMFINO_PAYMENT_TEXT',
+        'COMFINO_SHOW_LOGO',
         'COMFINO_MINIMAL_CART_AMOUNT',
         'COMFINO_IS_SANDBOX',
         'COMFINO_DEBUG',
@@ -377,17 +378,42 @@ final class ConfigManager
             : self::getInstance()->getConfigurationValues(self::CONFIG_OPTIONS[$optionsGroup]);
     }
 
+    public static function getDefaultValue(string $optionName)
+    {
+        static $optionsMap = null;
+
+        if ($optionsMap === null) {
+            $optionsMap = array_flip(self::CONFIG_OPTIONS_MAP);
+        }
+
+        if (!isset($optionsMap[$optionName])) {
+            return null;
+        }
+
+        static $defaultValues = null;
+
+        if ($defaultValues === null) {
+            $defaultValues = self::getDefaultConfigurationValues();
+        }
+
+        return $defaultValues[$optionsMap[$optionName]] ?? null;
+    }
+
     public static function getDefaultConfigurationValues(): array
     {
         return [
-            'COMFINO_PAYMENT_TEXT' => '(Raty | Kup Teraz, Zapłać Później | Finansowanie dla Firm)',
+            'COMFINO_ENABLED' => false,
+            'COMFINO_PAYMENT_TEXT' => 'Comfino',
+            'COMFINO_SHOW_LOGO' => true,
             'COMFINO_MINIMAL_CART_AMOUNT' => 30,
+            'COMFINO_IS_SANDBOX' => false,
+            'COMFINO_DEBUG' => false,
             'COMFINO_PRODUCT_CATEGORY_FILTERS' => '',
             'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => 'INSTALLMENTS_ZERO_PERCENT,PAY_LATER',
             'COMFINO_WIDGET_ENABLED' => false,
             'COMFINO_WIDGET_KEY' => '',
-            'COMFINO_WIDGET_PRICE_SELECTOR' => '',
-            'COMFINO_WIDGET_TARGET_SELECTOR' => 'div.product-actions',
+            'COMFINO_WIDGET_PRICE_SELECTOR' => '.price .woocommerce-Price-amount bdi',
+            'COMFINO_WIDGET_TARGET_SELECTOR' => '.summary .product_meta',
             'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR' => '',
             'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL' => 0,
             'COMFINO_WIDGET_TYPE' => 'with-modal',
