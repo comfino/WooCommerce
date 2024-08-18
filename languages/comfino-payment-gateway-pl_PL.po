@@ -327,8 +327,8 @@ msgid "Errors log"
 msgstr "Log błędów"
 
 #: includes/comfino-gateway.php:232
-msgid "Send to Comfino canceled order"
-msgstr "Wysłanie anulowania wniosku do Comfino"
+msgid "Order cancellation sent to Comfino."
+msgstr "Anulowanie wniosku wysłane do Comfino."
 
 #: includes/comfino-gateway.php:282
 msgid "Are you sure you want to cancel?"

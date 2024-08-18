@@ -288,7 +288,7 @@ msgid "Errors log"
 msgstr ""
 
 #: includes/comfino-gateway.php:232
-msgid "Send to Comfino canceled order"
+msgid "Order cancellation sent to Comfino."
 msgstr ""
 
 #: includes/comfino-gateway.php:282

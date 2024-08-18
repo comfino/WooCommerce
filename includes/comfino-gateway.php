@@ -1,16 +1,12 @@
 <?php
 
-use Comfino\Api\ApiService;
-use Comfino\Api\Dto\Payment\LoanTypeEnum;
+use Comfino\Api\ApiClient;
 use Comfino\Api_Client;
-use Comfino\Common\Backend\Factory\OrderFactory;
-use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Config_Manager;
-use Comfino\Configuration\SettingsManager;
+use Comfino\Configuration\ConfigManager;
 use Comfino\Core;
 use Comfino\Error_Logger;
-use Comfino\FinancialProduct\ProductTypesListTypeEnum;
-use Comfino\Order\OrderManager;
+use Comfino\Order\ShopStatusManager;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -71,9 +67,9 @@ class Comfino_Gateway extends WC_Payment_Gateway
         add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
         add_action('admin_enqueue_scripts', [$this, 'admin_scripts']);
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
-        add_action('woocommerce_api_comfino_gateway', [$this, 'webhook']);
-        add_action('woocommerce_order_status_cancelled', [$this, 'cancel_order']);
-        add_action('woocommerce_order_status_changed', [$this, 'change_order'], 10, 3);
+        //add_action('woocommerce_api_comfino_gateway', [$this, 'webhook']);
+        //add_action('woocommerce_order_status_cancelled', [ShopStatusManager::class, 'orderStatusCancelEventHandler']);
+        add_action('woocommerce_order_status_changed', [$this, 'order_status_changed'], 10, 3);
         add_filter('woocommerce_available_payment_gateways', [$this, 'filter_gateways'], 1);
     }
 
@@ -95,7 +91,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
         global $wp, $wp_version, $wpdb;
 
         $errors_log = Error_Logger::get_error_log(Core::ERROR_LOG_NUM_LINES);
-        $subsection = $this->get_subsection();
+        $active_tab = $this->get_subsection();
 
         echo '<h2>' . esc_html($this->method_title) . '</h2>';
         echo '<p>' . esc_html($this->method_description) . '</p>';
@@ -109,23 +105,23 @@ class Comfino_Gateway extends WC_Payment_Gateway
             ) . '</p>';
 
         echo '<nav class="nav-tab-wrapper woo-nav-tab-wrapper">';
-        echo '<a href="' . site_url(add_query_arg($wp->request, ['subsection' => 'payment_settings'])) . '" class="nav-tab' . ($subsection === 'payment_settings' ? ' nav-tab-active' : '') . '">' . __('Payment settings', 'comfino-payment-gateway') . '</a>';
-        echo '<a href="' . site_url(add_query_arg($wp->request, ['subsection' => 'sale_settings'])) . '" class="nav-tab' . ($subsection === 'sale_settings' ? ' nav-tab-active' : '') . '">' . __('Sale settings', 'comfino-payment-gateway') . '</a>';
-        echo '<a href="' . site_url(add_query_arg($wp->request, ['subsection' => 'widget_settings'])) . '" class="nav-tab' . ($subsection === 'widget_settings' ? ' nav-tab-active' : '') . '">' . __('Widget settings', 'comfino-payment-gateway') . '</a>';
-        echo '<a href="' . site_url(add_query_arg($wp->request, ['subsection' => 'abandoned_cart_settings'])) . '" class="nav-tab' . ($subsection === 'abandoned_cart_settings' ? ' nav-tab-active' : '') . '">' . __('Abandoned cart settings', 'comfino-payment-gateway') . '</a>';
-        echo '<a href="' . site_url(add_query_arg($wp->request, ['subsection' => 'developer_settings'])) . '" class="nav-tab' . ($subsection === 'developer_settings' ? ' nav-tab-active' : '') . '">' . __('Developer settings', 'comfino-payment-gateway') . '</a>';
-        echo '<a href="' . site_url(add_query_arg($wp->request, ['subsection' => 'plugin_diagnostics'])) . '" class="nav-tab' . ($subsection === 'plugin_diagnostics' ? ' nav-tab-active' : '') . '">' . __('Plugin diagnostics', 'comfino-payment-gateway') . '</a>';
+        echo '<a href="' . site_url(add_query_arg($wp->request, ['subsection' => 'payment_settings'])) . '" class="nav-tab' . ($active_tab === 'payment_settings' ? ' nav-tab-active' : '') . '">' . __('Payment settings', 'comfino-payment-gateway') . '</a>';
+        echo '<a href="' . site_url(add_query_arg($wp->request, ['subsection' => 'sale_settings'])) . '" class="nav-tab' . ($active_tab === 'sale_settings' ? ' nav-tab-active' : '') . '">' . __('Sale settings', 'comfino-payment-gateway') . '</a>';
+        echo '<a href="' . site_url(add_query_arg($wp->request, ['subsection' => 'widget_settings'])) . '" class="nav-tab' . ($active_tab === 'widget_settings' ? ' nav-tab-active' : '') . '">' . __('Widget settings', 'comfino-payment-gateway') . '</a>';
+        echo '<a href="' . site_url(add_query_arg($wp->request, ['subsection' => 'abandoned_cart_settings'])) . '" class="nav-tab' . ($active_tab === 'abandoned_cart_settings' ? ' nav-tab-active' : '') . '">' . __('Abandoned cart settings', 'comfino-payment-gateway') . '</a>';
+        echo '<a href="' . site_url(add_query_arg($wp->request, ['subsection' => 'developer_settings'])) . '" class="nav-tab' . ($active_tab === 'developer_settings' ? ' nav-tab-active' : '') . '">' . __('Developer settings', 'comfino-payment-gateway') . '</a>';
+        echo '<a href="' . site_url(add_query_arg($wp->request, ['subsection' => 'plugin_diagnostics'])) . '" class="nav-tab' . ($active_tab === 'plugin_diagnostics' ? ' nav-tab-active' : '') . '">' . __('Plugin diagnostics', 'comfino-payment-gateway') . '</a>';
         echo '</nav>';
 
         echo '<table class="form-table">';
 
-        switch ($subsection) {
+        switch ($active_tab) {
             case 'payment_settings':
             case 'sale_settings':
             case 'widget_settings':
             case 'abandoned_cart_settings':
             case 'developer_settings':
-                echo $this->generate_settings_html($this->config_manager->get_form_fields($subsection));
+                echo $this->generate_settings_html($this->config_manager->get_form_fields($active_tab));
                 break;
 
             case 'plugin_diagnostics':
@@ -156,11 +152,11 @@ class Comfino_Gateway extends WC_Payment_Gateway
         \Comfino\Core::init();
 
         $cart = WC()->cart;
-        $total = $cart->get_total('');
+        $total = $cart->get_total('edit');
 
         if (is_wc_endpoint_url('order-pay')) {
             $order = wc_get_order(absint(get_query_var('order-pay')));
-            $total = $order->get_total('');
+            $total = $order->get_total('edit');
         }
 
         echo $this->prepare_paywall_iframe(
@@ -201,77 +197,6 @@ class Comfino_Gateway extends WC_Payment_Gateway
     {
         \Comfino\Core::init();
 
-        //----
-        $shopCart = OrderManager::getShopCart(WC()->cart, (int) sanitize_text_field($_POST['comfino_loan_amount']));
-
-        $wcOrder = wc_get_order($orderId);
-        $phoneNumber = $wcOrder->get_billing_phone();
-
-        if (empty($phoneNumber)) {
-            // Try to find phone number in order metadata
-            $orderMetadata = $wcOrder->get_meta_data();
-
-            foreach ($orderMetadata as $metaDataItem) {
-                /** @var \WC_Meta_Data $metaDataItem */
-                $metaData = $metaDataItem->get_data();
-
-                if (stripos($metaData['key'], 'tel') !== false || stripos($metaData['key'], 'phone') !== false) {
-                    $metaValue = str_replace(['-', ' ', '(', ')'], '', $metaData['value']);
-
-                    if (preg_match('/^(?:\+?\d{1,2})?\d{9}$|^(?:\d{2,3})?\d{7}$/', $metaValue)) {
-                        $phoneNumber = $metaValue;
-
-                        break;
-                    }
-                }
-            }
-        }
-
-        $firstName = $wcOrder->get_billing_first_name();
-        $lastName = $wcOrder->get_billing_last_name();
-
-        if ($lastName === '') {
-            $name = explode(' ', $firstName);
-
-            if (count($name) > 1) {
-                $firstName = $name[0];
-                $lastName = $name[1];
-                [$firstName, $lastName] = $name;
-            }
-        }
-
-        $order = (new OrderFactory())->createOrder(
-            $orderId,
-            $shopCart->getTotalValue(),
-            $shopCart->getDeliveryCost(),
-            (int) sanitize_text_field($_POST['comfino_loan_term']),
-            new LoanTypeEnum(sanitize_text_field($_POST['comfino_loan_type'])),
-            $shopCart->getCartItems(),
-            new Customer(
-                $firstName,
-                $lastName,
-                $wcOrder->get_billing_email(),
-                $phoneNumber,
-                \WC_Geolocation::get_ip_address(),
-                preg_match('/^[A-Z]{0,3}\d{7,}$/', $customerTaxId) ? $customerTaxId : null,
-                !$customer->is_guest,
-                $customer->isLogged(),
-                new Address(
-                    $addressParts[0],
-                    $buildingNumber,
-                    null,
-                    $addresses[$cart->id_address_delivery]->postcode,
-                    $addresses[$cart->id_address_delivery]->city,
-                    'PL'
-                )
-            ),
-            $returnUrl,
-            ApiService::getEndpointUrl('transactionStatus'),
-            SettingsManager::getAllowedProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL, $shopCart)
-        );
-
-        //----
-
         Api_Client::$api_language = substr(get_locale(), 0, 2);
 
         return Api_Client::process_payment(
@@ -281,39 +206,6 @@ class Comfino_Gateway extends WC_Payment_Gateway
         );
     }
 
-    public function cancel_order(string $order_id)
-    {
-        if (!$this->get_status_note($order_id, [StatusManager::STATUS_CANCELLED_BY_SHOP, StatusManager::STATUS_RESIGN])) {
-            $order = wc_get_order($order_id);
-
-            if (stripos($order->get_payment_method(), 'comfino') !== false) {
-                // Process orders paid by Comfino only.
-                Api_Client::cancel_order($order);
-
-                $order->add_order_note(__("Send to Comfino canceled order", 'comfino-payment-gateway'));
-            }
-        }
-    }
-
-    /**
-     * Webhook notifications - replaced with \Comfino\Core::process_notification(), left for backwards compatibility.
-     */
-    public function webhook()
-    {
-        $body = file_get_contents('php://input');
-
-        $request = new WP_REST_Request('POST');
-        $request->set_body($body);
-
-        $response = Core::process_notification($request);
-
-        if ($response->status === 400) {
-            echo json_encode(['status' => $response->data, 'body' => $body, 'signature' => Core::get_signature()]);
-
-            exit;
-        }
-    }
-
     /**
      * Show logo
      *
@@ -321,8 +213,8 @@ class Comfino_Gateway extends WC_Payment_Gateway
      */
     public function get_icon(): string
     {
-        if (self::$show_logo) {
-            $icon = '<img style="height: 18px; margin: 0 5px;" src="' . Api_Client::get_paywall_logo_url() . '" alt="Comfino Logo" />';
+        if (ConfigManager::getConfigurationValue('COMFINO_SHOW_LOGO')) {
+            $icon = '<img style="height: 18px; margin: 0 5px;" src="' . ApiClient::getPaywallLogoUrl() . '" alt="Comfino Logo" />';
         } else {
             $icon = '';
         }
@@ -393,7 +285,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
         $date->sub(new DateInterval('P14D'));
 
         if ($order->get_payment_method() === 'comfino' && $order->has_status(['processing', 'completed'])) {
-            $notes = $this->get_status_note($order->ID, [Core::ACCEPTED_STATUS]);
+            $notes = $this->get_status_note($order->get_id(), [Core::ACCEPTED_STATUS]);
 
             return !(isset($notes[Core::ACCEPTED_STATUS]) && $notes[Core::ACCEPTED_STATUS]->date_created->getTimestamp() < $date->getTimestamp());
         }
@@ -419,13 +311,13 @@ class Comfino_Gateway extends WC_Payment_Gateway
 
     private function get_subsection(): string
     {
-        $subsection = $_GET['subsection'] ?? 'payment_settings';
+        $active_tab = $_GET['subsection'] ?? 'payment_settings';
 
-        if (!in_array($subsection, ['payment_settings', 'sale_settings', 'widget_settings', 'abandoned_cart_settings', 'developer_settings', 'plugin_diagnostics'], true)) {
-            $subsection = 'payment_settings';
+        if (!in_array($active_tab, ['payment_settings', 'sale_settings', 'widget_settings', 'abandoned_cart_settings', 'developer_settings', 'plugin_diagnostics'], true)) {
+            $active_tab = 'payment_settings';
         }
 
-        return $subsection;
+        return $active_tab;
     }
 
     /**
@@ -453,11 +345,17 @@ class Comfino_Gateway extends WC_Payment_Gateway
 </script>');
     }
 
-    public function change_order($order_id, $status_old, $status_new)
+    public function order_status_changed(int $order_id, string $status_old, string $status_new): void
     {
+        if ($this->enabled !== 'yes') {
+            return;
+        }
+
+        ShopStatusManager::orderStatusUpdateEventHandler(wc_get_order($order_id), $status_old, $status_new);
+
         $order = wc_get_order($order_id);
 
-        if ($this->enabled === 'yes' && $this->abandoned_cart_enabled === 'yes' && $order->get_payment_method() !== 'comfino') {
+        if ($this->abandoned_cart_enabled === 'yes' && $order->get_payment_method() !== 'comfino') {
             if ($status_new == 'failed' && in_array($status_old, ['on-hold', 'pending'])) {
 
                 $this->send_email($order);
@@ -483,7 +381,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
     {
         $path = explode('/', dirname(__DIR__));
 
-        $template = '../../'. $path[count($path) - 1]. '/includes/templates/emails/failed-order.php';
+        $template = '../../'. $path[count($path) - 1]. '/includes/templates/emails/failed_order.php';
 
         return wc_get_template_html($template, [
             'order' => $order,
@@ -495,24 +393,24 @@ class Comfino_Gateway extends WC_Payment_Gateway
         ]);
     }
 
-    function filter_gateways($gateways)
+    public function filter_gateways($gateways)
     {
         if (is_wc_endpoint_url('order-pay')) {
             $order = wc_get_order(absint(get_query_var('order-pay')));
 
-            if (is_a($order, 'WC_Order') && $order->has_status('failed')) {
-                if ($this->abandoned_payments == 'comfino') {
+            if ($order instanceof \WC_Order && $order->has_status('failed')) {
+                if ($this->abandoned_payments === 'comfino') {
                     foreach ($gateways as $name => $gateway) {
-                        if ($name != 'comfino') {
+                        if ($name !== 'comfino') {
                             unset($gateways[$name]);
                         }
                     }
                 } else {
                     foreach ($gateways as $name => $gateway) {
-                        if ($name != 'comfino') {
-                            $gateways[$name]->chosen = false;
+                        if ($name !== 'comfino') {
+                            $gateway->chosen = false;
                         } else {
-                            $gateways[$name]->chosen = true;
+                            $gateway->chosen = true;
                         }
                     }
                 }

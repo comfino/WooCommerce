@@ -9,7 +9,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
     /**
      * The gateway instance.
      *
-     * @var Comfino_Gateway
+     * @var \Comfino\PaymentGateway
      */
     private $gateway;
 
@@ -47,7 +47,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
         $scriptAssetPath = \Comfino_Payment_Gateway::plugin_abspath() . 'assets/js/frontend/blocks.asset.php';
         $scriptAsset = is_readable($scriptAssetPath)
             ? require $scriptAssetPath
-            : ['dependencies' => [], 'version' => \Comfino_Payment_Gateway::VERSION];
+            : ['dependencies' => [], 'version' => \Comfino\PaymentGateway::VERSION];
         $scriptUrl = \Comfino_Payment_Gateway::plugin_url() . $scriptPath;
 
         wp_register_script(
