@@ -16,10 +16,10 @@ if (!defined('ABSPATH')) {
 
 final class SettingsForm
 {
-    private const ERROR_LOG_NUM_LINES = 100;
-    private const DEBUG_LOG_NUM_LINES = 200;
-    private const COMFINO_SUPPORT_EMAIL = 'pomoc@comfino.pl';
-    private const COMFINO_SUPPORT_PHONE = '887-106-027';
+    public const ERROR_LOG_NUM_LINES = 100;
+    public const DEBUG_LOG_NUM_LINES = 200;
+    public const COMFINO_SUPPORT_EMAIL = 'pomoc@comfino.pl';
+    public const COMFINO_SUPPORT_PHONE = '887-106-027';
 
     public static function processForm(string $activeTab, array $configurationOptionsToSave): array
     {
