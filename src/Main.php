@@ -9,7 +9,6 @@ use Comfino\Configuration\SettingsManager;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Order\OrderManager;
 use Comfino\View\FrontendManager;
-use Comfino\View\SettingsForm;
 use Comfino\View\TemplateManager;
 
 if (!defined('ABSPATH')) {
@@ -182,35 +181,6 @@ final class Main
         return $paywallIframe;
     }
 
-    public static function processFinishedPaymentTransaction(\PaymentModule $module, array $params): string
-    {
-        if (!COMFINO_PS_17 || !$module->active) {
-            return '';
-        }
-
-        ErrorLogger::init($module);
-
-        if (in_array($params['order']->getCurrentState(), [
-            (int) \Configuration::get('COMFINO_CREATED'),
-            (int) \Configuration::get('PS_OS_OUTOFSTOCK'),
-            (int) \Configuration::get('PS_OS_OUTOFSTOCK_UNPAID'),
-        ], true)) {
-            $tplVariables = [
-                'shop_name' => \Context::getContext()->shop->name,
-                'status' => 'ok',
-                'id_order' => $params['order']->id,
-            ];
-
-            if (isset($params['order']->reference) && !empty($params['order']->reference)) {
-                $tplVariables['reference'] = $params['order']->reference;
-            }
-        } else {
-            $tplVariables['status'] = 'failed';
-        }
-
-        return TemplateManager::renderView('payment_return', 'front', $tplVariables);
-    }
-//-----------------------------------------------------------
     public static function debugLog(string $debugPrefix, string $debugMessage): void
     {
         if (ConfigManager::isDebugMode()) {

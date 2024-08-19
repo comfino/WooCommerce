@@ -22,7 +22,7 @@ class StorageAdapter extends \WC_Payment_Gateway implements StorageAdapterInterf
         $initialConfigValues = ConfigManager::getDefaultConfigurationValues();
 
         foreach (array_merge(array_merge(...array_values(ConfigManager::CONFIG_OPTIONS))) as $optName => $optTypeFlags) {
-            $configuration[$optName] = $this->get_option(ConfigManager::CONFIG_OPTIONS_MAP[$optName], $initialConfigValues[$optName]);
+            $configuration[$optName] = $this->get_option(ConfigManager::CONFIG_OPTIONS_MAP[$optName], $initialConfigValues[$optName] ?? null);
 
             if ($optTypeFlags & ConfigurationManager::OPT_VALUE_TYPE_BOOL) {
                 $configuration[$optName] = ($configuration[$optName] === 'yes');

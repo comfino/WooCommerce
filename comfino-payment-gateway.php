@@ -41,9 +41,9 @@ class Comfino_Payment_Gateway
 
     private function __construct()
     {
+        add_action('init', [$this, 'init']);
         add_action('admin_init', [$this, 'check_environment']);
         add_action('admin_notices', [$this, 'admin_notices'], 15);
-        add_action('plugins_loaded', [$this, 'init']);
     }
 
     /**

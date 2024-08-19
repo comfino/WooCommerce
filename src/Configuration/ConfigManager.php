@@ -25,6 +25,7 @@ final class ConfigManager
         'COMFINO_ENABLED' => 'enabled',
         'COMFINO_API_KEY' => 'production_key',
         'COMFINO_PAYMENT_TEXT' => 'title',
+        'COMFINO_MINIMAL_CART_AMOUNT' => 'min_cart_amount',
         'COMFINO_SHOW_LOGO' => 'show_logo',
         'COMFINO_IS_SANDBOX' => 'sandbox_mode',
         'COMFINO_DEBUG' => 'debug_mode',

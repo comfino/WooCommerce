@@ -200,7 +200,7 @@ final class SettingsForm
             case 'payment_settings':
                 $formFields = array_intersect_key(
                     self::getFormFieldsDefinitions(),
-                    array_flip(['enabled', 'title', 'production_key', 'show_logo'])
+                    array_flip(['enabled', 'production_key', 'title', 'min_cart_amount', 'show_logo'])
                 );
                 break;
 
@@ -333,6 +333,11 @@ final class SettingsForm
                 'title' => __('Title', 'comfino-payment-gateway'),
                 'type' => 'text',
                 'default' => ConfigManager::getDefaultValue('title'),
+            ],
+            'min_cart_amount' => [
+                'title' => __('Minimal amount in cart', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'default' => ConfigManager::getDefaultValue('min_cart_amount'),
             ],
             'production_key' => [
                 'title' => __('Production environment API key', 'comfino-payment-gateway'),
