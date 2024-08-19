@@ -18,6 +18,6 @@ final class TemplateManager
             $templatePath .= ('/' . trim($path, ' /'));
         }
 
-        return wc_get_template_html("$name.php", $variables, $templatePath);
+        return wc_get_template_html("$name.php", $variables, '', "$templatePath/");
     }
 }

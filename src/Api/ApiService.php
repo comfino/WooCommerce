@@ -57,17 +57,7 @@ final class ApiService
             ],
         ]);
 
-        self::$endpointManager = (new ApiServiceFactory())->createService(
-            'WooCommerce',
-            WC_VERSION,
-            PaymentGateway::VERSION,
-            [
-                ConfigManager::getConfigurationValue('COMFINO_API_KEY'),
-                ConfigManager::getConfigurationValue('COMFINO_SANDBOX_API_KEY'),
-            ]
-        );
-
-        self::$endpointManager->registerEndpoint(
+        self::getEndpointManager()->registerEndpoint(
             new StatusNotification(
                 'transactionStatus',
                 self::registerWordPressApiEndpoint('transactionStatus', 'transactionstatus', [
@@ -84,7 +74,7 @@ final class ApiService
             )
         );
 
-        self::$endpointManager->registerEndpoint(
+        self::getEndpointManager()->registerEndpoint(
             new Configuration(
                 'configuration',
                 self::registerWordPressApiEndpoint('configuration', '/configuration(?:/(?P<vkey>[a-f0-9]+))?', [
@@ -110,7 +100,7 @@ final class ApiService
             )
         );
 
-        self::$endpointManager->registerEndpoint(
+        self::getEndpointManager()->registerEndpoint(
             new CacheInvalidate(
                 'cacheInvalidate',
                 self::registerWordPressApiEndpoint('cacheInvalidate', 'cacheinvalidate', [
@@ -128,7 +118,7 @@ final class ApiService
 
     public static function getEndpointUrl(string $endpointName): string
     {
-        if (($endpoint = self::$endpointManager->getEndpointByName($endpointName)) !== null) {
+        if (($endpoint = self::getEndpointManager()->getEndpointByName($endpointName)) !== null) {
             return $endpoint->getEndpointUrl();
         }
 
@@ -143,13 +133,13 @@ final class ApiService
                 : new \WP_REST_Response();
         }
 
-        if (self::$endpointManager === null || empty(self::$endpointManager->getRegisteredEndpoints())) {
+        if (empty(self::getEndpointManager()->getRegisteredEndpoints())) {
             return new \WP_REST_Response('Endpoint manager not initialized.', 503);
         }
 
         $apiResponse = new \WP_REST_Response();
 
-        $response = self::$endpointManager->processRequest($endpointName, self::createServerRequest($request));
+        $response = self::getEndpointManager()->processRequest($endpointName, self::createServerRequest($request));
 
         foreach ($response->getHeaders() as $headerName => $headerValues) {
             foreach ($headerValues as $headerValue) {
@@ -163,6 +153,23 @@ final class ApiService
         $apiResponse->set_data(!empty($responseBody) ? $responseBody : $response->getReasonPhrase());
 
         return $apiResponse;
+    }
+
+    private static function getEndpointManager(): RestEndpointManager
+    {
+        if (self::$endpointManager === null) {
+            self::$endpointManager = (new ApiServiceFactory())->createService(
+                'WooCommerce',
+                WC_VERSION,
+                PaymentGateway::VERSION,
+                [
+                    ConfigManager::getConfigurationValue('COMFINO_API_KEY'),
+                    ConfigManager::getConfigurationValue('COMFINO_SANDBOX_API_KEY'),
+                ]
+            );
+        }
+
+        return self::$endpointManager;
     }
 
     private static function registerWordPressApiEndpoint(string $endpointName, string $endpointPath, array $endpointCallbacks): string
@@ -204,7 +211,7 @@ final class ApiService
     private static function createServerRequest(\WP_REST_Request $request): ?ServerRequestInterface
     {
         return count($requestParams = $request->get_params())
-            ? self::$endpointManager->getServerRequest()->withQueryParams($requestParams)
+            ? self::getEndpointManager()->getServerRequest()->withQueryParams($requestParams)
             : null;
     }
 

@@ -130,7 +130,7 @@ final class Main
 
         // Add a Comfino gateway to the WooCommerce payment methods available for customer.
         add_filter('woocommerce_payment_gateways', static function (array $methods): array {
-            $methods[] = 'Comfino_Gateway';
+            $methods[] = PaymentGateway::class;
 
             return $methods;
         });
