@@ -241,7 +241,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function admin_options(): void
     {
-        global $wp_version;
+        global $wp, $wp_version;
 
         $activeTab = $this->get_subsection();
         $supportContact = sprintf(
@@ -251,11 +251,31 @@ class PaymentGateway extends \WC_Payment_Gateway
         );
 
         $viewVariables = [
+            'wp' => $wp,
             'title' => $this->method_title,
             'description' => $this->method_description,
             'active_tab' => $activeTab,
-            'support_contact' => $supportContact,
+            //'support_contact' => $supportContact,
             'logo_url' => ApiClient::getLogoUrl(),
+            'support_email_address' => SettingsForm::COMFINO_SUPPORT_EMAIL,
+            'support_email_subject' => sprintf(
+                __('WordPress %s WooCommerce %s Comfino %s - question', 'comfino-payment-gateway'),
+                $wp_version,
+                WC_VERSION,
+                self::VERSION
+            ),
+            'support_email_body' => sprintf(
+                'WordPress %s WooCommerce %s Comfino %s, PHP %s',
+                $wp_version,
+                WC_VERSION,
+                self::VERSION,
+                PHP_VERSION
+            ),
+            'contact_msg1' => __('Do you want to ask about something? Write to us at', 'comfino-payment-gateway'),
+            'contact_msg2' => sprintf(
+                __('or contact us by phone. We are waiting on the number: %s. We will answer all your questions!', 'comfino-payment-gateway'),
+                SettingsForm::COMFINO_SUPPORT_PHONE
+            ),
             'plugin_version' => self::VERSION,
         ];
 
