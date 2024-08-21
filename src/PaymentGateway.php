@@ -244,18 +244,12 @@ class PaymentGateway extends \WC_Payment_Gateway
         global $wp, $wp_version;
 
         $activeTab = $this->get_subsection();
-        $supportContact = sprintf(
-            __('Do you want to ask about something? Write to us at %s or contact us by phone. We are waiting on the number: %s. We will answer all your questions!', 'comfino-payment-gateway'),
-            '<a href="mailto:pomoc@comfino.pl?subject=' . sprintf(__('WordPress %s WooCommerce %s Comfino %s - question', 'comfino-payment-gateway'), $wp_version, WC_VERSION, self::VERSION) .
-            '&body=' . str_replace(',', '%2C', sprintf(__('WordPress %s WooCommerce %s Comfino %s, PHP %s', 'comfino-payment-gateway'), $wp_version, WC_VERSION, self::VERSION, PHP_VERSION)) . '">' . SettingsForm::COMFINO_SUPPORT_EMAIL . '</a>', SettingsForm::COMFINO_SUPPORT_PHONE
-        );
 
         $viewVariables = [
             'wp' => $wp,
             'title' => $this->method_title,
             'description' => $this->method_description,
             'active_tab' => $activeTab,
-            //'support_contact' => $supportContact,
             'logo_url' => ApiClient::getLogoUrl(),
             'support_email_address' => SettingsForm::COMFINO_SUPPORT_EMAIL,
             'support_email_subject' => sprintf(
@@ -298,7 +292,7 @@ class PaymentGateway extends \WC_Payment_Gateway
             $viewVariables['widget_key'] = ConfigManager::getWidgetKey();
             $viewVariables['is_dev_env'] = ApiClient::isDevEnv() ? 'Yes' : 'No';
         } else {
-            $viewVariables['settings_html'] = $this->generate_settings_html(SettingsForm::getFormFields($activeTab));
+            $viewVariables['settings_html'] = $this->generate_settings_html(SettingsForm::getFormFields($activeTab), false);
         }
 
         echo TemplateManager::renderView('configuration', 'admin', $viewVariables);

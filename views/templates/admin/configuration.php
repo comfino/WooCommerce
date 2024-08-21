@@ -73,7 +73,7 @@ switch ($active_tab) {
                     <p><b>Plugin dev-debug mode:</b> <?php echo esc_html($is_dev_env); ?></p>
 <?php
                     echo sprintf(
-                        '<p><b>Development environment variables:</b><ul>%s</ul></p>',
+                        '<hr><h4>Development environment variables:</h4><ul>%s</ul>',
                         implode('', array_map(
                             static function (string $envVariable): string {
                                 $varName = "COMFINO_$envVariable";
