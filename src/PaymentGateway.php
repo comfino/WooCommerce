@@ -373,7 +373,7 @@ class PaymentGateway extends \WC_Payment_Gateway
         }
 
         if ($hook === 'woocommerce_page_wc-settings') {
-            wp_enqueue_script('prod_cat_tree', plugins_url('views/js/tree.min.js', __FILE__), [], null);
+            wp_enqueue_script('prod_cat_tree', plugins_url('views/js/tree.min.js',  Main::getPluginFile()), [], null);
         }
     }
 
