@@ -381,7 +381,7 @@ class Comfino_Gateway extends WC_Payment_Gateway
     {
         $path = explode('/', dirname(__DIR__));
 
-        $template = '../../'. $path[count($path) - 1]. '/includes/templates/emails/failed_order.php';
+        $template = '../../'. $path[count($path) - 1]. '/includes/templates/emails/failed-order.php';
 
         return wc_get_template_html($template, [
             'order' => $order,

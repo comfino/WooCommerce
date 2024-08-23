@@ -64,7 +64,7 @@ final class ShopStatusManager
         $headers = "Content-Type: text/html\r\n";
         $subject = __('Order reminder', 'comfino-payment-gateway');
         $contents = TemplateManager::renderView(
-            'failed_order',
+            'failed-order',
             'emails',
             [
                 'order' => $order,
