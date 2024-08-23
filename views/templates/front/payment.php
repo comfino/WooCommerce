@@ -4,10 +4,10 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-/** @var string $paywall_api_url */
+/** @var string $paywall_iframe */
 /** @var array $paywall_options */
 ?>
-<iframe id="comfino-paywall-container" src="<?php echo $paywall_api_url ?>" referrerpolicy="strict-origin" loading="lazy" class="comfino-paywall" scrolling="no" onload="ComfinoPaywallFrontend.onload(this, '<?php echo $paywall_options['platformName']; ?>', '<?php echo $paywall_options['platformVersion']; ?>')"></iframe>
+<div id="comfino-iframe-container"><?php echo $paywall_iframe ?></div>
 <input id="comfino-loan-amount" name="comfino_loan_amount" type="hidden" />
 <input id="comfino-loan-type" name="comfino_loan_type" type="hidden" />
 <input id="comfino-loan-term" name="comfino_loan_term" type="hidden" />
@@ -53,4 +53,4 @@ if (!defined('ABSPATH')) {
             });
         }
     }
-</script>';
+</script>
