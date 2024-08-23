@@ -269,7 +269,8 @@ final class SettingsForm
     /**
      * @param int[] $selectedCategories
      */
-    public static function renderCategoryTree(string $treeId, string $productType, array $selectedCategories): string {
+    public static function renderCategoryTree(string $treeId, string $productType, array $selectedCategories): string
+    {
         return TemplateManager::renderView(
             'product-category-filter',
             'admin/_configure',

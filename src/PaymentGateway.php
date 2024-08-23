@@ -377,7 +377,7 @@ class PaymentGateway extends \WC_Payment_Gateway
         }
     }
 
-    public function generate_hidden_html($key, $data)
+    public function generate_hidden_html(string $key, array $data): string
     {
         $field_key = $this->get_field_key($key);
         $defaults = [
@@ -402,7 +402,7 @@ class PaymentGateway extends \WC_Payment_Gateway
         return ob_get_clean();
     }
 
-    public function generate_product_category_tree_html($key, $data)
+    public function generate_product_category_tree_html(string $key, array $data): string
     {
         $defaults = [
             'title' => '',

@@ -9,16 +9,16 @@ if (!defined('ABSPATH')) {
 /** @var string $tree_nodes */
 /** @var int $close_depth */
 ?>
-<div id="<?php esc_html($tree_id); ?>_<?php esc_html($product_type); ?>"></div>
-<input id="<?php esc_html($tree_id); ?>_<?php esc_html($product_type); ?>_input" name="<?php esc_html($tree_id); ?>[<?php esc_html($product_type); ?>]" type="hidden" />
+<div id="<?php echo esc_attr($tree_id); ?>_<?php echo esc_attr($product_type); ?>"></div>
+<input id="<?php echo esc_attr($tree_id); ?>_<?php echo esc_attr($product_type); ?>_input" name="<?php echo esc_attr($tree_id); ?>[<?php echo esc_attr($product_type); ?>]" type="hidden" />
 <script>
     new Tree(
-        '#<?php esc_html($tree_id); ?>_<?php esc_html($product_type); ?>',
+        '#<?php echo esc_js($tree_id); ?>_<?php echo esc_js($product_type); ?>',
         {
-            data: <?php esc_html($tree_nodes); ?>,
-            closeDepth: <?php esc_html($close_depth); ?>,
+            data: <?php echo $tree_nodes; ?>,
+            closeDepth: <?php echo esc_js($close_depth); ?>,
             onChange: function () {
-                document.getElementById('<?php esc_html($tree_id); ?>_<?php esc_html($product_type); ?>_input').value = this.values.join();
+                document.getElementById('<?php echo esc_js($tree_id); ?>_<?php echo esc_js($product_type); ?>_input').value = this.values.join();
             }
         }
     );
