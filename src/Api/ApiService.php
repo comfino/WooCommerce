@@ -265,7 +265,7 @@ final class ApiService
         header('Content-Type: text/html');
 
         if (!ConfigManager::isEnabled()) {
-            echo TemplateManager::renderView('module_disabled', 'front');
+            echo TemplateManager::renderView('plugin-disabled', 'front');
 
             exit;
         }
@@ -278,7 +278,7 @@ final class ApiService
 
         if ($allowedProductTypes === []) {
             // Filters active - all product types disabled.
-            echo TemplateManager::renderView('paywall_disabled', 'front');
+            echo TemplateManager::renderView('paywall-disabled', 'front');
 
             exit;
         }

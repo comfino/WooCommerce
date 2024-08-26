@@ -59,7 +59,7 @@ final class Main
                     return;
                 }
 
-                $restPrefix = 'comfino/offers';
+                $restPrefix = 'comfino/paywall';
                 $requestUri = esc_url_raw(wp_unslash($_SERVER['REQUEST_URI']));
 
                 if (strpos($requestUri, $restPrefix) === false) {

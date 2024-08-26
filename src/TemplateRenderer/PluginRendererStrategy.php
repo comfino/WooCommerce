@@ -37,14 +37,14 @@ class PluginRendererStrategy implements RendererStrategyInterface
                 $responseBody = '';
             }
 
-            $templateName = 'api_error';
+            $templateName = 'api-error';
         } elseif ($exception instanceof NetworkExceptionInterface) {
             $exception->getRequest()->getBody()->rewind();
 
             $url = $exception->getRequest()->getRequestTarget();
             $requestBody = $exception->getRequest()->getBody()->getContents();
             $responseBody = '';
-            $templateName = 'api_error';
+            $templateName = 'api-error';
         } else {
             $url = '';
             $requestBody = '';
