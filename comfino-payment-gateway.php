@@ -17,6 +17,8 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
+use Comfino\Api\ApiService;
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -49,7 +51,7 @@ class Comfino_Payment_Gateway
     /**
      * Automatically disables the plugin on activation if it doesn't meet minimum requirements.
      */
-    public static function activation_check(): void
+    public function activation_check(): void
     {
         if (!class_exists('\Comfino\Main')) {
             require_once __DIR__ . '/src/Main.php';
@@ -67,7 +69,7 @@ class Comfino_Payment_Gateway
     /**
      * Plugin URL.
      */
-    public static function plugin_url(): string
+    public function plugin_url(): string
     {
         return untrailingslashit(plugins_url('/', __FILE__));
     }
@@ -75,7 +77,7 @@ class Comfino_Payment_Gateway
     /**
      * Plugin absolute path.
      */
-    public static function plugin_abspath(): string
+    public function plugin_abspath(): string
     {
         return trailingslashit(plugin_dir_path(__FILE__));
     }
@@ -163,4 +165,4 @@ global $comfino_payment_gateway;
 
 $comfino_payment_gateway = Comfino_Payment_Gateway::get_instance();
 
-register_activation_hook(__FILE__, ['Comfino_Payment_Gateway', 'activation_check']);
+register_activation_hook(__FILE__, [$comfino_payment_gateway, 'activation_check']);

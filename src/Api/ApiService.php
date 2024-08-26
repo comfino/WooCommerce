@@ -30,6 +30,8 @@ final class ApiService
     private static $endpointManager;
     /** @var string[] */
     private static $endpoints = [];
+    /** @var string[] */
+    private static $endpointUrls = [];
     /** @var callable[] */
     private static $requestCallbacks = [
         'availableOfferTypes' => [self::class, 'getAvailableOfferTypes'],
@@ -38,7 +40,7 @@ final class ApiService
 
     public static function init(): void
     {
-        self::registerWordPressApiEndpoint('availableOfferTypes', '/availableoffertypes(?:/(?P<product_id>\d+))?', [
+        self::registerWordPressApiEndpoint('availableOfferTypes', [
             [
                 'methods' => \WP_REST_Server::READABLE,
                 'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
@@ -48,7 +50,7 @@ final class ApiService
             ],
         ]);
 
-        self::registerWordPressApiEndpoint('paywall', '/paywall', [
+        self::registerWordPressApiEndpoint('paywall', [
             [
                 'methods' => \WP_REST_Server::READABLE,
                 'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
@@ -60,7 +62,7 @@ final class ApiService
         self::getEndpointManager()->registerEndpoint(
             new StatusNotification(
                 'transactionStatus',
-                self::registerWordPressApiEndpoint('transactionStatus', 'transactionstatus', [
+                self::registerWordPressApiEndpoint('transactionStatus', [
                     [
                         'methods' => \WP_REST_Server::EDITABLE,
                         'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
@@ -77,7 +79,7 @@ final class ApiService
         self::getEndpointManager()->registerEndpoint(
             new Configuration(
                 'configuration',
-                self::registerWordPressApiEndpoint('configuration', '/configuration(?:/(?P<vkey>[a-f0-9]+))?', [
+                self::registerWordPressApiEndpoint('configuration', [
                     [
                         'methods' => \WP_REST_Server::READABLE,
                         'callback' =>  function (\WP_REST_Request $request): \WP_REST_Response {
@@ -103,7 +105,7 @@ final class ApiService
         self::getEndpointManager()->registerEndpoint(
             new CacheInvalidate(
                 'cacheInvalidate',
-                self::registerWordPressApiEndpoint('cacheInvalidate', 'cacheinvalidate', [
+                self::registerWordPressApiEndpoint('cacheInvalidate', [
                     [
                         'methods' => \WP_REST_Server::EDITABLE,
                         'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
@@ -116,13 +118,26 @@ final class ApiService
         );
     }
 
+    public static function registerEndpoints(): void
+    {
+        self::$endpointUrls = [
+            'availableOfferTypes' => '/availableoffertypes(?:/(?P<product_id>\d+))?',
+            'paywall' => '/paywall',
+            'transactionStatus' => '/transactionstatus',
+            'configuration' => '/configuration(?:/(?P<vkey>[a-f0-9]+))?',
+            'cacheInvalidate' => '/cacheinvalidate',
+        ];
+
+        add_action('rest_api_init', [self::class, 'init']);
+    }
+
     public static function getEndpointUrl(string $endpointName): string
     {
         if (($endpoint = self::getEndpointManager()->getEndpointByName($endpointName)) !== null) {
             return $endpoint->getEndpointUrl();
         }
 
-        return self::$endpoints[$endpointName] ?? '';
+        return self::$endpoints[$endpointName] ?? self::getRestUrl(self::$endpointUrls[$endpointName] ?? '');
     }
 
     public static function processRequest(string $endpointName, \WP_REST_Request $request): \WP_REST_Response
@@ -155,6 +170,24 @@ final class ApiService
         return $apiResponse;
     }
 
+    private static function getRestUrl(string $endpointPath): string
+    {
+        if (empty($endpointPath)) {
+            return '';
+        }
+
+        $endpointPath = ltrim($endpointPath, '/');
+        $restEndpointPath = 'comfino/';
+
+        if (($argsPos = strpos($endpointPath, '(')) !== false) {
+            $restEndpointPath .= substr($endpointPath, 0, $argsPos);
+        } else {
+            $restEndpointPath .= $endpointPath;
+        }
+
+        return get_rest_url(null, $restEndpointPath);
+    }
+
     private static function getEndpointManager(): RestEndpointManager
     {
         if (self::$endpointManager === null) {
@@ -172,11 +205,11 @@ final class ApiService
         return self::$endpointManager;
     }
 
-    private static function registerWordPressApiEndpoint(string $endpointName, string $endpointPath, array $endpointCallbacks): string
+    private static function registerWordPressApiEndpoint(string $endpointName, array $endpointCallbacks): string
     {
         register_rest_route(
             'comfino',
-            "/$endpointPath",
+            self::$endpointUrls[$endpointName],
             array_map(
                 static function (array $endpointCallback): array {
                     $endpointParams = [
@@ -195,15 +228,7 @@ final class ApiService
             )
         );
 
-        $restEndpointPath = 'comfino/';
-
-        if (($argsPos = strpos($endpointPath, '(')) !== false) {
-            $restEndpointPath .= substr($endpointPath, 0, $argsPos);
-        } else {
-            $restEndpointPath .= $endpointPath;
-        }
-
-        self::$endpoints[$endpointName] = get_rest_url(null, $restEndpointPath);
+        self::$endpoints[$endpointName] = self::getRestUrl(self::$endpointUrls[$endpointName]);
 
         return self::$endpoints[$endpointName];
     }

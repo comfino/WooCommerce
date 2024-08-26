@@ -43,12 +43,15 @@ final class PaymentGateway extends AbstractPaymentMethodType
      */
     public function get_payment_method_script_handles(): array
     {
+        /** @var \Comfino_Payment_Gateway $comfino_payment_gateway */
+        global $comfino_payment_gateway;
+
         $scriptPath = '/assets/js/frontend/blocks.js';
-        $scriptAssetPath = \Comfino_Payment_Gateway::plugin_abspath() . 'assets/js/frontend/blocks.asset.php';
+        $scriptAssetPath = $comfino_payment_gateway->plugin_abspath() . 'assets/js/frontend/blocks.asset.php';
         $scriptAsset = is_readable($scriptAssetPath)
             ? require $scriptAssetPath
             : ['dependencies' => [], 'version' => \Comfino\PaymentGateway::VERSION];
-        $scriptUrl = \Comfino_Payment_Gateway::plugin_url() . $scriptPath;
+        $scriptUrl = $comfino_payment_gateway->plugin_url() . $scriptPath;
 
         wp_register_script(
             'comfino-payment-gateway-blocks',
@@ -62,7 +65,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
             wp_set_script_translations(
                 'comfino-payment-gateway-blocks',
                 'comfino-payment-gateway',
-                \Comfino_Payment_Gateway::plugin_abspath() . 'languages/'
+                $comfino_payment_gateway->plugin_abspath() . 'languages/'
             );
         }
 

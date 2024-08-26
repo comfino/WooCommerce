@@ -106,13 +106,10 @@ final class Main
 
         add_action('wp_head', [$module, 'render_widget']);
 
-        // Register module API endpoints.
-        add_action('rest_api_init', [ApiService::class, 'init']);
-
         // Declare compatibility with WooCommerce HPOS.
         add_action('before_woocommerce_init', static function () {
             if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
-                \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__);
+                \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', self::$pluginFile);
             }
         });
 
@@ -157,6 +154,9 @@ final class Main
         });
 
         load_plugin_textdomain('comfino-payment-gateway', false, basename($pluginDirectory) . '/languages');
+
+        // Register module API endpoints.
+        ApiService::registerEndpoints();
 
         // Initialize cache system.
         CacheManager::init($pluginDirectory);
