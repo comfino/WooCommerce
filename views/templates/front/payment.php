@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
 <input id="comfino-loan-term" name="comfino_loan_term" type="hidden" />
 <script>
     window.Comfino = {
-        paywallOptions: '<?php echo json_encode($paywall_options); ?>',
+        paywallOptions: <?php echo json_encode($paywall_options); ?>,
         init: () => {
             let iframe = document.getElementById('comfino-paywall-container');
             let frontendInitElement = document.getElementById('payment_method_comfino');
