@@ -5,6 +5,8 @@ namespace Comfino\Common\Frontend;
 use ComfinoExternal\Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Comfino\Api\Client;
 use Comfino\Common\Frontend\TemplateRenderer\RendererStrategyInterface;
+use ComfinoExternal\Psr\Cache\InvalidArgumentException;
+use ComfinoExternal\Psr\Http\Client\ClientExceptionInterface;
 
 final class PaywallIframeRenderer extends FrontendRenderer
 {
@@ -39,18 +41,34 @@ final class PaywallIframeRenderer extends FrontendRenderer
     public function renderPaywallIframe($iframeUrl): string
     {
         try {
-            $fragments = $this->getFrontendFragments(self::PAYWALL_IFRAME_FRAGMENTS);
+            $fragments = $this->getPaywallElements($iframeUrl);
         } catch (\Throwable $e) {
             return $this->rendererStrategy->renderErrorTemplate($e);
         }
 
         return sprintf(
-            '<style>%s</style><iframe id="comfino-paywall-container" src="%s" referrerpolicy="strict-origin" loading="lazy" class="comfino-paywall" scrolling="no" onload="ComfinoPaywallFrontend.onload(this, \'%s\', \'%s\')"></iframe><script>%s</script>',
+            '<style>%s</style>%s<script>%s</script>',
             $fragments['frontend_style'] ?? '',
-            $iframeUrl,
-            $this->platformName,
-            $this->platformVersion,
+            $fragments['iframe'],
             $fragments['frontend_script'] ?? ''
+        );
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws InvalidArgumentException
+     * @param string $iframeUrl
+     */
+    public function getPaywallElements($iframeUrl): array
+    {
+        return array_merge([
+            'iframe' => sprintf(
+                '<iframe id="comfino-paywall-container" src="%s" referrerpolicy="strict-origin" loading="lazy" class="comfino-paywall" scrolling="no" onload="ComfinoPaywallFrontend.onload(this, \'%s\', \'%s\')"></iframe>',
+                $iframeUrl,
+                $this->platformName,
+                $this->platformVersion
+            )],
+            $this->getFrontendFragments(self::PAYWALL_IFRAME_FRAGMENTS)
         );
     }
 }

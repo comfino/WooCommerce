@@ -10,6 +10,7 @@ use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Order\OrderManager;
 use Comfino\View\FrontendManager;
 use Comfino\View\TemplateManager;
+use ComfinoExternal\Psr\Cache\InvalidArgumentException;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -214,12 +215,18 @@ final class Main
         $total = $cart->get_total('edit');
 
         try {
+            $paywallElements = FrontendManager::getPaywallIframeRenderer()->getPaywallElements(ApiService::getEndpointUrl('paywall'));
+
+            add_action('wp_head', static function () use ($paywallElements) {
+                echo "<style>$paywallElements[frontend_style]</style>";
+                echo "<script>$paywallElements[frontend_script]</script>";
+            });
+
             return TemplateManager::renderView(
                 'payment',
                 'front',
                 [
-                    'paywall_iframe' => FrontendManager::getPaywallIframeRenderer()
-                        ->renderPaywallIframe(ApiService::getEndpointUrl('paywall')),
+                    'paywall_iframe' => $paywallElements['iframe'],
                     'paywall_options' => [
                         'platform' => 'woocommerce',
                         'platformName' => 'WooCommerce',
@@ -236,7 +243,7 @@ final class Main
                     'comfino_redirect_url' => ApiService::getEndpointUrl('payment'),
                 ]
             );
-        } catch (\Throwable $e) {
+        } catch (\Throwable|InvalidArgumentException $e) {
             ApiClient::processApiError('Paywall error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)', $e);
         }
 
