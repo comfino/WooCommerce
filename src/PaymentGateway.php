@@ -210,10 +210,6 @@ class PaymentGateway extends \WC_Payment_Gateway
 
             $result = ['result' => 'success', 'redirect' => $response->applicationUrl];
         } catch (\Throwable $e) {
-            //$order = new Order($this->module->currentOrder);
-            //$order->setCurrentState((int) Configuration::get('PS_OS_ERROR'));
-            //$order->save();
-
             ApiClient::processApiError(
                 'Order creation error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)',
                 $e
@@ -300,8 +296,6 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function process_admin_options(): bool
     {
-        //$this->init_settings();
-
         $activeTab = $this->get_subsection();
 
         $configurationOptions = $this->get_post_data();
@@ -327,10 +321,8 @@ class PaymentGateway extends \WC_Payment_Gateway
             if (array_key_exists($fieldKey, $configurationOptions) && $fieldType !== 'title') {
                 try {
                     if ($configurationOptions[$fieldKey] === 'yes' || $configurationOptions[$fieldKey] === 'no') {
-                        //$this->settings[$key] = $configurationOptions[$fieldKey];
                         $configurationOptionsToSave[$optionsMap[$key]] = ($configurationOptions[$fieldKey] === 'yes');
                     } else {
-                        //$this->settings[$key] = $this->get_field_value($key, $field, $configurationOptions);
                         $configurationOptionsToSave[$optionsMap[$key]] = $this->get_field_value($key, $field, $configurationOptions);
                     }
                 } catch (\Exception $e) {
@@ -347,7 +339,6 @@ class PaymentGateway extends \WC_Payment_Gateway
                     ));
                 }
 
-                //$this->settings['product_category_filters'] = json_encode($productCategoryFilters);
                 $configurationOptionsToSave[$optionsMap['product_category_filters']] = $productCategoryFilters;
             }
         }
