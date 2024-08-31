@@ -310,6 +310,10 @@ class PaymentGateway extends \WC_Payment_Gateway
         $errorMessages = [];
 
         foreach (SettingsForm::getFormFields($activeTab) as $key => $field) {
+            if (($fieldType = $this->get_field_type($field)) === 'hidden') {
+                continue;
+            }
+
             $fieldKey = $this->get_field_key($key);
 
             if (isset($optionsMap[$key]) && (ConfigManager::getConfigurationValueType($optionsMap[$key]) & ConfigurationManager::OPT_VALUE_TYPE_BOOL)) {
@@ -320,7 +324,7 @@ class PaymentGateway extends \WC_Payment_Gateway
                 }
             }
 
-            if (array_key_exists($fieldKey, $configurationOptions) && $this->get_field_type($field) !== 'title') {
+            if (array_key_exists($fieldKey, $configurationOptions) && $fieldType !== 'title') {
                 try {
                     if ($configurationOptions[$fieldKey] === 'yes' || $configurationOptions[$fieldKey] === 'no') {
                         //$this->settings[$key] = $configurationOptions[$fieldKey];
@@ -348,7 +352,7 @@ class PaymentGateway extends \WC_Payment_Gateway
             }
         }
 
-        $result = SettingsForm::processForm($activeTab, $configurationOptionsToSave);
+        $result = SettingsForm::processForm($activeTab, $configurationOptionsToSave, $configurationOptions);
         $errorMessages = array_merge($errorMessages, $result['errorMessages']);
 
         if (count($errorMessages) > 0) {

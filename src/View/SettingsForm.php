@@ -21,7 +21,7 @@ final class SettingsForm
     public const COMFINO_SUPPORT_EMAIL = 'pomoc@comfino.pl';
     public const COMFINO_SUPPORT_PHONE = '887-106-027';
 
-    public static function processForm(string $activeTab, array $configurationOptionsToSave): array
+    public static function processForm(string $activeTab, array $configurationOptionsToSave, array $postData): array
     {
         $errorMessages = [];
         $widgetKeyError = false;
@@ -108,7 +108,7 @@ final class SettingsForm
                 $productCategories = array_keys(ConfigManager::getAllProductCategories());
                 $productCategoryFilters = [];
 
-                foreach ($configurationOptionsToSave['product_categories'] as $productType => $categoryIds) {
+                foreach ($postData['product_categories'] as $productType => $categoryIds) {
                     $nodeIds = [];
 
                     foreach (explode(',', $categoryIds) as $categoryId) {
