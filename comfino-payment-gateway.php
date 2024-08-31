@@ -17,8 +17,6 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
-use Comfino\Api\ApiService;
-
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -133,30 +131,6 @@ class Comfino_Payment_Gateway
             echo '<div class="' . esc_attr(sanitize_html_class($notice['class'])) . '"><p>';
             echo wp_kses($notice['message'], ['a' => ['href' => []]]);
             echo "</p></div>";
-        }
-    }
-
-    /**
-     * Render widget.
-     *
-     * @return void
-     */
-    public function render_widget(): void
-    {
-        global $product;
-
-        if (is_single() && is_product()) {
-            $comfino = new Comfino_Gateway();
-
-            if ($product instanceof WC_Product) {
-                $product_id = $product->get_id();
-            } else {
-                $product_id = get_the_ID();
-            }
-
-            if ($comfino->get_option('widget_enabled') === 'yes' && $comfino->get_option('widget_key') !== '') {
-                echo Core::get_widget_init_code($comfino, !empty($product_id) ? $product_id : null);
-            }
         }
     }
 }

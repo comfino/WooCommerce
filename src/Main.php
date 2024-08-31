@@ -105,7 +105,21 @@ final class Main
             }
         }, 5);
 
-        add_action('wp_head', [$module, 'render_widget']);
+        add_action('wp_head', static function () {
+            global $product;
+
+            if (is_single() && is_product()) {
+                if ($product instanceof \WC_Product) {
+                    $product_id = $product->get_id();
+                } else {
+                    $product_id = get_the_ID();
+                }
+
+                if (ConfigManager::isWidgetEnabled() && ConfigManager::getWidgetKey() !== '') {
+                    echo FrontendManager::renderWidgetInitCode(!empty($product_id) ? $product_id : null);
+                }
+            }
+        });
 
         // Declare compatibility with WooCommerce HPOS.
         add_action('before_woocommerce_init', static function () {
