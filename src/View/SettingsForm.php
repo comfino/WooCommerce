@@ -338,7 +338,7 @@ final class SettingsForm
             'min_cart_amount' => [
                 'title' => __('Minimal amount in cart', 'comfino-payment-gateway'),
                 'type' => 'text',
-                'default' => ConfigManager::getDefaultValue('min_cart_amount'),
+                'default' => (string) ConfigManager::getDefaultValue('min_cart_amount'),
             ],
             'production_key' => [
                 'title' => __('Production environment API key', 'comfino-payment-gateway'),
@@ -441,7 +441,7 @@ final class SettingsForm
             'widget_price_observer_level' => [
                 'title' => __('Price change detection - container hierarchy level', 'comfino-payment-gateway'),
                 'type' => 'number',
-                'default' => ConfigManager::getDefaultValue('widget_price_observer_level'),
+                'default' => (string) ConfigManager::getDefaultValue('widget_price_observer_level'),
                 'description' => __(
                     'Hierarchy level of observed parent element relative to the price element.',
                     'comfino-payment-gateway'
