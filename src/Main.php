@@ -121,25 +121,6 @@ final class Main
             }
         });
 
-        // Declare compatibility with WooCommerce HPOS.
-        add_action('before_woocommerce_init', static function () {
-            if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
-                \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', self::$pluginFile);
-            }
-        });
-
-        // Declare compatibility with WooCommerce Payment Blocks and register integration hook.
-        add_action('woocommerce_blocks_loaded', static function () {
-            if (class_exists('\Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
-                add_action(
-                    'woocommerce_blocks_payment_method_type_registration',
-                    static function (\Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $paymentMethodRegistry) {
-                        $paymentMethodRegistry->register(new View\Block\PaymentGateway());
-                    }
-                );
-            }
-        });
-
         // Add a Comfino gateway to the WooCommerce payment methods available for customer.
         add_filter('woocommerce_payment_gateways', static function (array $methods): array {
             $methods[] = PaymentGateway::class;

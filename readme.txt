@@ -2,7 +2,7 @@
 Contributors: comfino.pl
 Donate link: https://comfino.pl/
 Tags: comfino, woocommerce, gateway, payment, bank, deferred payments, installments
-WC tested up to: 9.1.4
+WC tested up to: 9.2.3
 WC requires at least: 3.0
 Stable tag: 4.0.0
 Tested up to: 6.6.1

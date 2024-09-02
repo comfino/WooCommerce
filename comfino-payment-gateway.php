@@ -8,7 +8,7 @@
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
  * Text Domain: comfino-payment-gateway
- * WC tested up to: 9.1.4
+ * WC tested up to: 9.2.3
  * WC requires at least: 3.0
  * Tested up to: 6.6.1
  * Requires at least: 5.0
@@ -44,6 +44,25 @@ class Comfino_Payment_Gateway
         add_action('init', [$this, 'init']);
         add_action('admin_init', [$this, 'check_environment']);
         add_action('admin_notices', [$this, 'admin_notices'], 15);
+
+        // Declare compatibility with WooCommerce HPOS.
+        add_action('before_woocommerce_init', static function () {
+            if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+                \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__);
+            }
+        });
+
+        // Declare compatibility with WooCommerce Payment Blocks and register integration hook.
+        add_action('woocommerce_blocks_loaded', static function () {
+            if (class_exists('\Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+                add_action(
+                    'woocommerce_blocks_payment_method_type_registration',
+                    static function (\Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $paymentMethodRegistry) {
+                        $paymentMethodRegistry->register(new \View\Block\PaymentGateway());
+                    }
+                );
+            }
+        });
     }
 
     /**
