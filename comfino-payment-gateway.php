@@ -17,6 +17,8 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
+use Comfino\View\Block\PaymentGateway;
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -58,7 +60,7 @@ class Comfino_Payment_Gateway
                 add_action(
                     'woocommerce_blocks_payment_method_type_registration',
                     static function (\Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $paymentMethodRegistry) {
-                        $paymentMethodRegistry->register(new \View\Block\PaymentGateway());
+                        $paymentMethodRegistry->register(new PaymentGateway());
                     }
                 );
             }
