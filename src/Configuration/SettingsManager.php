@@ -47,6 +47,10 @@ final class SettingsManager
             return $productTypes;
         }
 
+        if (empty(ApiClient::getInstance()->getApiKey())) {
+            return ['error' => 'API key is required.'];
+        }
+
         try {
             $productTypes = ApiClient::getInstance()->getProductTypes($listTypeEnum);
             $productTypesList = $productTypes->productTypesWithNames;
@@ -95,6 +99,10 @@ final class SettingsManager
 
         if (($widgetTypes = CacheManager::get($cacheKey)) !== null) {
             return $widgetTypes;
+        }
+
+        if (empty(ApiClient::getInstance()->getApiKey())) {
+            return ['error' => 'API key is required.'];
         }
 
         try {
