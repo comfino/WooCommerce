@@ -41,24 +41,29 @@ class Comfino_Payment_Gateway
 
     private function __construct()
     {
+        if (is_readable(__DIR__ . '/vendor/autoload.php')) {
+            require_once __DIR__ . '/vendor/autoload.php';
+        }
+
         add_action('init', [$this, 'init']);
         add_action('admin_init', [$this, 'check_environment']);
         add_action('admin_notices', [$this, 'admin_notices'], 15);
 
-        // Declare compatibility with WooCommerce HPOS.
+        // Declare compatibility with WooCommerce HPOS and Payment Blocks.
         add_action('before_woocommerce_init', static function () {
-            if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
-                \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__);
+            if (class_exists('Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+                Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__);
+                Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__);
             }
         });
 
-        // Declare compatibility with WooCommerce Payment Blocks and register integration hook.
+        // Register integration hook for WooCommerce Payment Blocks.
         add_action('woocommerce_blocks_loaded', static function () {
-            if (class_exists('\Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+            if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
                 add_action(
                     'woocommerce_blocks_payment_method_type_registration',
-                    static function (\Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $paymentMethodRegistry) {
-                        //$paymentMethodRegistry->register(new PaymentGateway());
+                    static function (Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $paymentMethodRegistry) {
+                        $paymentMethodRegistry->register(new Comfino\View\Block\PaymentGateway());
                     }
                 );
             }
@@ -70,10 +75,6 @@ class Comfino_Payment_Gateway
      */
     public function activation_check(): void
     {
-        if (!class_exists('\Comfino\Main')) {
-            require_once __DIR__ . '/src/Main.php';
-        }
-
         $environment_warning = Comfino\Main::getEnvironmentWarning(true);
 
         if ($environment_warning) {
@@ -108,12 +109,8 @@ class Comfino_Payment_Gateway
             return;
         }
 
-        if (is_readable(__DIR__ . '/vendor/autoload.php')) {
-            require_once __DIR__ . '/vendor/autoload.php';
-        }
-
         // Initialize Comfino plugin.
-        Comfino\Main::init($this, __DIR__, __FILE__);
+        Comfino\Main::init(__DIR__, __FILE__);
     }
 
     /**

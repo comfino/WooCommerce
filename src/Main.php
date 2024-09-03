@@ -31,7 +31,7 @@ final class Main
     /** @var string */
     private static $debugLogFilePath;
 
-    public static function init(\Comfino_Payment_Gateway $module, string $pluginDirectory, string $pluginFile): void
+    public static function init(string $pluginDirectory, string $pluginFile): void
     {
         self::$pluginDirectory = $pluginDirectory;
         self::$pluginFile = $pluginFile;
@@ -108,16 +108,25 @@ final class Main
         add_action('wp_head', static function () {
             global $product;
 
-            if (is_single() && is_product()) {
-                if ($product instanceof \WC_Product) {
-                    $product_id = $product->get_id();
-                } else {
-                    $product_id = get_the_ID();
+            if (is_single() && is_product() && ConfigManager::isWidgetEnabled() && ConfigManager::getWidgetKey() !== '') {
+                // Widget initialization script
+                if (!($product instanceof \WC_Product)) {
+                    $product = wc_get_product(get_the_ID());
                 }
 
-                if (ConfigManager::isWidgetEnabled() && ConfigManager::getWidgetKey() !== '') {
-                    echo FrontendManager::renderWidgetInitCode(!empty($product_id) ? $product_id : null);
+                $allowedProductTypes = SettingsManager::getAllowedProductTypes(
+                   ProductTypesListTypeEnum::LIST_TYPE_WIDGET,
+                   OrderManager::getShopCartFromProduct($product)
+                );
+
+                if ($allowedProductTypes === []) {
+                    // Filters active - all product types disabled.
+                    self::debugLog('[WIDGET]', 'Filters active - all product types disabled.');
+
+                    return;
                 }
+
+                echo FrontendManager::renderWidgetInitCode($product->get_id());
             }
         });
 
@@ -171,6 +180,8 @@ final class Main
     public static function renderPaywallIframe(\WC_Cart $cart, int $loanAmount): string
     {
         if (!self::paymentIsAvailable($cart, $loanAmount) || ($paywallIframe = self::preparePaywallIframe($cart)) === null) {
+            self::debugLog('[PAYWALL]', 'renderPaywallIframe - paymentIsAvailable=FALSE or preparePaywallIframe=NULL');
+
             return '';
         }
 
@@ -196,6 +207,8 @@ final class Main
     private static function paymentIsAvailable(\WC_Cart $cart, int $loanAmount): bool
     {
         if (!ConfigManager::isEnabled() || empty(ConfigManager::getApiKey())) {
+            self::debugLog('[PAYWALL]', 'paymentIsAvailable - plugin disabled or incomplete configuration.');
+
             return false;
         }
 

@@ -364,7 +364,7 @@ final class ConfigManager
         return $widgetCode;
     }
 
-    public static function getWidgetVariables(?int $productId = null): array
+    public static function getWidgetVariables(int $productId = null): array
     {
         $productData = self::getProductData($productId);
 

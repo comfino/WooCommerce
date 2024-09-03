@@ -147,6 +147,17 @@ final class SettingsManager
         $availableProductTypes = self::getProductTypesEnums($listType);
         $allowedProductTypes = $filterManager->getAllowedProductTypes($availableProductTypes, $cart);
 
+        if (ConfigManager::isDebugMode()) {
+            $activeFilters = array_map(
+                static function (ProductTypeFilterInterface $filter): string { return get_class($filter); },
+                $filterManager->getFilters()
+            );
+
+            Main::debugLog('[PAYWALL]', 'getAllowedProductTypes - $activeFilters=' . json_encode($activeFilters));
+            Main::debugLog('[PAYWALL]', '$availableProductTypes=' . json_encode($availableProductTypes));
+            Main::debugLog('[PAYWALL]', '$allowedProductTypes=' . json_encode($allowedProductTypes));
+        }
+
         if ($returnOnlyArray) {
             return $allowedProductTypes;
         }
