@@ -372,10 +372,6 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function admin_scripts($hook): void
     {
-        if ($this->enabled === 'no') {
-            return;
-        }
-
         if ($hook === 'woocommerce_page_wc-settings') {
             wp_enqueue_script('prod_cat_tree', plugins_url('views/js/tree.min.js',  Main::getPluginFile()), [], null);
         }
