@@ -17,6 +17,8 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
+use Comfino\PaymentGateway;
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -48,6 +50,13 @@ class Comfino_Payment_Gateway
         add_action('init', [$this, 'init']);
         add_action('admin_init', [$this, 'check_environment']);
         add_action('admin_notices', [$this, 'admin_notices'], 15);
+
+        // Add a Comfino gateway to the WooCommerce payment methods available for customer.
+        add_filter('woocommerce_payment_gateways', static function (array $methods): array {
+            $methods[] = PaymentGateway::class;
+
+            return $methods;
+        });
 
         // Declare compatibility with WooCommerce HPOS and Payment Blocks.
         add_action('before_woocommerce_init', static function () {
@@ -118,13 +127,9 @@ class Comfino_Payment_Gateway
      */
     public function check_environment()
     {
-        if (!class_exists('\Comfino\Main')) {
-            require_once __DIR__ . '/src/Main.php';
-        }
-
         $environment_warning = Comfino\Main::getEnvironmentWarning();
 
-        if ($environment_warning && is_plugin_active(plugin_basename( __FILE__))) {
+        if ($environment_warning && is_plugin_active(plugin_basename(__FILE__))) {
             deactivate_plugins(plugin_basename(__FILE__));
             $this->add_admin_notice('bad_environment', 'error', $environment_warning);
 

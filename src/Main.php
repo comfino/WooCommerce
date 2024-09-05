@@ -130,13 +130,6 @@ final class Main
             }
         });
 
-        // Add a Comfino gateway to the WooCommerce payment methods available for customer.
-        add_filter('woocommerce_payment_gateways', static function (array $methods): array {
-            $methods[] = PaymentGateway::class;
-
-            return $methods;
-        });
-
         add_filter('plugin_action_links_' . plugin_basename($pluginFile), static function (array $links): array {
             return array_merge([
                 '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino') . '">' .
@@ -162,9 +155,6 @@ final class Main
 
         // Register module API endpoints.
         ApiService::registerEndpoints();
-
-        // Initialize cache system.
-        CacheManager::init($pluginDirectory);
     }
 
     public static function uninstall(string $pluginDirectory, string $pluginFile): bool
@@ -204,7 +194,7 @@ final class Main
         return self::$errorLogger->getErrorLog(self::$debugLogFilePath, $numLines);
     }
 
-    private static function paymentIsAvailable(\WC_Cart $cart, int $loanAmount): bool
+    public static function paymentIsAvailable(\WC_Cart $cart, int $loanAmount): bool
     {
         if (!ConfigManager::isEnabled() || empty(ConfigManager::getApiKey())) {
             self::debugLog('[PAYWALL]', 'paymentIsAvailable - plugin disabled or incomplete configuration.');

@@ -13,21 +13,24 @@ final class PaymentGateway extends AbstractPaymentMethodType
      */
     private $gateway;
 
-    /**
-     * Payment method name/id/slug.
-     *
-     * @var string
-     */
-    protected $name = 'comfino';
+    public function __construct()
+    {
+        $this->name = \Comfino\PaymentGateway::GATEWAY_ID;
+    }
 
     /**
      * Initializes the payment method type.
      */
     public function initialize(): void
     {
-        $this->settings = get_option('woocommerce_comfino_settings', []);
-        $gateways = WC()->payment_gateways()->payment_gateways;
-        $this->gateway = $gateways[$this->name];
+        foreach (WC()->payment_gateways()->payment_gateways as $gateway) {
+            if ($gateway instanceof \Comfino\PaymentGateway) {
+                $this->gateway = $gateway;
+                $this->settings = $gateway->settings;
+
+                break;
+            }
+        }
     }
 
     /**
@@ -35,7 +38,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
      */
     public function is_active(): bool
     {
-        return $this->gateway->is_available();
+        return $this->gateway !== null && $this->gateway->is_available();
     }
 
     /**

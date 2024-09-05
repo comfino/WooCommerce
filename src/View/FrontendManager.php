@@ -41,6 +41,62 @@ final class FrontendManager
         );
     }
 
+    public static function renderHiddenInput(string $fieldKey, ?string $fieldValue, string $customAttributes, array $data): string
+    {
+        $defaults = [
+            'title' => '',
+            'disabled' => false,
+            'class' => '',
+            'css' => '',
+            'placeholder' => '',
+            'type' => 'text',
+            'desc_tip' => false,
+            'description' => '',
+            'custom_attributes' => [],
+        ];
+
+        $data = wp_parse_args($data, $defaults);
+
+        return sprintf(
+            '<input class="input-text regular-input %s" type="%s" name="%s" id="%s" style="%s" value="%s" placeholder="%s" %s %s />', // WPCS: XSS ok.
+            esc_attr($data['class']),
+            esc_attr($data['type']),
+            esc_attr($fieldKey),
+            esc_attr($fieldKey),
+            esc_attr($data['css']),
+            $fieldValue,
+            esc_attr($data['placeholder']),
+            disabled($data['disabled']),
+            $customAttributes
+        );
+    }
+
+    public static function renderProductCategoryTree(array $data): string
+    {
+        $defaults = [
+            'title' => '',
+            'disabled' => false,
+            'class' => '',
+            'css' => '',
+            'placeholder' => '',
+            'type' => 'text',
+            'desc_tip' => false,
+            'description' => '',
+            'custom_attributes' => [],
+            'id' => '',
+            'product_type' => '',
+            'selected_categories' => [],
+        ];
+
+        $data = wp_parse_args($data, $defaults);
+
+        return sprintf(
+            '<tr valign="top"><td class="forminp" colspan="2"><h3>%s</h3>%s</td></tr>', // WPCS: XSS ok.
+            esc_html($data['title']),
+            SettingsForm::renderCategoryTree($data['id'], $data['product_type'], $data['selected_categories'])
+        );
+    }
+
     public static function renderWidgetInitCode(int $productId): string
     {
         try {

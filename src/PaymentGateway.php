@@ -14,16 +14,22 @@ use Comfino\Order\OrderManager;
 use Comfino\Order\ShopStatusManager;
 use Comfino\Shop\Order\Customer;
 use Comfino\Shop\Order\Customer\Address;
+use Comfino\View\FrontendManager;
 use Comfino\View\SettingsForm;
 use Comfino\View\TemplateManager;
 
 class PaymentGateway extends \WC_Payment_Gateway
 {
+    public const GATEWAY_ID = 'comfino';
+
     public const VERSION = '4.0.0';
 
     public function __construct()
     {
-        $this->id = 'comfino';
+        // Initialize cache system.
+        CacheManager::init(dirname(__DIR__));
+
+        $this->id = self::GATEWAY_ID;
         $this->icon = $this->get_icon();
         $this->has_fields = true;
         $this->method_title = __('Comfino payments', 'comfino-payment-gateway');
@@ -33,14 +39,12 @@ class PaymentGateway extends \WC_Payment_Gateway
             'payments available on one platform with the help of quick integration. Grow your business with Comfino!',
             'comfino-payment-gateway'
         );
-
         $this->supports = ['products'];
 
         $this->init_form_fields();
         $this->init_settings();
 
         $this->title = $this->get_option('title');
-        $this->enabled = $this->get_option('enabled');
 
         add_action('admin_enqueue_scripts', [$this, 'admin_scripts']);
 
@@ -78,6 +82,19 @@ class PaymentGateway extends \WC_Payment_Gateway
         );
     }
 
+    public function is_available(): bool
+    {
+        if (!parent::is_available()) {
+            return false;
+        }
+
+        if (($cart = WC()->cart) === null) {
+            return false;
+        }
+
+        return Main::paymentIsAvailable($cart, (int) ($this->get_order_total() * 100));
+    }
+
     /* Shop cart checkout frontend logic. */
 
     public function get_icon(): string
@@ -93,15 +110,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function payment_fields(): void
     {
-        $cart = WC()->cart;
-        $total = (int) ($cart->get_total('edit') * 100);
-
-        if (is_wc_endpoint_url('order-pay')) {
-            $order = wc_get_order(absint(get_query_var('order-pay')));
-            $total = (int) ($order->get_total('edit') * 100);
-        }
-
-        echo Main::renderPaywallIframe($cart, $total);
+        echo Main::renderPaywallIframe(WC()->cart, (int) ($this->get_order_total() * 100));
     }
 
     public function process_payment($order_id): array
@@ -374,59 +383,17 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function generate_hidden_html(string $key, array $data): string
     {
-        $field_key = $this->get_field_key($key);
-        $defaults = [
-            'title' => '',
-            'disabled' => false,
-            'class' => '',
-            'css' => '',
-            'placeholder' => '',
-            'type' => 'text',
-            'desc_tip' => false,
-            'description' => '',
-            'custom_attributes' => [],
-        ];
-
-        $data = wp_parse_args($data, $defaults);
-
-        ob_start();
-        ?>
-        <input class="input-text regular-input <?php echo esc_attr($data['class']); ?>" type="<?php echo esc_attr($data['type']); ?>" name="<?php echo esc_attr($field_key); ?>" id="<?php echo esc_attr($field_key); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr($this->get_option($key)); ?>" placeholder="<?php echo esc_attr($data['placeholder']); ?>" <?php disabled($data['disabled'], true); ?> <?php echo $this->get_custom_attribute_html($data); // WPCS: XSS ok. ?> />
-        <?php
-
-        return ob_get_clean();
+        return FrontendManager::renderHiddenInput(
+            $this->get_field_key($key),
+            $this->get_option($key),
+            $this->get_custom_attribute_html($data),
+            $data
+        );
     }
 
     public function generate_product_category_tree_html(string $key, array $data): string
     {
-        $defaults = [
-            'title' => '',
-            'disabled' => false,
-            'class' => '',
-            'css' => '',
-            'placeholder' => '',
-            'type' => 'text',
-            'desc_tip' => false,
-            'description' => '',
-            'custom_attributes' => [],
-            'id' => '',
-            'product_type' => '',
-            'selected_categories' => [],
-        ];
-
-        $data = wp_parse_args($data, $defaults);
-
-        ob_start();
-        ?>
-        <tr valign="top">
-            <td class="forminp" colspan="2">
-                <h3><?php echo esc_html($data['title']); ?></h3>
-                <?php echo SettingsForm::renderCategoryTree($data['id'], $data['product_type'], $data['selected_categories']); ?>
-            </td>
-        </tr>
-        <?php
-
-        return ob_get_clean();
+        return FrontendManager::renderProductCategoryTree($data);
     }
 
     private function get_subsection(): string
