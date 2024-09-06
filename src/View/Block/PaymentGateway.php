@@ -3,6 +3,7 @@
 namespace Comfino\View\Block;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
+use Comfino\Api\ApiClient;
 
 final class PaymentGateway extends AbstractPaymentMethodType
 {
@@ -82,6 +83,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
         return [
             'title' => $this->get_setting('title'),
             'description' => $this->get_setting('description'),
+            'icon' => ApiClient::getPaywallLogoUrl(),
             'supports' => array_filter($this->gateway->supports, [$this->gateway, 'supports']),
         ];
     }

@@ -1,19 +1,28 @@
 const settings = window.wc.wcSettings.getSetting('comfino_data', {});
-const label = window.wp.htmlEntities.decodeEntities( settings.title ) || window.wp.i18n.__('Comfino Payments', 'comfino-payment-gateway');
+const label = window.wp.htmlEntities.decodeEntities(settings.title) || window.wp.i18n.__('Comfino Payments', 'comfino-payment-gateway');
 
-/**
- * Content component.
- */
-const Content = () => {
-    return window.wp.htmlEntities.decodeEntities(settings.description || '');
+const Label = () => {
+    if (settings.icon) {
+        return window.wp.element.createElement(
+            'img',
+            {
+                src: settings.icon,
+                alt: settings.title,
+                style: { float: 'right', marginRight: '20px' }
+            }
+        );
+    }
+
+    return label;
 };
 
-/**
- * Comfino payment method config object.
- */
+const Content = () => {
+    return window.wp.htmlEntities.decodeEntities(settings.description || 'TEST');
+};
+
 const Comfino = {
     name: 'comfino',
-    label: label,
+    label: Object(window.wp.element.createElement)(Label, null),
     content: Object(window.wp.element.createElement)(Content, null),
     edit: Object(window.wp.element.createElement)(Content, null),
     canMakePayment: () => true,
