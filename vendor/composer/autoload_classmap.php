@@ -226,6 +226,7 @@ return array(
     'Comfino\\Common\\Backend\\RestEndpoint\\StatusNotification' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Backend/RestEndpoint/StatusNotification.php',
     'Comfino\\Common\\Exception\\InvalidEndpoint' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Exception/InvalidEndpoint.php',
     'Comfino\\Common\\Exception\\InvalidRequest' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Exception/InvalidRequest.php',
+    'Comfino\\Common\\Frontend\\FrontendHelper' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Frontend/FrontendHelper.php',
     'Comfino\\Common\\Frontend\\FrontendRenderer' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Frontend/FrontendRenderer.php',
     'Comfino\\Common\\Frontend\\PaywallIframeRenderer' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Frontend/PaywallIframeRenderer.php',
     'Comfino\\Common\\Frontend\\PaywallRenderer' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Frontend/PaywallRenderer.php',

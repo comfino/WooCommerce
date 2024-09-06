@@ -86,29 +86,6 @@ abstract class FrontendRenderer
     }
 
     /**
-     * @param string $platformCode
-     * @param string $platformVersion
-     * @param string $pluginVersion
-     */
-    protected function getLogoAuthKey($platformCode, $platformVersion, $pluginVersion): string
-    {
-        $packedPlatformVersion = pack('c*', ...array_map('intval', explode('.', $platformVersion)));
-        $packedPluginVersion = pack('c*', ...array_map('intval', explode('.', $pluginVersion)));
-        $platformVersionLength = pack('c', strlen($packedPlatformVersion));
-        $pluginVersionLength = pack('c', strlen($packedPluginVersion));
-
-        $authKeyParts = [
-            $platformCode,
-            $platformVersionLength,
-            $pluginVersionLength,
-            $packedPlatformVersion,
-            $packedPluginVersion,
-        ];
-
-        return implode($authKeyParts);
-    }
-
-    /**
      * @param string[] $cacheKeysToDelete
      * @param string $language
      */

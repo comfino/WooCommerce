@@ -467,6 +467,7 @@ class ComposerStaticInitda91cb319f0d473a3d4a60607a3e6ea6
         'Comfino\\Common\\Backend\\RestEndpoint\\StatusNotification' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Backend/RestEndpoint/StatusNotification.php',
         'Comfino\\Common\\Exception\\InvalidEndpoint' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Exception/InvalidEndpoint.php',
         'Comfino\\Common\\Exception\\InvalidRequest' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Exception/InvalidRequest.php',
+        'Comfino\\Common\\Frontend\\FrontendHelper' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Frontend/FrontendHelper.php',
         'Comfino\\Common\\Frontend\\FrontendRenderer' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Frontend/FrontendRenderer.php',
         'Comfino\\Common\\Frontend\\PaywallIframeRenderer' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Frontend/PaywallIframeRenderer.php',
         'Comfino\\Common\\Frontend\\PaywallRenderer' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Frontend/PaywallRenderer.php',

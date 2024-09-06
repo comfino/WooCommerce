@@ -91,29 +91,4 @@ final class PaywallRenderer extends FrontendRenderer
             return $this->rendererStrategy->renderErrorTemplate($e);
         }
     }
-
-    /**
-     * @param string $platformCode
-     * @param string $platformVersion
-     * @param string $pluginVersion
-     */
-    public function getLogoAuthHash($platformCode, $platformVersion, $pluginVersion): string
-    {
-        return urlencode(base64_encode($this->getLogoAuthKey($platformCode, $platformVersion, $pluginVersion)));
-    }
-
-    /**
-     * @param string $platformCode
-     * @param string $platformVersion
-     * @param string $pluginVersion
-     * @param string $apiKey
-     * @param string $widgetKey
-     */
-    public function getPaywallLogoAuthHash($platformCode, $platformVersion, $pluginVersion, $apiKey, $widgetKey): string
-    {
-        $authKey = $this->getLogoAuthKey($platformCode, $platformVersion, $pluginVersion) . $widgetKey;
-        $authKey .= hash_hmac('sha3-256', $authKey, $apiKey, true);
-
-        return urlencode(base64_encode($authKey));
-    }
 }
