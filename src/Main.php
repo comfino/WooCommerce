@@ -198,12 +198,16 @@ final class Main
         return self::$errorLogger->getErrorLog(self::$debugLogFilePath, $numLines);
     }
 
-    public static function paymentIsAvailable(\WC_Cart $cart, int $loanAmount): bool
+    public static function paymentIsAvailable(?\WC_Cart $cart, int $loanAmount): bool
     {
         if (!ConfigManager::isEnabled() || empty(ConfigManager::getApiKey())) {
             self::debugLog('[PAYWALL]', 'paymentIsAvailable - plugin disabled or incomplete configuration.');
 
             return false;
+        }
+
+        if ($cart === null || !did_action('wp_loaded')) {
+            return true;
         }
 
         return SettingsManager::getAllowedProductTypes(

@@ -81,15 +81,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function is_available(): bool
     {
-        if (!parent::is_available()) {
-            return false;
-        }
-
-        if (($cart = WC()->cart) === null) {
-            return false;
-        }
-
-        return Main::paymentIsAvailable($cart, (int) ($this->get_order_total() * 100));
+        return parent::is_available() && Main::paymentIsAvailable(WC()->cart, WC()->cart !== null ? (int) ($this->get_order_total() * 100) : 0);
     }
 
     /* Shop cart checkout front logic. */
