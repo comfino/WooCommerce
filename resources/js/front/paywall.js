@@ -12,7 +12,7 @@ const Label = () => {
 };
 
 const Content = () => {
-    return window.wp.htmlEntities.decodeEntities(settings.description || '');
+    return window.wp.element.RawHTML({ children: window.wp.htmlEntities.decodeEntities(settings.iframe) });
 };
 
 window.wc.wcBlocksRegistry.registerPaymentMethod({

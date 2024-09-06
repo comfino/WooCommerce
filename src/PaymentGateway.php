@@ -89,7 +89,7 @@ class PaymentGateway extends \WC_Payment_Gateway
     public function get_icon(): string
     {
         if (ConfigManager::getConfigurationValue('COMFINO_SHOW_LOGO')) {
-            $icon = '<img style="height: 18px; margin: 0 5px;" src="' . ApiClient::getPaywallLogoUrl() . '" alt="Comfino" />';
+            $icon = '<img style="height: 18px; margin: 0 5px;" src="' . ApiClient::getPaywallLogoUrl() . '" alt="' . ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT') . '">';
         } else {
             $icon = '';
         }
@@ -99,7 +99,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function payment_fields(): void
     {
-        echo Main::renderPaywallIframe(WC()->cart, (int) ($this->get_order_total() * 100));
+        echo $this->generate_paywall_iframe();
     }
 
     public function process_payment($order_id): array
@@ -379,6 +379,11 @@ class PaymentGateway extends \WC_Payment_Gateway
     public function generate_product_category_tree_html(string $key, array $data): string
     {
         return FrontendManager::renderProductCategoryTree($data);
+    }
+
+    public function generate_paywall_iframe(): string
+    {
+        return Main::renderPaywallIframe(WC()->cart, (int) ($this->get_order_total() * 100));
     }
 
     private function get_subsection(): string
