@@ -5,10 +5,10 @@ namespace Comfino\View;
 use Comfino\Api\ApiClient;
 use Comfino\Api\Exception\AccessDenied;
 use Comfino\Api\Exception\AuthorizationError;
-use Comfino\CacheManager;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
+use Comfino\PluginShared\CacheManager;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -182,7 +182,7 @@ final class SettingsForm
             $success = true;
         }
 
-        // Clear configuration and frontend cache.
+        // Clear configuration and front cache.
         CacheManager::getCachePool()->clear();
 
         return ['success' => $success, 'errorMessages' => $errorMessages];

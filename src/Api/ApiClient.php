@@ -8,6 +8,7 @@ use Comfino\Api\Exception\RequestValidationError;
 use Comfino\Api\Exception\ResponseValidationError;
 use Comfino\Api\Exception\ServiceUnavailable;
 use Comfino\Common\Backend\Factory\ApiClientFactory;
+use Comfino\Common\Frontend\FrontendHelper;
 use Comfino\Configuration\ConfigManager;
 use Comfino\ErrorLogger;
 use Comfino\Extended\Api\Client;
@@ -110,14 +111,14 @@ final class ApiClient
     {
         return self::getApiHost(self::getInstance()->getApiHost())
             . '/v1/get-logo-url?auth='
-            . FrontendManager::getPaywallRenderer()->getLogoAuthHash('WC', WC_VERSION, PaymentGateway::VERSION);
+            . FrontendHelper::getLogoAuthHash('WC', WC_VERSION, PaymentGateway::VERSION);
     }
 
     public static function getPaywallLogoUrl(): string
     {
         return self::getApiHost(self::getInstance()->getApiHost())
             . '/v1/get-paywall-logo?auth='
-            . FrontendManager::getPaywallRenderer()->getPaywallLogoAuthHash(
+            . FrontendHelper::getPaywallLogoAuthHash(
                 'WC', WC_VERSION, PaymentGateway::VERSION, self::getInstance()->getApiKey(), ConfigManager::getWidgetKey()
             );
     }

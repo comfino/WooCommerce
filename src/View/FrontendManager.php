@@ -4,11 +4,11 @@ namespace Comfino\View;
 
 use Comfino\Api\ApiClient;
 use Comfino\Api\ApiService;
-use Comfino\CacheManager;
 use Comfino\Common\Frontend\PaywallIframeRenderer;
 use Comfino\Common\Frontend\PaywallRenderer;
 use Comfino\Configuration\ConfigManager;
 use Comfino\ErrorLogger;
+use Comfino\PluginShared\CacheManager;
 use Comfino\TemplateRenderer\PluginRendererStrategy;
 
 if (!defined('ABSPATH')) {

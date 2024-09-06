@@ -26,9 +26,6 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function __construct()
     {
-        // Initialize cache system.
-        CacheManager::init(dirname(__DIR__));
-
         $this->id = self::GATEWAY_ID;
         $this->icon = $this->get_icon();
         $this->has_fields = true;
@@ -95,7 +92,7 @@ class PaymentGateway extends \WC_Payment_Gateway
         return Main::paymentIsAvailable($cart, (int) ($this->get_order_total() * 100));
     }
 
-    /* Shop cart checkout frontend logic. */
+    /* Shop cart checkout front logic. */
 
     public function get_icon(): string
     {
@@ -373,7 +370,7 @@ class PaymentGateway extends \WC_Payment_Gateway
     public function admin_scripts($hook): void
     {
         if ($hook === 'woocommerce_page_wc-settings') {
-            wp_enqueue_script('prod_cat_tree', plugins_url('views/js/tree.min.js',  Main::getPluginFile()), [], null);
+            wp_enqueue_script('prod_cat_tree', plugins_url('resources/js/admin/tree.min.js',  Main::getPluginFile()), [], null);
         }
     }
 

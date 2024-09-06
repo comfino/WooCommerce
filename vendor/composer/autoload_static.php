@@ -503,6 +503,7 @@ class ComposerStaticInitda91cb319f0d473a3d4a60607a3e6ea6
         'Comfino\\Order\\StatusAdapter' => __DIR__ . '/../..' . '/src/Order/StatusAdapter.php',
         'Comfino\\PaymentGateway' => __DIR__ . '/../..' . '/src/PaymentGateway.php',
         'Comfino\\Paywall\\PaywallViewTypeEnum' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Paywall/PaywallViewTypeEnum.php',
+        'Comfino\\PluginShared\\CacheManager' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/PluginShared/CacheManager.php',
         'Comfino\\Shop\\Order\\Cart' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Shop/Order/Cart.php',
         'Comfino\\Shop\\Order\\CartInterface' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Shop/Order/CartInterface.php',
         'Comfino\\Shop\\Order\\Cart\\CartItem' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Shop/Order/Cart/CartItem.php',

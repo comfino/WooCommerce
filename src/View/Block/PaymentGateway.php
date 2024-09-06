@@ -49,18 +49,17 @@ final class PaymentGateway extends AbstractPaymentMethodType
         /** @var \Comfino_Payment_Gateway $comfino_payment_gateway */
         global $comfino_payment_gateway;
 
-        $scriptPath = '/assets/js/frontend/blocks.js';
-        $scriptAssetPath = $comfino_payment_gateway->plugin_abspath() . 'assets/js/frontend/blocks.asset.php';
-        $scriptAsset = is_readable($scriptAssetPath)
-            ? require $scriptAssetPath
-            : ['dependencies' => [], 'version' => \Comfino\PaymentGateway::VERSION];
-        $scriptUrl = $comfino_payment_gateway->plugin_url() . $scriptPath;
-
         wp_register_script(
             'comfino-payment-gateway-blocks',
-            $scriptUrl,
-            $scriptAsset['dependencies'],
-            $scriptAsset['version'],
+            $comfino_payment_gateway->plugin_url() . '/resources/js/front/paywall.js',
+            [
+                'wc-blocks-registry',
+                'wc-settings',
+                'wp-element',
+                'wp-html-entities',
+                'wp-i18n',
+            ],
+            null,
             true
         );
 

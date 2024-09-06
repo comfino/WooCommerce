@@ -262,6 +262,7 @@ return array(
     'Comfino\\Order\\StatusAdapter' => $baseDir . '/src/Order/StatusAdapter.php',
     'Comfino\\PaymentGateway' => $baseDir . '/src/PaymentGateway.php',
     'Comfino\\Paywall\\PaywallViewTypeEnum' => $vendorDir . '/comfino/shop-plugins-shared/src/Paywall/PaywallViewTypeEnum.php',
+    'Comfino\\PluginShared\\CacheManager' => $vendorDir . '/comfino/shop-plugins-shared/src/PluginShared/CacheManager.php',
     'Comfino\\Shop\\Order\\Cart' => $vendorDir . '/comfino/shop-plugins-shared/src/Shop/Order/Cart.php',
     'Comfino\\Shop\\Order\\CartInterface' => $vendorDir . '/comfino/shop-plugins-shared/src/Shop/Order/CartInterface.php',
     'Comfino\\Shop\\Order\\Cart\\CartItem' => $vendorDir . '/comfino/shop-plugins-shared/src/Shop/Order/Cart/CartItem.php',

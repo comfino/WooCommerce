@@ -3,7 +3,6 @@
 namespace Comfino\Api;
 
 use Comfino\Api\Dto\Payment\LoanQueryCriteria;
-use Comfino\CacheManager;
 use Comfino\Common\Backend\Factory\ApiServiceFactory;
 use Comfino\Common\Backend\RestEndpoint\CacheInvalidate;
 use Comfino\Common\Backend\RestEndpoint\Configuration;
@@ -16,6 +15,7 @@ use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Order\OrderManager;
 use Comfino\Order\StatusAdapter;
 use Comfino\PaymentGateway;
+use Comfino\PluginShared\CacheManager;
 use Comfino\View\FrontendManager;
 use Comfino\View\TemplateManager;
 use ComfinoExternal\Psr\Http\Message\ServerRequestInterface;

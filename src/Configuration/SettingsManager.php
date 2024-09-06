@@ -4,7 +4,6 @@ namespace Comfino\Configuration;
 
 use Comfino\Api\ApiClient;
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
-use Comfino\CacheManager;
 use Comfino\Common\Backend\Payment\ProductTypeFilter\FilterByCartValueLowerLimit;
 use Comfino\Common\Backend\Payment\ProductTypeFilter\FilterByExcludedCategory;
 use Comfino\Common\Backend\Payment\ProductTypeFilter\FilterByProductType;
@@ -14,6 +13,7 @@ use Comfino\Common\Shop\Cart;
 use Comfino\Common\Shop\Product\CategoryFilter;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Main;
+use Comfino\PluginShared\CacheManager;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -44,7 +44,7 @@ final class SettingsManager
         $listTypeEnum = new ProductTypesListTypeEnum($listType);
 
         if (($productTypes = CacheManager::get($cacheKey)) !== null) {
-            return $productTypes;
+            return is_array($productTypes) ? $productTypes : [];
         }
 
         if (empty(ApiClient::getInstance()->getApiKey())) {
@@ -98,7 +98,7 @@ final class SettingsManager
         $cacheKey = "widget_types.$language";
 
         if (($widgetTypes = CacheManager::get($cacheKey)) !== null) {
-            return $widgetTypes;
+            return is_array($widgetTypes) ? $widgetTypes : [];
         }
 
         if (empty(ApiClient::getInstance()->getApiKey())) {

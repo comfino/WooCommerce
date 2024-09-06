@@ -8,6 +8,7 @@ use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Order\OrderManager;
+use Comfino\PluginShared\CacheManager;
 use Comfino\View\FrontendManager;
 use Comfino\View\TemplateManager;
 use ComfinoExternal\Psr\Cache\InvalidArgumentException;
@@ -152,6 +153,9 @@ final class Main
         });
 
         load_plugin_textdomain('comfino-payment-gateway', false, basename($pluginDirectory) . '/languages');
+
+        // Initialize cache system.
+        CacheManager::init(dirname(__DIR__) . '/var');
 
         // Register module API endpoints.
         ApiService::registerEndpoints();
