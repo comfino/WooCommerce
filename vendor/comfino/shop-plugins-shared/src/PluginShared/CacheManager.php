@@ -20,9 +20,9 @@ final class CacheManager
      */
     private static $cache;
 
-    public static function init(string $pluginDirectory): void
+    public static function init(string $cacheRootPath): void
     {
-        self::$cacheRootPath = "$pluginDirectory/var";
+        self::$cacheRootPath = $cacheRootPath;
         self::$cache = null;
     }
 

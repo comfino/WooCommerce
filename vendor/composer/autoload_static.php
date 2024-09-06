@@ -442,7 +442,6 @@ class ComposerStaticInitda91cb319f0d473a3d4a60607a3e6ea6
         'Comfino\\Api\\Response\\IsShopAccountActive' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Response/IsShopAccountActive.php',
         'Comfino\\Api\\SerializerInterface' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/SerializerInterface.php',
         'Comfino\\Api\\Serializer\\Json' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Serializer/Json.php',
-        'Comfino\\CacheManager' => __DIR__ . '/../..' . '/src/CacheManager.php',
         'Comfino\\CategoryTree\\BuildStrategy' => __DIR__ . '/../..' . '/src/CategoryTree/BuildStrategy.php',
         'Comfino\\Common\\Backend\\Cache\\ItemTypeEnum' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Backend/Cache/ItemTypeEnum.php',
         'Comfino\\Common\\Backend\\ConfigurationManager' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Backend/ConfigurationManager.php',

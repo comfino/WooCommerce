@@ -201,7 +201,6 @@ return array(
     'Comfino\\Api\\Response\\IsShopAccountActive' => $vendorDir . '/comfino/shop-plugins-shared/src/Api/Response/IsShopAccountActive.php',
     'Comfino\\Api\\SerializerInterface' => $vendorDir . '/comfino/shop-plugins-shared/src/Api/SerializerInterface.php',
     'Comfino\\Api\\Serializer\\Json' => $vendorDir . '/comfino/shop-plugins-shared/src/Api/Serializer/Json.php',
-    'Comfino\\CacheManager' => $baseDir . '/src/CacheManager.php',
     'Comfino\\CategoryTree\\BuildStrategy' => $baseDir . '/src/CategoryTree/BuildStrategy.php',
     'Comfino\\Common\\Backend\\Cache\\ItemTypeEnum' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Backend/Cache/ItemTypeEnum.php',
     'Comfino\\Common\\Backend\\ConfigurationManager' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Backend/ConfigurationManager.php',
