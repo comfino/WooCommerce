@@ -99,7 +99,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function payment_fields(): void
     {
-        echo $this->generate_paywall_iframe();
+        echo $this->generate_paywall_iframe(false);
     }
 
     public function process_payment($order_id): array
@@ -381,9 +381,14 @@ class PaymentGateway extends \WC_Payment_Gateway
         return FrontendManager::renderProductCategoryTree($data);
     }
 
-    public function generate_paywall_iframe(): string
+    public function generate_paywall_iframe(bool $isPaymentBlock): string
     {
-        return Main::renderPaywallIframe(WC()->cart, (int) ($this->get_order_total() * 100));
+        return Main::renderPaywallIframe(WC()->cart, $this->get_order_total(), $isPaymentBlock);
+    }
+
+    public function get_total(): float
+    {
+        return $this->get_order_total();
     }
 
     private function get_subsection(): string

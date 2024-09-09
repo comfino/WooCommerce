@@ -171,9 +171,9 @@ final class Main
         return true;
     }
 
-    public static function renderPaywallIframe(\WC_Cart $cart, int $loanAmount): string
+    public static function renderPaywallIframe(\WC_Cart $cart, float $total, bool $isPaymentBlock): string
     {
-        if (!self::paymentIsAvailable($cart, $loanAmount) || ($paywallIframe = self::preparePaywallIframe($cart)) === null) {
+        if (!self::paymentIsAvailable($cart, (int) ($total * 100)) || ($paywallIframe = self::preparePaywallIframe($total, $isPaymentBlock)) === null) {
             self::debugLog('[PAYWALL]', 'renderPaywallIframe - paymentIsAvailable=FALSE or preparePaywallIframe=NULL');
 
             return '';
@@ -214,46 +214,6 @@ final class Main
             ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
             OrderManager::getShopCart($cart, $loanAmount)
         ) !== [];
-    }
-
-    private static function preparePaywallIframe(\WC_Cart $cart): ?string
-    {
-        $total = $cart->get_total('edit');
-
-        try {
-            $paywallElements = FrontendManager::getPaywallIframeRenderer()->getPaywallElements(ApiService::getEndpointUrl('paywall'));
-
-            add_action('wp_head', static function () use ($paywallElements) {
-                echo "<style>$paywallElements[frontend_style]</style>";
-                echo "<script>$paywallElements[frontend_script]</script>";
-            });
-
-            return TemplateManager::renderView(
-                'payment',
-                'front',
-                [
-                    'paywall_iframe' => $paywallElements['iframe'],
-                    'paywall_options' => [
-                        'platform' => 'woocommerce',
-                        'platformName' => 'WooCommerce',
-                        'platformVersion' => WC_VERSION,
-                        'platformDomain' => self::getShopDomain(),
-                        'pluginVersion' => PaymentGateway::VERSION,
-                        'language' => self::getShopLanguage(),
-                        'currency' => self::getShopCurrency(),
-                        'cartTotal' => (float) $total,
-                        'cartTotalFormatted' => wc_price($total, ['currency' => self::getShopCurrency()]),
-                    ],
-                    'comfino_logo_url' => ApiClient::getPaywallLogoUrl(),
-                    'comfino_label' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
-                    'comfino_redirect_url' => ApiService::getEndpointUrl('payment'),
-                ]
-            );
-        } catch (\Throwable|InvalidArgumentException $e) {
-            ApiClient::processApiError('Paywall error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)', $e);
-        }
-
-        return null;
     }
 
     public static function getPluginDirectory(): string
@@ -335,5 +295,49 @@ final class Main
         }
 
         return false;
+    }
+
+    public static function getPaywallOptions(float $total): array
+    {
+        return [
+            'platform' => 'woocommerce',
+            'platformName' => 'WooCommerce',
+            'platformVersion' => WC_VERSION,
+            'platformDomain' => self::getShopDomain(),
+            'pluginVersion' => PaymentGateway::VERSION,
+            'language' => self::getShopLanguage(),
+            'currency' => self::getShopCurrency(),
+            'cartTotal' => $total,
+            'cartTotalFormatted' => wc_price($total, ['currency' => self::getShopCurrency()]),
+        ];
+    }
+
+    private static function preparePaywallIframe(float $total, bool $isPaymentBlock): ?string
+    {
+        try {
+            $paywallElements = FrontendManager::getPaywallIframeRenderer()->getPaywallElements(ApiService::getEndpointUrl('paywall'));
+
+            add_action('wp_head', static function () use ($paywallElements) {
+                echo "<style>$paywallElements[frontend_style]</style>";
+                echo "<script>$paywallElements[frontend_script]</script>";
+            });
+
+            return TemplateManager::renderView(
+                'payment',
+                'front',
+                [
+                    'paywall_iframe' => $paywallElements['iframe'],
+                    'render_init_script' => !$isPaymentBlock,
+                    'paywall_options' => self::getPaywallOptions($total),
+                    'comfino_logo_url' => ApiClient::getPaywallLogoUrl(),
+                    'comfino_label' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
+                    'comfino_redirect_url' => ApiService::getEndpointUrl('payment'),
+                ]
+            );
+        } catch (\Throwable|InvalidArgumentException $e) {
+            ApiClient::processApiError('Paywall error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)', $e);
+        }
+
+        return null;
     }
 }

@@ -5,12 +5,14 @@ if (!defined('ABSPATH')) {
 }
 
 /** @var string $paywall_iframe */
+/** @var bool $render_init_script */
 /** @var array $paywall_options */
 ?>
 <div id="comfino-iframe-container"><?php echo $paywall_iframe ?></div>
 <input id="comfino-loan-amount" name="comfino_loan_amount" type="hidden" />
 <input id="comfino-loan-type" name="comfino_loan_type" type="hidden" />
 <input id="comfino-loan-term" name="comfino_loan_term" type="hidden" />
+<?php if($render_init_script) : ?>
 <script>
     window.Comfino = {
         paywallOptions: <?php echo json_encode($paywall_options); ?>,
@@ -54,3 +56,4 @@ if (!defined('ABSPATH')) {
         }
     }
 </script>
+<?php endif; ?>
