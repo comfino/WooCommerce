@@ -12,6 +12,7 @@ use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
+use Comfino\Main;
 use Comfino\Order\OrderManager;
 use Comfino\Order\StatusAdapter;
 use Comfino\PaymentGateway;
@@ -290,6 +291,11 @@ final class ApiService
                 $loanAmount += ((int) ($priceModifier * 100));
             }
         }
+
+        Main::debugLog(
+            '[PAYWALL]',
+            'renderPaywall - $loanAmount=' . $loanAmount . ', $allowedProductTypes=' . json_encode($allowedProductTypes)
+        );
 
         echo FrontendManager::getPaywallRenderer()
             ->renderPaywall(new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes));
