@@ -1,0 +1,413 @@
+# Copyright (C) 2024 Comfino
+# This file is distributed under the same license as the Comfino payment gateway plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Comfino payment gateway 4.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/comfino\n"
+"POT-Creation-Date: 2024-09-11T11:15:51+00:00\n"
+"PO-Revision-Date: 2024-09-11 15:37+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: pl_PL\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.5\n"
+"X-Domain: comfino-payment-gateway\n"
+
+#. Plugin Name of the plugin
+#: comfino-payment-gateway.php
+msgid "Comfino payment gateway"
+msgstr "Bramka płatności Comfino"
+
+#. Plugin URI of the plugin
+#: comfino-payment-gateway.php
+msgid "https://github.com/comfino/WooCommerce.git"
+msgstr "https://github.com/comfino/WooCommerce.git"
+
+#. Description of the plugin
+#: comfino-payment-gateway.php
+msgid "Comfino payment gateway for WooCommerce."
+msgstr "Bramka płatności Comfino dla WooCommerce."
+
+#. Author of the plugin
+#: comfino-payment-gateway.php
+msgid "Comfino"
+msgstr "Comfino"
+
+#. Author URI of the plugin
+#: comfino-payment-gateway.php
+msgid "https://github.com/comfino"
+msgstr "https://github.com/comfino"
+
+#: src/Main.php:137
+msgid "Settings"
+msgstr "Ustawienia"
+
+#: src/Main.php:261
+msgid ""
+"The plugin could not be activated. The minimum PHP version required for Comfino is "
+"%s. You are running %s."
+msgstr ""
+"Wtyczka nie mogła zostać włączona. Minimalna wersja PHP wymagana dla Comfino to %s. "
+"Używasz %s."
+
+#: src/Main.php:265
+msgid ""
+"The Comfino plugin has been deactivated. The minimum PHP version required for Comfino "
+"is %s. You are running %s."
+msgstr ""
+"Wtyczka Comfino została wyłączona. Minimalna wersja PHP wymagana dla Comfino to %s. "
+"Używasz %s."
+
+#: src/Main.php:273
+msgid "The plugin could not be activated. WooCommerce needs to be activated."
+msgstr "Wtyczka nie mogła zostać włączona. WooCommerce musi zostać aktywowany."
+
+#: src/Main.php:274
+msgid "The Comfino plugin has been deactivated. WooCommerce needs to be activated."
+msgstr "Wtyczka Comfino została wyłączona. WooCommerce musi zostać aktywowany."
+
+#: src/Main.php:279
+msgid ""
+"The plugin could not be activated. The minimum WooCommerce version required for "
+"Comfino is %s. You are running %s."
+msgstr ""
+"Wtyczka nie mogła zostać włączona. Minimalna wersja WooCommerce wymagana dla Comfino "
+"to %s. Używasz %s."
+
+#: src/Main.php:283
+msgid ""
+"The Comfino plugin has been deactivated. The minimum WooCommerce version required for "
+"Comfino is %s. You are running %s."
+msgstr ""
+"Wtyczka Comfino została wyłączona. Minimalna wersja WooCommerce wymagana dla Comfino "
+"to %s. Używasz %s."
+
+#: src/Main.php:291
+msgid ""
+"The plugin could not be activated. It requires PHP cURL extension which is not "
+"installed. More details: https://www.php.net/manual/en/book.curl.php"
+msgstr ""
+"Wtyczka nie mogła zostać włączona. Wymaga rozszerzenia PHP cURL, które nie jest "
+"zainstalowane. Więcej szczegółów: https://www.php.net/manual/en/book.curl.php"
+
+#: src/Main.php:293
+msgid ""
+"The Comfino plugin has been deactivated. It requires PHP cURL extension which is not "
+"installed. More details: https://www.php.net/manual/en/book.curl.php"
+msgstr ""
+"Wtyczka Comfino została wyłączona. Wymaga rozszerzenia PHP cURL, które nie jest "
+"zainstalowane. Więcej szczegółów: https://www.php.net/manual/en/book.curl.php"
+
+#: src/Order/ShopStatusManager.php:53
+msgid "Order cancellation sent to Comfino."
+msgstr "Anulowanie wniosku wysłane do Comfino."
+
+#: src/Order/ShopStatusManager.php:65
+msgid "Order reminder"
+msgstr "Przypomnienie o zamówieniu"
+
+#: src/Order/StatusAdapter.php:38
+msgid "Comfino status"
+msgstr "Status Comfino"
+
+#: src/PaymentGateway.php:32 resources/js/front/paywall.js:2
+msgid "Comfino payments"
+msgstr "Płatności Comfino"
+
+#: src/PaymentGateway.php:33
+msgid ""
+"Comfino is an innovative payment method for customers of e-commerce stores! These are "
+"installment payments, deferred (buy now, pay later) and corporate payments available "
+"on one platform with the help of quick integration. Grow your business with Comfino!"
+msgstr ""
+"Comfino to nowatorska metoda płatności dla klientów sklepów e-commerce! To płatności "
+"ratalne, odroczone (kup teraz, zapłać później) oraz płatności dla firm dostępne na "
+"jednej platformie za pomocą szybkiej integracji. Rozwijaj swój biznes z Comfino!"
+
+#: src/PaymentGateway.php:203
+msgid "Comfino create order"
+msgstr "Wniosek Comfino stworzony"
+
+#: src/PaymentGateway.php:250
+msgid "WordPress %s WooCommerce %s Comfino %s - question"
+msgstr "WordPress %s WooCommerce %s Comfino %s - pytanie"
+
+#: src/PaymentGateway.php:262
+msgid "Do you want to ask about something? Write to us at"
+msgstr "Chcesz o coś zapytać? Napisz do nas na adres"
+
+#: src/PaymentGateway.php:264
+msgid ""
+"or contact us by phone. We are waiting on the number: %s. We will answer all your "
+"questions!"
+msgstr ""
+"lub skontaktuj się telefonicznie. Czekamy pod numerem: %s. Odpowiemy na każde Twoje "
+"pytanie!"
+
+#: src/View/SettingsForm.php:30
+msgid "Field '%s' can not be empty."
+msgstr "Pole '%s' nie może być puste."
+
+#: src/View/SettingsForm.php:31
+msgid "Field '%s' has wrong numeric format."
+msgstr "Pole '%s' ma nieprawidłowy format numeryczny."
+
+#: src/View/SettingsForm.php:43 src/View/SettingsForm.php:344
+msgid "Production environment API key"
+msgstr "Klucz API środowiska produkcyjnego"
+
+#: src/View/SettingsForm.php:46
+msgid "Payment text"
+msgstr "Tekst płatności"
+
+#: src/View/SettingsForm.php:49 src/View/SettingsForm.php:51
+#: src/View/SettingsForm.php:339
+msgid "Minimal amount in cart"
+msgstr "Minimalna kwota w koszyku"
+
+#: src/View/SettingsForm.php:83 src/View/SettingsForm.php:161
+msgid "API key %s is not valid."
+msgstr "Klucz API %s jest nieprawidłowy."
+
+#: src/View/SettingsForm.php:139 src/View/SettingsForm.php:442
+msgid "Price change detection - container hierarchy level"
+msgstr "Wykrywanie zmian ceny - poziom hierarchii kontenera"
+
+#: src/View/SettingsForm.php:327 src/View/SettingsForm.php:475
+msgid "Enable/Disable"
+msgstr "Włączony/Wyłączony"
+
+#: src/View/SettingsForm.php:329
+msgid "Enable Comfino payment module"
+msgstr "Włączony moduł płatności Comfino"
+
+#: src/View/SettingsForm.php:331
+msgid "Shows Comfino payment option at the payment list."
+msgstr "Pokaż opcję płatności Comfino na liście płatności."
+
+#: src/View/SettingsForm.php:334
+msgid "Title"
+msgstr "Tytuł"
+
+#: src/View/SettingsForm.php:346
+msgid "Please enter the key provided during registration"
+msgstr "Proszę wprowadzić klucz podany podczas rejestracji"
+
+#: src/View/SettingsForm.php:349
+msgid "Show logo"
+msgstr "Wyświetlanie logo"
+
+#: src/View/SettingsForm.php:351
+msgid "Show logo on payment method"
+msgstr "Pokaż logo na metodzie płatności"
+
+#: src/View/SettingsForm.php:355
+msgid "Test environment"
+msgstr "Środowisko testowe"
+
+#: src/View/SettingsForm.php:357
+msgid "Use test environment"
+msgstr "Użyj środowiska testowego"
+
+#: src/View/SettingsForm.php:359
+msgid ""
+"The test environment allows the store owner to get acquainted with the functionality "
+"of the Comfino module. This is a Comfino simulator, thanks to which you can get to "
+"know all the advantages of this payment method. The use of the test mode is free "
+"(there are also no charges for orders)."
+msgstr ""
+"Środowisko testowe pozwala właścicielowi sklepu zapoznać się z funkcjonalnością "
+"modułu Comfino. To symulator Comfino, dzięki któremu można poznać wszystkie zalety "
+"tej metody płatności. Użycie trybu testowego jest darmowe (nie są również pobierane "
+"opłaty za zamówienia)."
+
+#: src/View/SettingsForm.php:368
+msgid "Test environment API key"
+msgstr "Klucz API środowiska testowego"
+
+#: src/View/SettingsForm.php:370
+msgid ""
+"Ask the supervisor for access to the test environment (key, login, password, link). "
+"Remember, the test key is different from the production key."
+msgstr ""
+"Poproś opiekuna o dostęp do środowiska testowego (klucz, login, hasło, link). "
+"Pamiętaj, klucz testowy różni się od klucza produkcyjnego."
+
+#: src/View/SettingsForm.php:373
+msgid "Debug mode"
+msgstr "Tryb debugowania"
+
+#: src/View/SettingsForm.php:375
+msgid "Enable debug mode"
+msgstr "Włącz tryb debugowania"
+
+#: src/View/SettingsForm.php:377
+msgid ""
+"Debug mode is useful in case of problems with Comfino payment availability. In this "
+"mode module logs details of internal process responsible for displaying of Comfino "
+"payment option at the payment methods list."
+msgstr ""
+"Tryb debugowania przydaje się w przypadku problemów z dostępnością płatności Comfino. "
+"W tym trybie moduł rejestruje szczegóły wewnętrznego procesu odpowiedzialnego za "
+"wyświetlenie opcji płatności Comfino na liście metod płatności."
+
+#: src/View/SettingsForm.php:389
+msgid "Rules for the availability of financial products"
+msgstr "Reguły dostępności produktów finansowych"
+
+#: src/View/SettingsForm.php:393
+msgid "Basic settings"
+msgstr "Ustawienia podstawowe"
+
+#: src/View/SettingsForm.php:397
+msgid "Widget enable"
+msgstr "Widget włączony"
+
+#: src/View/SettingsForm.php:399
+msgid "Enable Comfino widget"
+msgstr "Włączony widget Comfino"
+
+#: src/View/SettingsForm.php:401
+msgid "Show Comfino widget in the product."
+msgstr "Pokazuj widget Comfino w produkcie."
+
+#: src/View/SettingsForm.php:404
+msgid "Widget key"
+msgstr "Klucz widgetu"
+
+#: src/View/SettingsForm.php:408
+msgid "Widget type"
+msgstr "Typ widgetu"
+
+#: src/View/SettingsForm.php:413
+msgid "Widget offer type"
+msgstr "Typ oferty widgetu"
+
+#: src/View/SettingsForm.php:416
+msgid ""
+"Other payment methods (Installments 0%, Buy now, pay later, Installments for "
+"Companies) available after consulting a Comfino advisor (kontakt@comfino.pl)."
+msgstr ""
+"Inne sposoby płatności (Raty 0%, Kup teraz, zapłać później, Raty dla firm) dostępne "
+"po konsultacji z doradcą Comfino (kontakt@comfino.pl)."
+
+#: src/View/SettingsForm.php:419
+msgid "Advanced settings"
+msgstr "Ustawienia zaawansowane"
+
+#: src/View/SettingsForm.php:423
+msgid "Widget price element selector"
+msgstr "Selektor elementu ceny widgetu"
+
+#: src/View/SettingsForm.php:428
+msgid "Widget anchor element selector"
+msgstr "Selektor elementu zakotwiczenia widgetu"
+
+#: src/View/SettingsForm.php:433
+msgid "Price change detection - container selector"
+msgstr "Wykrywanie zmian ceny - selektor kontenera"
+
+#: src/View/SettingsForm.php:436
+msgid "Selector of observed parent element which contains price element."
+msgstr "Selektor obserwowanego elementu nadrzędnego, który zawiera element ceny."
+
+#: src/View/SettingsForm.php:445
+msgid "Hierarchy level of observed parent element relative to the price element."
+msgstr "Poziom hierarchii obserwowanego elementu nadrzędnego względem elementu ceny."
+
+#: src/View/SettingsForm.php:451
+msgid "Embedding method"
+msgstr "Metoda osadzania"
+
+#: src/View/SettingsForm.php:461
+msgid "Widget initialization code"
+msgstr "Kod inicjalizacji widgetu"
+
+#: src/View/SettingsForm.php:477
+msgid ""
+"By enabling \"Saving shopping cart\", you agree and accept <a href=\"https://cdn."
+"comfino.pl/regulamin/Regulamin-Ratowanie-Koszyka.pdf\">Regulations</a>"
+msgstr ""
+"Włączając \"Ratowanie koszyków\" zgadzasz się i akceptujesz <a href=\"https://cdn."
+"comfino.pl/regulamin/Regulamin-Ratowanie-Koszyka.pdf\">Regulamin</a>"
+
+#: src/View/SettingsForm.php:479
+msgid ""
+"With the \"Cart Rescue\" feature, you will effectively minimize the problem of "
+"abandoned carts that all sellers face. When a customer adds products to the cart but "
+"abandons it, also due to an unsuccessful payment, they will automatically receive a "
+"reminder e-mail with a direct link leading to payment. This service allows you to "
+"effectively recover potential transactions and increase order conversions."
+msgstr ""
+"Dzięki funkcji \"Ratowanie koszyków\" efektywnie zminimalizujesz problem porzuconych "
+"koszyków, z którym borykają się wszyscy sprzedawcy. Gdy klient dodaje produkty do "
+"koszyka, ale porzuca go, także z powodu nieudanej płatności, automatycznie otrzyma "
+"przypominający e-mail z bezpośrednim linkiem prowadzącym do płatności. Ta usługa "
+"pozwala skutecznie odzyskiwać potencjalne transakcje i zwiększać konwersję zamówień."
+
+#: src/View/SettingsForm.php:482
+msgid "View in payment list"
+msgstr "Wyświetlaj na liście płatności"
+
+#: src/View/SettingsForm.php:485
+msgid "Only Comfino"
+msgstr "Tylko Comfino"
+
+#: src/View/SettingsForm.php:486
+msgid "All payments"
+msgstr "Wszystkie płatności"
+
+#: views/templates/admin/configuration.php:37
+msgid "Payment settings"
+msgstr "Ustawienia płatności"
+
+#: views/templates/admin/configuration.php:38
+msgid "Sale settings"
+msgstr "Ustawienia sprzedaży"
+
+#: views/templates/admin/configuration.php:39
+msgid "Widget settings"
+msgstr "Ustawienia widgetu"
+
+#: views/templates/admin/configuration.php:40
+msgid "Abandoned cart settings"
+msgstr "Ustawienia ratowania koszyków"
+
+#: views/templates/admin/configuration.php:41
+msgid "Developer settings"
+msgstr "Ustawienia deweloperskie"
+
+#: views/templates/admin/configuration.php:42
+msgid "Plugin diagnostics"
+msgstr "Diagnostyka wtyczki"
+
+#: views/templates/admin/configuration.php:89
+msgid "Errors log"
+msgstr "Log błędów"
+
+#: views/templates/admin/configuration.php:91
+msgid "Debug log"
+msgstr "Log trybu debugowania"
+
+#. translators: %s: Customer first name
+#: views/templates/emails/failed-order.php:20
+msgid "Hi %s,"
+msgstr "Cześć %s,"
+
+#: views/templates/emails/failed-order.php:21
+msgid ""
+"We have noticed that your order number [%s] has still not been paid. The products you "
+"have selected are still waiting in your shopping cart."
+msgstr ""
+"Zauważyliśmy, że Twoje zamówienia numer [%s] nadal nie zostało opłacone. Wybrane "
+"przez Ciebie produkty wciąż czekają w koszyku zakupowym."
+
+#: views/templates/emails/failed-order.php:22
+msgid "Click on the link below and use the payments offered in the store. %s"
+msgstr "Kliknij w link poniżej i skorzystaj z oferowanych w sklepie płatności. %s"
+
+#: views/templates/emails/failed-order.php:22
+msgid "Proceed to payment"
+msgstr "Przejdź do płatności"
