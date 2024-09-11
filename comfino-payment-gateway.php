@@ -1,8 +1,8 @@
 <?php
 /*
- * Plugin Name: Comfino Payment Gateway
+ * Plugin Name: Comfino payment gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
- * Description: Comfino Payment Gateway for WooCommerce.
+ * Description: Comfino payment gateway for WooCommerce.
  * Version: 4.0.0
  * Author: Comfino
  * Author URI: https://github.com/comfino

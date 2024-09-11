@@ -420,12 +420,12 @@ final class SettingsForm
                 'type' => 'title',
             ],
             'widget_price_selector' => [
-                'title' => __('Widget price selector', 'comfino-payment-gateway'),
+                'title' => __('Widget price element selector', 'comfino-payment-gateway'),
                 'type' => 'text',
                 'default' => ConfigManager::getDefaultValue('widget_price_selector'),
             ],
             'widget_target_selector' => [
-                'title' => __('Widget target selector', 'comfino-payment-gateway'),
+                'title' => __('Widget anchor element selector', 'comfino-payment-gateway'),
                 'type' => 'text',
                 'default' => ConfigManager::getDefaultValue('widget_target_selector'),
             ],
@@ -448,7 +448,7 @@ final class SettingsForm
                 ),
             ],
             'widget_embed_method' => [
-                'title' => __('Widget embed method', 'comfino-payment-gateway'),
+                'title' => __('Embedding method', 'comfino-payment-gateway'),
                 'type' => 'select',
                 'options' => [
                     'INSERT_INTO_FIRST' => 'INSERT_INTO_FIRST',
@@ -458,7 +458,7 @@ final class SettingsForm
                 ],
             ],
             'widget_js_code' => [
-                'title' => __('Widget code', 'comfino-payment-gateway'),
+                'title' => __('Widget initialization code', 'comfino-payment-gateway'),
                 'type' => 'textarea',
                 'css' => 'width: 800px; height: 400px',
                 'default' => ConfigManager::getDefaultValue('widget_js_code'),
@@ -476,7 +476,7 @@ final class SettingsForm
                 'type' => 'checkbox',
                 'label' => __('By enabling "Saving shopping cart", you agree and accept <a href="https://cdn.comfino.pl/regulamin/Regulamin-Ratowanie-Koszyka.pdf">Regulations</a>', 'comfino-payment-gateway'),
                 'default' => ConfigManager::getDefaultValue('abandoned_cart_enabled') === true ? 'yes' : 'no',
-                'description' => __('Saving shopping cart info', 'comfino-payment-gateway'),
+                'description' => __('With the "Cart Rescue" feature, you will effectively minimize the problem of abandoned carts that all sellers face. When a customer adds products to the cart but abandons it, also due to an unsuccessful payment, they will automatically receive a reminder e-mail with a direct link leading to payment. This service allows you to effectively recover potential transactions and increase order conversions.', 'comfino-payment-gateway'),
             ],
             'abandoned_payments' => [
                 'title' => __('View in payment list', 'comfino-payment-gateway'),
