@@ -143,10 +143,20 @@ final class ApiService
 
     public static function processRequest(string $endpointName, \WP_REST_Request $request): \WP_REST_Response
     {
-        if (isset(self::$endpoints[$endpointName])) {
-            return isset(self::$requestCallbacks[$endpointName])
-                ? call_user_func(self::$requestCallbacks[$endpointName], $request)
-                : new \WP_REST_Response();
+        Main::debugLog(
+            '[REST API]',
+            sprintf(
+                'processRequest - $endpointName=%s, METHOD=%s, PARAMS=%s, HEADERS=%s, BODY=%s',
+                $endpointName,
+                $request->get_method(),
+                json_encode($request->get_params()),
+                json_encode($request->get_headers()),
+                $request->get_body()
+            )
+        );
+
+        if (isset(self::$endpoints[$endpointName], self::$requestCallbacks[$endpointName])) {
+            return call_user_func(self::$requestCallbacks[$endpointName], $request);
         }
 
         if (empty(self::getEndpointManager()->getRegisteredEndpoints())) {
