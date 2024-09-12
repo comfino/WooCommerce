@@ -4,6 +4,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+/** @var WP $wp */
 /** @var string $title */
 /** @var string $description */
 /** @var string $logo_url */
