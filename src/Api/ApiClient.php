@@ -14,7 +14,6 @@ use Comfino\ErrorLogger;
 use Comfino\Extended\Api\Client;
 use Comfino\Main;
 use Comfino\PaymentGateway;
-use Comfino\View\FrontendManager;
 use ComfinoExternal\Psr\Http\Client\NetworkExceptionInterface;
 
 if (!defined('ABSPATH')) {
