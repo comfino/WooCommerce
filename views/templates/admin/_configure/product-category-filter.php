@@ -4,6 +4,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+/** @see https://github.com/daweilv/treejs */
+
 /** @var string $tree_id */
 /** @var string $product_type */
 /** @var string $tree_nodes */
