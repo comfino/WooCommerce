@@ -145,14 +145,14 @@ final class ApiService
     {
         Main::debugLog(
             '[REST API]',
-            sprintf(
-                'processRequest - $endpointName=%s, METHOD=%s, PARAMS=%s, HEADERS=%s, BODY=%s',
-                $endpointName,
-                $request->get_method(),
-                json_encode($request->get_params()),
-                json_encode($request->get_headers()),
-                $request->get_body()
-            )
+            'processRequest',
+            [
+                '$endpointName' => $endpointName,
+                'METHOD' => $request->get_method(),
+                'PARAMS' => $request->get_params(),
+                'HEADERS' => $request->get_headers(),
+                'BODY' => $request->get_body(),
+            ]
         );
 
         if (isset(self::$endpoints[$endpointName], self::$requestCallbacks[$endpointName])) {
@@ -304,7 +304,8 @@ final class ApiService
 
         Main::debugLog(
             '[PAYWALL]',
-            'renderPaywall - $loanAmount=' . $loanAmount . ', $allowedProductTypes=' . json_encode($allowedProductTypes)
+            'renderPaywall',
+            ['$loanAmount' => $loanAmount, '$allowedProductTypes' => $allowedProductTypes]
         );
 
         echo FrontendManager::getPaywallRenderer()

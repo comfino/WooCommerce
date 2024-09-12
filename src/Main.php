@@ -174,7 +174,7 @@ final class Main
     public static function renderPaywallIframe(\WC_Cart $cart, float $total, bool $isPaymentBlock): string
     {
         if (!self::paymentIsAvailable($cart, (int) ($total * 100)) || ($paywallIframe = self::preparePaywallIframe($total, $isPaymentBlock)) === null) {
-            self::debugLog('[PAYWALL]', 'renderPaywallIframe - paymentIsAvailable=FALSE or preparePaywallIframe=NULL');
+            self::debugLog('[PAYWALL]', 'renderPaywallIframe: paymentIsAvailable=FALSE or preparePaywallIframe=NULL');
 
             return '';
         }
@@ -182,9 +182,25 @@ final class Main
         return $paywallIframe;
     }
 
-    public static function debugLog(string $debugPrefix, string $debugMessage): void
+    public static function debugLog(string $debugPrefix, string $debugMessage, ?array $parameters = null): void
     {
         if (ConfigManager::isDebugMode()) {
+            if (!empty($parameters)) {
+                $preparedParameters = [];
+
+                foreach ($parameters as $name => $value) {
+                    if (is_array($value)) {
+                        $value = json_encode($value);
+                    } elseif (is_bool($value)) {
+                        $value = ($value ? 'true' : 'false');
+                    }
+
+                    $preparedParameters[] = "$name=$value";
+                }
+
+                $debugMessage .= (($debugMessage !== '' ? ': ' : '') . implode(', ', $preparedParameters));
+            }
+
             @file_put_contents(
                 self::$debugLogFilePath,
                 '[' . date('Y-m-d H:i:s') . "] $debugPrefix: $debugMessage\n",
@@ -201,7 +217,7 @@ final class Main
     public static function paymentIsAvailable(?\WC_Cart $cart, int $loanAmount): bool
     {
         if (!ConfigManager::isEnabled() || empty(ConfigManager::getApiKey())) {
-            self::debugLog('[PAYWALL]', 'paymentIsAvailable - plugin disabled or incomplete configuration.');
+            self::debugLog('[PAYWALL]', 'paymentIsAvailable: plugin disabled or incomplete configuration.');
 
             return false;
         }

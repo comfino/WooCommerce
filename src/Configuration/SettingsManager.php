@@ -153,9 +153,15 @@ final class SettingsManager
                 $filterManager->getFilters()
             );
 
-            Main::debugLog('[PAYWALL]', 'getAllowedProductTypes - $activeFilters=' . json_encode($activeFilters));
-            Main::debugLog('[PAYWALL]', '$availableProductTypes=' . json_encode($availableProductTypes));
-            Main::debugLog('[PAYWALL]', '$allowedProductTypes=' . json_encode($allowedProductTypes));
+            Main::debugLog(
+                '[PAYWALL]',
+                'getAllowedProductTypes',
+                [
+                    '$activeFilters' => $activeFilters,
+                    '$availableProductTypes' => $availableProductTypes,
+                    '$allowedProductTypes' => $allowedProductTypes,
+                ]
+            );
         }
 
         if ($returnOnlyArray) {
