@@ -62,12 +62,12 @@ class Comfino_Payment_Gateway
         add_action('before_woocommerce_init', static function () {
             if (class_exists('Automattic\WooCommerce\Utilities\FeaturesUtil')) {
                 Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__);
-                //Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__);
+                Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__);
             }
         });
 
         // Register integration hook for WooCommerce Payment Blocks.
-        /*add_action('woocommerce_blocks_loaded', static function () {
+        add_action('woocommerce_blocks_loaded', static function () {
             if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
                 add_action(
                     'woocommerce_blocks_payment_method_type_registration',
@@ -76,7 +76,7 @@ class Comfino_Payment_Gateway
                     }
                 );
             }
-        });*/
+        });
     }
 
     /**

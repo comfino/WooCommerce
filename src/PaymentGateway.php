@@ -383,12 +383,12 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function generate_paywall_iframe(bool $isPaymentBlock): string
     {
-        return Main::renderPaywallIframe(WC()->cart, $this->get_order_total(), $isPaymentBlock);
+        return WC()->cart !== null ? Main::renderPaywallIframe(WC()->cart, $this->get_order_total(), $isPaymentBlock) : '';
     }
 
     public function get_total(): float
     {
-        return $this->get_order_total();
+        return absint(get_query_var('order-pay')) > 0 || WC()->cart !== null ? $this->get_order_total() : 0;
     }
 
     private function get_subsection(): string
