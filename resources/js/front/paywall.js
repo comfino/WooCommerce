@@ -4,6 +4,12 @@ const label = wp.htmlEntities.decodeEntities(settings.title) || wp.i18n.__('Comf
 window.Comfino = {
     isSelected: false,
     init: () => {
+        if (typeof ComfinoPaywallFrontend === 'undefined') {
+            console.warn('ComfinoPaywallFrontend is undefined.');
+
+            return;
+        }
+
         if (!ComfinoPaywallFrontend.isInitialized()) {
             let iframe = document.getElementById('comfino-paywall-container');
 

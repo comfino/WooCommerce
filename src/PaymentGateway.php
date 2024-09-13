@@ -36,6 +36,12 @@ class PaymentGateway extends \WC_Payment_Gateway
             'payments available on one platform with the help of quick integration. Grow your business with Comfino!',
             'comfino-payment-gateway'
         );
+        $this->description = __('The wide range of Comfino installment payments means fast and safe shopping without ' .
+            'burdening your budget here and now. Unexpected expenses, larger purchases, or maybe you just prefer to ' .
+            'pay later? With Comfino you have a choice! 0% installments, Convenient Installments and deferred ' .
+            'payments "Buy now, pay later". All so that you can enjoy shopping without worrying about your finances.',
+            'comfino-payment-gateway'
+        );
         $this->supports = ['products'];
 
         $this->init_form_fields();

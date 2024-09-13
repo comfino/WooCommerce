@@ -84,7 +84,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
     {
         return [
             'title' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
-            'description' => $this->get_setting('description'),
+            'description' => $this->gateway->get_description(),
             'icon' => ConfigManager::getConfigurationValue('COMFINO_SHOW_LOGO') ? ApiClient::getPaywallLogoUrl() : '',
             'iframe' => $this->is_active() ? $this->gateway->generate_paywall_iframe(true) : '',
             'paywallOptions' => array_merge(
