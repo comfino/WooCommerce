@@ -1,8 +1,20 @@
-const settings = wc.wcSettings.getSetting('comfino_data', {});
-const label = wp.htmlEntities.decodeEntities(settings.title) || wp.i18n.__('Comfino payments', 'comfino-payment-gateway');
+const comfinoSettings = wc.wcSettings.getSetting('comfino_data', {});
 
 window.Comfino = {
+    label: wp.htmlEntities.decodeEntities(comfinoSettings.title) || wp.i18n.__('Comfino payments', 'comfino-payment-gateway'),
     isSelected: false,
+    Label: () => {
+        if (comfinoSettings.icon) {
+            return wp.element.RawHTML({
+                children: Comfino.label + '<img src="' + comfinoSettings.icon + '" alt="' + Comfino.label + '" style="margin-left: 10px; vertical-align: bottom">'
+            });
+        }
+
+        return label;
+    },
+    Content: () => {
+        return wp.element.RawHTML({ children: wp.htmlEntities.decodeEntities(comfinoSettings.iframe) });
+    },
     init: () => {
         if (typeof ComfinoPaywallFrontend === 'undefined') {
             console.warn('ComfinoPaywallFrontend is undefined.');
@@ -13,7 +25,7 @@ window.Comfino = {
         if (!ComfinoPaywallFrontend.isInitialized()) {
             let iframe = document.getElementById('comfino-paywall-container');
 
-            settings.paywallOptions.onUpdateOrderPaymentState = (loanParams) => {
+            comfinoSettings.paywallOptions.onUpdateOrderPaymentState = (loanParams) => {
                 ComfinoPaywallFrontend.logEvent('updateOrderPaymentState WooCommerce (Payment Blocks)', 'debug', loanParams);
 
                 if (loanParams.loanTerm !== 0) {
@@ -23,24 +35,10 @@ window.Comfino = {
                 }
             }
 
-            ComfinoPaywallFrontend.init(null, iframe, settings.paywallOptions);
+            ComfinoPaywallFrontend.init(null, iframe, comfinoSettings.paywallOptions);
         }
     }
 }
-
-const Label = () => {
-    if (settings.icon) {
-        return wp.element.RawHTML({
-            children: label + '<img src="' + settings.icon + '" alt="' + label + '" style="margin-left: 10px; vertical-align: bottom">'
-        });
-    }
-
-    return label;
-};
-
-const Content = () => {
-    return wp.element.RawHTML({ children: wp.htmlEntities.decodeEntities(settings.iframe) });
-};
 
 wp.hooks.addAction('experimental__woocommerce_blocks-checkout-render-checkout-form', 'comfino', () => {
     if (wp.data.select('wc/store/payment').getActivePaymentMethod() === 'comfino') {
@@ -63,14 +61,14 @@ wp.hooks.addAction('experimental__woocommerce_blocks-checkout-set-active-payment
 
 wc.wcBlocksRegistry.registerPaymentMethod({
     name: 'comfino',
-    label: Object(wp.element.createElement)(Label, null),
+    label: Object(wp.element.createElement)(Comfino.Label, null),
     icon: 'money-alt',
-    content: Object(wp.element.createElement)(Content, null),
+    content: Object(wp.element.createElement)(Comfino.Content, null),
     edit: Object(wp.element.createElement)('EDIT', null),
     canMakePayment: () => true,
-    ariaLabel: label,
+    ariaLabel: Comfino.label,
     supports: {
-        features: settings.supports
+        features: comfinoSettings.supports
     }
 });
 
