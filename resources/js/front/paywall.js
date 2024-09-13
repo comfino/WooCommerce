@@ -3,6 +3,7 @@ const comfinoSettings = wc.wcSettings.getSetting('comfino_data', {});
 window.Comfino = {
     label: wp.htmlEntities.decodeEntities(comfinoSettings.title) || wp.i18n.__('Comfino payments', 'comfino-payment-gateway'),
     isSelected: false,
+    loanParams: { loanAmount: 0, loanType: '', loanTerm: 0 },
     Label: () => {
         if (comfinoSettings.icon) {
             return wp.element.RawHTML({
@@ -12,8 +13,33 @@ window.Comfino = {
 
         return label;
     },
-    Content: () => {
+    Content: (properties) => {
+        const { eventRegistration, emitResponse } = properties;
+        const { onPaymentProcessing } = eventRegistration;
+
+        wp.element.useEffect(() => {
+                const unsubscribe = onPaymentProcessing(async () => {
+                    return {
+                        type: emitResponse.responseTypes.SUCCESS,
+                        meta: {
+                            paymentMethodData: {
+                                comfino_loan_amount: Comfino.loanParams.loanAmount.toString(),
+                                comfino_loan_type: Comfino.loanParams.loanType,
+                                comfino_loan_term: Comfino.loanParams.loanTerm.toString(),
+                            }
+                        }
+                    };
+                });
+
+                return () => { unsubscribe(); };
+            },
+            [emitResponse.responseTypes.SUCCESS, onPaymentProcessing]
+        );
+
         return wp.element.RawHTML({ children: wp.htmlEntities.decodeEntities(comfinoSettings.iframe) });
+    },
+    EditContent: () => {
+        return wp.element.RawHTML({ children: 'Comfino.label' });
     },
     init: () => {
         if (typeof ComfinoPaywallFrontend === 'undefined') {
@@ -29,9 +55,9 @@ window.Comfino = {
                 ComfinoPaywallFrontend.logEvent('updateOrderPaymentState WooCommerce (Payment Blocks)', 'debug', loanParams);
 
                 if (loanParams.loanTerm !== 0) {
-                    document.getElementById('comfino-loan-amount').value = loanParams.loanAmount;
-                    document.getElementById('comfino-loan-type').value = loanParams.loanType;
-                    document.getElementById('comfino-loan-term').value = loanParams.loanTerm;
+                    Comfino.loanParams.loanAmount = loanParams.loanAmount;
+                    Comfino.loanParams.loanType = loanParams.loanType;
+                    Comfino.loanParams.loanTerm = loanParams.loanTerm;
                 }
             }
 
@@ -64,7 +90,7 @@ wc.wcBlocksRegistry.registerPaymentMethod({
     label: Object(wp.element.createElement)(Comfino.Label, null),
     icon: 'money-alt',
     content: Object(wp.element.createElement)(Comfino.Content, null),
-    edit: Object(wp.element.createElement)('EDIT', null),
+    edit: Object(wp.element.createElement)(Comfino.EditContent, null),
     canMakePayment: () => true,
     ariaLabel: Comfino.label,
     supports: {

@@ -110,6 +110,8 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function process_payment($order_id): array
     {
+        Main::debugLog('[PAYMENT GATEWAY]', 'process_payment', ['$order_id' => $order_id, '$_POST' => $_POST]);
+
         $orderId = (string) $order_id;
         $shopCart = OrderManager::getShopCart(WC()->cart, (int) sanitize_text_field($_POST['comfino_loan_amount']));
 
