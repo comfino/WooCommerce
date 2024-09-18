@@ -17,10 +17,10 @@ window.Comfino = {
     },
     Content: (properties) => {
         const { eventRegistration, emitResponse } = properties;
-        const { onPaymentProcessing } = eventRegistration;
+        const { onPaymentSetup } = eventRegistration;
 
         wp.element.useEffect(() => {
-                const unsubscribe = onPaymentProcessing(async () => {
+                const unsubscribe = onPaymentSetup(async () => {
                     return {
                         type: emitResponse.responseTypes.SUCCESS,
                         meta: {
@@ -35,7 +35,7 @@ window.Comfino = {
 
                 return () => { unsubscribe(); };
             },
-            [emitResponse.responseTypes.SUCCESS, onPaymentProcessing]
+            [emitResponse.responseTypes.SUCCESS, onPaymentSetup]
         );
 
         return wp.element.RawHTML({ children: wp.htmlEntities.decodeEntities(comfinoSettings.iframe) });
