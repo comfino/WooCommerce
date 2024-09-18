@@ -12,7 +12,7 @@ final class TemplateManager
 {
     public static function renderView(string $name, string $path, array $variables = []): string
     {
-        $templatePath = Main::getPluginDirectory() . '/views/templates';
+        $templatePath = Main::getPluginDirectory() . '/views';
 
         if (!empty($path)) {
             $templatePath .= ('/' . trim($path, ' /'));

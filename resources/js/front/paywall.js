@@ -4,10 +4,12 @@ window.Comfino = {
     label: wp.htmlEntities.decodeEntities(comfinoSettings.title) || wp.i18n.__('Comfino payments', 'comfino-payment-gateway'),
     isSelected: false,
     loanParams: { loanAmount: 0, loanType: '', loanTerm: 0 },
+    listItemContainer: null,
+    labelObserver: null,
     Label: () => {
         if (comfinoSettings.icon) {
             return wp.element.RawHTML({
-                children: Comfino.label + '<img src="' + comfinoSettings.icon + '" alt="' + Comfino.label + '" style="margin-left: 10px; vertical-align: bottom">'
+                children: Comfino.label + '<img id="comfino-gateway-logo" src="' + comfinoSettings.icon + '" alt="' + Comfino.label + '" style="margin-left: 10px; vertical-align: bottom">'
             });
         }
 
@@ -49,8 +51,6 @@ window.Comfino = {
         }
 
         if (!ComfinoPaywallFrontend.isInitialized()) {
-            let iframe = document.getElementById('comfino-paywall-container');
-
             comfinoSettings.paywallOptions.onUpdateOrderPaymentState = (loanParams) => {
                 ComfinoPaywallFrontend.logEvent('updateOrderPaymentState WooCommerce (Payment Blocks)', 'debug', loanParams);
 
@@ -59,6 +59,54 @@ window.Comfino = {
                     Comfino.loanParams.loanType = loanParams.loanType;
                     Comfino.loanParams.loanTerm = loanParams.loanTerm;
                 }
+            }
+
+            let iframe = document.getElementById('comfino-paywall-container');
+
+            if (iframe === null) {
+                let logoImgElement = document.getElementById('comfino-gateway-logo');
+
+                if (logoImgElement === null) {
+                    ComfinoPaywallFrontend.logEvent('Comfino logo not found in the payment block.', 'error');
+
+                    return;
+                }
+
+                if (Comfino.listItemContainer === null) {
+                    let initInputElement = ComfinoPaywallFrontend.findMatchingParentElement(
+                        logoImgElement,
+                        (currentElement) => (currentElement.querySelector('input[type="radio"][value="comfino"]') !== null)
+                    );
+
+                    if (initInputElement === null) {
+                        ComfinoPaywallFrontend.logEvent('Comfino initialization input element not found in the payment block.', 'error');
+
+                        return;
+                    }
+
+                    Comfino.listItemContainer = ComfinoPaywallFrontend.findMatchingParentElement(
+                        initInputElement,
+                        (currentElement) => (currentElement.tagName === 'DIV')
+                    );
+                }
+
+                if (Comfino.labelObserver === null) {
+                    Comfino.labelObserver = new MutationObserver((mutationsList, observer) => {
+                        ComfinoPaywallFrontend.logEvent('Comfino item changed.', 'debug', mutationsList, observer);
+
+                        if (Comfino.isSelected) {
+                            let iframe = document.getElementById('comfino-paywall-container');
+
+                            ComfinoPaywallFrontend.logEvent('Deferred Comfino initialization started.', 'debug', iframe);
+                            ComfinoPaywallFrontend.init(null, iframe, comfinoSettings.paywallOptions);
+                            ComfinoPaywallFrontend.executeClickLogic();
+                        }
+                    });
+
+                    Comfino.labelObserver.observe(Comfino.listItemContainer, { characterData: true, subtree: true, childList: true });
+                }
+
+                return;
             }
 
             ComfinoPaywallFrontend.init(null, iframe, comfinoSettings.paywallOptions);
@@ -75,11 +123,12 @@ wp.hooks.addAction('experimental__woocommerce_blocks-checkout-render-checkout-fo
 });
 
 wp.hooks.addAction('experimental__woocommerce_blocks-checkout-set-active-payment-method', 'comfino', (paymentMethod) => {
-    console.log(paymentMethod);
     if (paymentMethod.value === 'comfino') {
         Comfino.isSelected = true
 
-        ComfinoPaywallFrontend.executeClickLogic();
+        if (ComfinoPaywallFrontend.isInitialized()) {
+            ComfinoPaywallFrontend.executeClickLogic();
+        }
     } else {
         Comfino.isSelected = false
     }
