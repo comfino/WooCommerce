@@ -41,7 +41,7 @@ window.Comfino = {
         return wp.element.RawHTML({ children: wp.htmlEntities.decodeEntities(comfinoSettings.iframe) });
     },
     EditContent: () => {
-        return wp.element.RawHTML({ children: 'Comfino.label' });
+        return wp.element.RawHTML({ children: '<b>[Comfino Panel]</b>' });
     },
     init: () => {
         if (typeof ComfinoPaywallFrontend === 'undefined') {
@@ -140,27 +140,29 @@ wc.wcBlocksRegistry.registerPaymentMethod({
     icon: 'money-alt',
     content: Object(wp.element.createElement)(Comfino.Content, null),
     edit: Object(wp.element.createElement)(Comfino.EditContent, null),
-    canMakePayment: () => true,
-    ariaLabel: Comfino.label,
-    supports: {
-        features: comfinoSettings.supports
-    }
-});
-
-if (document.readyState === 'complete') {
-    Comfino.init();
-
-    if (Comfino.isSelected) {
-        ComfinoPaywallFrontend.executeClickLogic();
-    }
-} else {
-    document.addEventListener('readystatechange', () => {
+    canMakePayment: () => {
         if (document.readyState === 'complete') {
             Comfino.init();
 
             if (Comfino.isSelected) {
                 ComfinoPaywallFrontend.executeClickLogic();
             }
+        } else {
+            document.addEventListener('readystatechange', () => {
+                if (document.readyState === 'complete') {
+                    Comfino.init();
+
+                    if (Comfino.isSelected) {
+                        ComfinoPaywallFrontend.executeClickLogic();
+                    }
+                }
+            });
         }
-    });
-}
+
+        return true;
+    },
+    ariaLabel: Comfino.label,
+    supports: {
+        features: comfinoSettings.supports
+    }
+});
