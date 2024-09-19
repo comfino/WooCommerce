@@ -3,10 +3,13 @@ const comfinoSettings = wc.wcSettings.getSetting('comfino_data', {});
 window.Comfino = {
     label: wp.htmlEntities.decodeEntities(comfinoSettings.title) || wp.i18n.__('Comfino payments', 'comfino-payment-gateway'),
     isSelected: false,
+    isPaywallActive: false,
     loanParams: { loanAmount: 0, loanType: '', loanTerm: 0 },
     listItemContainer: null,
     labelObserver: null,
     Label: () => {
+        Comfino.isPaywallActive = true;
+
         if (comfinoSettings.icon) {
             return wp.element.RawHTML({
                 children: Comfino.label + '<img id="comfino-gateway-logo" src="' + comfinoSettings.icon + '" alt="' + Comfino.label + '" style="margin-left: 10px; vertical-align: bottom">'
@@ -44,6 +47,10 @@ window.Comfino = {
         return wp.element.RawHTML({ children: '<b>[Comfino Panel]</b>' });
     },
     init: () => {
+        if (!Comfino.isPaywallActive) {
+            return;
+        }
+
         if (typeof ComfinoPaywallFrontend === 'undefined') {
             console.warn('ComfinoPaywallFrontend is undefined.');
 
