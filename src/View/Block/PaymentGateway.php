@@ -26,6 +26,13 @@ final class PaymentGateway extends AbstractPaymentMethodType
      */
     public function initialize(): void
     {
+    }
+
+    /**
+     * Returns if this payment method should be active. If false, the scripts will not be enqueued.
+     */
+    public function is_active(): bool
+    {
         foreach (WC()->payment_gateways()->payment_gateways as $gateway) {
             if ($gateway instanceof \Comfino\PaymentGateway) {
                 $this->gateway = $gateway;
@@ -34,13 +41,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
                 break;
             }
         }
-    }
 
-    /**
-     * Returns if this payment method should be active. If false, the scripts will not be enqueued.
-     */
-    public function is_active(): bool
-    {
         return $this->gateway !== null && $this->gateway->is_available();
     }
 
