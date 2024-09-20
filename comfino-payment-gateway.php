@@ -10,7 +10,7 @@
  * Text Domain: comfino-payment-gateway
  * WC tested up to: 9.2.3
  * WC requires at least: 3.0
- * Tested up to: 6.6.1
+ * Tested up to: 6.6.2
  * Requires at least: 5.0
  * Requires PHP: 7.1
  *
@@ -66,7 +66,7 @@ class Comfino_Payment_Gateway
             }
         });
 
-        // Register integration hook for WooCommerce Payment Blocks.
+        // Register integration hook for WooCommerce Cart and Checkout Blocks.
         add_action('woocommerce_blocks_loaded', static function () {
             if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
                 add_action(

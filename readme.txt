@@ -5,7 +5,7 @@ Tags: comfino, woocommerce, gateway, payment, bank, deferred payments, installme
 WC tested up to: 9.2.3
 WC requires at least: 3.0
 Stable tag: 4.0.0
-Tested up to: 6.6.1
+Tested up to: 6.6.2
 Requires at least: 5.0
 Requires PHP: 7.1
 License: GPLv2 or later
@@ -14,6 +14,8 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 4.0.0
  * Complete plugin refactoring: redesigned plugin architecture, improved errors handling, stability and reliability, code clean up (lowest supported PHP version is 7.1).
  * Mark plugin as compatible with WooCommerce HPOS (https://woocommerce.com/document/high-performance-order-storage) function.
+ * Mark plugin as compatible with WooCommerce Cart and Checkout Blocks (https://woocommerce.com/checkout-blocks) layout.
+ * Integrate plugin with WooCommerce Cart and Checkout blocks.
 
 3.4.1
  * Change bookmark address retrieval to a solution using site_url.
