@@ -133,6 +133,10 @@ final class SettingsForm
                 break;
 
             case 'widget_settings':
+                if (empty($configurationOptionsToSave['COMFINO_WIDGET_PRICE_OBSERVER_LEVEL'])) {
+                    $configurationOptionsToSave['COMFINO_WIDGET_PRICE_OBSERVER_LEVEL'] = '0';
+                }
+
                 if (!is_numeric($configurationOptionsToSave['COMFINO_WIDGET_PRICE_OBSERVER_LEVEL'])) {
                     $errorMessages[] = sprintf(
                         $errorNumericFormatMsg,
