@@ -11,6 +11,7 @@ use Comfino\Common\Backend\RestEndpointManager;
 use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
+use Comfino\ErrorLogger;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Main;
 use Comfino\Order\OrderManager;
@@ -19,6 +20,7 @@ use Comfino\PaymentGateway;
 use Comfino\PluginShared\CacheManager;
 use Comfino\View\FrontendManager;
 use Comfino\View\TemplateManager;
+use ComfinoExternal\Psr\Cache\InvalidArgumentException;
 use ComfinoExternal\Psr\Http\Message\ServerRequestInterface;
 
 if (!defined('ABSPATH')) {
@@ -37,6 +39,8 @@ final class ApiService
     private static $requestCallbacks = [
         'availableOfferTypes' => [self::class, 'getAvailableOfferTypes'],
         'paywall' => [self::class, 'getPaywall'],
+        'paywallFrontendStyle' => [self::class, 'getPaywallFrontendStyle'],
+        'paywallFrontendScript' => [self::class, 'getPaywallFrontendScript'],
     ];
 
     public static function init(): void
@@ -56,6 +60,24 @@ final class ApiService
                 'methods' => \WP_REST_Server::READABLE,
                 'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
                     return self::processRequest('paywall', $request);
+                },
+            ],
+        ]);
+
+        self::registerWordPressApiEndpoint('paywallFrontendStyle', [
+            [
+                'methods' => \WP_REST_Server::READABLE,
+                'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
+                    return self::processRequest('paywallFrontendStyle', $request);
+                },
+            ],
+        ]);
+
+        self::registerWordPressApiEndpoint('paywallFrontendScript', [
+            [
+                'methods' => \WP_REST_Server::READABLE,
+                'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
+                    return self::processRequest('paywallFrontendScript', $request);
                 },
             ],
         ]);
@@ -127,6 +149,8 @@ final class ApiService
             'transactionStatus' => '/transactionstatus',
             'configuration' => '/configuration(?:/(?P<vkey>[a-f0-9]+))?',
             'cacheInvalidate' => '/cacheinvalidate',
+            'paywallFrontendStyle' => '/paywall/style(?:/(?P<timestamp>\d+))?',
+            'paywallFrontendScript' => '/paywall/script(?:/(?P<timestamp>\d+))?',
         ];
 
         add_action('rest_api_init', [self::class, 'init']);
@@ -310,6 +334,38 @@ final class ApiService
 
         echo FrontendManager::getPaywallRenderer()
             ->renderPaywall(new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes));
+
+        exit;
+    }
+
+    private static function getPaywallFrontendStyle(): void
+    {
+        header('Content-Type: text/css');
+        header('Cache-Control: private, max-age=31536000, immutable');
+
+        try {
+            echo FrontendManager::getPaywallIframeRenderer()->getPaywallFrontendStyle();
+        } catch (InvalidArgumentException $e) {
+            ErrorLogger::sendError('Paywall frontend style endpoint [cache]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
+        } catch (\Throwable $e) {
+            ErrorLogger::sendError('Paywall frontend style endpoint [api]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
+        }
+
+        exit;
+    }
+
+    private static function getPaywallFrontendScript(): void
+    {
+        header('Content-Type: application/javascript');
+        header('Cache-Control: private, max-age=31536000, immutable');
+
+        try {
+            echo FrontendManager::getPaywallIframeRenderer()->getPaywallFrontendScript();
+        } catch (InvalidArgumentException $e) {
+            ErrorLogger::sendError('Paywall frontend script endpoint [cache]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
+        } catch (\Throwable $e) {
+            ErrorLogger::sendError('Paywall frontend script endpoint [api]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
+        }
 
         exit;
     }
