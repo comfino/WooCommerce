@@ -71,4 +71,22 @@ final class PaywallIframeRenderer extends FrontendRenderer
             $this->getFrontendFragments(self::PAYWALL_IFRAME_FRAGMENTS)
         );
     }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws InvalidArgumentException
+     */
+    public function getPaywallFrontendStyle(): string
+    {
+        return $this->getFrontendFragments(self::PAYWALL_IFRAME_FRAGMENTS)['frontend_style'] ?? '';
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws InvalidArgumentException
+     */
+    public function getPaywallFrontendScript(): string
+    {
+        return $this->getFrontendFragments(self::PAYWALL_IFRAME_FRAGMENTS)['frontend_script'] ?? '';
+    }
 }
