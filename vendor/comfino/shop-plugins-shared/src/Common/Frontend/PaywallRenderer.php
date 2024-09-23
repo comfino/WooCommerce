@@ -70,13 +70,17 @@ final class PaywallRenderer extends FrontendRenderer
                         $storedCacheMTime = (int) $matches[1];
 
                         if (isset($fragmentsCacheMTime[$fragmentName]) && $storedCacheMTime < $fragmentsCacheMTime[$fragmentName]) {
+                            // Stored contents timestamp are less than received from Cache-MTime header - add this item to the list of keys to delete from cache.
                             $fragmentsCacheKeysToDelete[] = $fragmentName;
                         }
                     }
                 }
 
                 if (count($fragmentsCacheKeysToDelete) > 0) {
+                    // Delete specified cache items to reload actual versions of resources.
                     $this->deleteFragmentsCacheEntries($fragmentsCacheKeysToDelete, $this->client->getApiLanguage());
+                    // Reload deleted items from API.
+                    $fragments = array_merge($fragments, $this->getFrontendFragments($fragmentsCacheKeysToDelete));
                 }
             }
 

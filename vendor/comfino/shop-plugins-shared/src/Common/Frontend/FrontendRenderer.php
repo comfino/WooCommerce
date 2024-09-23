@@ -36,6 +36,9 @@ abstract class FrontendRenderer
     private $configurationUrl;
     private const PAYWALL_GUI_FRAGMENTS = ['template', 'style', 'script', 'frontend_style', 'frontend_script'];
 
+    /** @var string[] */
+    private static $fragments = [];
+
     public function __construct(Client $client, TaggableCacheItemPoolInterface $cache, ?string $cacheInvalidateUrl = null, ?string $configurationUrl = null)
     {
         $this->client = $client;
@@ -60,6 +63,12 @@ abstract class FrontendRenderer
         $fragments = [];
 
         foreach ($fragmentsToGet as $fragmentName) {
+            if (isset(self::$fragments[$fragmentName])) {
+                $fragments[$fragmentName] = self::$fragments[$fragmentName];
+
+                continue;
+            }
+
             try {
                 $itemKey = $this->getItemKey($fragmentName, $language);
 
@@ -80,6 +89,8 @@ abstract class FrontendRenderer
             }
 
             $this->savePaywallFragments($fragments, $fragmentsCacheTtl, $language);
+
+            self::$fragments = array_merge(self::$fragments, $fragments);
         }
 
         return $fragments;
@@ -96,6 +107,10 @@ abstract class FrontendRenderer
                 return $this->getItemKey($fragmentName, $language);
             }, $cacheKeysToDelete));
         } catch (InvalidArgumentException $exception) {
+        }
+
+        foreach ($cacheKeysToDelete as $cacheKeyToDelete) {
+            unset(self::$fragments[$cacheKeyToDelete]);
         }
     }
 
