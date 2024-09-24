@@ -332,17 +332,16 @@ final class Main
     {
         try {
             $renderer = FrontendManager::getPaywallIframeRenderer();
+
             $paywallElements = $renderer->getPaywallElements(ApiService::getEndpointUrl('paywall'));
 
-            add_action('wp_enqueue_scripts', static function () use ($renderer) {
-                $styleTimestamp = $renderer->getPaywallFrontendStyleTimestamp();
-                $scriptTimestamp = $renderer->getPaywallFrontendScriptTimestamp();
-                $paywallFrontendStyleUrl = ApiService::getEndpointUrl('paywallFrontendStyle') . ($styleTimestamp !== 0 ? "/$styleTimestamp" : '');
-                $paywallFrontendScriptUrl = ApiService::getEndpointUrl('paywallFrontendScript') . ($scriptTimestamp !== 0 ? "/$scriptTimestamp" : '');
+            $styleTimestamp = $renderer->getPaywallFrontendStyleTimestamp();
+            $scriptTimestamp = $renderer->getPaywallFrontendScriptTimestamp();
+            $paywallFrontendStyleUrl = ApiService::getEndpointUrl('paywallFrontendStyle') . ($styleTimestamp !== 0 ? "/$styleTimestamp" : '');
+            $paywallFrontendScriptUrl = ApiService::getEndpointUrl('paywallFrontendScript') . ($scriptTimestamp !== 0 ? "/$scriptTimestamp" : '');
 
-                wp_enqueue_style('comfino-frontend-style', $paywallFrontendStyleUrl, [], null);
-                wp_enqueue_script('comfino-frontend-script', $paywallFrontendScriptUrl, [], null);
-            });
+            wp_enqueue_style('comfino-frontend-style', $paywallFrontendStyleUrl, [], null);
+            wp_enqueue_script('comfino-frontend-script', $paywallFrontendScriptUrl, [], null);
 
             return TemplateManager::renderView(
                 'payment',
