@@ -29,31 +29,34 @@ if (!defined('ABSPATH')) {
             }
 
             ComfinoPaywallFrontend.init(frontendInitElement, iframe, Comfino.paywallOptions);
+        },
+        setup: () => {
+            if (ComfinoPaywallFrontend.isInitialized()) {
+                Comfino.init();
+            } else {
+                Comfino.paywallOptions.onUpdateOrderPaymentState = (loanParams) => {
+                    ComfinoPaywallFrontend.logEvent('updateOrderPaymentState WooCommerce', 'debug', loanParams);
+
+                    if (loanParams.loanTerm !== 0) {
+                        document.getElementById('comfino-loan-amount').value = loanParams.loanAmount;
+                        document.getElementById('comfino-loan-type').value = loanParams.loanType;
+                        document.getElementById('comfino-loan-term').value = loanParams.loanTerm;
+                    }
+                }
+
+                Comfino.init();
+            }
         }
     }
 
-    if (ComfinoPaywallFrontend.isInitialized()) {
-        Comfino.init();
+    if (document.readyState === 'complete') {
+        Comfino.setup();
     } else {
-        Comfino.paywallOptions.onUpdateOrderPaymentState = (loanParams) => {
-            ComfinoPaywallFrontend.logEvent('updateOrderPaymentState WooCommerce', 'debug', loanParams);
-
-            if (loanParams.loanTerm !== 0) {
-                document.getElementById('comfino-loan-amount').value = loanParams.loanAmount;
-                document.getElementById('comfino-loan-type').value = loanParams.loanType;
-                document.getElementById('comfino-loan-term').value = loanParams.loanTerm;
+        document.addEventListener('readystatechange', () => {
+            if (document.readyState === 'complete') {
+                Comfino.setup();
             }
-        }
-
-        if (document.readyState === 'complete') {
-            Comfino.init();
-        } else {
-            document.addEventListener('readystatechange', () => {
-                if (document.readyState === 'complete') {
-                    Comfino.init();
-                }
-            });
-        }
+        });
     }
 </script>
 <?php endif; ?>
