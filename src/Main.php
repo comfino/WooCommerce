@@ -23,6 +23,8 @@ final class Main
     private const MIN_PHP_VERSION = '7.1.0';
     private const MIN_WC_VERSION = '3.0.0';
 
+    /** @var bool */
+    private static $initialized = false;
     /** @var string */
     private static $pluginDirectory;
     /** @var string */
@@ -32,14 +34,16 @@ final class Main
     /** @var string */
     private static $debugLogFilePath;
 
-    public static function init(string $pluginDirectory, string $pluginFile): void
+    public static function init(): void
     {
-        self::$pluginDirectory = $pluginDirectory;
-        self::$pluginFile = $pluginFile;
-        self::$errorLogger = ErrorLogger::getLoggerInstance($pluginFile);
-        self::$debugLogFilePath = "$pluginDirectory/var/log/debug.log";
+        if (self::$initialized) {
+            return;
+        }
 
-        ErrorLogger::init($pluginDirectory, $pluginFile);
+        self::$errorLogger = ErrorLogger::getLoggerInstance(self::$pluginFile);
+        self::$debugLogFilePath = self::$pluginDirectory . '/var/log/debug.log';
+
+        ErrorLogger::init(self::$pluginDirectory, self::$pluginFile);
 
         /*
          * Loads the cart, session and notices should it be required.
@@ -131,7 +135,7 @@ final class Main
             }
         });
 
-        add_filter('plugin_action_links_' . plugin_basename($pluginFile), static function (array $links): array {
+        add_filter('plugin_action_links_' . plugin_basename(self::$pluginFile), static function (array $links): array {
             return array_merge([
                 '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino') . '">' .
                 __('Settings', 'comfino-payment-gateway') . '</a>',
@@ -152,13 +156,15 @@ final class Main
             return $statuses;
         });
 
-        load_plugin_textdomain('comfino-payment-gateway', false, basename($pluginDirectory) . '/languages');
+        load_plugin_textdomain('comfino-payment-gateway', false, basename(self::$pluginDirectory) . '/languages');
 
         // Initialize cache system.
         CacheManager::init(dirname(__DIR__) . '/var');
 
         // Register module API endpoints.
         ApiService::registerEndpoints();
+
+        self::$initialized = true;
     }
 
     public static function uninstall(string $pluginDirectory, string $pluginFile): bool
@@ -237,9 +243,19 @@ final class Main
         return self::$pluginDirectory;
     }
 
+    public static function setPluginDirectory(string $pluginDirectory): void
+    {
+        self::$pluginDirectory = $pluginDirectory;
+    }
+
     public static function getPluginFile(): string
     {
         return self::$pluginFile;
+    }
+
+    public static function setPluginFile(string $pluginFile): void
+    {
+        self::$pluginFile = $pluginFile;
     }
 
     public static function getShopDomain(): string

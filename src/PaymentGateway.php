@@ -44,6 +44,13 @@ class PaymentGateway extends \WC_Payment_Gateway
         );
         $this->supports = ['products'];
 
+        if (is_admin() && strpos($_SERVER['REQUEST_URI'], 'comfino') === false) {
+            return;
+        }
+
+        // Initialize Comfino plugin.
+        Main::init();
+
         $this->init_form_fields();
         $this->init_settings();
 

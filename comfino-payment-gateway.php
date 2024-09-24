@@ -77,6 +77,9 @@ class Comfino_Payment_Gateway
                 );
             }
         });
+
+        Comfino\Main::setPluginDirectory(__DIR__);
+        Comfino\Main::setPluginFile(__FILE__);
     }
 
     /**
@@ -119,7 +122,7 @@ class Comfino_Payment_Gateway
         }
 
         // Initialize Comfino plugin.
-        Comfino\Main::init(__DIR__, __FILE__);
+        Comfino\Main::init();
     }
 
     /**
