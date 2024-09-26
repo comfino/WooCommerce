@@ -314,7 +314,7 @@ final class ConfigManager
 
     public static function deleteConfigurationValues(): bool
     {
-        return delete_option(self::$storageAdapter->get_option_key());
+        return delete_option(self::getStorageAdapter()->get_option_key());
     }
 
     public static function updateWidgetCode(string $lastWidgetCodeHash): void
@@ -444,6 +444,11 @@ final class ConfigManager
             'COMFINO_API_CONNECT_TIMEOUT' => 1,
             'COMFINO_API_TIMEOUT' => 3,
         ];
+    }
+
+    private static function getStorageAdapter(): StorageAdapterInterface
+    {
+        return self::$storageAdapter ?? (self::$storageAdapter = new StorageAdapter());
     }
 
     private static function getProductData(?int $productId): array
