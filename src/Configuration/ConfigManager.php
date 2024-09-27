@@ -319,7 +319,7 @@ final class ConfigManager
 
     public static function updateWidgetCode(string $lastWidgetCodeHash): void
     {
-        ErrorLogger::init(Main::getPluginDirectory(), Main::getPluginFile());
+        ErrorLogger::init(Main::getPluginDirectory());
 
         try {
             $initialWidgetCode = self::getInitialWidgetCode();

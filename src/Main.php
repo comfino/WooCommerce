@@ -40,10 +40,10 @@ final class Main
             return;
         }
 
-        self::$errorLogger = ErrorLogger::getLoggerInstance(self::$pluginFile);
+        self::$errorLogger = ErrorLogger::getLoggerInstance();
         self::$debugLogFilePath = self::$pluginDirectory . '/var/log/debug.log';
 
-        ErrorLogger::init(self::$pluginDirectory, self::$pluginFile);
+        ErrorLogger::init(self::$pluginDirectory);
 
         /*
          * Loads the cart, session and notices should it be required.
@@ -167,11 +167,11 @@ final class Main
         self::$initialized = true;
     }
 
-    public static function uninstall(string $pluginDirectory, string $pluginFile): bool
+    public static function uninstall(string $pluginDirectory): bool
     {
         ConfigManager::deleteConfigurationValues();
 
-        ErrorLogger::init($pluginDirectory, $pluginFile);
+        ErrorLogger::init($pluginDirectory);
         ApiClient::getInstance()->notifyPluginRemoval();
 
         return true;
