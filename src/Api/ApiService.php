@@ -45,6 +45,21 @@ final class ApiService
 
     public static function init(): void
     {
+        add_filter(
+            'rest_pre_serve_request',
+            static function (bool $served, \WP_HTTP_Response $result, \WP_REST_Request $request, \WP_REST_Server $server): bool {
+                if (strpos($request->get_route(), 'comfino') !== false) {
+                    echo $result->get_data();
+
+                    $served = true;
+                }
+
+                return $served;
+            },
+            10,
+            4
+        );
+
         self::registerWordPressApiEndpoint('availableOfferTypes', [
             [
                 'methods' => \WP_REST_Server::READABLE,
