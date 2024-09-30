@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comfino payment gateway 4.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/comfino\n"
-"POT-Creation-Date: 2024-09-20T06:33:57+00:00\n"
-"PO-Revision-Date: 2024-09-20 08:38+0200\n"
+"POT-Creation-Date: 2024-09-30T11:19:23+00:00\n"
+"PO-Revision-Date: 2024-09-30 13:27+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: pl_PL\n"
@@ -40,11 +40,11 @@ msgstr "Comfino"
 msgid "https://github.com/comfino"
 msgstr "https://github.com/comfino"
 
-#: src/Main.php:137
+#: src/Main.php:141
 msgid "Settings"
 msgstr "Ustawienia"
 
-#: src/Main.php:277
+#: src/Main.php:293
 msgid ""
 "The plugin could not be activated. The minimum PHP version required for "
 "Comfino is %s. You are running %s."
@@ -52,7 +52,7 @@ msgstr ""
 "Wtyczka nie mogła zostać włączona. Minimalna wersja PHP wymagana dla Comfino "
 "to %s. Używasz %s."
 
-#: src/Main.php:281
+#: src/Main.php:297
 msgid ""
 "The Comfino plugin has been deactivated. The minimum PHP version required "
 "for Comfino is %s. You are running %s."
@@ -60,16 +60,16 @@ msgstr ""
 "Wtyczka Comfino została wyłączona. Minimalna wersja PHP wymagana dla Comfino "
 "to %s. Używasz %s."
 
-#: src/Main.php:289
+#: src/Main.php:305
 msgid "The plugin could not be activated. WooCommerce needs to be activated."
 msgstr "Wtyczka nie mogła zostać włączona. WooCommerce musi zostać aktywowany."
 
-#: src/Main.php:290
+#: src/Main.php:306
 msgid ""
 "The Comfino plugin has been deactivated. WooCommerce needs to be activated."
 msgstr "Wtyczka Comfino została wyłączona. WooCommerce musi zostać aktywowany."
 
-#: src/Main.php:295
+#: src/Main.php:311
 msgid ""
 "The plugin could not be activated. The minimum WooCommerce version required "
 "for Comfino is %s. You are running %s."
@@ -77,7 +77,7 @@ msgstr ""
 "Wtyczka nie mogła zostać włączona. Minimalna wersja WooCommerce wymagana dla "
 "Comfino to %s. Używasz %s."
 
-#: src/Main.php:299
+#: src/Main.php:315
 msgid ""
 "The Comfino plugin has been deactivated. The minimum WooCommerce version "
 "required for Comfino is %s. You are running %s."
@@ -85,7 +85,7 @@ msgstr ""
 "Wtyczka Comfino została wyłączona. Minimalna wersja WooCommerce wymagana dla "
 "Comfino to %s. Używasz %s."
 
-#: src/Main.php:307
+#: src/Main.php:323
 msgid ""
 "The plugin could not be activated. It requires PHP cURL extension which is "
 "not installed. More details: https://www.php.net/manual/en/book.curl.php"
@@ -94,7 +94,7 @@ msgstr ""
 "jest zainstalowane. Więcej szczegółów: https://www.php.net/manual/en/book."
 "curl.php"
 
-#: src/Main.php:309
+#: src/Main.php:325
 msgid ""
 "The Comfino plugin has been deactivated. It requires PHP cURL extension "
 "which is not installed. More details: https://www.php.net/manual/en/book."
@@ -147,19 +147,19 @@ msgstr ""
 "Niskie Raty oraz płatności odroczone \"Kup teraz, zapłać później\". Wszystko "
 "po to, abyś mógł cieszyć się zakupami bez obawy o finanse."
 
-#: src/PaymentGateway.php:211
+#: src/PaymentGateway.php:218
 msgid "Comfino create order"
 msgstr "Wniosek Comfino stworzony"
 
-#: src/PaymentGateway.php:258
+#: src/PaymentGateway.php:265
 msgid "WordPress %s WooCommerce %s Comfino %s - question"
 msgstr "WordPress %s WooCommerce %s Comfino %s - pytanie"
 
-#: src/PaymentGateway.php:270
+#: src/PaymentGateway.php:277
 msgid "Do you want to ask about something? Write to us at"
 msgstr "Chcesz o coś zapytać? Napisz do nas na adres"
 
-#: src/PaymentGateway.php:272
+#: src/PaymentGateway.php:279
 msgid ""
 "or contact us by phone. We are waiting on the number: %s. We will answer all "
 "your questions!"
@@ -175,7 +175,7 @@ msgstr "Pole '%s' nie może być puste."
 msgid "Field '%s' has wrong numeric format."
 msgstr "Pole '%s' ma nieprawidłowy format numeryczny."
 
-#: src/View/SettingsForm.php:43 src/View/SettingsForm.php:344
+#: src/View/SettingsForm.php:43 src/View/SettingsForm.php:348
 msgid "Production environment API key"
 msgstr "Klucz API środowiska produkcyjnego"
 
@@ -184,55 +184,55 @@ msgid "Payment text"
 msgstr "Tekst płatności"
 
 #: src/View/SettingsForm.php:49 src/View/SettingsForm.php:51
-#: src/View/SettingsForm.php:339
+#: src/View/SettingsForm.php:343
 msgid "Minimal amount in cart"
 msgstr "Minimalna kwota w koszyku"
 
-#: src/View/SettingsForm.php:83 src/View/SettingsForm.php:161
+#: src/View/SettingsForm.php:83 src/View/SettingsForm.php:165
 msgid "API key %s is not valid."
 msgstr "Klucz API %s jest nieprawidłowy."
 
-#: src/View/SettingsForm.php:139 src/View/SettingsForm.php:442
+#: src/View/SettingsForm.php:143 src/View/SettingsForm.php:457
 msgid "Price change detection - container hierarchy level"
 msgstr "Wykrywanie zmian ceny - poziom hierarchii kontenera"
 
-#: src/View/SettingsForm.php:327 src/View/SettingsForm.php:475
+#: src/View/SettingsForm.php:331 src/View/SettingsForm.php:490
 msgid "Enable/Disable"
 msgstr "Włączony/Wyłączony"
 
-#: src/View/SettingsForm.php:329
+#: src/View/SettingsForm.php:333
 msgid "Enable Comfino payment module"
 msgstr "Włączony moduł płatności Comfino"
 
-#: src/View/SettingsForm.php:331
+#: src/View/SettingsForm.php:335
 msgid "Shows Comfino payment option at the payment list."
 msgstr "Pokaż opcję płatności Comfino na liście płatności."
 
-#: src/View/SettingsForm.php:334
+#: src/View/SettingsForm.php:338
 msgid "Title"
 msgstr "Tytuł"
 
-#: src/View/SettingsForm.php:346
+#: src/View/SettingsForm.php:350
 msgid "Please enter the key provided during registration"
 msgstr "Proszę wprowadzić klucz podany podczas rejestracji"
 
-#: src/View/SettingsForm.php:349
+#: src/View/SettingsForm.php:353
 msgid "Show logo"
 msgstr "Wyświetlanie logo"
 
-#: src/View/SettingsForm.php:351
+#: src/View/SettingsForm.php:355
 msgid "Show logo on payment method"
 msgstr "Pokaż logo na metodzie płatności"
 
-#: src/View/SettingsForm.php:355
+#: src/View/SettingsForm.php:359
 msgid "Test environment"
 msgstr "Środowisko testowe"
 
-#: src/View/SettingsForm.php:357
+#: src/View/SettingsForm.php:361
 msgid "Use test environment"
 msgstr "Użyj środowiska testowego"
 
-#: src/View/SettingsForm.php:359
+#: src/View/SettingsForm.php:363
 msgid ""
 "The test environment allows the store owner to get acquainted with the "
 "functionality of the Comfino module. This is a Comfino simulator, thanks to "
@@ -244,11 +244,11 @@ msgstr ""
 "poznać wszystkie zalety tej metody płatności. Użycie trybu testowego jest "
 "darmowe (nie są również pobierane opłaty za zamówienia)."
 
-#: src/View/SettingsForm.php:368
+#: src/View/SettingsForm.php:372
 msgid "Test environment API key"
 msgstr "Klucz API środowiska testowego"
 
-#: src/View/SettingsForm.php:370
+#: src/View/SettingsForm.php:374
 msgid ""
 "Ask the supervisor for access to the test environment (key, login, password, "
 "link). Remember, the test key is different from the production key."
@@ -256,15 +256,15 @@ msgstr ""
 "Poproś opiekuna o dostęp do środowiska testowego (klucz, login, hasło, "
 "link). Pamiętaj, klucz testowy różni się od klucza produkcyjnego."
 
-#: src/View/SettingsForm.php:373
+#: src/View/SettingsForm.php:377
 msgid "Debug mode"
 msgstr "Tryb debugowania"
 
-#: src/View/SettingsForm.php:375
+#: src/View/SettingsForm.php:379
 msgid "Enable debug mode"
 msgstr "Włącz tryb debugowania"
 
-#: src/View/SettingsForm.php:377
+#: src/View/SettingsForm.php:381
 msgid ""
 "Debug mode is useful in case of problems with Comfino payment availability. "
 "In this mode module logs details of internal process responsible for "
@@ -276,38 +276,57 @@ msgstr ""
 "płatności."
 
 #: src/View/SettingsForm.php:389
+msgid "Service mode"
+msgstr "Tryb serwisowy"
+
+#: src/View/SettingsForm.php:391
+msgid "Enable service mode"
+msgstr "Włącz tryb serwisowy"
+
+#: src/View/SettingsForm.php:393
+msgid ""
+"Service mode is useful in testing Comfino payment gateway without sharing it "
+"with customers. In this mode Comfino payment method is visible only for "
+"selected sessions and debug logs are collected only for these sessions."
+msgstr ""
+"Tryb serwisowy jest przydatny do testowania bramki płatniczej Comfino bez "
+"konieczności udostępniania jej klientom. W tym trybie metoda płatności "
+"Comfino widoczna jest tylko dla wybranych sesji, a logi debugowania są "
+"zbierane wyłącznie dla tych sesji."
+
+#: src/View/SettingsForm.php:404
 msgid "Rules for the availability of financial products"
 msgstr "Reguły dostępności produktów finansowych"
 
-#: src/View/SettingsForm.php:393
+#: src/View/SettingsForm.php:408
 msgid "Basic settings"
 msgstr "Ustawienia podstawowe"
 
-#: src/View/SettingsForm.php:397
+#: src/View/SettingsForm.php:412
 msgid "Widget enable"
 msgstr "Widget włączony"
 
-#: src/View/SettingsForm.php:399
+#: src/View/SettingsForm.php:414
 msgid "Enable Comfino widget"
 msgstr "Włączony widget Comfino"
 
-#: src/View/SettingsForm.php:401
+#: src/View/SettingsForm.php:416
 msgid "Show Comfino widget in the product."
 msgstr "Pokazuj widget Comfino w produkcie."
 
-#: src/View/SettingsForm.php:404
+#: src/View/SettingsForm.php:419
 msgid "Widget key"
 msgstr "Klucz widgetu"
 
-#: src/View/SettingsForm.php:408
+#: src/View/SettingsForm.php:423
 msgid "Widget type"
 msgstr "Typ widgetu"
 
-#: src/View/SettingsForm.php:413
+#: src/View/SettingsForm.php:428
 msgid "Widget offer type"
 msgstr "Typ oferty widgetu"
 
-#: src/View/SettingsForm.php:416
+#: src/View/SettingsForm.php:431
 msgid ""
 "Other payment methods (Installments 0%, Buy now, pay later, Installments for "
 "Companies) available after consulting a Comfino advisor (kontakt@comfino.pl)."
@@ -315,42 +334,42 @@ msgstr ""
 "Inne sposoby płatności (Raty 0%, Kup teraz, zapłać później, Raty dla firm) "
 "dostępne po konsultacji z doradcą Comfino (kontakt@comfino.pl)."
 
-#: src/View/SettingsForm.php:419
+#: src/View/SettingsForm.php:434
 msgid "Advanced settings"
 msgstr "Ustawienia zaawansowane"
 
-#: src/View/SettingsForm.php:423
+#: src/View/SettingsForm.php:438
 msgid "Widget price element selector"
 msgstr "Selektor elementu ceny widgetu"
 
-#: src/View/SettingsForm.php:428
+#: src/View/SettingsForm.php:443
 msgid "Widget anchor element selector"
 msgstr "Selektor elementu zakotwiczenia widgetu"
 
-#: src/View/SettingsForm.php:433
+#: src/View/SettingsForm.php:448
 msgid "Price change detection - container selector"
 msgstr "Wykrywanie zmian ceny - selektor kontenera"
 
-#: src/View/SettingsForm.php:436
+#: src/View/SettingsForm.php:451
 msgid "Selector of observed parent element which contains price element."
 msgstr ""
 "Selektor obserwowanego elementu nadrzędnego, który zawiera element ceny."
 
-#: src/View/SettingsForm.php:445
+#: src/View/SettingsForm.php:460
 msgid ""
 "Hierarchy level of observed parent element relative to the price element."
 msgstr ""
 "Poziom hierarchii obserwowanego elementu nadrzędnego względem elementu ceny."
 
-#: src/View/SettingsForm.php:451
+#: src/View/SettingsForm.php:466
 msgid "Embedding method"
 msgstr "Metoda osadzania"
 
-#: src/View/SettingsForm.php:461
+#: src/View/SettingsForm.php:476
 msgid "Widget initialization code"
 msgstr "Kod inicjalizacji widgetu"
 
-#: src/View/SettingsForm.php:477
+#: src/View/SettingsForm.php:492
 msgid ""
 "By enabling \"Saving shopping cart\", you agree and accept <a href=\"https://"
 "cdn.comfino.pl/regulamin/Regulamin-Ratowanie-Koszyka.pdf\">Regulations</a>"
@@ -359,7 +378,7 @@ msgstr ""
 "\"https://cdn.comfino.pl/regulamin/Regulamin-Ratowanie-Koszyka.pdf"
 "\">Regulamin</a>"
 
-#: src/View/SettingsForm.php:479
+#: src/View/SettingsForm.php:494
 msgid ""
 "With the \"Cart Rescue\" feature, you will effectively minimize the problem "
 "of abandoned carts that all sellers face. When a customer adds products to "
@@ -375,15 +394,15 @@ msgstr ""
 "linkiem prowadzącym do płatności. Ta usługa pozwala skutecznie odzyskiwać "
 "potencjalne transakcje i zwiększać konwersję zamówień."
 
-#: src/View/SettingsForm.php:482
+#: src/View/SettingsForm.php:497
 msgid "View in payment list"
 msgstr "Wyświetlaj na liście płatności"
 
-#: src/View/SettingsForm.php:485
+#: src/View/SettingsForm.php:500
 msgid "Only Comfino"
 msgstr "Tylko Comfino"
 
-#: src/View/SettingsForm.php:486
+#: src/View/SettingsForm.php:501
 msgid "All payments"
 msgstr "Wszystkie płatności"
 

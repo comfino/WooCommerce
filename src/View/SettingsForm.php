@@ -262,7 +262,7 @@ final class SettingsForm
             case 'developer_settings':
                 $formFields = array_intersect_key(
                     self::getFormFieldsDefinitions(),
-                    array_flip(['sandbox_mode', 'sandbox_key', 'debug_mode'])
+                    array_flip(['sandbox_mode', 'sandbox_key', 'debug_mode', 'service_mode'])
                 );
                 break;
         }
@@ -382,6 +382,17 @@ final class SettingsForm
                     'Debug mode is useful in case of problems with Comfino payment availability. ' .
                     'In this mode module logs details of internal process responsible for ' .
                     'displaying of Comfino payment option at the payment methods list.',
+                    'comfino-payment-gateway'
+                ),
+            ],
+            'service_mode' => [
+                'title' => __('Service mode', 'comfino-payment-gateway'),
+                'type' => 'checkbox',
+                'label' => __('Enable service mode', 'comfino-payment-gateway'),
+                'default' => ConfigManager::getDefaultValue('service_mode') === true ? 'yes' : 'no',
+                'description' => __(
+                    'Service mode is useful in testing Comfino payment gateway without sharing it with customers. ' .
+                    'In this mode Comfino payment method is visible only for selected sessions and debug logs are collected only for these sessions.',
                     'comfino-payment-gateway'
                 ),
             ],

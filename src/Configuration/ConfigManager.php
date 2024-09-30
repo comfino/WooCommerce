@@ -29,6 +29,7 @@ final class ConfigManager
         'COMFINO_SHOW_LOGO' => 'show_logo',
         'COMFINO_IS_SANDBOX' => 'sandbox_mode',
         'COMFINO_DEBUG' => 'debug_mode',
+        'COMFINO_SERVICE_MODE' => 'service_mode',
         'COMFINO_SANDBOX_API_KEY' => 'sandbox_key',
         'COMFINO_PRODUCT_CATEGORY_FILTERS' => 'product_category_filters',
         'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => 'cat_filter_avail_prod_types',
@@ -84,6 +85,7 @@ final class ConfigManager
             'COMFINO_IS_SANDBOX' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_SANDBOX_API_KEY' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_DEBUG' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
+            'COMFINO_SERVICE_MODE' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
         ],
         'hidden_settings' => [
             'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
@@ -104,6 +106,7 @@ final class ConfigManager
         'COMFINO_MINIMAL_CART_AMOUNT',
         'COMFINO_IS_SANDBOX',
         'COMFINO_DEBUG',
+        'COMFINO_SERVICE_MODE',
         'COMFINO_PRODUCT_CATEGORY_FILTERS',
         'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES',
         'COMFINO_WIDGET_ENABLED',
@@ -252,6 +255,11 @@ final class ConfigManager
     public static function isDebugMode(): bool
     {
         return self::getInstance()->getConfigurationValue('COMFINO_DEBUG') ?? false;
+    }
+
+    public static function isServiceMode(): bool
+    {
+        return self::getInstance()->getConfigurationValue('COMFINO_SERVICE_MODE') ?? false;
     }
 
     public static function isAbandonedCartEnabled(): bool
@@ -422,6 +430,7 @@ final class ConfigManager
             'COMFINO_MINIMAL_CART_AMOUNT' => 30,
             'COMFINO_IS_SANDBOX' => false,
             'COMFINO_DEBUG' => false,
+            'COMFINO_SERVICE_MODE' => false,
             'COMFINO_PRODUCT_CATEGORY_FILTERS' => '',
             'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => 'INSTALLMENTS_ZERO_PERCENT,PAY_LATER',
             'COMFINO_WIDGET_ENABLED' => false,
