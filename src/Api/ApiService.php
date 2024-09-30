@@ -48,7 +48,7 @@ final class ApiService
         add_filter(
             'rest_pre_serve_request',
             static function (bool $served, \WP_HTTP_Response $result, \WP_REST_Request $request, \WP_REST_Server $server): bool {
-                if (strpos($request->get_route(), 'comfino') !== false) {
+                if (is_string($result->get_data()) && strpos($request->get_route(), 'comfino') !== false) {
                     echo $result->get_data();
 
                     $served = true;
