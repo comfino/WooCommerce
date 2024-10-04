@@ -41,7 +41,7 @@ final class OrderManager
                         $product->get_name(),
                         (int) (wc_get_price_including_tax($product) * 100),
                         (string) $product->get_id(),
-                        strip_tags(wc_get_product_category_list($product->get_id())),
+                        strip_tags(wc_get_product_category_list($product->get_id()), ','),
                         $product->get_sku(),
                         $imageUrl,
                         $product->get_category_ids()
