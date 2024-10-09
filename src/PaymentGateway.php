@@ -191,7 +191,7 @@ class PaymentGateway extends \WC_Payment_Gateway
                 $wcOrder->get_billing_email(),
                 $phoneNumber,
                 \WC_Geolocation::get_ip_address(),
-                preg_match('/^[A-Z]{0,3}\d{7,}$/', $customerTaxId) ? $customerTaxId : null,
+                preg_match('/^[A-Z]{0,3}\d{7,}$/', str_replace('-', '', $customerTaxId)) ? $customerTaxId : null,
                 $wcOrder->get_user() !== false,
                 is_user_logged_in(),
                 new Address(
