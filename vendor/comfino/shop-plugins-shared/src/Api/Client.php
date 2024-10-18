@@ -3,6 +3,7 @@
 namespace Comfino\Api;
 
 use Comfino\Api\Dto\Payment\LoanQueryCriteria;
+use Comfino\Api\Dto\Payment\LoanTypeEnum;
 use Comfino\Api\Exception\AccessDenied;
 use Comfino\Api\Exception\AuthorizationError;
 use Comfino\Api\Exception\RequestValidationError;
@@ -14,6 +15,7 @@ use Comfino\Api\Request\GetFinancialProducts as GetFinancialProductsRequest;
 use Comfino\Api\Request\GetOrder as GetOrderRequest;
 use Comfino\Api\Request\GetPaywall as GetPaywallRequest;
 use Comfino\Api\Request\GetPaywallFragments as GetPaywallFragmentsRequest;
+use Comfino\Api\Request\GetPaywallItemDetails as GetPaywallItemDetailsRequest;
 use Comfino\Api\Request\GetProductTypes as GetProductTypesRequest;
 use Comfino\Api\Request\GetWidgetKey as GetWidgetKeyRequest;
 use Comfino\Api\Request\GetWidgetTypes as GetWidgetTypesRequest;
@@ -24,6 +26,7 @@ use Comfino\Api\Response\GetFinancialProducts as GetFinancialProductsResponse;
 use Comfino\Api\Response\GetOrder as GetOrderResponse;
 use Comfino\Api\Response\GetPaywall as GetPaywallResponse;
 use Comfino\Api\Response\GetPaywallFragments as GetPaywallFragmentsResponse;
+use Comfino\Api\Response\GetPaywallItemDetails as GetPaywallItemDetailsResponse;
 use Comfino\Api\Response\GetProductTypes as GetProductTypesResponse;
 use Comfino\Api\Response\GetWidgetKey as GetWidgetKeyResponse;
 use Comfino\Api\Response\GetWidgetTypes as GetWidgetTypesResponse;
@@ -31,6 +34,7 @@ use Comfino\Api\Response\IsShopAccountActive as IsShopAccountActiveResponse;
 use Comfino\Api\Serializer\Json as JsonSerializer;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Paywall\PaywallViewTypeEnum;
+use Comfino\Shop\Order\CartInterface;
 use Comfino\Shop\Order\OrderInterface;
 use ComfinoExternal\Psr\Http\Client\ClientExceptionInterface;
 use ComfinoExternal\Psr\Http\Client\ClientInterface;
@@ -438,8 +442,8 @@ class Client
     /**
      * Returns a complete paywall page with list of financial products according to the specified criteria.
      *
-     * @param LoanQueryCriteria $queryCriteria
-     * @param PaywallViewTypeEnum|null $viewType
+     * @param LoanQueryCriteria $queryCriteria List filtering criteria
+     * @param PaywallViewTypeEnum|null $viewType Paywall view type
      * @return GetPaywallResponse
      * @throws RequestValidationError
      * @throws ResponseValidationError
@@ -454,6 +458,35 @@ class Client
             $request = (new GetPaywallRequest($queryCriteria, $viewType))->setSerializer($this->serializer);
 
             return new GetPaywallResponse($request, $this->sendRequest($request), $this->serializer);
+        } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
+            if (isset($request)) {
+                $e->setRequestBody($request->getRequestBody() ?? '');
+            }
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Returns a details of paywall item for specified financial product type (loan type) and shopping cart contents.
+     *
+     * @param int $loanAmount Requested loan amount
+     * @param LoanTypeEnum $loanType Financial product type (loan type)
+     * @param CartInterface $cart Shopping cart
+     * @return GetPaywallItemDetailsResponse
+     * @throws RequestValidationError
+     * @throws ResponseValidationError
+     * @throws AuthorizationError
+     * @throws AccessDenied
+     * @throws ServiceUnavailable
+     * @throws ClientExceptionInterface
+     */
+    public function getPaywallItemDetails($loanAmount, $loanType, $cart): GetPaywallItemDetailsResponse
+    {
+        try {
+            $request = (new GetPaywallItemDetailsRequest($loanAmount, $loanType, $cart))->setSerializer($this->serializer);
+
+            return new GetPaywallItemDetailsResponse($request, $this->sendRequest($request), $this->serializer);
         } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
             if (isset($request)) {
                 $e->setRequestBody($request->getRequestBody() ?? '');

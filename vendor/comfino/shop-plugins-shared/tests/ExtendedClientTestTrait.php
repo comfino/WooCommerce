@@ -32,10 +32,11 @@ trait ExtendedClientTestTrait
         );
         $hashKey = 'Comfino API client 1.0';
         $errorDetails = gzcompress('{"host":"host","platform":"platform","environment":{"attrib1":"value1","attrib2":"value2"},"error_code":"123EF","error_message":"Error message.","api_request_url":null,"api_request":null,"api_response":null,"stack_trace":null}', 9);
+        $encodedErrorDetails = base64_encode($errorDetails);
 
         $request = [
-            'error_details' => base64_encode($errorDetails),
-            'hash' => hash_hmac('sha256', $errorDetails, $hashKey),
+            'error_details' => $encodedErrorDetails,
+            'hash' => hash_hmac('sha3-256', $encodedErrorDetails, $hashKey),
         ];
 
         $apiClient = $this->initApiClient('/v1/log-plugin-error', 'POST', null, (new JsonSerializer())->serialize($request), null, 'API-KEY');

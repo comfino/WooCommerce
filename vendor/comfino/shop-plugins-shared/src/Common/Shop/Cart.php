@@ -71,4 +71,36 @@ class Cart
 
         return ($this->cartCategoryIds = array_unique(array_merge([], ...$categoryIds), SORT_NUMERIC));
     }
+
+    /**
+     * @param bool $withNulls
+     */
+    public function getAsArray($withNulls = true): array
+    {
+        return [
+            'totalAmount' => $this->totalValue,
+            'deliveryCost' => $this->deliveryCost,
+            'products' => array_map(
+                static function (CartItemInterface $cartItem) use ($withNulls): array {
+                    $product = [
+                        'name' => $cartItem->getProduct()->getName(),
+                        'quantity' => $cartItem->getQuantity(),
+                        'price' => $cartItem->getProduct()->getPrice(),
+                        'netPrice' => $cartItem->getProduct()->getNetPrice(),
+                        'vatRate' => $cartItem->getProduct()->getTaxRate(),
+                        'vatAmount' => $cartItem->getProduct()->getTaxValue(),
+                        'externalId' => $cartItem->getProduct()->getId(),
+                        'category' => $cartItem->getProduct()->getCategory(),
+                        'ean' => $cartItem->getProduct()->getEan(),
+                        'photoUrl' => $cartItem->getProduct()->getPhotoUrl(),
+                    ];
+
+                    return $withNulls ? $product : array_filter($product, static function ($productFieldValue) : bool {
+                        return $productFieldValue !== null;
+                    });
+                },
+                $this->cartItems
+            ),
+        ];
+    }
 }

@@ -13,6 +13,7 @@ class LoanTypeEnum extends Enum
     public const COMPANY_BNPL = 'COMPANY_BNPL';
     public const RENEWABLE_LIMIT = 'RENEWABLE_LIMIT';
     public const BLIK = 'BLIK';
+    public const LEASING = 'LEASING';
 
     /**
      * @param string $value

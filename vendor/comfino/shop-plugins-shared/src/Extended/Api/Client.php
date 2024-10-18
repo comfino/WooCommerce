@@ -38,8 +38,11 @@ class Client extends \Comfino\Api\Client
     public function sendLoggedError($shopPluginError): bool
     {
         try {
+            $request = new ReportShopPluginError($shopPluginError, $this->getUserAgent());
+
             new BaseApiResponse(
-                $this->sendRequest((new ReportShopPluginError($shopPluginError, $this->getUserAgent()))->setSerializer($this->serializer)),
+                $request,
+                $this->sendRequest($request->setSerializer($this->serializer)),
                 $this->serializer
             );
         } catch (\Throwable $exception) {

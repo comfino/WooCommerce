@@ -5,8 +5,10 @@ namespace Comfino\Common\Frontend;
 use ComfinoExternal\Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Comfino\Api\Client;
 use Comfino\Api\Dto\Payment\LoanQueryCriteria;
+use Comfino\Api\Dto\Payment\LoanTypeEnum;
 use Comfino\Common\Frontend\TemplateRenderer\RendererStrategyInterface;
 use Comfino\Paywall\PaywallViewTypeEnum;
+use Comfino\Shop\Order\CartInterface;
 
 final class PaywallRenderer extends FrontendRenderer
 {
@@ -15,6 +17,11 @@ final class PaywallRenderer extends FrontendRenderer
      * @var \Comfino\Common\Frontend\TemplateRenderer\RendererStrategyInterface
      */
     private $rendererStrategy;
+    /**
+     * @readonly
+     * @var string|null
+     */
+    private $paywallApiOrigin;
     private const PAYWALL_FRAGMENTS = ['template', 'style', 'script'];
 
     public function __construct(
@@ -22,9 +29,11 @@ final class PaywallRenderer extends FrontendRenderer
         TaggableCacheItemPoolInterface $cache,
         RendererStrategyInterface $rendererStrategy,
         ?string $cacheInvalidateUrl = null,
-        ?string $configurationUrl = null
+        ?string $configurationUrl = null,
+        ?string $paywallApiOrigin = null
     ) {
         $this->rendererStrategy = $rendererStrategy;
+        $this->paywallApiOrigin = $paywallApiOrigin;
         parent::__construct($client, $cache, $cacheInvalidateUrl, $configurationUrl);
     }
 
@@ -84,15 +93,37 @@ final class PaywallRenderer extends FrontendRenderer
                 }
             }
 
+            $paywallApiOrigin = $this->paywallApiOrigin;
+
+            if ($paywallResponse->hasHeader('Paywall-Api-Origin') && $paywallResponse->getHeader('Paywall-Api-Origin') !== $paywallApiOrigin) {
+                $paywallApiOrigin = $paywallResponse->getHeader('Paywall-Api-Origin');
+            }
+
             return $this->rendererStrategy->renderPaywallTemplate(
                 str_replace(
-                    ['{PAYWALL_STYLE}', '{LOAN_AMOUNT}', '{PAYWALL_PRODUCTS_LIST}', '{PAYWALL_SCRIPT}'],
-                    [$fragments['style'], $queryCriteria->loanAmount, $paywallProductsList, $fragments['script']],
+                    ['{PAYWALL_STYLE}', '{PAYWALL_API_ORIGIN}', '{LOAN_AMOUNT}', '{PAYWALL_PRODUCTS_LIST}', '{PAYWALL_SCRIPT}'],
+                    [$fragments['style'], $paywallApiOrigin, $queryCriteria->loanAmount, $paywallProductsList, $fragments['script']],
                     $fragments['template']
                 )
             );
         } catch (\Throwable $e) {
             return $this->rendererStrategy->renderErrorTemplate($e);
+        }
+    }
+
+    /**
+     * @param int $loanAmount
+     * @param \Comfino\Api\Dto\Payment\LoanTypeEnum $loanType
+     * @param \Comfino\Shop\Order\CartInterface $cart
+     */
+    public function getPaywallItemDetails($loanAmount, $loanType, $cart): PaywallItemDetails
+    {
+        try {
+            $response = $this->client->getPaywallItemDetails($loanAmount, $loanType, $cart);
+
+            return new PaywallItemDetails($response->productDetails, $response->listItemData);
+        } catch (\Throwable $e) {
+            return new PaywallItemDetails($this->rendererStrategy->renderErrorTemplate($e), '');
         }
     }
 }

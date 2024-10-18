@@ -86,7 +86,10 @@ class GetOrder extends Base
                         $cartItem['externalId'],
                         $cartItem['photoUrl'],
                         $cartItem['ean'],
-                        $cartItem['category']
+                        $cartItem['category'],
+                        $cartItem['netPrice'] ?? null,
+                        $cartItem['vatRate'] ?? null,
+                        $cartItem['vatAmount'] ?? null
                     );
                 },
                 $deserializedResponseBody['cart']['products']
