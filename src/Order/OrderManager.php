@@ -36,15 +36,27 @@ final class OrderManager
                     $imageUrl = null;
                 }
 
+                $grossPrice = (int) (wc_get_price_including_tax($product) * 100);
+                $netPrice = (int) (wc_get_price_excluding_tax($product) * 100);
+
+                if (!empty($taxRates = \WC_Tax::get_rates($product->get_tax_class()))) {
+                    $taxRate = reset($taxRates);
+                } else {
+                    $taxRate = null;
+                }
+
                 return new CartItem(
                     new Product(
                         $product->get_name(),
-                        (int) (wc_get_price_including_tax($product) * 100),
+                        $grossPrice,
                         (string) $product->get_id(),
                         strip_tags(wc_get_product_category_list($product->get_id()), ','),
                         $product->get_sku(),
                         $imageUrl,
-                        $product->get_category_ids()
+                        $product->get_category_ids(),
+                        $taxRate !== null ? $netPrice : null,
+                        $taxRate !== null ? (int) ($taxRate['rate'] * 100) : null,
+                        $taxRate !== null ? (int) (wc_get_price_including_tax($product) - wc_get_price_excluding_tax($product)) : null
                     ),
                     (int) $item['quantity']
                 );
@@ -54,6 +66,12 @@ final class OrderManager
 
     public static function getShopCartFromProduct(\WC_Product $product): Cart
     {
+        if (!empty($taxRates = \WC_Tax::get_rates($product->get_tax_class()))) {
+            $taxRate = reset($taxRates);
+        } else {
+            $taxRate = null;
+        }
+
         return new Cart(
             (int) (wc_get_price_including_tax($product) * 100),
             0,
@@ -66,7 +84,10 @@ final class OrderManager
                         null,
                         null,
                         null,
-                        $product->get_category_ids()
+                        $product->get_category_ids(),
+                        $taxRates !== null ? (int) (wc_get_price_excluding_tax($product) * 100) : null,
+                        $taxRate !== null ? (int) ($taxRate['rate'] * 100) : null,
+                        $taxRate !== null ? (int) ((wc_get_price_including_tax($product) - wc_get_price_excluding_tax($product)) * 100) : null
                     ),
                     1
                 ),
