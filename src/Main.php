@@ -353,6 +353,7 @@ final class Main
             'currency' => self::getShopCurrency(),
             'cartTotal' => $total,
             'cartTotalFormatted' => wc_price($total, ['currency' => self::getShopCurrency()]),
+            'productDetailsApiPath' => ApiService::getEndpointPath('paywallItemDetails'),
         ];
     }
 

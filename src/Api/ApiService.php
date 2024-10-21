@@ -3,6 +3,7 @@
 namespace Comfino\Api;
 
 use Comfino\Api\Dto\Payment\LoanQueryCriteria;
+use Comfino\Api\Dto\Payment\LoanTypeEnum;
 use Comfino\Common\Backend\Factory\ApiServiceFactory;
 use Comfino\Common\Backend\RestEndpoint\CacheInvalidate;
 use Comfino\Common\Backend\RestEndpoint\Configuration;
@@ -18,6 +19,7 @@ use Comfino\Order\OrderManager;
 use Comfino\Order\StatusAdapter;
 use Comfino\PaymentGateway;
 use Comfino\PluginShared\CacheManager;
+use Comfino\Shop\Order\Cart;
 use Comfino\View\FrontendManager;
 use Comfino\View\TemplateManager;
 use ComfinoExternal\Psr\Cache\InvalidArgumentException;
@@ -39,6 +41,7 @@ final class ApiService
     private static $requestCallbacks = [
         'availableOfferTypes' => [self::class, 'getAvailableOfferTypes'],
         'paywall' => [self::class, 'getPaywall'],
+        'paywallItemDetails' => [self::class, 'getPaywallItemDetails'],
         'paywallFrontendStyle' => [self::class, 'getPaywallFrontendStyle'],
         'paywallFrontendScript' => [self::class, 'getPaywallFrontendScript'],
     ];
@@ -75,6 +78,15 @@ final class ApiService
                 'methods' => \WP_REST_Server::READABLE,
                 'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
                     return self::processRequest('paywall', $request);
+                },
+            ],
+        ]);
+
+        self::registerWordPressApiEndpoint('paywallItemDetails', [
+            [
+                'methods' => \WP_REST_Server::READABLE,
+                'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
+                    return self::processRequest('paywallItemDetails', $request);
                 },
             ],
         ]);
@@ -161,6 +173,7 @@ final class ApiService
         self::$endpointUrls = [
             'availableOfferTypes' => '/availableoffertypes(?:/(?P<product_id>\d+))?',
             'paywall' => '/paywall',
+            'paywallItemDetails' => '/paywallitemdetails',
             'transactionStatus' => '/transactionstatus',
             'configuration' => '/configuration(?:/(?P<vkey>[a-f0-9]+))?',
             'cacheInvalidate' => '/cacheinvalidate',
@@ -178,6 +191,11 @@ final class ApiService
         }
 
         return self::$endpoints[$endpointName] ?? self::getRestUrl(self::$endpointUrls[$endpointName] ?? '');
+    }
+
+    public static function getEndpointPath(string $endpointName): string
+    {
+        return parse_url(self::getEndpointUrl($endpointName), PHP_URL_PATH);
     }
 
     public static function processRequest(string $endpointName, \WP_REST_Request $request): \WP_REST_Response
@@ -295,19 +313,16 @@ final class ApiService
         $availableProductTypes = SettingsManager::getProductTypesStrings(ProductTypesListTypeEnum::LIST_TYPE_WIDGET);
 
         if (empty($productId = $request->get_param('product_id') ?? '')) {
-            return new \WP_REST_Response($availableProductTypes, 200);
+            return new \WP_REST_Response($availableProductTypes);
         }
 
         $product = wc_get_product($productId);
 
         if (!$product) {
-            return new \WP_REST_Response($availableProductTypes, 200);
+            return new \WP_REST_Response($availableProductTypes);
         }
 
-        return new \WP_REST_Response(
-            SettingsManager::getAllowedProductTypes('widget', OrderManager::getShopCartFromProduct($product), true),
-            200
-        );
+        return new \WP_REST_Response(SettingsManager::getAllowedProductTypes('widget', OrderManager::getShopCartFromProduct($product), true));
     }
 
     private static function getPaywall(\WP_REST_Request $request): void
@@ -351,6 +366,34 @@ final class ApiService
             ->renderPaywall(new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes));
 
         exit;
+    }
+
+    private static function getPaywallItemDetails(\WP_REST_Request $request): \WP_REST_Response
+    {
+        if (!ConfigManager::isEnabled()) {
+            echo TemplateManager::renderView('plugin-disabled', 'front');
+
+            exit;
+        }
+
+        $loanAmount = (int) (WC()->cart->get_total('edit') * 100);
+        $loanTypeSelected = $request->get_param('loanTypeSelected');
+        $shopCart = OrderManager::getShopCart(WC()->cart, $loanAmount);
+
+        Main::debugLog(
+            '[PAYWALL_ITEM_DETAILS]',
+            'getPaywallItemDetails',
+            ['$loanTypeSelected' => $loanTypeSelected]
+        );
+
+        $response = FrontendManager::getPaywallRenderer()
+            ->getPaywallItemDetails(
+                $loanAmount,
+                LoanTypeEnum::from($loanTypeSelected),
+                new Cart($shopCart->getCartItems(), $shopCart->getTotalValue(), $shopCart->getDeliveryCost())
+            );
+
+        return new \WP_REST_Response(['listItemData' => $response->listItemData, 'productDetails' => $response->productDetails]);
     }
 
     private static function getPaywallFrontendStyle(): void
