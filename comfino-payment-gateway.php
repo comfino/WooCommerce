@@ -45,6 +45,11 @@ class Comfino_Payment_Gateway
     {
         if (is_readable(__DIR__ . '/vendor/autoload.php')) {
             require_once __DIR__ . '/vendor/autoload.php';
+        } else {
+            $this->add_admin_notice('vendor_access_error', 'error', 'File ' . __DIR__ . '/vendor/autoload.php is not readable.');
+            $this->admin_notices();
+
+            return;
         }
 
         add_action('init', [$this, 'init']);
