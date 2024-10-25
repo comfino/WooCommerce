@@ -21,8 +21,8 @@ use Comfino\View\TemplateManager;
 class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
-
     public const VERSION = '4.0.0';
+    public const BUILD_TS = 1729852679;
 
     public function __construct()
     {
@@ -300,6 +300,7 @@ class PaymentGateway extends \WC_Payment_Gateway
             $viewVariables['shop_domain'] = Main::getShopDomain();
             $viewVariables['widget_key'] = ConfigManager::getWidgetKey();
             $viewVariables['is_dev_env'] = ApiClient::isDevEnv() ? 'Yes' : 'No';
+            $viewVariables['build_ts'] = \DateTime::createFromFormat('U', self::BUILD_TS)->format('Y-m-d H:i:s');
         } else {
             $viewVariables['settings_html'] = $this->generate_settings_html(SettingsForm::getFormFields($activeTab), false);
         }

@@ -23,6 +23,7 @@ if (!defined('ABSPATH')) {
 /** @var string $shop_domain */
 /** @var string $widget_key */
 /** @var string $is_dev_env */
+/** @var string $build_ts */
 ?>
 <h2><?php echo esc_html($title); ?></h2>
 <p><?php echo esc_html($description); ?></p>
@@ -61,6 +62,7 @@ switch ($active_tab) {
             <td>
                 <hr>
                 <p><b>Comfino API host:</b> <?php echo esc_html($api_host); ?></p>
+                <p><b>Plugin build time:</b> <?php echo esc_html($build_ts); ?></p>
                 <p><b>Shop domain:</b> <?php echo esc_html($shop_domain); ?></p>
                 <p><b>Widget key:</b> <?php echo esc_html($widget_key); ?></p>
 <?php

@@ -164,6 +164,7 @@ final class ConfigManager
 
         $envFields = [
             'plugin_version' => PaymentGateway::VERSION,
+            'plugin_build_ts' => PaymentGateway::BUILD_TS,
             'shop_version' => WC_VERSION,
             'wordpress_version' => $wp_version,
             'php_version' => PHP_VERSION,

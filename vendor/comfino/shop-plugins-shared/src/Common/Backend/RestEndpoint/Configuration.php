@@ -32,6 +32,11 @@ final class Configuration extends RestEndpoint
     private $pluginVersion;
     /**
      * @readonly
+     * @var int
+     */
+    private $pluginBuildTs;
+    /**
+     * @readonly
      * @var string
      */
     private $databaseVersion;
@@ -42,12 +47,14 @@ final class Configuration extends RestEndpoint
         string $platformName,
         string $platformVersion,
         string $pluginVersion,
+        int $pluginBuildTs,
         string $databaseVersion
     ) {
         $this->configurationManager = $configurationManager;
         $this->platformName = $platformName;
         $this->platformVersion = $platformVersion;
         $this->pluginVersion = $pluginVersion;
+        $this->pluginBuildTs = $pluginBuildTs;
         $this->databaseVersion = $databaseVersion;
         parent::__construct($name, $endpointUrl);
 
@@ -70,6 +77,7 @@ final class Configuration extends RestEndpoint
                     'platform' => $this->platformName,
                     'platform_version' => $this->platformVersion,
                     'plugin_version' => $this->pluginVersion,
+                    'plugin_build_ts' => $this->pluginBuildTs,
                     'symfony_version' => class_exists('\Symfony\Component\HttpKernel\Kernel')
                         ? \Symfony\Component\HttpKernel\Kernel::VERSION
                         : 'n/a',

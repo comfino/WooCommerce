@@ -25,11 +25,9 @@ if (!defined('ABSPATH')) {
 
 class Comfino_Payment_Gateway
 {
-    public const VERSION = '4.0.0';
-    public const BUILD_TS = 1729686900;
-
     /** @var array */
     public $notices = [];
+
     /** @var Comfino_Payment_Gateway */
     private static $instance;
 

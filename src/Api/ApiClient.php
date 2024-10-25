@@ -61,6 +61,8 @@ final class ApiClient
                     CURLOPT_TIMEOUT => ConfigManager::getConfigurationValue('COMFINO_API_TIMEOUT', 3),
                 ]
             );
+
+            self::$apiClient->addCustomHeader('Comfino-Build-Timestamp', (string) PaymentGateway::BUILD_TS);
         } else {
             self::$apiClient->setApiKey($apiKey);
             self::$apiClient->setApiLanguage(Main::getShopLanguage());
@@ -110,7 +112,7 @@ final class ApiClient
     {
         return self::getApiHost(self::getInstance()->getApiHost())
             . '/v1/get-logo-url?auth='
-            . FrontendHelper::getLogoAuthHash('WC', WC_VERSION, PaymentGateway::VERSION);
+            . FrontendHelper::getLogoAuthHash('WC', WC_VERSION, PaymentGateway::VERSION, PaymentGateway::BUILD_TS);
     }
 
     public static function getPaywallLogoUrl(): string
@@ -118,7 +120,12 @@ final class ApiClient
         return self::getApiHost(self::getInstance()->getApiHost())
             . '/v1/get-paywall-logo?auth='
             . FrontendHelper::getPaywallLogoAuthHash(
-                'WC', WC_VERSION, PaymentGateway::VERSION, self::getInstance()->getApiKey(), ConfigManager::getWidgetKey()
+                'WC',
+                WC_VERSION,
+                PaymentGateway::VERSION,
+                self::getInstance()->getApiKey(),
+                ConfigManager::getWidgetKey(),
+                PaymentGateway::BUILD_TS
             );
     }
 
