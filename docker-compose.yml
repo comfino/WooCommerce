@@ -1,6 +1,5 @@
-version: '3.5'
 services:
-    comfino-prestashop-php:
+    comfino-woocommerce-php:
         build:
             context: ./
             dockerfile: docker/Dockerfile
@@ -8,4 +7,4 @@ services:
         tty: true
         volumes:
             - ./:/comfino-woocommerce
-            - ~/.composer:/home/vagrant/.composer
+            - ~/.composer:/home/comfino/.composer
