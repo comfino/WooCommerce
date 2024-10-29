@@ -112,7 +112,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function payment_fields(): void
     {
-        echo $this->generate_paywall_iframe(false);
+        echo $this->generatePaywallIframe(false);
     }
 
     public function process_payment($order_id): array
@@ -145,28 +145,12 @@ class PaymentGateway extends \WC_Payment_Gateway
             }
         }
 
-        $firstName = $wcOrder->get_billing_first_name();
-        $lastName = $wcOrder->get_billing_last_name();
-
-        if ($lastName === '') {
-            $nameParts = explode(' ', $firstName);
-
-            if (count($nameParts) > 1) {
-                [$firstName, $lastName] = $nameParts;
-            }
-        }
-
-        if (empty($firstName) && empty($lastName)) {
-            $firstName = $wcOrder->get_shipping_first_name();
-            $lastName = $wcOrder->get_shipping_last_name();
-
-            if ($lastName === '') {
-                $nameParts = explode(' ', $firstName);
-
-                if (count($nameParts) > 1) {
-                    [$firstName, $lastName] = $nameParts;
-                }
-            }
+        if (!empty(trim($wcOrder->get_billing_first_name()))) {
+            // Use billing address to get customer names.
+            [$firstName, $lastName] = $this->prepareCustomerNames($wcOrder->get_billing_first_name(), $wcOrder->get_billing_last_name());
+        } else {
+            // Use delivery address to get customer names.
+            [$firstName, $lastName] = $this->prepareCustomerNames($wcOrder->get_shipping_first_name(), $wcOrder->get_shipping_last_name());
         }
 
         $billingAddressLines = $wcOrder->get_billing_address_1();
@@ -276,7 +260,7 @@ class PaymentGateway extends \WC_Payment_Gateway
     {
         global $wp, $wp_version;
 
-        $activeTab = $this->get_subsection();
+        $activeTab = $this->getSubsection();
 
         $viewVariables = [
             'wp' => $wp,
@@ -334,7 +318,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function process_admin_options(): bool
     {
-        $activeTab = $this->get_subsection();
+        $activeTab = $this->getSubsection();
 
         $configurationOptions = $this->get_post_data();
         $configurationOptionsToSave = [];
@@ -421,17 +405,17 @@ class PaymentGateway extends \WC_Payment_Gateway
         return FrontendManager::renderProductCategoryTree($data);
     }
 
-    public function generate_paywall_iframe(bool $isPaymentBlock): string
+    public function generatePaywallIframe(bool $isPaymentBlock): string
     {
         return WC()->cart !== null ? Main::renderPaywallIframe(WC()->cart, $this->get_order_total(), $isPaymentBlock) : '';
     }
 
-    public function get_total(): float
+    public function getTotal(): float
     {
         return absint(get_query_var('order-pay')) > 0 || WC()->cart !== null ? $this->get_order_total() : 0;
     }
 
-    private function get_subsection(): string
+    private function getSubsection(): string
     {
         $active_tab = $_GET['subsection'] ?? 'payment_settings';
 
@@ -451,5 +435,21 @@ class PaymentGateway extends \WC_Payment_Gateway
         }
 
         return $active_tab;
+    }
+
+    private function prepareCustomerNames(string $firstName, string $lastName): array
+    {
+        $firstName = trim($firstName);
+        $lastName = trim($lastName);
+
+        if (empty($lastName)) {
+            $nameParts = explode(' ', $firstName);
+
+            if (count($nameParts) > 1) {
+                [$firstName, $lastName] = $nameParts;
+            }
+        }
+
+        return [$firstName, $lastName];
     }
 }
