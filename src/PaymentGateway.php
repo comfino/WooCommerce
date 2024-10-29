@@ -175,7 +175,18 @@ class PaymentGateway extends \WC_Payment_Gateway
             $billingAddressLines .= " {$wcOrder->get_billing_address_2()}";
         }
 
-        $street = trim($billingAddressLines);
+        if (empty($billingAddressLines)) {
+            $deliveryAddressLines = $wcOrder->get_shipping_address_1();
+
+            if (!empty($wcOrder->get_shipping_address_2())) {
+                $deliveryAddressLines .= " {$wcOrder->get_shipping_address_2()}";
+            }
+
+            $street = trim($deliveryAddressLines);
+        } else {
+            $street = trim($billingAddressLines);
+        }
+
         $addressParts = explode(' ', $street);
         $buildingNumber = '';
 
