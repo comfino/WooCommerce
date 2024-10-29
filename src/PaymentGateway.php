@@ -149,10 +149,23 @@ class PaymentGateway extends \WC_Payment_Gateway
         $lastName = $wcOrder->get_billing_last_name();
 
         if ($lastName === '') {
-            $name = explode(' ', $firstName);
+            $nameParts = explode(' ', $firstName);
 
-            if (count($name) > 1) {
-                [$firstName, $lastName] = $name;
+            if (count($nameParts) > 1) {
+                [$firstName, $lastName] = $nameParts;
+            }
+        }
+
+        if (empty($firstName) && empty($lastName)) {
+            $firstName = $wcOrder->get_shipping_first_name();
+            $lastName = $wcOrder->get_shipping_last_name();
+
+            if ($lastName === '') {
+                $nameParts = explode(' ', $firstName);
+
+                if (count($nameParts) > 1) {
+                    [$firstName, $lastName] = $nameParts;
+                }
             }
         }
 
