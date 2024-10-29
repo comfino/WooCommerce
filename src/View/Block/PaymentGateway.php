@@ -55,7 +55,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
 
         wp_register_script(
             'comfino-payment-gateway-blocks',
-            $comfino_payment_gateway->plugin_url() . '/resources/js/front/paywall.js',
+            $comfino_payment_gateway->plugin_url() . '/resources/js/front/paywall-block.min.js',
             [
                 'wc-blocks-registry',
                 'wc-settings',

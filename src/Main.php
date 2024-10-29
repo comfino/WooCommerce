@@ -359,6 +359,9 @@ final class Main
 
     private static function preparePaywallIframe(float $total, bool $isPaymentBlock): ?string
     {
+        /** @var \Comfino_Payment_Gateway $comfino_payment_gateway */
+        global $comfino_payment_gateway;
+
         try {
             $renderer = FrontendManager::getPaywallIframeRenderer();
 
@@ -371,6 +374,15 @@ final class Main
 
             wp_enqueue_style('comfino-frontend-style', $paywallFrontendStyleUrl, [], null);
             wp_enqueue_script('comfino-frontend-script', $paywallFrontendScriptUrl, [], null);
+
+            if (!$isPaymentBlock) {
+                wp_enqueue_script(
+                    'comfino-payment-gateway-script',
+                    $comfino_payment_gateway->plugin_url() . '/resources/js/front/paywall.min.js',
+                    [],
+                    null
+                );
+            }
 
             return TemplateManager::renderView(
                 'payment',
