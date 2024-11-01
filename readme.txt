@@ -16,6 +16,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
  * Mark plugin as compatible with WooCommerce HPOS (https://woocommerce.com/document/high-performance-order-storage) function.
  * Mark plugin as compatible with WooCommerce Cart and Checkout Blocks (https://woocommerce.com/checkout-blocks) layout.
  * Integrate plugin with WooCommerce Cart and Checkout blocks.
+ * Added support for leasing.
 
 3.4.1
  * Change bookmark address retrieval to a solution using site_url.
