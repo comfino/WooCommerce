@@ -61,7 +61,7 @@ final class OrderManager
                         $product->get_category_ids(),
                         $taxRate !== null ? $netPrice : null,
                         $taxRate !== null ? (int) $taxRate['rate'] : null,
-                        $taxRate !== null ? (int) (wc_get_price_including_tax($product) - wc_get_price_excluding_tax($product)) : null
+                        $taxRate !== null ? $grossPrice - $netPrice : null
                     ),
                     (int) $item['quantity']
                 );
