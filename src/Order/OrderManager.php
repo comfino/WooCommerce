@@ -24,7 +24,12 @@ final class OrderManager
 
         return new Cart(
             $total,
+            null,
+            null,
             (int) ($cart->get_shipping_total() * 100),
+            null,
+            null,
+            null,
             array_map(static function (array $item): CartItemInterface {
                 /** @var \WC_Product $product */
                 $product = $item['data'];
@@ -55,7 +60,7 @@ final class OrderManager
                         $imageUrl,
                         $product->get_category_ids(),
                         $taxRate !== null ? $netPrice : null,
-                        $taxRate !== null ? (int) ($taxRate['rate'] * 100) : null,
+                        $taxRate !== null ? (int) $taxRate['rate'] : null,
                         $taxRate !== null ? (int) (wc_get_price_including_tax($product) - wc_get_price_excluding_tax($product)) : null
                     ),
                     (int) $item['quantity']
@@ -74,7 +79,12 @@ final class OrderManager
 
         return new Cart(
             (int) (wc_get_price_including_tax($product) * 100),
+            null,
+            null,
             0,
+            null,
+            null,
+            null,
             [
                 new CartItem(
                     new Product(
@@ -86,7 +96,7 @@ final class OrderManager
                         null,
                         $product->get_category_ids(),
                         $taxRates !== null ? (int) (wc_get_price_excluding_tax($product) * 100) : null,
-                        $taxRate !== null ? (int) ($taxRate['rate'] * 100) : null,
+                        $taxRate !== null ? (int) $taxRate['rate'] : null,
                         $taxRate !== null ? (int) ((wc_get_price_including_tax($product) - wc_get_price_excluding_tax($product)) * 100) : null
                     ),
                     1
