@@ -213,7 +213,10 @@ class PaymentGateway extends \WC_Payment_Gateway
             ),
             $this->get_return_url($wcOrder),
             ApiService::getEndpointUrl('transactionStatus'),
-            SettingsManager::getAllowedProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL, $shopCart)
+            SettingsManager::getAllowedProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL, $shopCart),
+            $shopCart->getDeliveryNetCost(),
+            $shopCart->getDeliveryTaxRate(),
+            $shopCart->getDeliveryTaxValue()
         );
 
         try {

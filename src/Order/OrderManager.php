@@ -97,10 +97,16 @@ final class OrderManager
                 }
             }
 
-            if (count(array_merge([], ...$cartTaxRates)) > 0) {
+            if (count($cartTaxRates = array_merge([], ...$cartTaxRates)) > 0) {
+                $taxRate = reset($cartTaxRates);
+            } else {
+                $taxRate = null;
+            }
+
+            if ($taxRate !== null) {
+                $deliveryNetCost = (int) ($cart->get_shipping_total() * 100);
                 $deliveryTaxValue = (int) ($cart->get_shipping_tax() * 100);
-                $deliveryNetCost = $deliveryCost - $deliveryTaxValue;
-                $deliveryTaxRate = 0;
+                $deliveryTaxRate = (int) $taxRate['rate'];
             }
         }
 
