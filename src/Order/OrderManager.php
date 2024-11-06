@@ -15,22 +15,15 @@ final class OrderManager
 {
     public static function getShopCart(\WC_Cart $cart, int $loanAmount): Cart
     {
-        $total = (int) ($cart->get_total('edit') * 100);
+        $totalValue = (int) ($cart->get_total('edit') * 100);
 
-        if ($loanAmount > $total) {
+        if ($loanAmount > $totalValue) {
             // Loan amount with price modifier (e.g. custom commission).
-            $total = $loanAmount;
+            $totalValue = $loanAmount;
         }
 
-        return new Cart(
-            $total,
-            null,
-            null,
-            (int) ($cart->get_shipping_total() * 100),
-            null,
-            null,
-            null,
-            array_map(static function (array $item): CartItemInterface {
+        $cartItems = array_map(
+            static function (array $item): CartItemInterface {
                 /** @var \WC_Product $product */
                 $product = $item['data'];
                 $imageId = $product->get_image_id();
@@ -65,7 +58,61 @@ final class OrderManager
                     ),
                     (int) $item['quantity']
                 );
-            }, $cart->get_cart())
+            },
+            $cart->get_cart()
+        );
+
+        $totalNetValue = 0;
+        $totalTaxValue = 0;
+
+        foreach ($cartItems as $cartItem) {
+            if ($cartItem->getProduct()->getNetPrice() !== null) {
+                $totalNetValue += ($cartItem->getProduct()->getNetPrice() * $cartItem->getQuantity());
+            }
+
+            if ($cartItem->getProduct()->getTaxValue() !== null) {
+                $totalTaxValue += ($cartItem->getProduct()->getTaxValue() * $cartItem->getQuantity());
+            }
+        }
+
+        if ($totalNetValue === 0) {
+            $totalNetValue = null;
+        }
+
+        if ($totalTaxValue === 0) {
+            $totalTaxValue = null;
+        }
+
+        $deliveryCost = (int) (($cart->get_shipping_total() + $cart->get_shipping_tax()) * 100);
+        $deliveryNetCost = null;
+        $deliveryTaxValue = null;
+        $deliveryTaxRate = null;
+
+        if (!empty($taxClasses = $cart->get_cart_item_tax_classes_for_shipping())) {
+            $cartTaxRates = [];
+
+            foreach ($taxClasses as $taxClass) {
+                if (!empty($taxRates = \WC_Tax::get_rates($taxClass))) {
+                    $cartTaxRates[] = $taxRates;
+                }
+            }
+
+            if (count(array_merge([], ...$cartTaxRates)) > 0) {
+                $deliveryTaxValue = (int) ($cart->get_shipping_tax() * 100);
+                $deliveryNetCost = $deliveryCost - $deliveryTaxValue;
+                $deliveryTaxRate = 0;
+            }
+        }
+
+        return new Cart(
+            $totalValue,
+            $totalNetValue,
+            $totalTaxValue,
+            $deliveryCost,
+            $deliveryNetCost,
+            $deliveryTaxRate,
+            $deliveryTaxValue,
+            $cartItems
         );
     }
 
