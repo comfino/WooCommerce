@@ -1,34 +1,34 @@
 <?php
 /*
- * Plugin Name: Comfino Payment Gateway
+ * Plugin Name: Comfino payment gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
- * Description: Comfino (Comperia) - Comfino Payment Gateway for WooCommerce.
- * Version: 3.4.2
- * Author: Comfino (Comperia)
+ * Description: Comfino payment gateway for WooCommerce.
+ * Version: 4.0.0
+ * Author: Comfino
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
  * Text Domain: comfino-payment-gateway
- * WC tested up to: 9.0.2
+ * WC tested up to: 9.2.3
  * WC requires at least: 3.0
- * Tested up to: 6.3.1
+ * Tested up to: 6.6.2
  * Requires at least: 5.0
- * Requires PHP: 7.0
+ * Requires PHP: 7.1
  *
  * @license http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
-use Comfino\Core;
-use Comfino\Error_Logger;
+use Comfino\PaymentGateway;
 
-defined('ABSPATH') or exit;
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 class Comfino_Payment_Gateway
 {
-    const VERSION = '3.4.2';
+    /** @var array */
+    public $notices = [];
 
-    /**
-     * @var Comfino_Payment_Gateway
-     */
+    /** @var Comfino_Payment_Gateway */
     private static $instance;
 
     public static function get_instance(): Comfino_Payment_Gateway
@@ -40,231 +40,131 @@ class Comfino_Payment_Gateway
         return self::$instance;
     }
 
-    public function __construct()
+    private function __construct()
     {
-        add_action('plugins_loaded', [$this, 'init']);
+        if (is_readable(__DIR__ . '/vendor/autoload.php')) {
+            require_once __DIR__ . '/vendor/autoload.php';
+        } else {
+            $this->add_admin_notice('vendor_access_error', 'error', 'File ' . __DIR__ . '/vendor/autoload.php is not readable.');
+            $this->admin_notices();
+
+            return;
+        }
+
+        add_action('init', [$this, 'init']);
+        add_action('admin_init', [$this, 'check_environment']);
+        add_action('admin_notices', [$this, 'admin_notices'], 15);
+
+        // Add a Comfino gateway to the WooCommerce payment methods available for customer.
+        add_filter('woocommerce_payment_gateways', static function (array $methods): array {
+            $methods[] = PaymentGateway::class;
+
+            return $methods;
+        });
+
+        // Declare compatibility with WooCommerce HPOS and Payment Blocks.
+        add_action('before_woocommerce_init', static function () {
+            if (class_exists('Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+                Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__);
+                Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__);
+            }
+        });
+
+        // Register integration hook for WooCommerce Cart and Checkout Blocks.
+        add_action('woocommerce_blocks_loaded', static function () {
+            if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+                add_action(
+                    'woocommerce_blocks_payment_method_type_registration',
+                    static function (Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $paymentMethodRegistry) {
+                        $paymentMethodRegistry->register(new Comfino\View\Block\PaymentGateway());
+                    }
+                );
+            }
+        });
+
+        Comfino\Main::setPluginDirectory(__DIR__);
+        Comfino\Main::setPluginFile(__FILE__);
+    }
+
+    /**
+     * Automatically disables the plugin on activation if it doesn't meet minimum requirements.
+     */
+    public function activation_check(): void
+    {
+        $environment_warning = Comfino\Main::getEnvironmentWarning(true);
+
+        if ($environment_warning) {
+            deactivate_plugins(plugin_basename(__FILE__));
+            /** @noinspection ForgottenDebugOutputInspection */
+            wp_die($environment_warning);
+        }
+    }
+
+    /**
+     * Plugin URL.
+     */
+    public function plugin_url(): string
+    {
+        return untrailingslashit(plugins_url('/', __FILE__));
+    }
+
+    /**
+     * Plugin absolute path.
+     */
+    public function plugin_abspath(): string
+    {
+        return trailingslashit(plugin_dir_path(__FILE__));
     }
 
     /**
      * Plugin initialization.
      */
-    public function init()
+    public function init(): void
     {
         if ($this->check_environment()) {
             return;
         }
 
-        require_once __DIR__ . '/includes/comfino-config-manager.php';
-        require_once __DIR__ . '/includes/comfino-core.php';
-        require_once __DIR__ . '/includes/comfino-api-client.php';
-        require_once __DIR__ . '/includes/comfino-gateway.php';
-        require_once __DIR__ . '/includes/comfino-error-logger.php';
-
-        add_filter('woocommerce_payment_gateways', [$this, 'add_gateway']);
-        add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'plugin_action_links']);
-        add_filter('wc_order_statuses', [$this, 'filter_order_status']);
-
-        add_action('wp_loaded', [$this, 'comfino_rest_load_cart'], 5);
-        add_action('wp_head', [$this, 'render_widget']);
-
-        add_action('rest_api_init', static function () {
-            register_rest_route('comfino', '/notification', [
-                [
-                    'methods' => WP_REST_Server::EDITABLE,
-                    'callback' => [Core::class, 'process_notification'],
-                    'permission_callback' => '__return_true',
-                ],
-            ]);
-
-            register_rest_route('comfino', '/availableoffertypes(?:/(?P<product_id>\d+))?', [
-                [
-                    'methods' => WP_REST_Server::READABLE,
-                    'callback' => [Core::class, 'get_available_offer_types'],
-                    'args' => ['product_id' => ['sanitize_callback' => 'absint']],
-                    'permission_callback' => '__return_true',
-                ],
-            ]);
-
-            register_rest_route('comfino', '/configuration(?:/(?P<vkey>[a-f0-9]+))?', [
-                [
-                    'methods' => WP_REST_Server::READABLE,
-                    'callback' => [Core::class, 'get_configuration'],
-                    'args' => ['vkey' => ['sanitize_callback' => 'sanitize_key']],
-                    'permission_callback' => '__return_true',
-                ],
-                [
-                    'methods' => WP_REST_Server::EDITABLE,
-                    'callback' => [Core::class, 'update_configuration'],
-                    'permission_callback' => '__return_true',
-                ]
-            ]);
-        });
-
-        add_action('before_woocommerce_init', static function () {
-            if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
-                \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__);
-            }
-        });
-
-        load_plugin_textdomain('comfino-payment-gateway', false, basename(__DIR__) . '/languages');
-
-        Error_Logger::init();
+        // Initialize Comfino plugin.
+        Comfino\Main::init();
     }
 
     /**
-     * @return false|string
+     * @return string|bool
      */
-    private function check_environment()
+    public function check_environment()
     {
-        if (PHP_VERSION_ID < 70000) {
-            $message = __('The minimum PHP version required for Comfino is %s. You are running %s.', 'comfino-payment-gateway');
+        $environment_warning = Comfino\Main::getEnvironmentWarning();
 
-            return sprintf($message, '7.0.0', PHP_VERSION);
-        }
+        if ($environment_warning && is_plugin_active(plugin_basename(__FILE__))) {
+            deactivate_plugins(plugin_basename(__FILE__));
+            $this->add_admin_notice('bad_environment', 'error', $environment_warning);
 
-        if (!defined('WC_VERSION')) {
-            return __('WooCommerce needs to be activated.', 'comfino-payment-gateway');
-        }
-
-        if (version_compare(WC_VERSION, '3.0.0', '<')) {
-            $message = __('The minimum WooCommerce version required for Comfino is %s. You are running %s.', 'comfino-payment-gateway');
-
-            return sprintf($message, '3.0.0', WC_VERSION);
-        }
-
-        return false;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function plugin_action_links(array $links): array
-    {
-        $plugin_links = [
-            '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino') . '">' .
-            __('Settings', 'comfino-payment-gateway') . '</a>',
-        ];
-
-        return array_merge($plugin_links, $links);
-    }
-
-    /**
-     * @return string[]
-     */
-    public function filter_order_status(array $statuses): array
-    {
-        global $post;
-
-        if (isset($post) && 'shop_order' === $post->post_type) {
-            $order = wc_get_order($post->ID);
-
-            if (isset($statuses['wc-cancelled']) && $order->get_payment_method() === 'comfino' && $order->has_status('completed')) {
-                unset($statuses['wc-cancelled']);
+            if (isset($_GET['activate'])) {
+                unset($_GET['activate']);
             }
         }
 
-        return $statuses;
+        return $environment_warning;
     }
 
-    /**
-     * Render widget.
-     *
-     * @return void
-     */
-    public function render_widget()
+    public function add_admin_notice(string $slug, string $class, string $message): void
     {
-        global $product;
-
-        if (is_single() && is_product()) {
-            $comfino = new Comfino_Gateway();
-
-            if ($product instanceof WC_Product) {
-                $product_id = $product->get_id();
-            } else {
-                $product_id = get_the_ID();
-            }
-
-            if ($comfino->get_option('widget_enabled') === 'yes' && $comfino->get_option('widget_key') !== '') {
-                echo Core::get_widget_init_code($comfino, !empty($product_id) ? $product_id : null);
-            }
-        }
+        $this->notices[$slug] = ['class' => $class, 'message' => $message];
     }
 
-    /**
-     * Add the Comfino Gateway to WooCommerce
-     *
-     * @param $methods
-     *
-     * @return array
-     */
-    public function add_gateway($methods): array
+    public function admin_notices(): void
     {
-        $methods[] = 'Comfino_Gateway';
-
-        return $methods;
-    }
-
-    /**
-     * Loads the cart, session and notices should it be required.
-     *
-     * Workaround for WC bug:
-     * https://github.com/woocommerce/woocommerce/issues/27160
-     * https://github.com/woocommerce/woocommerce/issues/27157
-     * https://github.com/woocommerce/woocommerce/issues/23792
-     *
-     * Note: Only needed should the site be running WooCommerce 3.6 or higher as they are not included during a REST request.
-     *
-     * @see https://plugins.trac.wordpress.org/browser/cart-rest-api-for-woocommerce/trunk/includes/class-cocart-init.php#L145
-     * @since 2.0.0
-     * @version 2.0.3
-     */
-    public function comfino_rest_load_cart()
-    {
-        if (version_compare(WC_VERSION, '3.6.0', '>=') && WC()->is_rest_api_request()) {
-            if (empty($_SERVER['REQUEST_URI'])) {
-                return;
-            }
-
-            $rest_prefix = 'comfino/offers';
-            $req_uri = esc_url_raw(wp_unslash($_SERVER['REQUEST_URI']));
-
-            if (strpos($req_uri, $rest_prefix) === false) {
-                return;
-            }
-
-            require_once WC_ABSPATH . 'includes/wc-cart-functions.php';
-            require_once WC_ABSPATH . 'includes/wc-notice-functions.php';
-
-            if (WC()->session === null) {
-                $session_class = apply_filters('woocommerce_session_handler', 'WC_Session_Handler'); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
-
-                // Prefix session class with global namespace if not already namespaced.
-                if (strpos($session_class, '\\') === false) {
-                    $session_class = '\\' . $session_class;
-                }
-
-                WC()->session = new $session_class();
-                WC()->session->init();
-            }
-
-            // For logged in customers, pull data from their account rather than the session which may contain incomplete data.
-            if (WC()->customer === null) {
-                if (is_user_logged_in()) {
-                    WC()->customer = new WC_Customer(get_current_user_id());
-                } else {
-                    WC()->customer = new WC_Customer(get_current_user_id(), true);
-                }
-
-                // Customer should be saved during shutdown.
-                add_action('shutdown', [WC()->customer, 'save'], 10);
-            }
-
-            // Load cart.
-            if (WC()->cart === null) {
-                WC()->cart = new WC_Cart();
-            }
+        foreach ($this->notices as $notice_key => $notice) {
+            echo '<div class="' . esc_attr(sanitize_html_class($notice['class'])) . '"><p>';
+            echo wp_kses($notice['message'], ['a' => ['href' => []]]);
+            echo "</p></div>";
         }
     }
 }
 
-Comfino_Payment_Gateway::get_instance();
+global $comfino_payment_gateway;
+
+$comfino_payment_gateway = Comfino_Payment_Gateway::get_instance();
+
+register_activation_hook(__FILE__, [$comfino_payment_gateway, 'activation_check']);
