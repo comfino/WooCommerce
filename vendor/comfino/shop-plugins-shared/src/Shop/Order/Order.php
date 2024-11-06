@@ -2,29 +2,53 @@
 
 namespace Comfino\Shop\Order;
 
-use Comfino\Shop\Order\LoanParametersInterface;
-
 class Order implements OrderInterface
 {
-    /** @var string */
+    /**
+     * @var string
+     * @readonly
+     */
     private $id;
-    /** @var string|null */
-    private $notifyUrl;
-    /** @var string */
+    /**
+     * @var string
+     * @readonly
+     */
     private $returnUrl;
-    /** @var LoanParametersInterface */
+    /**
+     * @var LoanParametersInterface
+     * @readonly
+     */
     private $loanParameters;
-    /** @var CartInterface */
+    /**
+     * @var CartInterface
+     * @readonly
+     */
     private $cart;
-    /** @var CustomerInterface */
+    /**
+     * @var CustomerInterface
+     * @readonly
+     */
     private $customer;
-    /** @var SellerInterface|null */
+    /**
+     * @var string|null
+     * @readonly
+     */
+    private $notifyUrl;
+    /**
+     * @var SellerInterface|null
+     * @readonly
+     */
     private $seller;
-    /** @var string|null */
+    /**
+     * @var string|null
+     * @readonly
+     */
     private $accountNumber;
-    /** @var string|null */
+    /**
+     * @var string|null
+     * @readonly
+     */
     private $transferTitle;
-
     /**
      * @param string $id
      * @param string $returnUrl
@@ -36,23 +60,14 @@ class Order implements OrderInterface
      * @param string|null $accountNumber
      * @param string|null $transferTitle
      */
-    public function __construct(
-        string $id,
-        string $returnUrl,
-        LoanParametersInterface $loanParameters,
-        CartInterface $cart,
-        CustomerInterface $customer,
-        ?string $notifyUrl = null,
-        ?SellerInterface $seller = null,
-        ?string $accountNumber = null,
-        ?string $transferTitle = null
-    ) {
+    public function __construct(string $id, string $returnUrl, LoanParametersInterface $loanParameters, CartInterface $cart, CustomerInterface $customer, ?string $notifyUrl = null, ?SellerInterface $seller = null, ?string $accountNumber = null, ?string $transferTitle = null)
+    {
         $this->id = $id;
-        $this->notifyUrl = $notifyUrl;
         $this->returnUrl = $returnUrl;
         $this->loanParameters = $loanParameters;
         $this->cart = $cart;
         $this->customer = $customer;
+        $this->notifyUrl = $notifyUrl;
         $this->seller = $seller;
         $this->accountNumber = $accountNumber;
         $this->transferTitle = $transferTitle;

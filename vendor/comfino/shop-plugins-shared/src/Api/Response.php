@@ -71,7 +71,7 @@ abstract class Response
                             $deserializedResponseBody,
                             "Invalid request data: {$response->getReasonPhrase()} [{$response->getStatusCode()}]"
                         ),
-                        0,
+                        $response->getStatusCode(),
                         null,
                         $request->getRequestUri()
                     );
@@ -79,7 +79,7 @@ abstract class Response
                 case 401:
                     throw new AuthorizationError(
                         $this->getErrorMessage($response->getStatusCode(), $deserializedResponseBody, "Invalid credentials: {$response->getReasonPhrase()} [{$response->getStatusCode()}]"),
-                        0,
+                        $response->getStatusCode(),
                         null,
                         $request->getRequestUri()
                     );
@@ -94,7 +94,7 @@ abstract class Response
                             $deserializedResponseBody,
                             "Access denied: {$response->getReasonPhrase()} [{$response->getStatusCode()}]"
                         ),
-                        0,
+                        $response->getStatusCode(),
                         null,
                         $request->getRequestUri()
                     );
@@ -102,7 +102,7 @@ abstract class Response
                 default:
                     throw new RequestValidationError(
                         "Invalid request data: {$response->getReasonPhrase()} [{$response->getStatusCode()}]",
-                        0,
+                        $response->getStatusCode(),
                         null,
                         $request->getRequestUri()
                     );
@@ -112,7 +112,7 @@ abstract class Response
         if (($errorMessage = $this->getErrorMessage($response->getStatusCode(), $deserializedResponseBody)) !== null) {
             throw new RequestValidationError(
                 $errorMessage,
-                0,
+                $response->getStatusCode(),
                 null,
                 $request->getRequestUri()
             );

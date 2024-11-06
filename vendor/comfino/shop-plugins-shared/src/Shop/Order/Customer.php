@@ -6,25 +6,51 @@ use Comfino\Shop\Order\Customer\AddressInterface;
 
 class Customer implements CustomerInterface
 {
-    /** @var string */
+    /**
+     * @var string
+     * @readonly
+     */
     private $firstName;
-    /** @var string */
+    /**
+     * @var string
+     * @readonly
+     */
     private $lastName;
-    /** @var string */
+    /**
+     * @var string
+     * @readonly
+     */
     private $email;
-    /** @var string */
+    /**
+     * @var string
+     * @readonly
+     */
     private $phoneNumber;
-    /** @var string */
+    /**
+     * @var string
+     * @readonly
+     */
     private $ip;
-    /** @var string|null */
+    /**
+     * @var string|null
+     * @readonly
+     */
     private $taxId;
-    /** @var bool|null */
+    /**
+     * @var bool|null
+     * @readonly
+     */
     private $isRegular;
-    /** @var bool|null */
+    /**
+     * @var bool|null
+     * @readonly
+     */
     private $isLogged;
-    /** @var AddressInterface|null */
+    /**
+     * @var AddressInterface|null
+     * @readonly
+     */
     private $address;
-
     /**
      * @param string $firstName
      * @param string $lastName
@@ -36,17 +62,8 @@ class Customer implements CustomerInterface
      * @param bool|null $isLogged
      * @param AddressInterface|null $address
      */
-    public function __construct(
-        string $firstName,
-        string $lastName,
-        string $email,
-        string $phoneNumber,
-        string $ip,
-        ?string $taxId = null,
-        ?bool $isRegular = null,
-        ?bool $isLogged = null,
-        ?AddressInterface $address = null
-    ) {
+    public function __construct(string $firstName, string $lastName, string $email, string $phoneNumber, string $ip, ?string $taxId = null, ?bool $isRegular = null, ?bool $isLogged = null, ?AddressInterface $address = null)
+    {
         $this->firstName = $firstName;
         $this->lastName = $lastName;
         $this->email = $email;

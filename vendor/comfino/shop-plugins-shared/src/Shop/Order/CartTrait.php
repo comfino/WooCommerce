@@ -59,6 +59,9 @@ trait CartTrait
                 'products' => $products,
                 'totalAmount' => $cart->getTotalAmount(),
                 'deliveryCost' => $cart->getDeliveryCost(),
+                'deliveryNetCost' => $cart->getDeliveryNetCost(),
+                'deliveryCostVatRate' => $cart->getDeliveryCostTaxRate(),
+                'deliveryCostVatAmount' => $cart->getDeliveryCostTaxValue(),
                 'category' => $cart->getCategory(),
             ],
             static function ($value) : bool {

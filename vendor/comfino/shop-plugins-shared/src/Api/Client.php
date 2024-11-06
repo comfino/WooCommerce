@@ -62,7 +62,6 @@ class Client
     protected $streamFactory;
     /**
      * @var ClientInterface
-     * @readonly
      */
     protected $client;
     /**
@@ -95,11 +94,11 @@ class Client
     /**
      * Comfino API client.
      *
-     * @param RequestFactoryInterface $requestFactory External PSR-18 compatible HTTP request factory
-     * @param StreamFactoryInterface $streamFactory External PSR-18 compatible stream factory
-     * @param ClientInterface $client External PSR-18 compatible HTTP client which will be used to communicate with the API
-     * @param string|null $apiKey Unique authentication key required for access to the Comfino API
-     * @param int $apiVersion Selected API version (default: v1)
+     * @param RequestFactoryInterface $requestFactory External PSR-18 compatible HTTP request factory.
+     * @param StreamFactoryInterface $streamFactory External PSR-18 compatible stream factory.
+     * @param ClientInterface $client External PSR-18 compatible HTTP client which will be used to communicate with the API.
+     * @param string|null $apiKey Unique authentication key required for access to the Comfino API.
+     * @param int $apiVersion Selected API version (default: v1).
      */
     public function __construct(
         RequestFactoryInterface $requestFactory,
@@ -153,7 +152,7 @@ class Client
     /**
      * Sets current API key.
      *
-     * @param string $apiKey API key
+     * @param string $apiKey API key.
      * @return void
      */
     public function setApiKey($apiKey): void
@@ -174,7 +173,7 @@ class Client
     /**
      * Selects current API language.
      *
-     * @param string $language Language code (eg: pl, en)
+     * @param string $language Language code (eg: pl, en).
      * @return void
      */
     public function setApiLanguage($language): void
@@ -195,7 +194,7 @@ class Client
     /**
      * Sets custom API host.
      *
-     * @param string|null $host Custom API host
+     * @param string|null $host Custom API host.
      * @return void
      */
     public function setCustomApiHost($host): void
@@ -234,6 +233,14 @@ class Client
     public function disableSandboxMode(): void
     {
         $this->isSandboxMode = false;
+    }
+
+    /**
+     * @param \ComfinoExternal\Psr\Http\Client\ClientInterface $client
+     */
+    public function setClient($client): void
+    {
+        $this->client = $client;
     }
 
     /**
@@ -300,7 +307,7 @@ class Client
     /**
      * Submits a loan application.
      *
-     * @param OrderInterface $order Full order data (cart, loan details)
+     * @param OrderInterface $order Full order data (cart, loan details).
      * @return CreateOrderResponse
      * @throws RequestValidationError
      * @throws ResponseValidationError
@@ -327,7 +334,7 @@ class Client
     /**
      * Returns a details of specified loan application.
      *
-     * @param string $orderId Loan application ID returned by createOrder action
+     * @param string $orderId Loan application ID returned by createOrder action.
      * @return GetOrderResponse
      * @throws RequestValidationError
      * @throws ResponseValidationError
@@ -354,7 +361,7 @@ class Client
     /**
      * Cancels a loan application.
      *
-     * @param string $orderId Loan application ID returned by createOrder action
+     * @param string $orderId Loan application ID returned by createOrder action.
      * @throws RequestValidationError
      * @throws ResponseValidationError
      * @throws AuthorizationError
@@ -456,8 +463,8 @@ class Client
     /**
      * Returns a complete paywall page with list of financial products according to the specified criteria.
      *
-     * @param LoanQueryCriteria $queryCriteria List filtering criteria
-     * @param PaywallViewTypeEnum|null $viewType Paywall view type
+     * @param LoanQueryCriteria $queryCriteria List filtering criteria.
+     * @param PaywallViewTypeEnum|null $viewType Paywall view type.
      * @return GetPaywallResponse
      * @throws RequestValidationError
      * @throws ResponseValidationError
@@ -484,9 +491,9 @@ class Client
     /**
      * Returns a details of paywall item for specified financial product type (loan type) and shopping cart contents.
      *
-     * @param int $loanAmount Requested loan amount
-     * @param LoanTypeEnum $loanType Financial product type (loan type)
-     * @param CartInterface $cart Shopping cart
+     * @param int $loanAmount Requested loan amount.
+     * @param LoanTypeEnum $loanType Financial product type (loan type).
+     * @param CartInterface $cart Shopping cart.
      * @return GetPaywallItemDetailsResponse
      * @throws RequestValidationError
      * @throws ResponseValidationError

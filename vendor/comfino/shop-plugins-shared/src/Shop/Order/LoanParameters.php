@@ -6,15 +6,26 @@ use Comfino\Api\Dto\Payment\LoanTypeEnum;
 
 class LoanParameters implements LoanParametersInterface
 {
-    /** @var int */
+    /**
+     * @var int
+     * @readonly
+     */
     private $amount;
-    /** @var int|null */
+    /**
+     * @var int|null
+     * @readonly
+     */
     private $term;
-    /** @var LoanTypeEnum|null */
+    /**
+     * @var LoanTypeEnum|null
+     * @readonly
+     */
     private $type;
-    /** @var LoanTypeEnum[]|null */
+    /**
+     * @var LoanTypeEnum[]|null
+     * @readonly
+     */
     private $allowedProductTypes;
-
     /**
      * @param int $amount
      * @param int|null $term

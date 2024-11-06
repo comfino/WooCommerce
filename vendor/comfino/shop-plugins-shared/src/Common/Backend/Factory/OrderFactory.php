@@ -26,6 +26,9 @@ final class OrderFactory
         string $returnUrl,
         string $notificationUrl,
         ?array $allowedProductTypes = null,
+        ?int $deliveryNetCost = null,
+        ?int $deliveryCostTaxRate = null,
+        ?int $deliveryCostTaxValue = null,
         ?string $category = null
     ): Order {
         return new Order(
@@ -37,7 +40,15 @@ final class OrderFactory
                 $loanType,
                 $allowedProductTypes
             ),
-            new Cart($cartItems, $orderTotal, $deliveryCost, $category),
+            new Cart(
+                $cartItems,
+                $orderTotal,
+                $deliveryCost,
+                $deliveryNetCost,
+                $deliveryCostTaxRate,
+                $deliveryCostTaxValue,
+                $category
+            ),
             $customer,
             $notificationUrl
         );

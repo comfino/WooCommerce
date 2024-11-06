@@ -4,11 +4,16 @@ namespace Comfino\Shop\Order\Cart;
 
 class CartItem implements CartItemInterface
 {
-    /** @var ProductInterface */
+    /**
+     * @var ProductInterface
+     * @readonly
+     */
     private $product;
-    /** @var int */
+    /**
+     * @var int
+     * @readonly
+     */
     private $quantity;
-
     /**
      * @param ProductInterface $product
      * @param int $quantity

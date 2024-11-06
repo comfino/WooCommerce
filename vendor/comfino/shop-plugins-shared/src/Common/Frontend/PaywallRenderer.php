@@ -22,7 +22,16 @@ final class PaywallRenderer extends FrontendRenderer
      * @var string|null
      */
     private $paywallApiOrigin;
-    private const PAYWALL_FRAGMENTS = ['template', 'style', 'script'];
+    public const PAYWALL_FRAGMENT_TEMPLATE = 'template';
+    public const PAYWALL_FRAGMENT_STYLE = 'style';
+    public const PAYWALL_FRAGMENT_SCRIPT = 'script';
+
+    private const PAYWALL_FRAGMENTS = [self::PAYWALL_FRAGMENT_TEMPLATE, self::PAYWALL_FRAGMENT_STYLE, self::PAYWALL_FRAGMENT_SCRIPT];
+
+    /**
+     * @var mixed[]|null
+     */
+    protected $headMetaTags;
 
     public function __construct(
         Client $client,
@@ -38,10 +47,13 @@ final class PaywallRenderer extends FrontendRenderer
     }
 
     /**
+     * @param HeadMetaTag[]|null $headMetaTags
      * @param \Comfino\Api\Dto\Payment\LoanQueryCriteria $queryCriteria
      */
-    public function renderPaywall($queryCriteria): string
+    public function renderPaywall($queryCriteria, $headMetaTags = null): string
     {
+        $this->headMetaTags = $headMetaTags;
+
         try {
             $fragments = $this->getFrontendFragments(self::PAYWALL_FRAGMENTS);
         } catch (\Throwable $e) {
@@ -65,12 +77,12 @@ final class PaywallRenderer extends FrontendRenderer
                     $regExpPattern = '';
 
                     switch ($fragmentName) {
-                        case 'template':
+                        case self::PAYWALL_FRAGMENT_TEMPLATE:
                             $regExpPattern = '/<!--\[rendered:(\d+)\]-->/';
                             break;
 
-                        case 'style':
-                        case 'script':
+                        case self::PAYWALL_FRAGMENT_STYLE:
+                        case self::PAYWALL_FRAGMENT_SCRIPT:
                             $regExpPattern = '/\/\*\[cached:(\d+)\]\*\//';
                             break;
                     }
@@ -101,9 +113,23 @@ final class PaywallRenderer extends FrontendRenderer
 
             return $this->rendererStrategy->renderPaywallTemplate(
                 str_replace(
-                    ['{PAYWALL_STYLE}', '{PAYWALL_API_ORIGIN}', '{LOAN_AMOUNT}', '{PAYWALL_PRODUCTS_LIST}', '{PAYWALL_SCRIPT}'],
-                    [$fragments['style'], $paywallApiOrigin, $queryCriteria->loanAmount, $paywallProductsList, $fragments['script']],
-                    $fragments['template']
+                    [
+                        '{HEAD_META}',
+                        '{PAYWALL_STYLE}',
+                        '{PAYWALL_API_ORIGIN}',
+                        '{LOAN_AMOUNT}',
+                        '{PAYWALL_PRODUCTS_LIST}',
+                        '{PAYWALL_SCRIPT}',
+                    ],
+                    [
+                        $this->renderHeadMetaTags(),
+                        $fragments[self::PAYWALL_FRAGMENT_STYLE],
+                        $paywallApiOrigin,
+                        $queryCriteria->loanAmount,
+                        $paywallProductsList,
+                        $fragments[self::PAYWALL_FRAGMENT_SCRIPT]
+                    ],
+                    $fragments[self::PAYWALL_FRAGMENT_TEMPLATE]
                 )
             );
         } catch (\Throwable $e) {
@@ -125,5 +151,66 @@ final class PaywallRenderer extends FrontendRenderer
         } catch (\Throwable $e) {
             return new PaywallItemDetails($this->rendererStrategy->renderErrorTemplate($e), '');
         }
+    }
+
+    /**
+     * @param string $fragment
+     */
+    public function getFrontendFragment($fragment): string
+    {
+        try {
+            return $this->getFrontendFragments([$fragment])[$fragment] ?? '';
+        } catch (\Throwable $exception) {
+            return '';
+        }
+    }
+
+    public function getHeadMetaTags(): ?array
+    {
+        return $this->headMetaTags;
+    }
+
+    public function renderHeadMetaTags(): string
+    {
+        if (empty($this->headMetaTags)) {
+            return '';
+        }
+
+        return
+            implode(
+                "\n",
+                array_filter(
+                    array_map(
+                        static function ($headMetaTag): ?string {
+                            if (!($headMetaTag instanceof HeadMetaTag)) {
+                                return null;
+                            }
+
+                            $metaTag = '<meta ';
+
+                            if ($headMetaTag->name !== null) {
+                                $metaTag .= 'name="' . htmlentities(strip_tags($headMetaTag->name), ENT_QUOTES) . '" ';
+                            }
+
+                            if ($headMetaTag->httpEquiv !== null) {
+                                $metaTag .= 'http-equiv="' . htmlentities(strip_tags($headMetaTag->httpEquiv), ENT_QUOTES) . '" ';
+                            }
+
+                            if ($headMetaTag->content !== null) {
+                                $metaTag .= ' content="' . htmlentities(strip_tags($headMetaTag->content), ENT_QUOTES) . '" ';
+                            }
+
+                            if ($headMetaTag->itemProp !== null) {
+                                $metaTag .= ' itemprop="' . htmlentities(strip_tags($headMetaTag->itemProp), ENT_QUOTES) . '" ';
+                            }
+
+                            $metaTag .= '>';
+
+                            return $metaTag;
+                        },
+                        $this->headMetaTags
+                    )
+                )
+            );
     }
 }

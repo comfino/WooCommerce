@@ -128,7 +128,8 @@ trait ClientTestTrait
                             'testtesttest1',
                             '9002490100070',
                             'https://beks.pl/wp-content/uploads/2016/10/S-2282-popra_low_res_zlota_rama.jpg'
-                        ), 1
+                        ),
+                        1
                     ),
                     new Cart\CartItem(
                         new Cart\Product(
@@ -138,7 +139,8 @@ trait ClientTestTrait
                             'testtesttest2',
                             '9002490100070',
                             'https://mnwr.pl/wp-content/uploads/2020/06/Beksinski_Obraz.jpg'
-                        ), 1
+                        ),
+                        1
                     ),
                     new Cart\CartItem(
                         new Cart\Product(
@@ -148,7 +150,8 @@ trait ClientTestTrait
                             'testtesttest3',
                             '9002490100070',
                             'https://beks.pl/wp-content/uploads/2016/10/S-2282-popra_low_res_zlota_rama.jpg'
-                        ), 1
+                        ),
+                        1
                     ),
                     new Cart\CartItem(
                         new Cart\Product(
@@ -158,9 +161,16 @@ trait ClientTestTrait
                             'testtesttest4',
                             '9002490100070',
                             'https://mnwr.pl/wp-content/uploads/2020/06/Beksinski_Obraz.jpg'
-                        ), 1
+                        ),
+                        1
                     ),
-                ], 50000, 2000, 'elektronika'
+                ],
+                50000,
+                2000,
+                null,
+                null,
+                null,
+                'elektronika'
             ),
             new Shop\Order\Customer(
                 'John',

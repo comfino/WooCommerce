@@ -4,27 +4,56 @@ namespace Comfino\Shop\Order\Cart;
 
 class Product implements ProductInterface
 {
-    /** @var string */
+    /**
+     * @var string
+     * @readonly
+     */
     private $name;
-    /** @var int */
+    /**
+     * @var int
+     * @readonly
+     */
     private $price;
-    /** @var int|null */
-    private $netPrice;
-    /** @var int|null */
-    private $taxRate;
-    /** @var int|null */
-    private $taxValue;
-    /** @var string|null */
+    /**
+     * @var string|null
+     * @readonly
+     */
     private $id;
-    /** @var string|null */
+    /**
+     * @var string|null
+     * @readonly
+     */
     private $category;
-    /** @var string|null */
+    /**
+     * @var string|null
+     * @readonly
+     */
     private $ean;
-    /** @var string|null */
+    /**
+     * @var string|null
+     * @readonly
+     */
     private $photoUrl;
-    /** @var int[]|null */
+    /**
+     * @var int[]|null
+     * @readonly
+     */
     private $categoryIds;
-
+    /**
+     * @var int|null
+     * @readonly
+     */
+    private $netPrice;
+    /**
+     * @var int|null
+     * @readonly
+     */
+    private $taxRate;
+    /**
+     * @var int|null
+     * @readonly
+     */
+    private $taxValue;
     /**
      * @param string $name
      * @param int $price
@@ -37,18 +66,8 @@ class Product implements ProductInterface
      * @param int|null $taxRate
      * @param int|null $taxValue
      */
-    public function __construct(
-        string $name,
-        int $price,
-        ?string $id = null,
-        ?string $category = null,
-        ?string $ean = null,
-        ?string $photoUrl = null,
-        ?array $categoryIds = null,
-        ?int $netPrice = null,
-        ?int $taxRate = null,
-        ?int $taxValue = null
-    ) {
+    public function __construct(string $name, int $price, ?string $id = null, ?string $category = null, ?string $ean = null, ?string $photoUrl = null, ?array $categoryIds = null, ?int $netPrice = null, ?int $taxRate = null, ?int $taxValue = null)
+    {
         $this->name = $name;
         $this->price = $price;
         $this->id = $id;

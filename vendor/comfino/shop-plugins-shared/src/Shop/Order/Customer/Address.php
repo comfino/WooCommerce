@@ -4,19 +4,36 @@ namespace Comfino\Shop\Order\Customer;
 
 class Address implements AddressInterface
 {
-    /** @var string|null */
+    /**
+     * @var string|null
+     * @readonly
+     */
     private $street;
-    /** @var string|null */
+    /**
+     * @var string|null
+     * @readonly
+     */
     private $buildingNumber;
-    /** @var string|null */
+    /**
+     * @var string|null
+     * @readonly
+     */
     private $apartmentNumber;
-    /** @var string|null */
+    /**
+     * @var string|null
+     * @readonly
+     */
     private $postalCode;
-    /** @var string|null */
+    /**
+     * @var string|null
+     * @readonly
+     */
     private $city;
-    /** @var string|null */
+    /**
+     * @var string|null
+     * @readonly
+     */
     private $countryCode;
-
     /**
      * @param string|null $street
      * @param string|null $buildingNumber
@@ -25,14 +42,8 @@ class Address implements AddressInterface
      * @param string|null $city
      * @param string|null $countryCode
      */
-    public function __construct(
-        ?string $street = null,
-        ?string $buildingNumber = null,
-        ?string $apartmentNumber = null,
-        ?string $postalCode = null,
-        ?string $city = null,
-        ?string $countryCode = null
-    ) {
+    public function __construct(?string $street = null, ?string $buildingNumber = null, ?string $apartmentNumber = null, ?string $postalCode = null, ?string $city = null, ?string $countryCode = null)
+    {
         $this->street = $street;
         $this->buildingNumber = $buildingNumber;
         $this->apartmentNumber = $apartmentNumber;
