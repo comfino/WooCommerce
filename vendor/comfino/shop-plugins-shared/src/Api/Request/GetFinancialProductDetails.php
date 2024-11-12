@@ -4,18 +4,29 @@ namespace Comfino\Api\Request;
 
 use Comfino\Api\Dto\Payment\LoanQueryCriteria;
 use Comfino\Api\Request;
+use Comfino\Shop\Order\CartInterface;
+use Comfino\Shop\Order\CartTrait;
 
 /**
- * Financial products listing request.
+ * Financial product details request.
  */
-class GetFinancialProducts extends Request
+class GetFinancialProductDetails extends Request
 {
     /**
-     * @param LoanQueryCriteria $queryCriteria
+     * @var CartInterface
+     * @readonly
      */
-    public function __construct(LoanQueryCriteria $queryCriteria)
+    private $cart;
+    use CartTrait;
+
+    /**
+     * @param LoanQueryCriteria $queryCriteria
+     * @param CartInterface $cart
+     */
+    public function __construct(LoanQueryCriteria $queryCriteria, CartInterface $cart)
     {
-        $this->setRequestMethod('GET');
+        $this->cart = $cart;
+        $this->setRequestMethod('POST');
         $this->setApiEndpointPath('financial-products');
         $this->setRequestParams(
             array_filter(
@@ -38,6 +49,6 @@ class GetFinancialProducts extends Request
      */
     protected function prepareRequestBody(): ?array
     {
-        return null;
+        return $this->getCartAsArray($this->cart);
     }
 }

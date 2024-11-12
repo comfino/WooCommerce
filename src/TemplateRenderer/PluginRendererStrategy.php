@@ -3,11 +3,11 @@
 namespace Comfino\TemplateRenderer;
 
 use Comfino\Api\Exception\AccessDenied;
-use Comfino\Api\Exception\AuthorizationError;
-use Comfino\Api\Exception\RequestValidationError;
 use Comfino\Api\Exception\ResponseValidationError;
 use Comfino\Api\Exception\ServiceUnavailable;
+use Comfino\Api\HttpErrorExceptionInterface;
 use Comfino\Common\Frontend\TemplateRenderer\RendererStrategyInterface;
+use Comfino\Main;
 use Comfino\View\TemplateManager;
 use ComfinoExternal\Psr\Http\Client\NetworkExceptionInterface;
 
@@ -22,18 +22,36 @@ class PluginRendererStrategy implements RendererStrategyInterface
         return $paywallContents;
     }
 
-    public function renderErrorTemplate($exception): string
+    public function renderErrorTemplate($exception, $frontendRenderer): string
     {
-        if ($exception instanceof RequestValidationError || $exception instanceof ResponseValidationError
-            || $exception instanceof AuthorizationError || $exception instanceof AccessDenied
-            || $exception instanceof ServiceUnavailable
-        ) {
+        $userErrorMessage = 'There was a technical problem. Please try again in a moment and it should work!';
+
+        Main::debugLog(
+            '[API_ERROR]',
+            'renderErrorTemplate',
+            [
+                'exception' => get_class($exception),
+                'error_message' => $exception->getMessage(),
+                'error_code' => $exception->getCode(),
+                'error_file' => $exception->getFile(),
+                'error_line' => $exception->getLine(),
+                'error_trace' => $exception->getTraceAsString(),
+                // '$fullDocumentStructure' => $this->fullDocumentStructure,
+            ]
+        );
+
+        if ($exception instanceof HttpErrorExceptionInterface) {
             $url = $exception->getUrl();
             $requestBody = $exception->getRequestBody();
 
             if ($exception instanceof ResponseValidationError || $exception instanceof ServiceUnavailable) {
                 $responseBody = $exception->getResponseBody();
             } else {
+                if ($exception instanceof AccessDenied && $exception->getCode() === 404) {
+                    $showMessage = true;
+                    $userErrorMessage = $exception->getMessage();
+                }
+
                 $responseBody = '';
             }
 

@@ -20,7 +20,9 @@ abstract class Response
      * @param Request $request
      * @param ResponseInterface $response
      * @param SerializerInterface $serializer
+     *
      * @return Response
+     *
      * @throws RequestValidationError
      * @throws ResponseValidationError
      * @throws AuthorizationError
@@ -167,6 +169,7 @@ abstract class Response
      *
      * @param string $headerName
      * @param string|null $defaultValue
+     *
      * @return string|null
      */
     final public function getHeader($headerName, $defaultValue = null): ?string

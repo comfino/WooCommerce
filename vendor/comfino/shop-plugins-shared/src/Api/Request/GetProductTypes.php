@@ -7,6 +7,9 @@ use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 
 class GetProductTypes extends Request
 {
+    /**
+     * @param ProductTypesListTypeEnum $listType
+     */
     public function __construct(ProductTypesListTypeEnum $listType)
     {
         $this->setRequestMethod('GET');

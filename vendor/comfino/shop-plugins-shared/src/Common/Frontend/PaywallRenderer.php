@@ -57,7 +57,7 @@ final class PaywallRenderer extends FrontendRenderer
         try {
             $fragments = $this->getFrontendFragments(self::PAYWALL_FRAGMENTS);
         } catch (\Throwable $e) {
-            return $this->rendererStrategy->renderErrorTemplate($e);
+            return $this->rendererStrategy->renderErrorTemplate($e, $this);
         }
 
         try {
@@ -133,7 +133,7 @@ final class PaywallRenderer extends FrontendRenderer
                 )
             );
         } catch (\Throwable $e) {
-            return $this->rendererStrategy->renderErrorTemplate($e);
+            return $this->rendererStrategy->renderErrorTemplate($e, $this);
         }
     }
 
@@ -149,7 +149,7 @@ final class PaywallRenderer extends FrontendRenderer
 
             return new PaywallItemDetails($response->productDetails, $response->listItemData);
         } catch (\Throwable $e) {
-            return new PaywallItemDetails($this->rendererStrategy->renderErrorTemplate($e), '');
+            return new PaywallItemDetails($this->rendererStrategy->renderErrorTemplate($e, $this), '');
         }
     }
 

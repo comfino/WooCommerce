@@ -44,7 +44,9 @@ abstract class Request
      * @param StreamFactoryInterface $streamFactory
      * @param string $apiHost
      * @param int $apiVersion
+     *
      * @return RequestInterface
+     *
      * @throws RequestValidationError
      */
     final public function getPsrRequest(
@@ -99,6 +101,7 @@ abstract class Request
 
     /**
      * @return string
+     *
      * @throws RequestValidationError
      */
     final public function __toString(): string
@@ -108,6 +111,7 @@ abstract class Request
 
     /**
      * @param string $method
+     *
      * @return void
      */
     final protected function setRequestMethod($method): void
@@ -117,6 +121,7 @@ abstract class Request
 
     /**
      * @param string $apiEndpointPath
+     *
      * @return void
      */
     final protected function setApiEndpointPath($apiEndpointPath): void
@@ -126,6 +131,7 @@ abstract class Request
 
     /**
      * @param string[] $requestHeaders
+     *
      * @return void
      */
     final protected function setRequestHeaders($requestHeaders): void
@@ -135,15 +141,30 @@ abstract class Request
 
     /**
      * @param string[] $requestParams
+     *
      * @return void
      */
     final protected function setRequestParams($requestParams): void
     {
-        $this->requestParams = $requestParams;
+        $this->requestParams = array_map(
+            static function ($requestParam): string {
+                if (is_string($requestParam)) {
+                    return $requestParam;
+                }
+
+                if ($requestParam === null) {
+                    return '';
+                }
+
+                return (string) $requestParam;
+            },
+            $requestParams
+        );
     }
 
     /**
      * @return string|null
+     *
      * @throws RequestValidationError
      */
     final protected function serializeRequestBody(): ?string
@@ -154,6 +175,7 @@ abstract class Request
     /**
      * @param string $apiHost
      * @param int $apiVersion
+     *
      * @return string
      */
     final protected function getApiEndpointUri($apiHost, $apiVersion): string

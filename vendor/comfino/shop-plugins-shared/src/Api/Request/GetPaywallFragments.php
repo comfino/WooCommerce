@@ -6,6 +6,10 @@ use Comfino\Api\Request;
 
 class GetPaywallFragments extends Request
 {
+    /**
+     * @param string|null $cacheInvalidateUrl
+     * @param string|null $configurationUrl
+     */
     public function __construct(?string $cacheInvalidateUrl, ?string $configurationUrl)
     {
         $this->setRequestMethod('GET');

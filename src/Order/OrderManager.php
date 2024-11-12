@@ -15,7 +15,7 @@ final class OrderManager
 {
     public static function getShopCart(\WC_Cart $cart, int $loanAmount): Cart
     {
-        $totalValue = (int) ($cart->get_total('edit') * 100);
+        $totalValue = (int) round($cart->get_total('edit') * 100);
 
         if ($loanAmount > $totalValue) {
             // Loan amount with price modifier (e.g. custom commission).
@@ -34,8 +34,8 @@ final class OrderManager
                     $imageUrl = null;
                 }
 
-                $grossPrice = (int) (wc_get_price_including_tax($product) * 100);
-                $netPrice = (int) (wc_get_price_excluding_tax($product) * 100);
+                $grossPrice = (int) round(wc_get_price_including_tax($product) * 100);
+                $netPrice = (int) round(wc_get_price_excluding_tax($product) * 100);
 
                 if (!empty($taxRates = \WC_Tax::get_rates($product->get_tax_class()))) {
                     $taxRate = reset($taxRates);
@@ -83,7 +83,7 @@ final class OrderManager
             $totalTaxValue = null;
         }
 
-        $deliveryCost = (int) (($cart->get_shipping_total() + $cart->get_shipping_tax()) * 100);
+        $deliveryCost = (int) round(($cart->get_shipping_total() + $cart->get_shipping_tax()) * 100);
         $deliveryNetCost = null;
         $deliveryTaxValue = null;
         $deliveryTaxRate = null;
@@ -104,8 +104,8 @@ final class OrderManager
             }
 
             if ($taxRate !== null) {
-                $deliveryNetCost = (int) ($cart->get_shipping_total() * 100);
-                $deliveryTaxValue = (int) ($cart->get_shipping_tax() * 100);
+                $deliveryNetCost = (int) round($cart->get_shipping_total() * 100);
+                $deliveryTaxValue = (int) round($cart->get_shipping_tax() * 100);
                 $deliveryTaxRate = (int) $taxRate['rate'];
             }
         }
@@ -132,7 +132,7 @@ final class OrderManager
 
         return new Cart(
             (int) (wc_get_price_including_tax($product) * 100),
-            null,
+            (int) round(wc_get_price_excluding_tax($product) * 100),
             null,
             0,
             null,
@@ -144,8 +144,8 @@ final class OrderManager
                         $product->get_name(),
                         (int) (wc_get_price_including_tax($product) * 100),
                         (string) $product->get_id(),
-                        null,
-                        null,
+                        strip_tags(wc_get_product_category_list($product->get_id()), ','),
+                        $product->get_sku(),
                         null,
                         $product->get_category_ids(),
                         $taxRates !== null ? (int) (wc_get_price_excluding_tax($product) * 100) : null,

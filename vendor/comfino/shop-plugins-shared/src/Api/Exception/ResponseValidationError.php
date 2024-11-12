@@ -2,7 +2,9 @@
 
 namespace Comfino\Api\Exception;
 
-class ResponseValidationError extends \RuntimeException
+use Comfino\Api\HttpErrorExceptionInterface;
+
+class ResponseValidationError extends \RuntimeException implements HttpErrorExceptionInterface
 {
     /** @var string */
     private $url;
@@ -57,5 +59,10 @@ class ResponseValidationError extends \RuntimeException
     public function setResponseBody($responseBody): void
     {
         $this->responseBody = $responseBody;
+    }
+
+    public function getStatusCode(): int
+    {
+        return 400;
     }
 }
