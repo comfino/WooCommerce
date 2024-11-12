@@ -2,7 +2,9 @@
 
 namespace Comfino\Api\Exception;
 
-class RequestValidationError extends \LogicException
+use Comfino\Api\HttpErrorExceptionInterface;
+
+class RequestValidationError extends \LogicException implements HttpErrorExceptionInterface
 {
     /** @var string */
     private $url;
@@ -41,5 +43,15 @@ class RequestValidationError extends \LogicException
     public function setRequestBody($requestBody): void
     {
         $this->requestBody = $requestBody;
+    }
+
+    public function getResponseBody(): string
+    {
+        return '';
+    }
+
+    public function getStatusCode(): int
+    {
+        return 400;
     }
 }

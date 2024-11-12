@@ -43,7 +43,7 @@ final class PaywallIframeRenderer extends FrontendRenderer
         try {
             $fragments = $this->getPaywallElements($iframeUrl);
         } catch (\Throwable $e) {
-            return $this->rendererStrategy->renderErrorTemplate($e);
+            return $this->rendererStrategy->renderErrorTemplate($e, $this);
         }
 
         return sprintf(

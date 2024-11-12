@@ -2,7 +2,9 @@
 
 namespace Comfino\Api\Exception;
 
-class AccessDenied extends \RuntimeException
+use Comfino\Api\HttpErrorExceptionInterface;
+
+class AccessDenied extends \RuntimeException implements HttpErrorExceptionInterface
 {
     /** @var string */
     private $url;
@@ -41,5 +43,15 @@ class AccessDenied extends \RuntimeException
     public function setRequestBody($requestBody): void
     {
         $this->requestBody = $requestBody;
+    }
+
+    public function getResponseBody(): string
+    {
+        return '';
+    }
+
+    public function getStatusCode(): int
+    {
+        return 403;
     }
 }

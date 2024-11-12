@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the Comfino payment gateway plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Comfino payment gateway 4.0.0\n"
+"Project-Id-Version: Comfino payment gateway 4.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/comfino\n"
 "POT-Creation-Date: 2024-09-30T11:19:23+00:00\n"
 "PO-Revision-Date: 2024-09-30 13:27+0200\n"

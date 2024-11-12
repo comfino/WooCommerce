@@ -10,12 +10,17 @@ use Comfino\Shop\Order\CartTrait;
 class GetPaywallItemDetails extends Request
 {
     /**
+     * @var CartInterface
      * @readonly
-     * @var \Comfino\Shop\Order\CartInterface
      */
     private $cart;
     use CartTrait;
 
+    /**
+     * @param int $loanAmount
+     * @param LoanTypeEnum $loanType
+     * @param CartInterface $cart
+     */
     public function __construct(int $loanAmount, LoanTypeEnum $loanType, CartInterface $cart)
     {
         $this->cart = $cart;

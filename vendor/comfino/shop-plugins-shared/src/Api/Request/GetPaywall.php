@@ -8,6 +8,10 @@ use Comfino\Paywall\PaywallViewTypeEnum;
 
 class GetPaywall extends Request
 {
+    /**
+     * @param LoanQueryCriteria $queryCriteria
+     * @param PaywallViewTypeEnum|null $viewType
+     */
     public function __construct(LoanQueryCriteria $queryCriteria, ?PaywallViewTypeEnum $viewType = null)
     {
         $this->setRequestMethod('GET');
@@ -17,7 +21,7 @@ class GetPaywall extends Request
                 [
                     'loanAmount' => $queryCriteria->loanAmount,
                     'loanTerm' => $queryCriteria->loanTerm,
-                    'loanType' => $queryCriteria->loanType,
+                    'loanTypeSelected' => $queryCriteria->loanType,
                     'productTypes' => ($queryCriteria->productTypes !== null ? implode(',', $queryCriteria->productTypes) : null),
                     'taxId' => $queryCriteria->taxId,
                     'viewType' => ($viewType !== null ? (string) $viewType : null),

@@ -37,6 +37,21 @@ class FinancialProduct
     /** @var LoanParameters[]
      * @readonly */
     public $loanParameters;
+    /** @var int|null
+     * @readonly */
+    public $initialPaymentValue;
+    /** @var float|null
+     * @readonly */
+    public $initialPaymentRate;
+    /** @var int|null
+     * @readonly */
+    public $redemptionPaymentValue;
+    /** @var float|null
+     * @readonly */
+    public $redemptionPaymentRate;
+    /** @var float|null
+     * @readonly */
+    public $offerRate;
 
     /**
      * @param string $name
@@ -50,6 +65,11 @@ class FinancialProduct
      * @param string $representativeExample
      * @param string|null $remarks
      * @param LoanParameters[] $loanParameters
+     * @param int|null $initialPaymentValue
+     * @param float|null $initialPaymentRate
+     * @param int|null $redemptionPaymentValue
+     * @param float|null $redemptionPaymentRate
+     * @param float|null $offerRate
      */
     public function __construct(
         string $name,
@@ -62,7 +82,12 @@ class FinancialProduct
         float $rrso,
         string $representativeExample,
         ?string $remarks,
-        array $loanParameters
+        array $loanParameters,
+        ?int $initialPaymentValue = null,
+        ?float $initialPaymentRate = null,
+        ?int $redemptionPaymentValue = null,
+        ?float $redemptionPaymentRate = null,
+        ?float $offerRate = null
     ) {
         $this->name = $name;
         $this->type = $type;
@@ -75,5 +100,10 @@ class FinancialProduct
         $this->representativeExample = $representativeExample;
         $this->remarks = $remarks;
         $this->loanParameters = $loanParameters;
+        $this->initialPaymentValue = $initialPaymentValue;
+        $this->initialPaymentRate = $initialPaymentRate;
+        $this->redemptionPaymentValue = $redemptionPaymentValue;
+        $this->redemptionPaymentRate = $redemptionPaymentRate;
+        $this->offerRate = $offerRate;
     }
 }

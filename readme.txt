@@ -2,14 +2,21 @@
 Contributors: comfino.pl
 Donate link: https://comfino.pl/
 Tags: comfino, woocommerce, gateway, payment, bank, deferred payments, installments
-WC tested up to: 9.2.3
+WC tested up to: 9.3.3
 WC requires at least: 3.0
-Stable tag: 4.0.0
+Stable tag: 4.1.0
 Tested up to: 6.6.2
 Requires at least: 5.0
 Requires PHP: 7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
+
+4.1.0
+ * Added support for leasing.
+ * Fixed some bugs in cart items price calculations.
+ * Mark plugin as compatible with WooCommerce HPOS (https://woocommerce.com/document/high-performance-order-storage) function.
+ * Mark plugin as compatible with WooCommerce Cart and Checkout Blocks (https://woocommerce.com/checkout-blocks) layout.
+ * Integrate plugin with WooCommerce Cart and Checkout blocks.
 
 4.0.0
  * Complete plugin refactoring: redesigned plugin architecture, improved errors handling, stability and reliability, code clean up (lowest supported PHP version is 7.1).

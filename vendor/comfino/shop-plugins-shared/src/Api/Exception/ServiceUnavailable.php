@@ -2,7 +2,9 @@
 
 namespace Comfino\Api\Exception;
 
-class ServiceUnavailable extends \RuntimeException
+use Comfino\Api\HttpErrorExceptionInterface;
+
+class ServiceUnavailable extends \RuntimeException implements HttpErrorExceptionInterface
 {
     /** @var string */
     private $url;
@@ -57,5 +59,10 @@ class ServiceUnavailable extends \RuntimeException
     public function setResponseBody($responseBody): void
     {
         $this->responseBody = $responseBody;
+    }
+
+    public function getStatusCode(): int
+    {
+        return 503;
     }
 }
