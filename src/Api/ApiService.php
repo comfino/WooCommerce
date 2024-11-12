@@ -352,9 +352,9 @@ final class ApiService
             return new \WP_REST_Response();
         }
 
-        $loanTypeSelected = $request->get_param('loanTypeSelected') ?? '';
         $shopCart = OrderManager::getShopCartFromProduct($product);
         $loanAmount = $shopCart->getTotalValue();
+        $loanTypeSelected = $request->get_param('loanTypeSelected') ?? '';
 
         Main::debugLog(
             '[PRODUCT_DETAILS]',
