@@ -13,6 +13,7 @@ use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
 use Comfino\ErrorLogger;
+use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Main;
 use Comfino\Order\OrderManager;
@@ -42,6 +43,7 @@ final class ApiService
         'availableOfferTypes' => [self::class, 'getAvailableOfferTypes'],
         'paywall' => [self::class, 'getPaywall'],
         'paywallItemDetails' => [self::class, 'getPaywallItemDetails'],
+        'productDetails' => [self::class, 'getProductDetails'],
         'paywallFrontendStyle' => [self::class, 'getPaywallFrontendStyle'],
         'paywallFrontendScript' => [self::class, 'getPaywallFrontendScript'],
     ];
@@ -88,6 +90,16 @@ final class ApiService
                 'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
                     return self::processRequest('paywallItemDetails', $request);
                 },
+            ],
+        ]);
+
+        self::registerWordPressApiEndpoint('productDetails', [
+            [
+                'methods' => \WP_REST_Server::READABLE,
+                'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
+                    return self::processRequest('productDetails', $request);
+                },
+                'args' => ['loanTypeSelected' => ['sanitize_callback' => 'sanitize_text_field']],
             ],
         ]);
 
@@ -174,6 +186,7 @@ final class ApiService
             'availableOfferTypes' => '/availableoffertypes(?:/(?P<product_id>\d+))?',
             'paywall' => '/paywall',
             'paywallItemDetails' => '/paywallitemdetails',
+            'productDetails' => '/productdetails(?:/(?P<product_id>\d+)/(?P<loanTypeSelected>[A-Z_]+))?',
             'transactionStatus' => '/transactionstatus',
             'configuration' => '/configuration(?:/(?P<vkey>[a-f0-9]+))?',
             'cacheInvalidate' => '/cacheinvalidate',
@@ -323,6 +336,61 @@ final class ApiService
         }
 
         return new \WP_REST_Response(SettingsManager::getAllowedProductTypes('widget', OrderManager::getShopCartFromProduct($product), true));
+    }
+
+    private static function getProductDetails(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $serializer = new JsonSerializer();
+
+        if (empty($productId = $request->get_param('product_id') ?? '')) {
+            return new \WP_REST_Response();
+        }
+
+        $product = wc_get_product($productId);
+
+        if (!$product) {
+            return new \WP_REST_Response();
+        }
+
+        $loanTypeSelected = $request->get_param('loanTypeSelected') ?? '';
+        $shopCart = OrderManager::getShopCartFromProduct($product);
+        $loanAmount = $shopCart->getTotalValue();
+
+        Main::debugLog(
+            '[PRODUCT_DETAILS]',
+            'getFinancialProductDetails',
+            ['$loanAmount' => $loanAmount, '$productId' =>$productId, '$loanTypeSelected' => $loanTypeSelected]
+        );
+
+        try {
+            $financialProducts = $serializer->serialize(
+                ApiClient::getInstance()->getFinancialProductDetails(
+                    new LoanQueryCriteria($loanAmount, null, LoanTypeEnum::from($loanTypeSelected)),
+                    new Cart(
+                        $shopCart->getCartItems(),
+                        $shopCart->getTotalValue(),
+                        $shopCart->getDeliveryCost(),
+                        $shopCart->getDeliveryNetCost(),
+                        $shopCart->getDeliveryTaxRate(),
+                        $shopCart->getDeliveryTaxValue()
+                    )
+                )->financialProducts
+            );
+        } catch (\Throwable $e) {
+            ErrorLogger::sendError(
+                'Product details endpoint',
+                $e->getCode(),
+                $e->getMessage(),
+                $e instanceof HttpErrorExceptionInterface ? $e->getUrl() : null,
+                $e instanceof HttpErrorExceptionInterface ? $e->getRequestBody() : null,
+                $e instanceof HttpErrorExceptionInterface ? $e->getResponseBody() : null,
+                $e->getTraceAsString()
+            );
+
+            return new \WP_REST_Response($e->getMessage(), $e instanceof HttpErrorExceptionInterface ? $e->getStatusCode() : 500);
+        }
+
+        return new \WP_REST_Response($financialProducts);
     }
 
     private static function getPaywall(\WP_REST_Request $request): void

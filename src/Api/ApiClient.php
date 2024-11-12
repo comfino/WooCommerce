@@ -2,9 +2,6 @@
 
 namespace Comfino\Api;
 
-use Comfino\Api\Exception\AccessDenied;
-use Comfino\Api\Exception\AuthorizationError;
-use Comfino\Api\Exception\RequestValidationError;
 use Comfino\Api\Exception\ResponseValidationError;
 use Comfino\Api\Exception\ServiceUnavailable;
 use Comfino\Common\Backend\Factory\ApiClientFactory;
@@ -70,18 +67,10 @@ final class ApiClient
 
     public static function processApiError(string $errorPrefix, \Throwable $exception): void
     {
-        if ($exception instanceof RequestValidationError || $exception instanceof ResponseValidationError
-            || $exception instanceof AuthorizationError || $exception instanceof AccessDenied
-            || $exception instanceof ServiceUnavailable
-        ) {
+        if ($exception instanceof HttpErrorExceptionInterface) {
             $url = $exception->getUrl();
             $requestBody = $exception->getRequestBody();
-
-            if ($exception instanceof ResponseValidationError || $exception instanceof ServiceUnavailable) {
-                $responseBody = $exception->getResponseBody();
-            } else {
-                $responseBody = null;
-            }
+            $responseBody = $exception->getResponseBody();
         } elseif ($exception instanceof NetworkExceptionInterface) {
             $exception->getRequest()->getBody()->rewind();
 

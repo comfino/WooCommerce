@@ -132,7 +132,7 @@ final class OrderManager
 
         return new Cart(
             (int) (wc_get_price_including_tax($product) * 100),
-            null,
+            (int) round(wc_get_price_excluding_tax($product) * 100),
             null,
             0,
             null,
@@ -144,8 +144,8 @@ final class OrderManager
                         $product->get_name(),
                         (int) (wc_get_price_including_tax($product) * 100),
                         (string) $product->get_id(),
-                        null,
-                        null,
+                        strip_tags(wc_get_product_category_list($product->get_id()), ','),
+                        $product->get_sku(),
                         null,
                         $product->get_category_ids(),
                         $taxRates !== null ? (int) (wc_get_price_excluding_tax($product) * 100) : null,

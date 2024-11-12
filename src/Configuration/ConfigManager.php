@@ -386,7 +386,8 @@ final class ConfigManager
             '{PLATFORM_VERSION}' => WC_VERSION,
             '{PLATFORM_DOMAIN}' => Main::getShopDomain(),
             '{PLUGIN_VERSION}' => PaymentGateway::VERSION,
-            '{AVAILABLE_OFFER_TYPES}' => $productData['avail_offers_url'],
+            '{AVAILABLE_OFFER_TYPES_URL}' => $productData['avail_offers_url'],
+            '{PRODUCT_DETAILS_URL}' => $productData['product_details_url'],
         ];
     }
 
@@ -464,11 +465,13 @@ final class ConfigManager
     private static function getProductData(?int $productId): array
     {
         $availOffersUrl = ApiService::getEndpointUrl('availableOfferTypes');
+        $productDetailsUrl = ApiService::getEndpointUrl('productDetails');
 
         $price = 'null';
 
         if ($productId !== null) {
             $availOffersUrl .= "/$productId";
+            $productDetailsUrl  .= "/$productId";
 
             if (($product = wc_get_product($productId)) instanceof \WC_Product) {
                 $price = (float) preg_replace([
@@ -491,6 +494,7 @@ final class ConfigManager
             'product_id' => $productId,
             'price' => $price,
             'avail_offers_url' => $availOffersUrl,
+            'product_details_url' => $productDetailsUrl,
         ];
     }
 
@@ -516,7 +520,8 @@ script.onload = function () {
         platformVersion: '{PLATFORM_VERSION}',
         platformDomain: '{PLATFORM_DOMAIN}',
         pluginVersion: '{PLUGIN_VERSION}',
-        availOffersUrl: '{AVAILABLE_OFFER_TYPES}',
+        availOffersUrl: '{AVAILABLE_OFFER_TYPES_URL}',
+        productDetailsUrl: '{PRODUCT_DETAILS_URL}',
         callbackBefore: function () {},
         callbackAfter: function () {},
         onOfferRendered: function (jsonResponse, widgetTarget, widgetNode) { },
