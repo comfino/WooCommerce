@@ -21,8 +21,8 @@ use Comfino\View\TemplateManager;
 class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
-    public const VERSION = '4.1.0';
-    public const BUILD_TS = 1731411442;
+    public const VERSION = '4.1.1';
+    public const BUILD_TS = 1731656865;
 
     public function __construct()
     {

@@ -208,7 +208,11 @@ final class ApiService
 
     public static function getEndpointPath(string $endpointName): string
     {
-        return parse_url(self::getEndpointUrl($endpointName), PHP_URL_PATH);
+        $endpointUrl = self::getEndpointUrl($endpointName);
+        $endpointPath = parse_url($endpointUrl, PHP_URL_PATH);
+        $endpointParams = parse_url($endpointUrl, PHP_URL_QUERY);
+
+        return $endpointPath . (!empty($endpointParams) ? '?' . $endpointParams : '');
     }
 
     public static function processRequest(string $endpointName, \WP_REST_Request $request): \WP_REST_Response

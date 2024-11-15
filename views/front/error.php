@@ -7,4 +7,4 @@ if (!defined('ABSPATH')) {
 /** @var string $error_message */
 ?>
 
-<?php esc_html($error_message); ?>
+<?php echo esc_html($error_message); ?>
