@@ -12,7 +12,7 @@ License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 4.1.1
- * Fixed bug in product widget initialization script on configurations without URL rewriting, added some improvement in errors presentation.
+ * Fixed bug in product widget initialization script on configurations without URL rewriting, added some improvements in errors presentation.
 
 4.1.0
  * Added support for leasing.
