@@ -122,7 +122,7 @@ abstract class FrontendRenderer
     private function savePaywallFragments(array $fragments, array $fragmentsCacheTtl, ?string $language = null): void
     {
         foreach ($fragments as $fragmentName => $fragmentContents) {
-            if (!in_array($fragmentName, self::PAYWALL_GUI_FRAGMENTS, true)) {
+            if (empty($fragmentContents) || !in_array($fragmentName, self::PAYWALL_GUI_FRAGMENTS, true)) {
                 continue;
             }
 
