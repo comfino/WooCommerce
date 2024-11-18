@@ -2,6 +2,7 @@
 
 namespace Comfino\TemplateRenderer;
 
+use Comfino\Api\ApiClient;
 use Comfino\Api\Exception\AccessDenied;
 use Comfino\Api\Exception\ResponseValidationError;
 use Comfino\Api\Exception\ServiceUnavailable;
@@ -83,6 +84,7 @@ class PluginRendererStrategy implements RendererStrategyInterface
                 'url' => $url,
                 'request_body' => $requestBody,
                 'response_body' => $responseBody,
+                'is_debug_mode' => ApiClient::isDevEnv(),
             ]
         );
     }

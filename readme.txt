@@ -14,6 +14,9 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 4.1.2
  *
 
+4.1.1
+ * Fixed bug in product widget initialization script on configurations without URL rewriting, added some improvements in errors presentation.
+
 4.1.0
  * Added support for leasing.
  * Fixed some bugs in cart items price calculations.
