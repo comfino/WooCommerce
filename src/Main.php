@@ -171,6 +171,10 @@ final class Main
     {
         ConfigManager::deleteConfigurationValues();
 
+        delete_transient('comfino_plugin_updated');
+        delete_transient('comfino_plugin_prev_version');
+        delete_transient('comfino_plugin_updated_at');
+
         ErrorLogger::init($pluginDirectory);
         ApiClient::getInstance()->notifyPluginRemoval();
 
