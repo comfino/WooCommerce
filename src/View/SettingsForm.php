@@ -25,7 +25,7 @@ final class SettingsForm
     {
         $errorMessages = [];
         $widgetKeyError = false;
-        $widgetKey = '';
+        $widgetKey = ConfigManager::getConfigurationValue('COMFINO_WIDGET_KEY', '');
 
         $errorEmptyMsg = __("Field '%s' can not be empty.", 'comfino-payment-gateway');
         $errorNumericFormatMsg = __("Field '%s' has wrong numeric format.", 'comfino-payment-gateway');
@@ -57,14 +57,16 @@ final class SettingsForm
                         : ConfigManager::getConfigurationValue('COMFINO_API_KEY');
                 }
 
+                $apiClient = ApiClient::getInstance($sandboxMode, $apiKey);
+
                 if (!empty($apiKey) && !count($errorMessages)) {
                     try {
                         // Check if passed API key is valid.
-                        ApiClient::getInstance($sandboxMode, $apiKey)->isShopAccountActive();
+                        $apiClient->isShopAccountActive();
 
                         try {
                             // If API key is valid fetch widget key from API endpoint.
-                            $widgetKey = ApiClient::getInstance($sandboxMode, $apiKey)->getWidgetKey();
+                            $widgetKey = $apiClient->getWidgetKey();
                         } catch (\Throwable $e) {
                             ApiClient::processApiError(
                                 ($activeTab === 'payment_settings' ? 'Payment' : 'Developer') .
@@ -76,14 +78,14 @@ final class SettingsForm
                             $widgetKeyError = true;
 
                             if (!empty(getenv('COMFINO_DEV'))) {
-                                $errorMessages[] = sprintf('Comfino API host: %s', ApiClient::getInstance()->getApiHost());
+                                $errorMessages[] = sprintf('Comfino API host: %s', $apiClient->getApiHost());
                             }
                         }
                     } catch (AuthorizationError|AccessDenied $e) {
                         $errorMessages[] = sprintf(__('API key %s is not valid.', 'comfino-payment-gateway'), $apiKey);
 
                         if (!empty(getenv('COMFINO_DEV'))) {
-                            $errorMessages[] = sprintf('Comfino API host: %s', ApiClient::getInstance()->getApiHost());
+                            $errorMessages[] = sprintf('Comfino API host: %s', $apiClient->getApiHost());
                         }
                     } catch (\Throwable $e) {
                         ApiClient::processApiError(
@@ -95,7 +97,7 @@ final class SettingsForm
                         $errorMessages[] = $e->getMessage();
 
                         if (!empty(getenv('COMFINO_DEV'))) {
-                            $errorMessages[] = sprintf('Comfino API host: %s', ApiClient::getInstance()->getApiHost());
+                            $errorMessages[] = sprintf('Comfino API host: %s', $apiClient->getApiHost());
                         }
                     }
                 }
