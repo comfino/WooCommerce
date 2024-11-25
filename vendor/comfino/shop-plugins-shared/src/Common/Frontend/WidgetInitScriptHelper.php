@@ -2,7 +2,7 @@
 
 namespace Comfino\Common\Frontend;
 
-class WidgetInitScriptRenderer
+class WidgetInitScriptHelper
 {
     public const WIDGET_INIT_PARAMS = [
         'WIDGET_KEY',
@@ -33,7 +33,7 @@ class WidgetInitScriptRenderer
      * @param mixed[] $widgetInitParams
      * @param mixed[] $widgetInitVariables
      */
-    public function renderWidgetInitScript($widgetInitCode, $widgetInitParams, $widgetInitVariables): string
+    public static function renderWidgetInitScript($widgetInitCode, $widgetInitParams, $widgetInitVariables): string
     {
         $widgetInitParamsAssocKeys = array_flip(self::WIDGET_INIT_PARAMS);
         $widgetInitVariablesAssocKeys = array_flip(self::WIDGET_INIT_VARIABLES);
@@ -64,17 +64,17 @@ class WidgetInitScriptRenderer
     /**
      * @param string $widgetInitCode
      */
-    public function initScriptRequiresUpdate($widgetInitCode): bool
+    public static function initScriptRequiresUpdate($widgetInitCode): bool
     {
-        return md5($widgetInitCode) !== md5($this->getInitialWidgetCode());
+        return md5($widgetInitCode) !== md5(self::getInitialWidgetCode());
     }
 
-    public function getInitialWidgetCodeHash(): string
+    public static function getInitialWidgetCodeHash(): string
     {
-        return md5($this->getInitialWidgetCode());
+        return md5(self::getInitialWidgetCode());
     }
 
-    public function getInitialWidgetCode(): string
+    public static function getInitialWidgetCode(): string
     {
         return trim("
 var script = document.createElement('script');

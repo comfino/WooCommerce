@@ -239,7 +239,7 @@ return array(
     'Comfino\\Common\\Frontend\\PaywallRenderer' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Frontend/PaywallRenderer.php',
     'Comfino\\Common\\Frontend\\TemplateRenderer\\RendererStrategyInterface' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Frontend/TemplateRenderer/RendererStrategyInterface.php',
     'Comfino\\Common\\Frontend\\WidgetIframeRenderer' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Frontend/WidgetIframeRenderer.php',
-    'Comfino\\Common\\Frontend\\WidgetInitScriptRenderer' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Frontend/WidgetInitScriptRenderer.php',
+    'Comfino\\Common\\Frontend\\WidgetInitScriptHelper' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Frontend/WidgetInitScriptHelper.php',
     'Comfino\\Common\\Shop\\Cart' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Shop/Cart.php',
     'Comfino\\Common\\Shop\\OrderStatusAdapterInterface' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Shop/OrderStatusAdapterInterface.php',
     'Comfino\\Common\\Shop\\Order\\StatusManager' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Shop/Order/StatusManager.php',
