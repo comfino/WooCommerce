@@ -6,6 +6,7 @@ use Comfino\Api\ApiClient;
 use Comfino\Api\ApiService;
 use Comfino\Common\Frontend\PaywallIframeRenderer;
 use Comfino\Common\Frontend\PaywallRenderer;
+use Comfino\Common\Frontend\WidgetInitScriptHelper;
 use Comfino\Configuration\ConfigManager;
 use Comfino\ErrorLogger;
 use Comfino\PluginShared\CacheManager;
@@ -102,21 +103,19 @@ final class FrontendManager
         try {
             $widgetVariables = ConfigManager::getWidgetVariables($productId);
 
-            $code = str_replace(
-                array_merge(
+            $code = WidgetInitScriptHelper::renderWidgetInitScript(
+                ConfigManager::getCurrentWidgetCode($productId),
+                array_combine(
                     [
-                        '{WIDGET_KEY}',
-                        '{WIDGET_PRICE_SELECTOR}',
-                        '{WIDGET_TARGET_SELECTOR}',
-                        '{WIDGET_PRICE_OBSERVER_SELECTOR}',
-                        '{WIDGET_PRICE_OBSERVER_LEVEL}',
-                        '{WIDGET_TYPE}',
-                        '{OFFER_TYPE}',
-                        '{EMBED_METHOD}',
+                        'WIDGET_KEY',
+                        'WIDGET_PRICE_SELECTOR',
+                        'WIDGET_TARGET_SELECTOR',
+                        'WIDGET_PRICE_OBSERVER_SELECTOR',
+                        'WIDGET_PRICE_OBSERVER_LEVEL',
+                        'WIDGET_TYPE',
+                        'OFFER_TYPE',
+                        'EMBED_METHOD',
                     ],
-                    array_keys($widgetVariables)
-                ),
-                array_merge(
                     ConfigManager::getConfigurationValues(
                         'widget_settings',
                         [
@@ -129,10 +128,9 @@ final class FrontendManager
                             'COMFINO_WIDGET_OFFER_TYPE',
                             'COMFINO_WIDGET_EMBED_METHOD',
                         ]
-                    ),
-                    array_values($widgetVariables)
+                    )
                 ),
-                ConfigManager::getCurrentWidgetCode($productId)
+                $widgetVariables
             );
 
             return '<script>' . str_replace(
