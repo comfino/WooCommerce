@@ -11,8 +11,8 @@ class WidgetInitScriptHelper
         'WIDGET_PRICE_OBSERVER_SELECTOR',
         'WIDGET_PRICE_OBSERVER_LEVEL',
         'WIDGET_TYPE',
-        'WIDGET_OFFER_TYPE',
-        'WIDGET_EMBED_METHOD',
+        'OFFER_TYPE',
+        'EMBED_METHOD',
     ];
 
     public const WIDGET_INIT_VARIABLES = [
@@ -47,11 +47,11 @@ class WidgetInitScriptHelper
         }
 
         return str_replace(
-            array_merge(
-                array_map(static function (string $widgetInitParamName) : string {
-                    return "\{$widgetInitParamName\}";
-                }, self::WIDGET_INIT_PARAMS),
-                array_keys($widgetInitVariables)
+            array_map(
+                static function (string $widgetInitParamName) : string {
+                    return '{' . $widgetInitParamName . '}';
+                },
+                array_merge(self::WIDGET_INIT_PARAMS, array_keys($widgetInitVariables))
             ),
             array_merge(
                 array_merge($widgetInitParamsAssocKeys, $widgetInitParams),

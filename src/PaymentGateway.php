@@ -22,7 +22,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
     public const VERSION = '4.1.2';
-    public const BUILD_TS = 1732525656;
+    public const BUILD_TS = 1732549759;
     public const WIDGET_INIT_SCRIPT_HASH = 'b1a0cae1a47d1c5b9264df3573c09c48';
 
     public function __construct()
