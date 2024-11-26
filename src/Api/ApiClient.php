@@ -56,21 +56,17 @@ final class ApiClient
                 ConfigManager::getConfigurationValue('COMFINO_API_TIMEOUT', 3)
             );
 
-            if ($sandboxMode) {
-                self::$apiClient->enableSandboxMode();
-            }
-
             self::$apiClient->addCustomHeader('Comfino-Build-Timestamp', (string) PaymentGateway::BUILD_TS);
         } else {
-            if ($sandboxMode) {
-                self::$apiClient->enableSandboxMode();
-            } else {
-                self::$apiClient->disableSandboxMode();
-            }
-
             self::$apiClient->setCustomApiHost(self::getApiHost());
             self::$apiClient->setApiKey($apiKey);
             self::$apiClient->setApiLanguage(Main::getShopLanguage());
+        }
+
+        if ($sandboxMode) {
+            self::$apiClient->enableSandboxMode();
+        } else {
+            self::$apiClient->disableSandboxMode();
         }
 
         return self::$apiClient;
