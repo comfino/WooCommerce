@@ -98,7 +98,7 @@ final class FrontendManager
         );
     }
 
-    public static function renderWidgetInitCode(int $productId): string
+    public static function renderWidgetInitCode(?int $productId): string
     {
         try {
             $widgetVariables = ConfigManager::getWidgetVariables($productId);
