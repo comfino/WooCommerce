@@ -17,6 +17,7 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
+use Comfino\Configuration\ConfigManager;
 use Comfino\PaymentGateway;
 
 if (!defined('ABSPATH')) {
@@ -55,6 +56,11 @@ class Comfino_Payment_Gateway
         add_action('init', [$this, 'init']);
         add_action('admin_init', [$this, 'check_environment']);
         add_action('admin_notices', [$this, 'admin_notices'], 15);
+        add_action('plugins_loaded', function (): void {
+            if (get_transient('comfino_plugin_updated')) {
+                $this->upgrade_plugin();
+            }
+        });
 
         // Upgrade hook
         add_action('upgrader_process_complete', static function(WP_Upgrader $upgrader, array $options) {
@@ -196,7 +202,7 @@ class Comfino_Payment_Gateway
                 'comfino-payment-gateway'
             ) . '</div>';
 
-            set_transient('comfino_plugin_updated', 0);
+            $this->upgrade_plugin();
         }
 
         foreach ($this->notices as $noticeKey => $notice) {
@@ -204,6 +210,16 @@ class Comfino_Payment_Gateway
             echo wp_kses($notice['message'], ['a' => ['href' => []]]);
             echo "</p></div>";
         }
+    }
+
+    public function upgrade_plugin(): void
+    {
+        if (PaymentGateway::WIDGET_INIT_SCRIPT_HASH !== PaymentGateway::WIDGET_INIT_SCRIPT_LAST_HASH) {
+            // Update code of widget initialization script if changed.
+            ConfigManager::updateWidgetCode(PaymentGateway::WIDGET_INIT_SCRIPT_LAST_HASH);
+        }
+
+        set_transient('comfino_plugin_updated', 0);
     }
 
     public function get_plugin_update_details(): array

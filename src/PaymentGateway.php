@@ -24,6 +24,7 @@ class PaymentGateway extends \WC_Payment_Gateway
     public const VERSION = '4.1.2';
     public const BUILD_TS = 1732549759;
     public const WIDGET_INIT_SCRIPT_HASH = 'b1a0cae1a47d1c5b9264df3573c09c48';
+    public const WIDGET_INIT_SCRIPT_LAST_HASH = '2928bbaf4ef9e8437a46c9f76eec4e90';
 
     public function __construct()
     {
