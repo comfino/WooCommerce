@@ -2,8 +2,6 @@
 
 namespace Comfino\Api;
 
-use Comfino\Api\Exception\ResponseValidationError;
-use Comfino\Api\Exception\ServiceUnavailable;
 use Comfino\Common\Backend\Factory\ApiClientFactory;
 use Comfino\Common\Frontend\FrontendHelper;
 use Comfino\Configuration\ConfigManager;
