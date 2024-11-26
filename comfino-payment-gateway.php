@@ -60,9 +60,23 @@ class Comfino_Payment_Gateway
         add_action('upgrader_process_complete', static function(WP_Upgrader $upgrader, array $options) {
             $comfinoPluginPathName = plugin_basename(__FILE__);
 
-            if ($options['action'] === 'update' && $options['type'] === 'plugin' && isset($options['plugins'])) {
-                foreach($options['plugins'] as $pluginPathName) {
-                    if ($pluginPathName === $comfinoPluginPathName) {
+            if ($options['action'] === 'update' && $options['type'] === 'plugin') {
+                // Plugin updated.
+                if (isset($options['plugins'])) {
+                    // Bulk plugins update (update page)
+                    foreach($options['plugins'] as $pluginPathName) {
+                        if ($pluginPathName === $comfinoPluginPathName) {
+                            // Comfino plugin updated.
+                            set_transient('comfino_plugin_updated', 1);
+                            set_transient('comfino_plugin_prev_version', PaymentGateway::VERSION);
+                            set_transient('comfino_plugin_updated_at', time());
+
+                            break;
+                        }
+                    }
+                } elseif (isset($options['plugin'])) {
+                    // Normal plugin update or via auto update
+                    if ($options['plugin'] === $comfinoPluginPathName) {
                         // Comfino plugin updated.
                         set_transient('comfino_plugin_updated', 1);
                         set_transient('comfino_plugin_prev_version', PaymentGateway::VERSION);
