@@ -23,8 +23,10 @@ Comfino is an innovative payment method for customers of e-commerce stores! Thes
 
 4.1.2
  * Updated plugin upgrade logic for updating product widget initialization script.
- * Fixed bug in API configuration management (wrong API host used in sandbox mode).
  * Product widget initialization script rendering logic refactored.
+ * Fixed bug in API configuration management (wrong API host used in sandbox mode).
+ * Fixed bug in API client (added extended data for correction items in cart required by leasing).
+ * Fixed bug in Comfino availability filter (lower cart total value limit not worked properly).
 
 4.1.1
  * Fixed bug in product widget initialization script on configurations without URL rewriting, added some improvements in errors presentation.

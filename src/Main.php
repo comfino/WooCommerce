@@ -248,10 +248,25 @@ final class Main
             return true;
         }
 
-        return SettingsManager::getAllowedProductTypes(
+        $shopCart = OrderManager::getShopCart($cart, $loanAmount);
+        $allowedProductTypes = SettingsManager::getAllowedProductTypes(
             ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
-            OrderManager::getShopCart($cart, $loanAmount)
-        ) !== [];
+            $shopCart
+        );
+        $paymentIsAvailable = ($allowedProductTypes !== []);
+
+        self::debugLog(
+            '[PAYWALL]',
+            sprintf('paymentIsAvailable: (paywall iframe is %s)', $paymentIsAvailable ? 'visible' : 'invisible'),
+            [
+                '$paymentIsAvailable' => $paymentIsAvailable,
+                '$allowedProductTypes' => $allowedProductTypes,
+                '$loanAmount' => $loanAmount,
+                '$cartTotalValue' => $shopCart->getTotalValue(),
+            ]
+        );
+
+        return $paymentIsAvailable;
     }
 
     public static function getPluginDirectory(): string
