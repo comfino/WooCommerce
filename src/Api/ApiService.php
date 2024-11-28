@@ -50,6 +50,8 @@ final class ApiService
 
     public static function init(): void
     {
+        global $comfino_payment_gateway;
+
         add_filter(
             'rest_pre_serve_request',
             static function (bool $served, \WP_HTTP_Response $result, \WP_REST_Request $request, \WP_REST_Server $server): bool {
@@ -158,8 +160,9 @@ final class ApiService
                 ]),
                 ConfigManager::getInstance(),
                 'WooCommerce',
-                ...array_values(
-                    ConfigManager::getEnvironmentInfo(['shop_version', 'plugin_version', 'plugin_build_ts', 'database_version'])
+                ...array_merge(
+                    array_values(ConfigManager::getEnvironmentInfo(['shop_version', 'plugin_version', 'plugin_build_ts', 'database_version'])),
+                    [array_merge($comfino_payment_gateway->get_plugin_update_details(), ConfigManager::getEnvironmentInfo(['wordpress_version']))]
                 )
             )
         );

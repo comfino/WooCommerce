@@ -92,6 +92,16 @@ class Comfino_Payment_Gateway
             }
         }, 10, 2);
 
+        // Overwrite hook
+        add_action('upgrader_overwrote_package', static function(string $package, array $data, string $package_type) {
+            if ($package_type === 'plugin' && $data['Name'] === 'Comfino payment gateway') {
+                // Comfino plugin updated.
+                set_transient('comfino_plugin_updated', 1);
+                set_transient('comfino_plugin_prev_version', PaymentGateway::VERSION);
+                set_transient('comfino_plugin_updated_at', time());
+            }
+        }, 10, 3);
+
         // Add a Comfino gateway to the WooCommerce payment methods available for customer.
         add_filter('woocommerce_payment_gateways', static function (array $methods): array {
             $methods[] = PaymentGateway::class;
