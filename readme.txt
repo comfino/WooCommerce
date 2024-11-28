@@ -2,10 +2,10 @@
 Contributors: comfino
 Donate link: https://comfino.pl/
 Tags: comfino, woocommerce, gateway, payment, bank
-WC tested up to: 9.3.3
+WC tested up to: 9.4.2
 WC requires at least: 3.0
 Stable tag: 4.1.2
-Tested up to: 6.6.2
+Tested up to: 6.7.1
 Requires at least: 5.0
 Requires PHP: 7.1
 License: GPLv2 or later
