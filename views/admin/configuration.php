@@ -67,11 +67,7 @@ switch ($active_tab) {
                 <p><b>Widget key:</b> <?php echo esc_html($widget_key); ?></p>
 <?php
                 if (!empty(getenv('COMFINO_DEBUG')) || !empty(getenv('COMFINO_DEV'))) {
-                    $devEnvVariables = [
-                        'DEBUG', 'DEV', 'DEV_API_HOST', 'DEV_API_HOST_FRONTEND', 'DEV_API_HOST_BACKEND',
-                        'DEV_API_PAYWALL_HOST', 'DEV_FRONTEND_SCRIPT_URL', 'DEV_WIDGET_SCRIPT_URL',
-                        'DEV_PAYWALL_FRONTEND_SCRIPT_URL', 'DEV_PAYWALL_FRONTEND_STYLE_URL',
-                    ];
+                    $devEnvVariables = ['DEBUG', 'DEV', 'DEV_API_HOST', 'DEV_WIDGET_SCRIPT_URL'];
 ?>
                     <p><b>Plugin dev-debug mode:</b> <?php echo esc_html($is_dev_env); ?></p>
 <?php

@@ -203,13 +203,10 @@ class Comfino_Payment_Gateway
     public function admin_notices(): void
     {
         if (get_transient('comfino_plugin_updated')) {
-            echo '<div class="notice notice-success">' . __(
-                sprintf(
-                    'Comfino plugin updated from version %s to %s.',
-                    get_transient('comfino_plugin_prev_version'),
-                    PaymentGateway::VERSION
-                ),
-                'comfino-payment-gateway'
+            echo '<div class="notice notice-success">' . sprintf(
+                __('Comfino plugin updated from version %s to %s.', 'comfino-payment-gateway'),
+                get_transient('comfino_plugin_prev_version'),
+                PaymentGateway::VERSION
             ) . '</div>';
 
             $this->upgrade_plugin();
