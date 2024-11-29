@@ -221,6 +221,17 @@ class PaymentGateway extends \WC_Payment_Gateway
             $shopCart->getDeliveryTaxValue()
         );
 
+        Main::debugLog(
+            '[PAYMENT]',
+            'process_payment',
+            [
+                '$loanAmount' => $order->getCart()->getTotalAmount(),
+                '$loanType' => (string) $order->getLoanParameters()->getType(),
+                '$loanTerm' => $order->getLoanParameters()->getTerm(),
+                '$shopCart' => $shopCart->getAsArray(),
+            ]
+        );
+
         try {
             $response = ApiClient::getInstance()->createOrder($order);
 

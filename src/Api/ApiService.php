@@ -424,9 +424,10 @@ final class ApiService
         }
 
         $loanAmount = (int) round(WC()->cart->get_total('edit') * 100);
+        $shopCart = OrderManager::getShopCart(WC()->cart, $loanAmount);
         $allowedProductTypes = SettingsManager::getAllowedProductTypes(
             ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
-            OrderManager::getShopCart(WC()->cart, $loanAmount)
+            $shopCart
         );
 
         if ($allowedProductTypes === []) {
@@ -447,7 +448,11 @@ final class ApiService
         Main::debugLog(
             '[PAYWALL]',
             'renderPaywall',
-            ['$loanAmount' => $loanAmount, '$allowedProductTypes' => $allowedProductTypes]
+            [
+                '$loanAmount' => $loanAmount,
+                '$allowedProductTypes' => $allowedProductTypes,
+                '$shopCart' => $shopCart->getAsArray(),
+            ]
         );
 
         echo FrontendManager::getPaywallRenderer()
