@@ -244,6 +244,14 @@ class PaymentGateway extends \WC_Payment_Gateway
             wc_add_notice($e->getMessage(), 'error');
 
             $result = ['result' => 'failure', 'redirect' => ''];
+        } finally {
+            if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
+                Main::debugLog(
+                    '[CREATE_ORDER_API_REQUEST]',
+                    'createOrder',
+                    ['$request' => $apiRequest->getRequestBody()]
+                );
+            }
         }
 
         return $result;

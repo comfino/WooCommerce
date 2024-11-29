@@ -28,9 +28,9 @@ final class ApiClient
 
         if ($apiKey === null) {
             if ($sandboxMode) {
-                $apiKey = ConfigManager::getConfigurationValue('COMFINO_SANDBOX_API_KEY');
+                $apiKey = (string) ConfigManager::getConfigurationValue('COMFINO_SANDBOX_API_KEY');
             } else {
-                $apiKey = ConfigManager::getConfigurationValue('COMFINO_API_KEY');
+                $apiKey = (string) ConfigManager::getConfigurationValue('COMFINO_API_KEY');
             }
         }
 

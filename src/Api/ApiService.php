@@ -400,6 +400,14 @@ final class ApiService
             );
 
             return new \WP_REST_Response($e->getMessage(), $e instanceof HttpErrorExceptionInterface ? $e->getStatusCode() : 500);
+        } finally {
+            if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
+                Main::debugLog(
+                    '[PRODUCT_DETAILS_API_REQUEST]',
+                    'getFinancialProductDetails',
+                    ['$request' => $apiRequest->getRequestBody()]
+                );
+            }
         }
 
         return new \WP_REST_Response($financialProducts);
@@ -445,6 +453,14 @@ final class ApiService
         echo FrontendManager::getPaywallRenderer()
             ->renderPaywall(new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes));
 
+        if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
+            Main::debugLog(
+                '[PAYWALL_API_REQUEST]',
+                'renderPaywall',
+                ['$request' => $apiRequest->getRequestBody()]
+            );
+        }
+
         exit;
     }
 
@@ -472,6 +488,14 @@ final class ApiService
                 LoanTypeEnum::from($loanTypeSelected),
                 new Cart($shopCart->getCartItems(), $shopCart->getTotalValue(), $shopCart->getDeliveryCost())
             );
+
+        if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
+            Main::debugLog(
+                '[PAYWALL_ITEM_DETAILS_API_REQUEST]',
+                'getPaywallItemDetails',
+                ['$request' => $apiRequest->getRequestBody()]
+            );
+        }
 
         return new \WP_REST_Response(['listItemData' => $response->listItemData, 'productDetails' => $response->productDetails]);
     }
