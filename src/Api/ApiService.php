@@ -486,7 +486,14 @@ final class ApiService
             ->getPaywallItemDetails(
                 $loanAmount,
                 LoanTypeEnum::from($loanTypeSelected),
-                new Cart($shopCart->getCartItems(), $shopCart->getTotalValue(), $shopCart->getDeliveryCost())
+                new Cart(
+                    $shopCart->getCartItems(),
+                    $shopCart->getTotalValue(),
+                    $shopCart->getDeliveryCost(),
+                    $shopCart->getDeliveryNetCost(),
+                    $shopCart->getDeliveryTaxRate(),
+                    $shopCart->getDeliveryTaxValue()
+                )
             );
 
         if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
