@@ -36,12 +36,12 @@ if (!defined('ABSPATH')) {
     <?php echo esc_html($contact_msg2); ?>
 </p>
 <nav class="nav-tab-wrapper woo-nav-tab-wrapper">
-    <a href="<?php echo site_url(add_query_arg($wp->request, ['subsection' => 'payment_settings'])); ?>" class="nav-tab<?php echo $active_tab === 'payment_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Payment settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo site_url(add_query_arg($wp->request, ['subsection' => 'sale_settings'])); ?>" class="nav-tab<?php echo $active_tab === 'sale_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Sale settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo site_url(add_query_arg($wp->request, ['subsection' => 'widget_settings'])); ?>" class="nav-tab<?php echo $active_tab === 'widget_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Widget settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo site_url(add_query_arg($wp->request, ['subsection' => 'abandoned_cart_settings'])); ?>" class="nav-tab<?php echo $active_tab === 'abandoned_cart_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Abandoned cart settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo site_url(add_query_arg($wp->request, ['subsection' => 'developer_settings'])); ?>" class="nav-tab<?php echo $active_tab === 'developer_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Developer settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo site_url(add_query_arg($wp->request, ['subsection' => 'plugin_diagnostics'])); ?>" class="nav-tab<?php echo $active_tab === 'plugin_diagnostics' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Plugin diagnostics', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo add_query_arg($wp->request, ['subsection' => 'payment_settings']); ?>" class="nav-tab<?php echo $active_tab === 'payment_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Payment settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo add_query_arg($wp->request, ['subsection' => 'sale_settings']); ?>" class="nav-tab<?php echo $active_tab === 'sale_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Sale settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo add_query_arg($wp->request, ['subsection' => 'widget_settings']); ?>" class="nav-tab<?php echo $active_tab === 'widget_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Widget settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo add_query_arg($wp->request, ['subsection' => 'abandoned_cart_settings']); ?>" class="nav-tab<?php echo $active_tab === 'abandoned_cart_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Abandoned cart settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo add_query_arg($wp->request, ['subsection' => 'developer_settings']); ?>" class="nav-tab<?php echo $active_tab === 'developer_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Developer settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo add_query_arg($wp->request, ['subsection' => 'plugin_diagnostics']); ?>" class="nav-tab<?php echo $active_tab === 'plugin_diagnostics' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Plugin diagnostics', 'comfino-payment-gateway'); ?></a>
 </nav>
 <table class="form-table">
 <?php
