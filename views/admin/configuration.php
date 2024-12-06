@@ -4,6 +4,17 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+function prepare_tab_url(string $subsection): string
+{
+    $urlParts = parse_url($_SERVER['REQUEST_URI']);
+    $queryArgs = [];
+
+    parse_str($urlParts['query'], $queryArgs);
+    $queryArgs['subsection'] = $subsection;
+
+    return $urlParts['path'] . '?' . http_build_query(array_map('strip_tags', $queryArgs));
+}
+
 /** @var WP $wp */
 /** @var string $title */
 /** @var string $description */
@@ -36,61 +47,61 @@ if (!defined('ABSPATH')) {
     <?php echo esc_html($contact_msg2); ?>
 </p>
 <nav class="nav-tab-wrapper woo-nav-tab-wrapper">
-    <a href="<?php echo add_query_arg($wp->request, ['subsection' => 'payment_settings']); ?>" class="nav-tab<?php echo $active_tab === 'payment_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Payment settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo add_query_arg($wp->request, ['subsection' => 'sale_settings']); ?>" class="nav-tab<?php echo $active_tab === 'sale_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Sale settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo add_query_arg($wp->request, ['subsection' => 'widget_settings']); ?>" class="nav-tab<?php echo $active_tab === 'widget_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Widget settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo add_query_arg($wp->request, ['subsection' => 'abandoned_cart_settings']); ?>" class="nav-tab<?php echo $active_tab === 'abandoned_cart_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Abandoned cart settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo add_query_arg($wp->request, ['subsection' => 'developer_settings']); ?>" class="nav-tab<?php echo $active_tab === 'developer_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Developer settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo add_query_arg($wp->request, ['subsection' => 'plugin_diagnostics']); ?>" class="nav-tab<?php echo $active_tab === 'plugin_diagnostics' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Plugin diagnostics', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo prepare_tab_url('payment_settings'); ?>" class="nav-tab<?php echo $active_tab === 'payment_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Payment settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo prepare_tab_url('sale_settings'); ?>" class="nav-tab<?php echo $active_tab === 'sale_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Sale settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo prepare_tab_url('widget_settings'); ?>" class="nav-tab<?php echo $active_tab === 'widget_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Widget settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo prepare_tab_url('abandoned_cart_settings'); ?>" class="nav-tab<?php echo $active_tab === 'abandoned_cart_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Abandoned cart settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo prepare_tab_url('developer_settings'); ?>" class="nav-tab<?php echo $active_tab === 'developer_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Developer settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo prepare_tab_url('plugin_diagnostics'); ?>" class="nav-tab<?php echo $active_tab === 'plugin_diagnostics' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Plugin diagnostics', 'comfino-payment-gateway'); ?></a>
 </nav>
 <table class="form-table">
-<?php
-switch ($active_tab) {
-    case 'payment_settings':
-    case 'sale_settings':
-    case 'widget_settings':
-    case 'abandoned_cart_settings':
-    case 'developer_settings':
-        echo $settings_html;
-        break;
+    <?php
+    switch ($active_tab) {
+        case 'payment_settings':
+        case 'sale_settings':
+        case 'widget_settings':
+        case 'abandoned_cart_settings':
+        case 'developer_settings':
+            echo $settings_html;
+            break;
 
-    case 'plugin_diagnostics':
-?>
-        <tr valign="top"><th scope="row" class="titledesc"></th><td><?php echo esc_html($shop_info); ?></td></tr>
-        <tr valign="top">
-            <th scope="row" class="titledesc"></th>
-            <td>
-                <hr>
-                <p><b>Comfino API host:</b> <?php echo esc_html($api_host); ?></p>
-                <p><b>Plugin build time:</b> <?php echo esc_html($build_ts); ?></p>
-                <p><b>Shop domain:</b> <?php echo esc_html($shop_domain); ?></p>
-                <p><b>Widget key:</b> <?php echo esc_html($widget_key); ?></p>
-<?php
-                if (!empty(getenv('COMFINO_DEBUG')) || !empty(getenv('COMFINO_DEV'))) {
-                    $devEnvVariables = ['DEBUG', 'DEV', 'DEV_API_HOST', 'DEV_WIDGET_SCRIPT_URL'];
-?>
-                    <p><b>Plugin dev-debug mode:</b> <?php echo esc_html($is_dev_env); ?></p>
-<?php
-                    echo sprintf(
-                        '<hr><h4>Development environment variables:</h4><ul>%s</ul>',
-                        implode('', array_map(
-                            static function (string $envVariable): string {
-                                $varName = "COMFINO_$envVariable";
-                                return "<li><b>$varName</b> = \"" . getenv($varName) . '"</li>';
-                            },
-                            $devEnvVariables
-                        ))
-                    );
-                }
-?>
-            </td>
-        </tr>
-        <tr valign="top"><th scope="row" class="titledesc"><label for="errors-log"><?php echo esc_html__('Errors log', 'comfino-payment-gateway'); ?></label></th>
-        <td><textarea id="errors-log" rows="20" cols="60" readonly class="input-text wide-input" style="width: 800px; height: 400px"><?php echo esc_textarea($errors_log); ?></textarea></td></tr>
-        <tr valign="top"><th scope="row" class="titledesc"><label for="debug-log"><?php echo esc_html__('Debug log', 'comfino-payment-gateway'); ?></label></th>
-        <td><textarea id="debug-log" rows="40" cols="60" readonly class="input-text wide-input" style="width: 800px; height: 400px"><?php echo esc_textarea($debug_log); ?></textarea></td></tr>
-<?php
-        break;
-}
-?>
+        case 'plugin_diagnostics':
+            ?>
+            <tr valign="top"><th scope="row" class="titledesc"></th><td><?php echo esc_html($shop_info); ?></td></tr>
+            <tr valign="top">
+                <th scope="row" class="titledesc"></th>
+                <td>
+                    <hr>
+                    <p><b>Comfino API host:</b> <?php echo esc_html($api_host); ?></p>
+                    <p><b>Plugin build time:</b> <?php echo esc_html($build_ts); ?></p>
+                    <p><b>Shop domain:</b> <?php echo esc_html($shop_domain); ?></p>
+                    <p><b>Widget key:</b> <?php echo esc_html($widget_key); ?></p>
+                    <?php
+                    if (!empty(getenv('COMFINO_DEBUG')) || !empty(getenv('COMFINO_DEV'))) {
+                        $devEnvVariables = ['DEBUG', 'DEV', 'DEV_API_HOST', 'DEV_WIDGET_SCRIPT_URL'];
+                        ?>
+                        <p><b>Plugin dev-debug mode:</b> <?php echo esc_html($is_dev_env); ?></p>
+                        <?php
+                        echo sprintf(
+                            '<hr><h4>Development environment variables:</h4><ul>%s</ul>',
+                            implode('', array_map(
+                                static function (string $envVariable): string {
+                                    $varName = "COMFINO_$envVariable";
+                                    return "<li><b>$varName</b> = \"" . getenv($varName) . '"</li>';
+                                },
+                                $devEnvVariables
+                            ))
+                        );
+                    }
+                    ?>
+                </td>
+            </tr>
+            <tr valign="top"><th scope="row" class="titledesc"><label for="errors-log"><?php echo esc_html__('Errors log', 'comfino-payment-gateway'); ?></label></th>
+                <td><textarea id="errors-log" rows="20" cols="60" readonly class="input-text wide-input" style="width: 800px; height: 400px"><?php echo esc_textarea($errors_log); ?></textarea></td></tr>
+            <tr valign="top"><th scope="row" class="titledesc"><label for="debug-log"><?php echo esc_html__('Debug log', 'comfino-payment-gateway'); ?></label></th>
+                <td><textarea id="debug-log" rows="40" cols="60" readonly class="input-text wide-input" style="width: 800px; height: 400px"><?php echo esc_textarea($debug_log); ?></textarea></td></tr>
+            <?php
+            break;
+    }
+    ?>
 </table>
