@@ -35,7 +35,7 @@ class StatusAdapter implements OrderStatusAdapterInterface
         }
 
         if (in_array($inputStatus, self::$loggedStates, true)) {
-            $order->add_order_note(__('Comfino status', 'comfino-payment-gateway') . ": " . __($inputStatus, 'comfino-payment-gateway'));
+            $order->add_order_note(__('Comfino status', 'comfino-payment-gateway') . __($inputStatus, 'comfino-payment-gateway'));
         }
 
         $statusMap = ConfigManager::getStatusMap();
