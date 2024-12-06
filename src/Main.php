@@ -213,7 +213,7 @@ final class Main
 
             @file_put_contents(
                 self::$debugLogFilePath,
-                '[' . date('Y-m-d H:i:s') . "] $debugPrefix: $debugMessage\n",
+                '[' . gmdate('Y-m-d H:i:s') . "] $debugPrefix: $debugMessage\n",
                 FILE_APPEND
             );
         }
