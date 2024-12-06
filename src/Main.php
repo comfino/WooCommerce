@@ -215,10 +215,12 @@ final class Main
                 $debugMessage .= (($debugMessage !== '' ? ': ' : '') . implode(', ', $preparedParameters));
             }
 
-            @file_put_contents(
+            global $wp_filesystem;
+
+            $wp_filesystem->put_contents(
                 self::$debugLogFilePath,
                 '[' . gmdate('Y-m-d H:i:s') . "] $debugPrefix: $debugMessage\n",
-                FILE_APPEND
+                FS_CHMOD_FILE
             );
         }
     }
