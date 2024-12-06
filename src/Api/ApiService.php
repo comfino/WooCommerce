@@ -56,7 +56,7 @@ final class ApiService
             'rest_pre_serve_request',
             static function (bool $served, \WP_HTTP_Response $result, \WP_REST_Request $request, \WP_REST_Server $server): bool {
                 if (is_string($result->get_data()) && strpos($request->get_route(), 'comfino') !== false) {
-                    echo $result->get_data();
+                    echo esc_html($result->get_data());
 
                     $served = true;
                 }
@@ -212,8 +212,8 @@ final class ApiService
     public static function getEndpointPath(string $endpointName): string
     {
         $endpointUrl = self::getEndpointUrl($endpointName);
-        $endpointPath = parse_url($endpointUrl, PHP_URL_PATH);
-        $endpointParams = parse_url($endpointUrl, PHP_URL_QUERY);
+        $endpointPath = wp_parse_url($endpointUrl, PHP_URL_PATH);
+        $endpointParams = wp_parse_url($endpointUrl, PHP_URL_QUERY);
 
         return $endpointPath . (!empty($endpointParams) ? '?' . $endpointParams : '');
     }
@@ -250,7 +250,7 @@ final class ApiService
             }
         }
 
-        $responseBody = $response->getBody()->getContents();
+        $responseBody = json_decode($response->getBody()->getContents(), true);
 
         $apiResponse->set_status($response->getStatusCode());
         $apiResponse->set_data(!empty($responseBody) ? $responseBody : $response->getReasonPhrase());
@@ -418,7 +418,7 @@ final class ApiService
         header('Content-Type: text/html');
 
         if (!ConfigManager::isEnabled()) {
-            echo TemplateManager::renderView('plugin-disabled', 'front');
+            echo wp_kses(TemplateManager::renderView('plugin-disabled', 'front'), 'post');
 
             exit;
         }
@@ -432,7 +432,7 @@ final class ApiService
 
         if ($allowedProductTypes === []) {
             // Filters active - all product types disabled.
-            echo TemplateManager::renderView('paywall-disabled', 'front');
+            echo wp_kses(TemplateManager::renderView('paywall-disabled', 'front'), 'post');
 
             exit;
         }
@@ -455,8 +455,8 @@ final class ApiService
             ]
         );
 
-        echo FrontendManager::getPaywallRenderer()
-            ->renderPaywall(new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes));
+        echo wp_kses(FrontendManager::getPaywallRenderer()
+            ->renderPaywall(new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes)), 'post');
 
         if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
             Main::debugLog(
@@ -472,7 +472,7 @@ final class ApiService
     private static function getPaywallItemDetails(\WP_REST_Request $request): \WP_REST_Response
     {
         if (!ConfigManager::isEnabled()) {
-            echo TemplateManager::renderView('plugin-disabled', 'front');
+            echo wp_kses(TemplateManager::renderView('plugin-disabled', 'front'), 'post');
 
             exit;
         }
@@ -518,7 +518,7 @@ final class ApiService
         header('Cache-Control: private, max-age=31536000, immutable');
 
         try {
-            echo FrontendManager::getPaywallIframeRenderer()->getPaywallFrontendStyle();
+            echo wp_kses(FrontendManager::getPaywallIframeRenderer()->getPaywallFrontendStyle(), 'post');
         } catch (InvalidArgumentException $e) {
             ErrorLogger::sendError('Paywall frontend style endpoint [cache]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
         } catch (\Throwable $e) {
@@ -534,7 +534,7 @@ final class ApiService
         header('Cache-Control: private, max-age=31536000, immutable');
 
         try {
-            echo FrontendManager::getPaywallIframeRenderer()->getPaywallFrontendScript();
+            echo wp_kses(FrontendManager::getPaywallIframeRenderer()->getPaywallFrontendScript(), 'post');
         } catch (InvalidArgumentException $e) {
             ErrorLogger::sendError('Paywall frontend script endpoint [cache]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
         } catch (\Throwable $e) {

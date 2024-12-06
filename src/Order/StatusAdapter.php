@@ -25,7 +25,7 @@ class StatusAdapter implements OrderStatusAdapterInterface
         $order = wc_get_order($orderId);
 
         if (!$order) {
-            throw new \RuntimeException(sprintf('Order not found by id: %s', $orderId));
+            throw new \RuntimeException(sprintf('Order not found by id: %s', esc_html($orderId)));
         }
 
         $inputStatus = strtoupper($status);

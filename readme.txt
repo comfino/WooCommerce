@@ -8,10 +8,10 @@ Stable tag: 4.1.2
 Tested up to: 6.7.1
 Requires at least: 5.0
 Requires PHP: 7.1
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+License: GPLv3
+License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Comfino is an innovative payment method for customers of e-commerce stores! These are installment payments, deferred (buy now, pay later) and corporate payments available on one platform with the help of quick integration. Grow your business with Comfino!
+Comfino is an innovative payment method for customers of e-commerce stores! These are installment payments, deferred (buy now, pay later) and more.
 
 ### Why Comfino?
 * Payment Marketplace, thanks to which your customers will be able to choose the most convenient and safe installment payment.

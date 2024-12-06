@@ -27,7 +27,9 @@ final class SettingsForm
         $widgetKeyError = false;
         $widgetKey = ConfigManager::getConfigurationValue('COMFINO_WIDGET_KEY', '');
 
+        /* translators: s%: Validated form field name */
         $errorEmptyMsg = __("Field '%s' can not be empty.", 'comfino-payment-gateway');
+        /* translators: s%: Validated form field name */
         $errorNumericFormatMsg = __("Field '%s' has wrong numeric format.", 'comfino-payment-gateway');
 
         switch ($activeTab) {
@@ -70,7 +72,7 @@ final class SettingsForm
                         } catch (\Throwable $e) {
                             ApiClient::processApiError(
                                 ($activeTab === 'payment_settings' ? 'Payment' : 'Developer') .
-                                ' settings error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)',
+                                ' settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)',
                                 $e
                             );
 
@@ -82,6 +84,7 @@ final class SettingsForm
                             }
                         }
                     } catch (AuthorizationError|AccessDenied $e) {
+                        /* translators: s%: Comfino API key */
                         $errorMessages[] = sprintf(__('API key %s is not valid.', 'comfino-payment-gateway'), $apiKey);
 
                         if (!empty(getenv('COMFINO_DEV'))) {
@@ -90,7 +93,7 @@ final class SettingsForm
                     } catch (\Throwable $e) {
                         ApiClient::processApiError(
                             ($activeTab === 'payment_settings' ? 'Payment' : 'Developer') .
-                            ' settings error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)',
+                            ' settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)',
                             $e
                         );
 
@@ -156,7 +159,7 @@ final class SettingsForm
                             $widgetKey = ApiClient::getInstance()->getWidgetKey();
                         } catch (\Throwable $e) {
                             ApiClient::processApiError(
-                                'Widget settings error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)',
+                                'Widget settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)',
                                 $e
                             );
 
@@ -164,10 +167,11 @@ final class SettingsForm
                             $widgetKeyError = true;
                         }
                     } catch (AuthorizationError|AccessDenied $e) {
+                        /* translators: s%: Comfino API key */
                         $errorMessages[] = sprintf(__('API key %s is not valid.', 'comfino-payment-gateway'), $apiKey);
                     } catch (\Throwable $e) {
                         ApiClient::processApiError(
-                            'Widget settings error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)',
+                            'Widget settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)',
                             $e
                         );
 
@@ -282,7 +286,7 @@ final class SettingsForm
             'admin/_configure',
             [
                 'tree_id' => $treeId,
-                'tree_nodes' => json_encode(self::buildCategoriesTree($selectedCategories)),
+                'tree_nodes' => self::buildCategoriesTree($selectedCategories),
                 'close_depth' => 3,
                 'product_type' => $productType,
             ]
@@ -363,10 +367,7 @@ final class SettingsForm
                 'label' => __('Use test environment', 'comfino-payment-gateway'),
                 'default' => ConfigManager::getDefaultValue('sandbox_mode') === true ? 'yes' : 'no',
                 'description' => __(
-                    'The test environment allows the store owner to get acquainted with the ' .
-                    'functionality of the Comfino module. This is a Comfino simulator, thanks ' .
-                    'to which you can get to know all the advantages of this payment method. ' .
-                    'The use of the test mode is free (there are also no charges for orders).',
+                    'The test environment allows the store owner to get acquainted with the functionality of the Comfino module. This is a Comfino simulator, thanks to which you can get to know all the advantages of this payment method. The use of the test mode is free (there are also no charges for orders).',
                     'comfino-payment-gateway'
                 ),
             ],
@@ -381,9 +382,7 @@ final class SettingsForm
                 'label' => __('Enable debug mode', 'comfino-payment-gateway'),
                 'default' => ConfigManager::getDefaultValue('debug_mode') === true ? 'yes' : 'no',
                 'description' => __(
-                    'Debug mode is useful in case of problems with Comfino payment availability. ' .
-                    'In this mode module logs details of internal process responsible for ' .
-                    'displaying of Comfino payment option at the payment methods list.',
+                    'Debug mode is useful in case of problems with Comfino payment availability. In this mode module logs details of internal process responsible for displaying of Comfino payment option at the payment methods list.',
                     'comfino-payment-gateway'
                 ),
             ],
@@ -393,8 +392,7 @@ final class SettingsForm
                 'label' => __('Enable service mode', 'comfino-payment-gateway'),
                 'default' => ConfigManager::getDefaultValue('service_mode') === true ? 'yes' : 'no',
                 'description' => __(
-                    'Service mode is useful in testing Comfino payment gateway without sharing it with customers. ' .
-                    'In this mode Comfino payment method is visible only for selected sessions and debug logs are collected only for these sessions.',
+                    'Service mode is useful in testing Comfino payment gateway without sharing it with customers. In this mode Comfino payment method is visible only for selected sessions and debug logs are collected only for these sessions.',
                     'comfino-payment-gateway'
                 ),
             ],

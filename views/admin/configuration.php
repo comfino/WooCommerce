@@ -1,12 +1,14 @@
 <?php
 
+use Comfino\Main;
+
 if (!defined('ABSPATH')) {
     exit;
 }
 
 function prepare_tab_url(string $subsection): string
 {
-    $urlParts = parse_url($_SERVER['REQUEST_URI']);
+    $urlParts = wp_parse_url(Main::getCurrentUrl());
     $queryArgs = [];
 
     parse_str($urlParts['query'], $queryArgs);
@@ -47,12 +49,12 @@ function prepare_tab_url(string $subsection): string
     <?php echo esc_html($contact_msg2); ?>
 </p>
 <nav class="nav-tab-wrapper woo-nav-tab-wrapper">
-    <a href="<?php echo prepare_tab_url('payment_settings'); ?>" class="nav-tab<?php echo $active_tab === 'payment_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Payment settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo prepare_tab_url('sale_settings'); ?>" class="nav-tab<?php echo $active_tab === 'sale_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Sale settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo prepare_tab_url('widget_settings'); ?>" class="nav-tab<?php echo $active_tab === 'widget_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Widget settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo prepare_tab_url('abandoned_cart_settings'); ?>" class="nav-tab<?php echo $active_tab === 'abandoned_cart_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Abandoned cart settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo prepare_tab_url('developer_settings'); ?>" class="nav-tab<?php echo $active_tab === 'developer_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Developer settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo prepare_tab_url('plugin_diagnostics'); ?>" class="nav-tab<?php echo $active_tab === 'plugin_diagnostics' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Plugin diagnostics', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo esc_attr(prepare_tab_url('payment_settings')); ?>" class="nav-tab<?php echo $active_tab === 'payment_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Payment settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo esc_attr(prepare_tab_url('sale_settings')); ?>" class="nav-tab<?php echo $active_tab === 'sale_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Sale settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo esc_attr(prepare_tab_url('widget_settings')); ?>" class="nav-tab<?php echo $active_tab === 'widget_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Widget settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo esc_attr(prepare_tab_url('abandoned_cart_settings')); ?>" class="nav-tab<?php echo $active_tab === 'abandoned_cart_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Abandoned cart settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo esc_attr(prepare_tab_url('developer_settings')); ?>" class="nav-tab<?php echo $active_tab === 'developer_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Developer settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo esc_attr(prepare_tab_url('plugin_diagnostics')); ?>" class="nav-tab<?php echo $active_tab === 'plugin_diagnostics' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Plugin diagnostics', 'comfino-payment-gateway'); ?></a>
 </nav>
 <table class="form-table">
     <?php
@@ -62,7 +64,7 @@ function prepare_tab_url(string $subsection): string
         case 'widget_settings':
         case 'abandoned_cart_settings':
         case 'developer_settings':
-            echo $settings_html;
+            echo wp_kses($settings_html, 'post');
             break;
 
         case 'plugin_diagnostics':
@@ -82,15 +84,18 @@ function prepare_tab_url(string $subsection): string
                         ?>
                         <p><b>Plugin dev-debug mode:</b> <?php echo esc_html($is_dev_env); ?></p>
                         <?php
-                        echo sprintf(
-                            '<hr><h4>Development environment variables:</h4><ul>%s</ul>',
-                            implode('', array_map(
-                                static function (string $envVariable): string {
-                                    $varName = "COMFINO_$envVariable";
-                                    return "<li><b>$varName</b> = \"" . getenv($varName) . '"</li>';
-                                },
-                                $devEnvVariables
-                            ))
+                        echo wp_kses(
+                            sprintf(
+                                '<hr><h4>Development environment variables:</h4><ul>%s</ul>',
+                                implode('', array_map(
+                                    static function (string $envVariable): string {
+                                        $varName = "COMFINO_$envVariable";
+                                        return "<li><b>$varName</b> = \"" . getenv($varName) . '"</li>';
+                                    },
+                                    $devEnvVariables
+                                ))
+                            ),
+                            ['hr' => [], 'h4' => [], 'ul' => [], 'li' => [], 'b' => []]
                         );
                     }
                     ?>

@@ -60,7 +60,7 @@ final class SettingsManager
 
             return $productTypesList;
         } catch (\Throwable $e) {
-            ApiClient::processApiError('Settings error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)', $e);
+            ApiClient::processApiError('Settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)', $e);
 
             if ($returnErrors) {
                 return ['error' => $e->getMessage()];
@@ -114,7 +114,7 @@ final class SettingsManager
 
             return $widgetTypesList;
         } catch (\Throwable $e) {
-            ApiClient::processApiError('Settings error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)', $e);
+            ApiClient::processApiError('Settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)', $e);
 
             if ($returnErrors) {
                 return ['error' => $e->getMessage()];
@@ -150,7 +150,7 @@ final class SettingsManager
         if (ConfigManager::isDebugMode()) {
             $activeFilters = array_map(
                 static function (ProductTypeFilterInterface $filter): string {
-                    return get_class($filter) . ': ' . json_encode($filter->getAsArray());
+                    return get_class($filter) . ': ' . wp_json_encode($filter->getAsArray());
                 },
                 $filterManager->getFilters()
             );

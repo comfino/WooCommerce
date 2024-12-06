@@ -169,9 +169,9 @@ final class ConfigManager
             'shop_version' => WC_VERSION,
             'wordpress_version' => $wp_version,
             'php_version' => PHP_VERSION,
-            'server_software' => sanitize_text_field($_SERVER['SERVER_SOFTWARE']),
-            'server_name' => sanitize_text_field($_SERVER['SERVER_NAME']),
-            'server_addr' => sanitize_text_field($_SERVER['SERVER_ADDR']),
+            'server_software' => sanitize_text_field(wp_unslash($_SERVER['SERVER_SOFTWARE'] ?? 'n/a')),
+            'server_name' => sanitize_text_field(wp_unslash($_SERVER['SERVER_NAME'] ?? 'n/a')),
+            'server_addr' => sanitize_text_field(wp_unslash($_SERVER['SERVER_ADDR'] ?? 'n/a')),
             'database_version' => $wpdb->db_version(),
         ];
 
@@ -452,7 +452,7 @@ final class ConfigManager
             'COMFINO_ABANDONED_PAYMENTS' => 'comfino',
             'COMFINO_IGNORED_STATUSES' => implode(',', StatusManager::DEFAULT_IGNORED_STATUSES),
             'COMFINO_FORBIDDEN_STATUSES' => implode(',', StatusManager::DEFAULT_FORBIDDEN_STATUSES),
-            'COMFINO_STATUS_MAP' => json_encode(ShopStatusManager::DEFAULT_STATUS_MAP),
+            'COMFINO_STATUS_MAP' => wp_json_encode(ShopStatusManager::DEFAULT_STATUS_MAP),
             'COMFINO_API_CONNECT_TIMEOUT' => 1,
             'COMFINO_API_TIMEOUT' => 3,
         ];

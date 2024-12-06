@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 
 /** @var string $tree_id */
 /** @var string $product_type */
-/** @var string $tree_nodes */
+/** @var array $tree_nodes */
 /** @var int $close_depth */
 ?>
 <div id="<?php echo esc_attr($tree_id); ?>_<?php echo esc_attr($product_type); ?>"></div>
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
     new Tree(
         '#<?php echo esc_js($tree_id); ?>_<?php echo esc_js($product_type); ?>',
         {
-            data: <?php echo $tree_nodes; ?>,
+            data: <?php echo wp_json_encode($tree_nodes); ?>,
             closeDepth: <?php echo esc_js($close_depth); ?>,
             onChange: function () {
                 let input = document.getElementById('<?php echo esc_js($tree_id); ?>_<?php echo esc_js($product_type); ?>_input');

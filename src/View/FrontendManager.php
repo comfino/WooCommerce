@@ -152,4 +152,19 @@ final class FrontendManager
 
         return '';
     }
+
+    public static function getPaywallIfarmeAllowedHtml(): array
+    {
+        return [
+            'iframe' => [
+                'id' => [],
+                'src' => [],
+                'class' => [],
+                'referrer-policy' => [],
+                'loading' => [],
+                'scrolling' => [],
+                'onload' => [],
+            ],
+        ];
+    }
 }

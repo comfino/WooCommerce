@@ -13,6 +13,7 @@
  * Tested up to: 6.7.1
  * Requires at least: 5.0
  * Requires PHP: 7.1
+ * License: GPLv3
  *
  * @license http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
@@ -143,7 +144,7 @@ class Comfino_Payment_Gateway
         if ($environmentWarning) {
             deactivate_plugins(plugin_basename(__FILE__));
             /** @noinspection ForgottenDebugOutputInspection */
-            wp_die($environmentWarning);
+            wp_die(wp_kses($environmentWarning, 'user_description'));
         }
     }
 
@@ -203,11 +204,12 @@ class Comfino_Payment_Gateway
     public function admin_notices(): void
     {
         if (get_transient('comfino_plugin_updated')) {
-            echo '<div class="notice notice-success">' . sprintf(
-                __('Comfino plugin updated from version %s to %s.', 'comfino-payment-gateway'),
+            echo '<div class="notice notice-success">' . wp_kses(sprintf(
+                /* translators: 1: Previous plugin version 2: Current plugin version */
+                __('Comfino plugin updated from version %1$s to %2$s.', 'comfino-payment-gateway'),
                 get_transient('comfino_plugin_prev_version'),
                 PaymentGateway::VERSION
-            ) . '</div>';
+            ), 'user_description') . '</div>';
 
             $this->upgrade_plugin();
         }
