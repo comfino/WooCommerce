@@ -91,18 +91,23 @@ stage_and_commit_changes () {
 sync_files () {
   local source=$1/
   local destination=$2/
-  local excludeFrom=".git"
+  local excludeFrom=".[!.]*"
 
-  rsync --compress --recursive --delete --delete-excluded --force --archive --exclude "$excludeFrom" "$source" "$destination"
+  rsync --compress --recursive --delete --delete-excluded --force --archive --exclude *.sh --exclude "$excludeFrom" "$source" "$destination"
+
+  echo "destination: $destination"
+
+  if [ -f "${destination}.gitignore" ] ; then
+      rm "${destination}.gitignore"
+  fi
+
+  if [ -f "${destination}sync.sh" ] ; then
+      rm "${destination}sync.sh"
+  fi
 }
 
 sync_tag () {
 	local tag=$1
-
-	if [ -d "$SVN_DIR/tags/$tag" ]; then
-		# Tag is already part of the SVN repository, stop here.
-		return
-	fi
 
 	cd "$GIT_DIR" || exit
 
@@ -110,7 +115,7 @@ sync_tag () {
 	git checkout "tags/$tag" > /dev/null 2>&1
 
 	echo "Copying files over to svn repository in folder $SVN_DIR/tags/$tag."
-	mkdir "$SVN_DIR/tags/$tag"
+	mkdir -p "$SVN_DIR/tags/$tag"
   sync_files . "$SVN_DIR/tags/$tag"
 
 	cd "$SVN_DIR/tags/$tag" || exit
