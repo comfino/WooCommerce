@@ -61,7 +61,7 @@ final class ErrorLogger
     {
         @file_put_contents(
             self::$logFilePath,
-            '[' . date('Y-m-d H:i:s') . "] $errorPrefix: $errorMessage\n",
+            '[' . gmdate('Y-m-d H:i:s') . "] $errorPrefix: $errorMessage\n",
             FILE_APPEND
         );
     }
