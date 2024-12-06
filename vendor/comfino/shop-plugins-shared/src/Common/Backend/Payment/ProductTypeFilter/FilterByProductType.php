@@ -29,4 +29,9 @@ class FilterByProductType implements ProductTypeFilterInterface
     {
         return array_intersect($this->allowedProductTypes, $availableProductTypes);
     }
+
+    public function getAsArray(): array
+    {
+        return ['allowedProductTypes' => $this->allowedProductTypes];
+    }
 }

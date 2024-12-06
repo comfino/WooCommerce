@@ -11,9 +11,13 @@ if (!defined('ABSPATH')) {
 
 class StorageAdapter extends \WC_Payment_Gateway implements StorageAdapterInterface
 {
+    /** @var int[] */
+    private $optTypeFlags;
+
     public function __construct()
     {
         $this->id = 'comfino';
+        $this->optTypeFlags = array_merge(array_merge(...array_values(ConfigManager::CONFIG_OPTIONS)));
     }
 
     public function load(): array
@@ -21,7 +25,7 @@ class StorageAdapter extends \WC_Payment_Gateway implements StorageAdapterInterf
         $configuration = [];
         $initialConfigValues = ConfigManager::getDefaultConfigurationValues();
 
-        foreach (array_merge(array_merge(...array_values(ConfigManager::CONFIG_OPTIONS))) as $optName => $optTypeFlags) {
+        foreach ($this->optTypeFlags as $optName => $optTypeFlags) {
             $configuration[$optName] = $this->get_option(ConfigManager::CONFIG_OPTIONS_MAP[$optName], $initialConfigValues[$optName] ?? null);
 
             if ($optTypeFlags & ConfigurationManager::OPT_VALUE_TYPE_BOOL) {
@@ -37,8 +41,8 @@ class StorageAdapter extends \WC_Payment_Gateway implements StorageAdapterInterf
         $this->init_settings();
 
         foreach ($configurationOptions as $optName => $optValue) {
-            if (is_bool($optValue)) {
-                $optValue = ($optValue === true ? 'yes' : 'no');
+            if (is_bool($optValue) || (isset($this->optTypeFlags[$optName]) && $this->optTypeFlags[$optName] & ConfigurationManager::OPT_VALUE_TYPE_BOOL)) {
+                $optValue = ((bool) $optValue === true ? 'yes' : 'no');
             }
 
             $this->settings[ConfigManager::CONFIG_OPTIONS_MAP[$optName]] = $optValue;

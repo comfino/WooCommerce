@@ -47,4 +47,9 @@ class FilterByExcludedCategory implements ProductTypeFilterInterface
 
         return $allowedProductTypes;
     }
+
+    public function getAsArray(): array
+    {
+        return ['excludedCategoryIdsByProductType' => $this->excludedCategoryIdsByProductType];
+    }
 }

@@ -21,8 +21,10 @@ use Comfino\View\TemplateManager;
 class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
-    public const VERSION = '4.1.1';
-    public const BUILD_TS = 1731756441;
+    public const VERSION = '4.1.2';
+    public const BUILD_TS = 1732963498;
+    public const WIDGET_INIT_SCRIPT_HASH = 'b1a0cae1a47d1c5b9264df3573c09c48';
+    public const WIDGET_INIT_SCRIPT_LAST_HASH = '4f8e7fe2091417c2b345fb51f1587316';
 
     public function __construct()
     {
@@ -219,6 +221,17 @@ class PaymentGateway extends \WC_Payment_Gateway
             $shopCart->getDeliveryTaxValue()
         );
 
+        Main::debugLog(
+            '[PAYMENT]',
+            'process_payment',
+            [
+                '$loanAmount' => $order->getCart()->getTotalAmount(),
+                '$loanType' => (string) $order->getLoanParameters()->getType(),
+                '$loanTerm' => $order->getLoanParameters()->getTerm(),
+                '$shopCart' => $shopCart->getAsArray(),
+            ]
+        );
+
         try {
             $response = ApiClient::getInstance()->createOrder($order);
 
@@ -242,6 +255,14 @@ class PaymentGateway extends \WC_Payment_Gateway
             wc_add_notice($e->getMessage(), 'error');
 
             $result = ['result' => 'failure', 'redirect' => ''];
+        } finally {
+            if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
+                Main::debugLog(
+                    '[CREATE_ORDER_API_REQUEST]',
+                    'createOrder',
+                    ['$request' => $apiRequest->getRequestBody()]
+                );
+            }
         }
 
         return $result;

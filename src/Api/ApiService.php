@@ -50,6 +50,8 @@ final class ApiService
 
     public static function init(): void
     {
+        global $comfino_payment_gateway;
+
         add_filter(
             'rest_pre_serve_request',
             static function (bool $served, \WP_HTTP_Response $result, \WP_REST_Request $request, \WP_REST_Server $server): bool {
@@ -158,8 +160,9 @@ final class ApiService
                 ]),
                 ConfigManager::getInstance(),
                 'WooCommerce',
-                ...array_values(
-                    ConfigManager::getEnvironmentInfo(['shop_version', 'plugin_version', 'plugin_build_ts', 'database_version'])
+                ...array_merge(
+                    array_values(ConfigManager::getEnvironmentInfo(['shop_version', 'plugin_version', 'plugin_build_ts', 'database_version'])),
+                    [array_merge($comfino_payment_gateway->get_plugin_update_details(), ConfigManager::getEnvironmentInfo(['wordpress_version']))]
                 )
             )
         );
@@ -363,7 +366,12 @@ final class ApiService
         Main::debugLog(
             '[PRODUCT_DETAILS]',
             'getFinancialProductDetails',
-            ['$loanAmount' => $loanAmount, '$productId' =>$productId, '$loanTypeSelected' => $loanTypeSelected]
+            [
+                '$loanAmount' => $loanAmount,
+                '$productId' =>$productId,
+                '$loanTypeSelected' => $loanTypeSelected,
+                '$shopCart' => $shopCart->getAsArray(),
+            ]
         );
 
         try {
@@ -392,6 +400,14 @@ final class ApiService
             );
 
             return new \WP_REST_Response($e->getMessage(), $e instanceof HttpErrorExceptionInterface ? $e->getStatusCode() : 500);
+        } finally {
+            if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
+                Main::debugLog(
+                    '[PRODUCT_DETAILS_API_REQUEST]',
+                    'getFinancialProductDetails',
+                    ['$request' => $apiRequest->getRequestBody()]
+                );
+            }
         }
 
         return new \WP_REST_Response($financialProducts);
@@ -408,9 +424,10 @@ final class ApiService
         }
 
         $loanAmount = (int) round(WC()->cart->get_total('edit') * 100);
+        $shopCart = OrderManager::getShopCart(WC()->cart, $loanAmount);
         $allowedProductTypes = SettingsManager::getAllowedProductTypes(
             ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
-            OrderManager::getShopCart(WC()->cart, $loanAmount)
+            $shopCart
         );
 
         if ($allowedProductTypes === []) {
@@ -431,11 +448,23 @@ final class ApiService
         Main::debugLog(
             '[PAYWALL]',
             'renderPaywall',
-            ['$loanAmount' => $loanAmount, '$allowedProductTypes' => $allowedProductTypes]
+            [
+                '$loanAmount' => $loanAmount,
+                '$allowedProductTypes' => $allowedProductTypes,
+                '$shopCart' => $shopCart->getAsArray(),
+            ]
         );
 
         echo FrontendManager::getPaywallRenderer()
             ->renderPaywall(new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes));
+
+        if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
+            Main::debugLog(
+                '[PAYWALL_API_REQUEST]',
+                'renderPaywall',
+                ['$request' => $apiRequest->getRequestBody()]
+            );
+        }
 
         exit;
     }
@@ -455,15 +484,30 @@ final class ApiService
         Main::debugLog(
             '[PAYWALL_ITEM_DETAILS]',
             'getPaywallItemDetails',
-            ['$loanTypeSelected' => $loanTypeSelected]
+            ['$loanTypeSelected' => $loanTypeSelected, '$shopCart' => $shopCart->getAsArray()]
         );
 
         $response = FrontendManager::getPaywallRenderer()
             ->getPaywallItemDetails(
                 $loanAmount,
                 LoanTypeEnum::from($loanTypeSelected),
-                new Cart($shopCart->getCartItems(), $shopCart->getTotalValue(), $shopCart->getDeliveryCost())
+                new Cart(
+                    $shopCart->getCartItems(),
+                    $shopCart->getTotalValue(),
+                    $shopCart->getDeliveryCost(),
+                    $shopCart->getDeliveryNetCost(),
+                    $shopCart->getDeliveryTaxRate(),
+                    $shopCart->getDeliveryTaxValue()
+                )
             );
+
+        if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
+            Main::debugLog(
+                '[PAYWALL_ITEM_DETAILS_API_REQUEST]',
+                'getPaywallItemDetails',
+                ['$request' => $apiRequest->getRequestBody()]
+            );
+        }
 
         return new \WP_REST_Response(['listItemData' => $response->listItemData, 'productDetails' => $response->productDetails]);
     }

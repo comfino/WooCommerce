@@ -92,6 +92,8 @@ class Client
     protected $customHeaders = [];
     /** @var bool */
     protected $isSandboxMode = false;
+    /** @var Request|null */
+    protected $request;
 
     /**
      * Comfino API client.
@@ -261,6 +263,16 @@ class Client
     }
 
     /**
+     * Returns last API request.
+     *
+     * @return Request|null
+     */
+    public function getRequest(): ?Request
+    {
+        return $this->request;
+    }
+
+    /**
      * Checks if registered user shop account is active.
      *
      * @return bool
@@ -275,12 +287,12 @@ class Client
     public function isShopAccountActive(): bool
     {
         try {
-            $request = (new IsShopAccountActiveRequest())->setSerializer($this->serializer);
+            $this->request = (new IsShopAccountActiveRequest())->setSerializer($this->serializer);
 
-            return (new IsShopAccountActiveResponse($request, $this->sendRequest($request), $this->serializer))->isActive;
+            return (new IsShopAccountActiveResponse($this->request, $this->sendRequest($this->request), $this->serializer))->isActive;
         } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
-            if (isset($request)) {
-                $e->setRequestBody($request->getRequestBody() ?? '');
+            if (isset($this->request)) {
+                $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
 
             throw $e;
@@ -305,12 +317,12 @@ class Client
     public function getFinancialProductDetails($queryCriteria, $cart): GetFinancialProductDetailsResponse
     {
         try {
-            $request = (new GetFinancialProductDetailsRequest($queryCriteria, $cart))->setSerializer($this->serializer);
+            $this->request = (new GetFinancialProductDetailsRequest($queryCriteria, $cart))->setSerializer($this->serializer);
 
-            return new GetFinancialProductDetailsResponse($request, $this->sendRequest($request), $this->serializer);
+            return new GetFinancialProductDetailsResponse($this->request, $this->sendRequest($this->request), $this->serializer);
         } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
-            if (isset($request)) {
-                $e->setRequestBody($request->getRequestBody() ?? '');
+            if (isset($this->request)) {
+                $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
 
             throw $e;
@@ -334,12 +346,12 @@ class Client
     public function getFinancialProducts($queryCriteria): GetFinancialProductsResponse
     {
         try {
-            $request = (new GetFinancialProductsRequest($queryCriteria))->setSerializer($this->serializer);
+            $this->request = (new GetFinancialProductsRequest($queryCriteria))->setSerializer($this->serializer);
 
-            return new GetFinancialProductsResponse($request, $this->sendRequest($request), $this->serializer);
+            return new GetFinancialProductsResponse($this->request, $this->sendRequest($this->request), $this->serializer);
         } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
-            if (isset($request)) {
-                $e->setRequestBody($request->getRequestBody() ?? '');
+            if (isset($this->request)) {
+                $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
 
             throw $e;
@@ -363,12 +375,12 @@ class Client
     public function createOrder($order): CreateOrderResponse
     {
         try {
-            $request = (new CreateOrderRequest($order))->setSerializer($this->serializer);
+            $this->request = (new CreateOrderRequest($order))->setSerializer($this->serializer);
 
-            return new CreateOrderResponse($request, $this->sendRequest($request), $this->serializer);
+            return new CreateOrderResponse($this->request, $this->sendRequest($this->request), $this->serializer);
         } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
-            if (isset($request)) {
-                $e->setRequestBody($request->getRequestBody() ?? '');
+            if (isset($this->request)) {
+                $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
 
             throw $e;
@@ -392,12 +404,12 @@ class Client
     public function getOrder($orderId): GetOrderResponse
     {
         try {
-            $request = (new GetOrderRequest($orderId))->setSerializer($this->serializer);
+            $this->request = (new GetOrderRequest($orderId))->setSerializer($this->serializer);
 
-            return new GetOrderResponse($request, $this->sendRequest($request), $this->serializer);
+            return new GetOrderResponse($this->request, $this->sendRequest($this->request), $this->serializer);
         } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
-            if (isset($request)) {
-                $e->setRequestBody($request->getRequestBody() ?? '');
+            if (isset($this->request)) {
+                $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
 
             throw $e;
@@ -418,12 +430,12 @@ class Client
     public function cancelOrder($orderId): void
     {
         try {
-            $request = (new CancelOrderRequest($orderId))->setSerializer($this->serializer);
+            $this->request = (new CancelOrderRequest($orderId))->setSerializer($this->serializer);
 
-            new BaseApiResponse($request, $this->sendRequest($request), $this->serializer);
+            new BaseApiResponse($this->request, $this->sendRequest($this->request), $this->serializer);
         } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
-            if (isset($request)) {
-                $e->setRequestBody($request->getRequestBody() ?? '');
+            if (isset($this->request)) {
+                $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
 
             throw $e;
@@ -444,12 +456,12 @@ class Client
     public function getProductTypes($listType): GetProductTypesResponse
     {
         try {
-            $request = (new GetProductTypesRequest($listType))->setSerializer($this->serializer);
+            $this->request = (new GetProductTypesRequest($listType))->setSerializer($this->serializer);
 
-            return new GetProductTypesResponse($request, $this->sendRequest($request), $this->serializer);
+            return new GetProductTypesResponse($this->request, $this->sendRequest($this->request), $this->serializer);
         } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
-            if (isset($request)) {
-                $e->setRequestBody($request->getRequestBody() ?? '');
+            if (isset($this->request)) {
+                $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
 
             throw $e;
@@ -469,12 +481,12 @@ class Client
     public function getWidgetKey(): string
     {
         try {
-            $request = (new GetWidgetKeyRequest())->setSerializer($this->serializer);
+            $this->request = (new GetWidgetKeyRequest())->setSerializer($this->serializer);
 
-            return (new GetWidgetKeyResponse($request, $this->sendRequest($request), $this->serializer))->widgetKey;
+            return (new GetWidgetKeyResponse($this->request, $this->sendRequest($this->request), $this->serializer))->widgetKey;
         } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
-            if (isset($request)) {
-                $e->setRequestBody($request->getRequestBody() ?? '');
+            if (isset($this->request)) {
+                $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
 
             throw $e;
@@ -494,12 +506,12 @@ class Client
     public function getWidgetTypes(): GetWidgetTypesResponse
     {
         try {
-            $request = (new GetWidgetTypesRequest())->setSerializer($this->serializer);
+            $this->request = (new GetWidgetTypesRequest())->setSerializer($this->serializer);
 
-            return new GetWidgetTypesResponse($request, $this->sendRequest($request), $this->serializer);
+            return new GetWidgetTypesResponse($this->request, $this->sendRequest($this->request), $this->serializer);
         } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
-            if (isset($request)) {
-                $e->setRequestBody($request->getRequestBody() ?? '');
+            if (isset($this->request)) {
+                $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
 
             throw $e;
@@ -524,12 +536,12 @@ class Client
     public function getPaywall($queryCriteria, $viewType = null): GetPaywallResponse
     {
         try {
-            $request = (new GetPaywallRequest($queryCriteria, $viewType))->setSerializer($this->serializer);
+            $this->request = (new GetPaywallRequest($queryCriteria, $viewType))->setSerializer($this->serializer);
 
-            return new GetPaywallResponse($request, $this->sendRequest($request), $this->serializer);
+            return new GetPaywallResponse($this->request, $this->sendRequest($this->request), $this->serializer);
         } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
-            if (isset($request)) {
-                $e->setRequestBody($request->getRequestBody() ?? '');
+            if (isset($this->request)) {
+                $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
 
             throw $e;
@@ -555,12 +567,12 @@ class Client
     public function getPaywallItemDetails($loanAmount, $loanType, $cart): GetPaywallItemDetailsResponse
     {
         try {
-            $request = (new GetPaywallItemDetailsRequest($loanAmount, $loanType, $cart))->setSerializer($this->serializer);
+            $this->request = (new GetPaywallItemDetailsRequest($loanAmount, $loanType, $cart))->setSerializer($this->serializer);
 
-            return new GetPaywallItemDetailsResponse($request, $this->sendRequest($request), $this->serializer);
+            return new GetPaywallItemDetailsResponse($this->request, $this->sendRequest($this->request), $this->serializer);
         } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
-            if (isset($request)) {
-                $e->setRequestBody($request->getRequestBody() ?? '');
+            if (isset($this->request)) {
+                $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
 
             throw $e;
@@ -582,12 +594,12 @@ class Client
     public function getPaywallFragments($cacheInvalidateUrl = null, $configurationUrl = null): GetPaywallFragmentsResponse
     {
         try {
-            $request = (new GetPaywallFragmentsRequest($cacheInvalidateUrl, $configurationUrl))->setSerializer($this->serializer);
+            $this->request = (new GetPaywallFragmentsRequest($cacheInvalidateUrl, $configurationUrl))->setSerializer($this->serializer);
 
-            return new GetPaywallFragmentsResponse($request, $this->sendRequest($request), $this->serializer);
+            return new GetPaywallFragmentsResponse($this->request, $this->sendRequest($this->request), $this->serializer);
         } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
-            if (isset($request)) {
-                $e->setRequestBody($request->getRequestBody() ?? '');
+            if (isset($this->request)) {
+                $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
 
             throw $e;

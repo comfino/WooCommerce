@@ -171,6 +171,10 @@ final class Main
     {
         ConfigManager::deleteConfigurationValues();
 
+        delete_transient('comfino_plugin_updated');
+        delete_transient('comfino_plugin_prev_version');
+        delete_transient('comfino_plugin_updated_at');
+
         ErrorLogger::init($pluginDirectory);
         ApiClient::getInstance()->notifyPluginRemoval();
 
@@ -244,10 +248,25 @@ final class Main
             return true;
         }
 
-        return SettingsManager::getAllowedProductTypes(
+        $shopCart = OrderManager::getShopCart($cart, $loanAmount);
+        $allowedProductTypes = SettingsManager::getAllowedProductTypes(
             ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
-            OrderManager::getShopCart($cart, $loanAmount)
-        ) !== [];
+            $shopCart
+        );
+        $paymentIsAvailable = ($allowedProductTypes !== []);
+
+        self::debugLog(
+            '[PAYWALL]',
+            sprintf('paymentIsAvailable: (paywall iframe is %s)', $paymentIsAvailable ? 'visible' : 'invisible'),
+            [
+                '$paymentIsAvailable' => $paymentIsAvailable,
+                '$allowedProductTypes' => $allowedProductTypes,
+                '$loanAmount' => $loanAmount,
+                '$cartTotalValue' => $shopCart->getTotalValue(),
+            ]
+        );
+
+        return $paymentIsAvailable;
     }
 
     public static function getPluginDirectory(): string
@@ -272,12 +291,16 @@ final class Main
 
     public static function getShopDomain(): string
     {
-        return parse_url(wc_get_page_permalink('shop'), PHP_URL_HOST);
+        return !empty($shopLink = self::getShopLink()) ? parse_url($shopLink, PHP_URL_HOST) : '';
     }
 
     public static function getShopUrl(): string
     {
-        $urlParts = parse_url(wc_get_page_permalink('shop'));
+        if (empty($shopLink = self::getShopLink())) {
+            return '';
+        }
+
+        $urlParts = parse_url($shopLink);
 
         return $urlParts['host'] . (isset($urlParts['port']) ? ':' . $urlParts['port'] : '');
     }
@@ -355,6 +378,21 @@ final class Main
             'cartTotalFormatted' => wc_price($total, ['currency' => self::getShopCurrency()]),
             'productDetailsApiPath' => ApiService::getEndpointPath('paywallItemDetails'),
         ];
+    }
+
+    private static function getShopLink(): string
+    {
+        global $wp_rewrite;
+
+        if (isset($wp_rewrite)) {
+            return wc_get_page_permalink('shop');
+        }
+
+        if (isset($_SERVER['REQUEST_SCHEME'], $_SERVER['HTTP_HOST'])) {
+            return $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
+        }
+
+        return $_SERVER['HTTP_REFERER'] ?? '';
     }
 
     private static function preparePaywallIframe(float $total, bool $isPaymentBlock): ?string
