@@ -248,6 +248,7 @@ final class FrontendManager
                     'fill' => [],
                     'sodipodi:docname' => [],
                     'inkscape:version' => [],
+                    'enable-background' => [],
                 ],
                 'style' => [
                     'type' => [],
@@ -343,6 +344,14 @@ final class FrontendManager
                     'r' => [],
                     'gradientunits' => [],
                     'gradienttransform' => [],
+                    'fx' => [],
+                    'fy' => [],
+                ],
+                'circle' => [
+                    'fill' => [],
+                    'cx' => [],
+                    'cy' => [],
+                    'r' => [],
                 ],
             ],
             self::getAllowedScriptHtml(),
