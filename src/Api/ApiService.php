@@ -433,7 +433,10 @@ final class ApiService
             ]
         );
 
-        echo FrontendManager::getPaywallRenderer()->renderPaywall(new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes));
+        echo wp_kses(
+            FrontendManager::getPaywallRenderer()->renderPaywall(new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes)),
+            FrontendManager::getPaywallAllowedHtml()
+        );
 
         if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
             Main::debugLog(

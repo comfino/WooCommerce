@@ -191,6 +191,19 @@ final class Main
         return $paywallIframe;
     }
 
+    public static function writeToFile(string $filePath, string $contents): void
+    {
+        global $wp_filesystem;
+
+        if (empty($wp_filesystem)) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+
+            WP_Filesystem();
+        }
+
+        $wp_filesystem->put_contents($filePath, $contents, FS_CHMOD_FILE);
+    }
+
     public static function debugLog(string $debugPrefix, string $debugMessage, ?array $parameters = null): void
     {
         if ((!isset($_COOKIE['COMFINO_SERVICE_SESSION']) || $_COOKIE['COMFINO_SERVICE_SESSION'] !== 'ACTIVE') && ConfigManager::isServiceMode()) {
@@ -214,13 +227,7 @@ final class Main
                 $debugMessage .= (($debugMessage !== '' ? ': ' : '') . implode(', ', $preparedParameters));
             }
 
-            global $wp_filesystem;
-
-            $wp_filesystem->put_contents(
-                self::$debugLogFilePath,
-                '[' . gmdate('Y-m-d H:i:s') . "] $debugPrefix: $debugMessage\n",
-                FS_CHMOD_FILE
-            );
+            self::writeToFile(self::$debugLogFilePath, '[' . gmdate('Y-m-d H:i:s') . "] $debugPrefix: $debugMessage\n");
         }
     }
 

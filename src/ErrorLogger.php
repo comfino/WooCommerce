@@ -59,13 +59,7 @@ final class ErrorLogger
 
     public static function logError(string $errorPrefix, string $errorMessage): void
     {
-        global $wp_filesystem;
-
-        $wp_filesystem->put_contents(
-            self::$logFilePath,
-            '[' . gmdate('Y-m-d H:i:s') . "] $errorPrefix: $errorMessage\n",
-            FS_CHMOD_FILE
-        );
+        Main::writeToFile(self::$logFilePath, '[' . gmdate('Y-m-d H:i:s') . "] $errorPrefix: $errorMessage\n");
     }
 
     public static function getErrorLog(int $numLines): string
