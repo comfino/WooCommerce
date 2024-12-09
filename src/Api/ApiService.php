@@ -433,8 +433,7 @@ final class ApiService
             ]
         );
 
-        echo wp_kses(FrontendManager::getPaywallRenderer()
-            ->renderPaywall(new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes)), FrontendManager::getPaywallAllowedHtml());
+        echo FrontendManager::getPaywallRenderer()->renderPaywall(new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes));
 
         if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
             Main::debugLog(
@@ -450,7 +449,7 @@ final class ApiService
     private static function getPaywallItemDetails(\WP_REST_Request $request): \WP_REST_Response
     {
         if (!ConfigManager::isEnabled()) {
-            echo wp_kses(TemplateManager::renderView('plugin-disabled', 'front'), FrontendManager::getPaywallAllowedHtml());
+            TemplateManager::renderView('plugin-disabled', 'front');
 
             exit;
         }

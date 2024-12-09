@@ -197,6 +197,7 @@ final class FrontendManager
                     'scrolling' => [],
                     'onload' => [],
                 ],
+                'input' => ['id' => [], 'name' => [], 'value' => [], 'class' => [], 'style' => [], 'title' => [], 'placeholder' => [], 'type' => [], 'checked' => [], 'readonly' => [], 'disabled' => [], 'required' => []],
             ],
             self::getAllowedScriptHtml(),
             self::getAllowedStyleHtml()
@@ -233,7 +234,7 @@ final class FrontendManager
             wp_kses_allowed_html('post'),
             [
                 'input' => ['id' => [], 'name' => [], 'value' => [], 'class' => [], 'style' => [], 'title' => [], 'placeholder' => [], 'type' => [], 'checked' => [], 'readonly' => [], 'disabled' => [], 'required' => []],
-                'svg' => ['id' => [], 'version' => [], 'xmlns' => [], 'xmlns:xlink' => [], 'style' => [], 'width' => [], 'height' => [], 'x' => [], 'y' => [], 'viewBox' => [], 'xml:space' => []],
+                'svg' => ['id' => [], 'class' => [], 'version' => [], 'xmlns' => [], 'xmlns:xlink' => [], 'style' => [], 'width' => [], 'height' => [], 'x' => [], 'y' => [], 'viewbox' => [], 'xml:space' => []],
                 'path' => ['id' => [], 'd' => [], 'fill' => []],
                 'g' => ['id' => []],
             ],
