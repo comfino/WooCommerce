@@ -40,27 +40,23 @@ final class Configuration extends RestEndpoint
      * @var string
      */
     private $databaseVersion;
-    public function __construct(
-        string $name,
-        string $endpointUrl,
-        ConfigurationManager $configurationManager,
-        string $platformName,
-        string $platformVersion,
-        string $pluginVersion,
-        int $pluginBuildTs,
-        string $databaseVersion
-    ) {
+    /**
+     * @readonly
+     * @var mixed[]|null
+     */
+    private $shopExtraVariables;
+    public function __construct(string $name, string $endpointUrl, ConfigurationManager $configurationManager, string $platformName, string $platformVersion, string $pluginVersion, int $pluginBuildTs, string $databaseVersion, ?array $shopExtraVariables = null)
+    {
         $this->configurationManager = $configurationManager;
         $this->platformName = $platformName;
         $this->platformVersion = $platformVersion;
         $this->pluginVersion = $pluginVersion;
         $this->pluginBuildTs = $pluginBuildTs;
         $this->databaseVersion = $databaseVersion;
+        $this->shopExtraVariables = $shopExtraVariables;
         parent::__construct($name, $endpointUrl);
-
         $this->methods = ['GET', 'POST', 'PUT', 'PATCH'];
     }
-
     /**
      * @param \ComfinoExternal\Psr\Http\Message\ServerRequestInterface $serverRequest
      * @param string|null $endpointName
@@ -71,6 +67,13 @@ final class Configuration extends RestEndpoint
             throw new InvalidEndpoint('Endpoint path does not match request path.');
         }
 
+        if ($this->shopExtraVariables !== null && isset($this->shopExtraVariables['wordpress_version'])) {
+            $wpVersion = $this->shopExtraVariables['wordpress_version'];
+            unset($this->shopExtraVariables['wordpress_version']);
+        } else {
+            $wpVersion = 'n/a';
+        }
+
         if (strtoupper($serverRequest->getMethod()) === 'GET') {
             return [
                 'shop_info' => [
@@ -78,6 +81,7 @@ final class Configuration extends RestEndpoint
                     'platform_version' => $this->platformVersion,
                     'plugin_version' => $this->pluginVersion,
                     'plugin_build_ts' => $this->pluginBuildTs,
+                    'wordpress_version' => $wpVersion,
                     'symfony_version' => class_exists('\Symfony\Component\HttpKernel\Kernel')
                         ? \Symfony\Component\HttpKernel\Kernel::VERSION
                         : 'n/a',
@@ -86,6 +90,7 @@ final class Configuration extends RestEndpoint
                     'server_name' => $serverRequest->getServerParams()['SERVER_NAME'],
                     'server_addr' => $serverRequest->getServerParams()['SERVER_ADDR'],
                     'database_version' => $this->databaseVersion,
+                    'extra_variables' => $this->shopExtraVariables,
                 ],
                 'shop_configuration' => $this->configurationManager->returnConfigurationOptions(),
             ];

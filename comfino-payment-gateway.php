@@ -3,20 +3,22 @@
  * Plugin Name: Comfino Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
  * Description: Comfino Payment Gateway for WooCommerce.
- * Version: 4.1.1
+ * Version: 4.1.2
  * Author: Comfino
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
  * Text Domain: comfino-payment-gateway
- * WC tested up to: 9.3.3
+ * WC tested up to: 9.4.2
  * WC requires at least: 3.0
- * Tested up to: 6.6.2
+ * Tested up to: 6.7.1
  * Requires at least: 5.0
  * Requires PHP: 7.1
+ * License: GPLv3
  *
  * @license http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
+use Comfino\Configuration\ConfigManager;
 use Comfino\PaymentGateway;
 
 if (!defined('ABSPATH')) {
@@ -51,9 +53,55 @@ class Comfino_Payment_Gateway
             return;
         }
 
+        // Basic hooks
         add_action('init', [$this, 'init']);
         add_action('admin_init', [$this, 'check_environment']);
         add_action('admin_notices', [$this, 'admin_notices'], 15);
+        add_action('plugins_loaded', function (): void {
+            if (get_transient('comfino_plugin_updated')) {
+                $this->upgrade_plugin();
+            }
+        });
+
+        // Upgrade hook
+        add_action('upgrader_process_complete', static function(WP_Upgrader $upgrader, array $options) {
+            $comfinoPluginPathName = plugin_basename(__FILE__);
+
+            if ($options['action'] === 'update' && $options['type'] === 'plugin') {
+                // Plugin updated.
+                if (isset($options['plugins'])) {
+                    // Bulk plugins update (update page)
+                    foreach($options['plugins'] as $pluginPathName) {
+                        if ($pluginPathName === $comfinoPluginPathName) {
+                            // Comfino plugin updated.
+                            set_transient('comfino_plugin_updated', 1);
+                            set_transient('comfino_plugin_prev_version', PaymentGateway::VERSION);
+                            set_transient('comfino_plugin_updated_at', time());
+
+                            break;
+                        }
+                    }
+                } elseif (isset($options['plugin'])) {
+                    // Normal plugin update or via auto update
+                    if ($options['plugin'] === $comfinoPluginPathName) {
+                        // Comfino plugin updated.
+                        set_transient('comfino_plugin_updated', 1);
+                        set_transient('comfino_plugin_prev_version', PaymentGateway::VERSION);
+                        set_transient('comfino_plugin_updated_at', time());
+                    }
+                }
+            }
+        }, 10, 2);
+
+        // Overwrite hook
+        add_action('upgrader_overwrote_package', static function(string $package, array $data, string $package_type) {
+            if ($package_type === 'plugin' && $data['Name'] === 'Comfino payment gateway') {
+                // Comfino plugin updated.
+                set_transient('comfino_plugin_updated', 1);
+                set_transient('comfino_plugin_prev_version', PaymentGateway::VERSION);
+                set_transient('comfino_plugin_updated_at', time());
+            }
+        }, 10, 3);
 
         // Add a Comfino gateway to the WooCommerce payment methods available for customer.
         add_filter('woocommerce_payment_gateways', static function (array $methods): array {
@@ -91,12 +139,12 @@ class Comfino_Payment_Gateway
      */
     public function activation_check(): void
     {
-        $environment_warning = Comfino\Main::getEnvironmentWarning(true);
+        $environmentWarning = Comfino\Main::getEnvironmentWarning(true);
 
-        if ($environment_warning) {
+        if ($environmentWarning) {
             deactivate_plugins(plugin_basename(__FILE__));
             /** @noinspection ForgottenDebugOutputInspection */
-            wp_die($environment_warning);
+            wp_die(wp_kses($environmentWarning, 'user_description'));
         }
     }
 
@@ -134,18 +182,18 @@ class Comfino_Payment_Gateway
      */
     public function check_environment()
     {
-        $environment_warning = Comfino\Main::getEnvironmentWarning();
+        $environmentWarning = Comfino\Main::getEnvironmentWarning();
 
-        if ($environment_warning && is_plugin_active(plugin_basename(__FILE__))) {
+        if ($environmentWarning && is_plugin_active(plugin_basename(__FILE__))) {
             deactivate_plugins(plugin_basename(__FILE__));
-            $this->add_admin_notice('bad_environment', 'error', $environment_warning);
+            $this->add_admin_notice('bad_environment', 'error', $environmentWarning);
 
             if (isset($_GET['activate'])) {
                 unset($_GET['activate']);
             }
         }
 
-        return $environment_warning;
+        return $environmentWarning;
     }
 
     public function add_admin_notice(string $slug, string $class, string $message): void
@@ -155,11 +203,47 @@ class Comfino_Payment_Gateway
 
     public function admin_notices(): void
     {
-        foreach ($this->notices as $notice_key => $notice) {
+        if (get_transient('comfino_plugin_updated')) {
+            echo '<div class="notice notice-success">' . wp_kses(sprintf(
+                /* translators: 1: Previous plugin version 2: Current plugin version */
+                __('Comfino plugin updated from version %1$s to %2$s.', 'comfino-payment-gateway'),
+                get_transient('comfino_plugin_prev_version'),
+                PaymentGateway::VERSION
+            ), 'user_description') . '</div>';
+
+            $this->upgrade_plugin();
+        }
+
+        foreach ($this->notices as $noticeKey => $notice) {
             echo '<div class="' . esc_attr(sanitize_html_class($notice['class'])) . '"><p>';
             echo wp_kses($notice['message'], ['a' => ['href' => []]]);
             echo "</p></div>";
         }
+    }
+
+    public function upgrade_plugin(): void
+    {
+        if (PaymentGateway::WIDGET_INIT_SCRIPT_HASH !== PaymentGateway::WIDGET_INIT_SCRIPT_LAST_HASH) {
+            // Update code of widget initialization script if changed.
+            ConfigManager::updateWidgetCode(PaymentGateway::WIDGET_INIT_SCRIPT_LAST_HASH);
+        }
+
+        set_transient('comfino_plugin_updated', 0);
+    }
+
+    public function get_plugin_update_details(): array
+    {
+        static $updateDetails = null;
+
+        if ($updateDetails === null) {
+            $updateDetails = [
+                'comfino_plugin_updated' => get_transient('comfino_plugin_updated'),
+                'comfino_plugin_prev_version' => get_transient('comfino_plugin_prev_version'),
+                'comfino_plugin_updated_at' => get_transient('comfino_plugin_updated_at'),
+            ];
+        }
+
+        return $updateDetails;
     }
 }
 

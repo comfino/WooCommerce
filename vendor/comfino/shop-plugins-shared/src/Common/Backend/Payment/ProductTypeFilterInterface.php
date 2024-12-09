@@ -13,4 +13,6 @@ interface ProductTypeFilterInterface
      * @param \Comfino\Common\Shop\Cart $cart
      */
     public function getAllowedProductTypes($availableProductTypes, $cart): array;
+
+    public function getAsArray(): array;
 }

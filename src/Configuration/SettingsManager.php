@@ -60,7 +60,7 @@ final class SettingsManager
 
             return $productTypesList;
         } catch (\Throwable $e) {
-            ApiClient::processApiError('Settings error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)', $e);
+            ApiClient::processApiError('Settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)', $e);
 
             if ($returnErrors) {
                 return ['error' => $e->getMessage()];
@@ -114,7 +114,7 @@ final class SettingsManager
 
             return $widgetTypesList;
         } catch (\Throwable $e) {
-            ApiClient::processApiError('Settings error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)', $e);
+            ApiClient::processApiError('Settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)', $e);
 
             if ($returnErrors) {
                 return ['error' => $e->getMessage()];
@@ -149,7 +149,9 @@ final class SettingsManager
 
         if (ConfigManager::isDebugMode()) {
             $activeFilters = array_map(
-                static function (ProductTypeFilterInterface $filter): string { return get_class($filter); },
+                static function (ProductTypeFilterInterface $filter): string {
+                    return get_class($filter) . ': ' . wp_json_encode($filter->getAsArray());
+                },
                 $filterManager->getFilters()
             );
 
@@ -229,8 +231,9 @@ final class SettingsManager
     private static function buildFiltersList(string $listType): array
     {
         $filters = [];
+        $minAmount = (int) (round(ConfigManager::getConfigurationValue('COMFINO_MINIMAL_CART_AMOUNT', 0), 2) * 100);
 
-        if (($minAmount = ConfigManager::getConfigurationValue('COMFINO_MINIMAL_CART_AMOUNT', 0)) > 0) {
+        if ($minAmount > 0) {
             $availableProductTypes = self::getProductTypesStrings($listType);
             $filters[] = new FilterByCartValueLowerLimit(
                 array_combine($availableProductTypes, array_fill(0, count($availableProductTypes), $minAmount))

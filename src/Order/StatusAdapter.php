@@ -25,7 +25,7 @@ class StatusAdapter implements OrderStatusAdapterInterface
         $order = wc_get_order($orderId);
 
         if (!$order) {
-            throw new \RuntimeException(sprintf('Order not found by id: %s', $orderId));
+            throw new \RuntimeException(sprintf('Order not found by id: %s', esc_html($orderId)));
         }
 
         $inputStatus = strtoupper($status);
@@ -35,7 +35,7 @@ class StatusAdapter implements OrderStatusAdapterInterface
         }
 
         if (in_array($inputStatus, self::$loggedStates, true)) {
-            $order->add_order_note(__('Comfino status', 'comfino-payment-gateway') . __((string)$inputStatus, 'comfino-payment-gateway'));
+            $order->add_order_note(__('Comfino status', 'comfino-payment-gateway') . ": $inputStatus");
         }
 
         $statusMap = ConfigManager::getStatusMap();

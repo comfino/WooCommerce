@@ -40,4 +40,9 @@ class FilterByCartValueLowerLimit implements ProductTypeFilterInterface
 
         return $allowedProductTypes;
     }
+
+    public function getAsArray(): array
+    {
+        return ['cartValueLimitsByProductType' => $this->cartValueLimitsByProductType];
+    }
 }

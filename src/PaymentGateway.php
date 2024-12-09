@@ -21,8 +21,10 @@ use Comfino\View\TemplateManager;
 class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
-    public const VERSION = '4.1.1';
-    public const BUILD_TS = 1731756441;
+    public const VERSION = '4.1.2';
+    public const BUILD_TS = 1733735497;
+    public const WIDGET_INIT_SCRIPT_HASH = 'b1a0cae1a47d1c5b9264df3573c09c48';
+    public const WIDGET_INIT_SCRIPT_LAST_HASH = '4f8e7fe2091417c2b345fb51f1587316';
 
     public function __construct()
     {
@@ -31,20 +33,16 @@ class PaymentGateway extends \WC_Payment_Gateway
         $this->has_fields = true;
         $this->method_title = __('Comfino payments', 'comfino-payment-gateway');
         $this->method_description = __(
-            'Comfino is an innovative payment method for customers of e-commerce stores! ' .
-            'These are installment payments, deferred (buy now, pay later) and corporate ' .
-            'payments available on one platform with the help of quick integration. Grow your business with Comfino!',
+            'Comfino is an innovative payment method for customers of e-commerce stores! These are installment payments, deferred (buy now, pay later) and corporate payments available on one platform with the help of quick integration. Grow your business with Comfino!',
             'comfino-payment-gateway'
         );
-        $this->description = __('The wide range of Comfino installment payments means fast and safe shopping without ' .
-            'burdening your budget here and now. Unexpected expenses, larger purchases, or maybe you just prefer to ' .
-            'pay later? With Comfino you have a choice! 0% installments, Convenient Installments and deferred ' .
-            'payments "Buy now, pay later". All so that you can enjoy shopping without worrying about your finances.',
+        $this->description = __(
+            'The wide range of Comfino installment payments means fast and safe shopping without burdening your budget here and now. Unexpected expenses, larger purchases, or maybe you just prefer to pay later? With Comfino you have a choice! 0% installments, Convenient Installments and deferred payments "Buy now, pay later". All so that you can enjoy shopping without worrying about your finances.',
             'comfino-payment-gateway'
         );
         $this->supports = ['products'];
 
-        if (is_admin() && strpos($_SERVER['REQUEST_URI'], 'comfino') === false) {
+        if (is_admin() && strpos(Main::getCurrentUrl(), 'comfino') === false) {
             return;
         }
 
@@ -102,7 +100,7 @@ class PaymentGateway extends \WC_Payment_Gateway
     public function get_icon(): string
     {
         if (ConfigManager::getConfigurationValue('COMFINO_SHOW_LOGO')) {
-            $icon = '<img style="height: 18px; margin: 0 5px;" src="' . ApiClient::getPaywallLogoUrl() . '" alt="' . ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT') . '">';
+            $icon = FrontendManager::renderPaywallLogo();
         } else {
             $icon = '';
         }
@@ -112,7 +110,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function payment_fields(): void
     {
-        echo $this->generatePaywallIframe(false);
+        echo wp_kses($this->generatePaywallIframe(false), FrontendManager::getPaywallIfarmeAllowedHtml());
     }
 
     public function process_payment($order_id): array
@@ -120,7 +118,7 @@ class PaymentGateway extends \WC_Payment_Gateway
         Main::debugLog('[PAYMENT GATEWAY]', 'process_payment', ['$order_id' => $order_id, '$_POST' => $_POST]);
 
         $orderId = (string) $order_id;
-        $shopCart = OrderManager::getShopCart(WC()->cart, (int) sanitize_text_field($_POST['comfino_loan_amount']));
+        $shopCart = OrderManager::getShopCart(WC()->cart, (int) sanitize_text_field(wp_unslash($_POST['comfino_loan_amount'] ?? '0')));
 
         $wcOrder = wc_get_order($order_id);
         $phoneNumber = trim($wcOrder->get_billing_phone());
@@ -190,8 +188,8 @@ class PaymentGateway extends \WC_Payment_Gateway
             $orderId,
             $shopCart->getTotalValue(),
             $shopCart->getDeliveryCost(),
-            (int) sanitize_text_field($_POST['comfino_loan_term']),
-            new LoanTypeEnum(sanitize_text_field($_POST['comfino_loan_type'])),
+            (int) sanitize_text_field(wp_unslash($_POST['comfino_loan_term'] ?? '0')),
+            new LoanTypeEnum(sanitize_text_field(wp_unslash($_POST['comfino_loan_type'] ?? 'undefined'))),
             $shopCart->getCartItems(),
             new Customer(
                 $firstName,
@@ -219,6 +217,17 @@ class PaymentGateway extends \WC_Payment_Gateway
             $shopCart->getDeliveryTaxValue()
         );
 
+        Main::debugLog(
+            '[PAYMENT]',
+            'process_payment',
+            [
+                '$loanAmount' => $order->getCart()->getTotalAmount(),
+                '$loanType' => (string) $order->getLoanParameters()->getType(),
+                '$loanTerm' => $order->getLoanParameters()->getTerm(),
+                '$shopCart' => $shopCart->getAsArray(),
+            ]
+        );
+
         try {
             $response = ApiClient::getInstance()->createOrder($order);
 
@@ -235,13 +244,21 @@ class PaymentGateway extends \WC_Payment_Gateway
             $result = ['result' => 'success', 'redirect' => $response->applicationUrl];
         } catch (\Throwable $e) {
             ApiClient::processApiError(
-                'Order creation error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)',
+                'Order creation error on page "' . Main::getCurrentUrl() . '" (Comfino API)',
                 $e
             );
 
             wc_add_notice($e->getMessage(), 'error');
 
             $result = ['result' => 'failure', 'redirect' => ''];
+        } finally {
+            if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
+                Main::debugLog(
+                    '[CREATE_ORDER_API_REQUEST]',
+                    'createOrder',
+                    ['$request' => $apiRequest->getRequestBody()]
+                );
+            }
         }
 
         return $result;
@@ -270,16 +287,16 @@ class PaymentGateway extends \WC_Payment_Gateway
             'title' => $this->method_title,
             'description' => $this->method_description,
             'active_tab' => $activeTab,
-            'logo_url' => ApiClient::getLogoUrl(),
             'support_email_address' => SettingsForm::COMFINO_SUPPORT_EMAIL,
             'support_email_subject' => sprintf(
-                __('WordPress %s WooCommerce %s Comfino %s - question', 'comfino-payment-gateway'),
+                /* translators: 1: WordPress version 2: WooCommerce version 3: Comfino plugin version */
+                __('WordPress %1$s WooCommerce %2$s Comfino %3$s - question', 'comfino-payment-gateway'),
                 $wp_version,
                 WC_VERSION,
                 self::VERSION
             ),
             'support_email_body' => sprintf(
-                'WordPress %s WooCommerce %s Comfino %s, PHP %s',
+                'WordPress %1$s WooCommerce %2$s Comfino %3$s, PHP %s',
                 $wp_version,
                 WC_VERSION,
                 self::VERSION,
@@ -287,15 +304,18 @@ class PaymentGateway extends \WC_Payment_Gateway
             ),
             'contact_msg1' => __('Do you want to ask about something? Write to us at', 'comfino-payment-gateway'),
             'contact_msg2' => sprintf(
+                /* translators: s%: Comfino support telephone */
                 __('or contact us by phone. We are waiting on the number: %s. We will answer all your questions!', 'comfino-payment-gateway'),
                 SettingsForm::COMFINO_SUPPORT_PHONE
             ),
             'plugin_version' => self::VERSION,
+            'comfino_logo_img' => FrontendManager::renderAdminLogo(),
+            'comfino_logo_allowed_html' => FrontendManager::getImageAllowedHtml(),
         ];
 
         if ($activeTab === 'plugin_diagnostics') {
             $viewVariables['shop_info'] = sprintf(
-                'WooCommerce Comfino %s, WordPress %s, WooCommerce %s, PHP %s, web server %s, database %s',
+                'WooCommerce Comfino %1$s, WordPress %2$s, WooCommerce %3$s, PHP %4$s, web server %5$s, database %6$s',
                 ...array_values(ConfigManager::getEnvironmentInfo([
                     'plugin_version',
                     'wordpress_version',
@@ -316,7 +336,9 @@ class PaymentGateway extends \WC_Payment_Gateway
             $viewVariables['settings_html'] = $this->generate_settings_html(SettingsForm::getFormFields($activeTab), false);
         }
 
-        echo TemplateManager::renderView('configuration', 'admin', $viewVariables);
+        $viewVariables['settings_allowed_html'] = FrontendManager::getAdminPanelAllowedHtml();
+
+        echo wp_kses(TemplateManager::renderView('configuration', 'admin', $viewVariables), $viewVariables['settings_allowed_html']);
     }
 
     public function process_admin_options(): bool
@@ -389,7 +411,7 @@ class PaymentGateway extends \WC_Payment_Gateway
     public function admin_scripts($hook): void
     {
         if ($hook === 'woocommerce_page_wc-settings') {
-            wp_enqueue_script('prod_cat_tree', plugins_url('resources/js/admin/tree.min.js',  Main::getPluginFile()), [], null);
+            wp_enqueue_script('prod-cat-tree', plugins_url('resources/js/admin/tree.min.js',  Main::getPluginFile()), [], null, ['in_footer' => false]);
         }
     }
 
@@ -420,7 +442,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     private function getSubsection(): string
     {
-        $active_tab = $_GET['subsection'] ?? 'payment_settings';
+        $active_tab = sanitize_key(wp_unslash($_GET['subsection'] ?? 'payment_settings'));
 
         if (!in_array(
             $active_tab,
