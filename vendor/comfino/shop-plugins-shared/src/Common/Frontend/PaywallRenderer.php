@@ -129,7 +129,7 @@ final class PaywallRenderer extends FrontendRenderer
                         $queryCriteria->loanAmount,
                         $paywallProductsList,
                         //$fragments[self::PAYWALL_FRAGMENT_SCRIPT]
-                        ''
+                        "document.querySelector('#paywall-form main.subbox section.select-payment').querySelectorAll('input').forEach(function (item) { if (item.parentElement.classList.contains('selected')) item.checked = true; item.name = 'comfino'; });",
                     ],
                     $fragments[self::PAYWALL_FRAGMENT_TEMPLATE]
                 )
