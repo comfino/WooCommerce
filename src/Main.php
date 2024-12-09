@@ -128,7 +128,7 @@ final class Main
                     return;
                 }
 
-                wp_register_script('comfino-widget-init-script', '');
+                wp_register_script('comfino-widget-init-script', '', [], null, ['in_footer' => false]);
                 wp_enqueue_script('comfino-widget-init-script');
                 wp_add_inline_script('comfino-widget-init-script', FrontendManager::renderWidgetInitCode($product->get_id()));
             }
@@ -456,7 +456,7 @@ final class Main
                     ['in_footer' => false]
                 );
 
-                wp_register_script('comfino-paywall-init-script', '', [], null);
+                wp_register_script('comfino-paywall-init-script', '', [], null, ['in_footer' => false]);
                 wp_enqueue_script('comfino-paywall-init-script');
                 wp_add_inline_script(
                     'comfino-paywall-init-script',
