@@ -123,11 +123,13 @@ final class PaywallRenderer extends FrontendRenderer
                     ],
                     [
                         $this->renderHeadMetaTags(),
-                        $fragments[self::PAYWALL_FRAGMENT_STYLE],
+                        //$fragments[self::PAYWALL_FRAGMENT_STYLE],
+                        '',
                         $paywallApiOrigin,
                         $queryCriteria->loanAmount,
                         $paywallProductsList,
-                        $fragments[self::PAYWALL_FRAGMENT_SCRIPT]
+                        //$fragments[self::PAYWALL_FRAGMENT_SCRIPT]
+                        ''
                     ],
                     $fragments[self::PAYWALL_FRAGMENT_TEMPLATE]
                 )

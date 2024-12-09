@@ -7,7 +7,6 @@ if (!defined('ABSPATH')) {
 /** @var string $paywall_iframe */
 /** @var array $paywall_iframe_allowed_html */
 /** @var bool $render_init_script */
-/** @var array $paywall_options */
 ?>
 <div id="comfino-iframe-container"><?php echo wp_kses($paywall_iframe, $paywall_iframe_allowed_html); ?></div>
 <?php if ($render_init_script): ?>

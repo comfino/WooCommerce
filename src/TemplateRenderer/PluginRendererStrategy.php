@@ -20,7 +20,7 @@ class PluginRendererStrategy implements RendererStrategyInterface
 {
     public function renderPaywallTemplate($paywallContents): string
     {
-        return $paywallContents;
+        return str_replace('</head>', '<link rel="stylesheet" href="https://widget.comfino.pl/css/paywall.css"><script src="https://widget.comfino.pl/paywall.min.js"></script></head>', $paywallContents);
     }
 
     public function renderErrorTemplate($exception, $frontendRenderer): string

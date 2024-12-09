@@ -233,6 +233,13 @@ final class FrontendManager
         return array_merge(
             wp_kses_allowed_html('post'),
             [
+                'html' => [],
+                'head' => [],
+                'title' => [],
+                'meta' => ['name' => [], 'http-equiv' => [], 'content' => []],
+                'link' => ['rel' => [], 'href' => []],
+                'body' => [],
+                'form' => ['id' => [], 'name' => [], 'action' => [], 'method' => []],
                 'input' => ['id' => [], 'name' => [], 'value' => [], 'class' => [], 'style' => [], 'title' => [], 'placeholder' => [], 'type' => [], 'checked' => [], 'readonly' => [], 'disabled' => [], 'required' => []],
                 'svg' => [
                     'xmlns' => [],
@@ -354,8 +361,8 @@ final class FrontendManager
                     'r' => [],
                 ],
             ],
-            self::getAllowedScriptHtml(),
-            self::getAllowedStyleHtml()
+            self::getAllowedScriptHtml()
+            //self::getAllowedStyleHtml()
         );
     }
 }
