@@ -128,7 +128,9 @@ final class Main
                     return;
                 }
 
-                echo esc_js(FrontendManager::renderWidgetInitCode($product->get_id()));
+                wp_register_script('comfino-widget-init-script', '');
+                wp_enqueue_script('comfino-widget-init-script');
+                wp_add_inline_script('comfino-widget-init-script', FrontendManager::renderWidgetInitCode($product->get_id()));
             }
         });
 
@@ -417,11 +419,26 @@ final class Main
 
             $styleTimestamp = $renderer->getPaywallFrontendStyleTimestamp();
             $scriptTimestamp = $renderer->getPaywallFrontendScriptTimestamp();
-            $paywallFrontendStyleUrl = ApiService::getEndpointUrl('paywallFrontendStyle') . ($styleTimestamp !== 0 ? "/$styleTimestamp" : '');
-            $paywallFrontendScriptUrl = ApiService::getEndpointUrl('paywallFrontendScript') . ($scriptTimestamp !== 0 ? "/$scriptTimestamp" : '');
 
-            wp_enqueue_style('comfino-frontend-style', $paywallFrontendStyleUrl, [], null);
-            wp_enqueue_script('comfino-frontend-script', $paywallFrontendScriptUrl, [], null, ['in_footer' => true]);
+            try {
+                wp_register_style('comfino-frontend-style', '', [], $styleTimestamp !== 0 ? (string) $styleTimestamp : null);
+                wp_enqueue_style('comfino-frontend-style');
+                wp_add_inline_style('comfino-frontend-style', FrontendManager::getPaywallIframeRenderer()->getPaywallFrontendStyle());
+            } catch (InvalidArgumentException $e) {
+                ErrorLogger::sendError('Paywall frontend style [cache]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
+            } catch (\Throwable $e) {
+                ErrorLogger::sendError('Paywall frontend style [api]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
+            }
+
+            try {
+                wp_register_script('comfino-frontend-script', '', [], $scriptTimestamp !== 0 ? (string) $scriptTimestamp : null, true);
+                wp_enqueue_script('comfino-frontend-script');
+                wp_add_inline_script('comfino-frontend-script', FrontendManager::getPaywallIframeRenderer()->getPaywallFrontendScript());
+            } catch (InvalidArgumentException $e) {
+                ErrorLogger::sendError('Paywall frontend script [cache]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
+            } catch (\Throwable $e) {
+                ErrorLogger::sendError('Paywall frontend script [api]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
+            }
 
             if (!$isPaymentBlock) {
                 wp_enqueue_script(
@@ -429,7 +446,14 @@ final class Main
                     $comfino_payment_gateway->plugin_url() . '/resources/js/front/paywall.min.js',
                     [],
                     null,
-                    ['in_footer' => true]
+                    ['in_footer' => false]
+                );
+
+                wp_register_script('comfino-paywall-init-script', '', [], null);
+                wp_enqueue_script('comfino-paywall-init-script');
+                wp_add_inline_script(
+                    'comfino-paywall-init-script',
+                    'ComfinoPaywall.initIframe = () => ComfinoPaywall.init(' . wp_json_encode(self::getPaywallOptions($total)) . ');'
                 );
             }
 
@@ -438,12 +462,8 @@ final class Main
                 'front',
                 [
                     'paywall_iframe' => $paywallElements['iframe'],
-                    'allowed_html' => FrontendManager::getPaywallIfarmeAllowedHtml(),
+                    'paywall_iframe_allowed_html' => FrontendManager::getPaywallIfarmeAllowedHtml(),
                     'render_init_script' => !$isPaymentBlock,
-                    'paywall_options' => self::getPaywallOptions($total),
-                    'comfino_logo_url' => ApiClient::getPaywallLogoUrl(),
-                    'comfino_label' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
-                    'comfino_redirect_url' => ApiService::getEndpointUrl('payment'),
                 ]
             );
         } catch (\Throwable|InvalidArgumentException $e) {

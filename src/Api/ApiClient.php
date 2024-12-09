@@ -105,17 +105,14 @@ final class ApiClient
         );
     }
 
-    public static function getLogoUrl(): string
+    public static function getLogoApiHost(): string
     {
-        return self::getApiHost(self::getInstance()->getApiHost())
-            . '/v1/get-logo-url?auth='
-            . FrontendHelper::getLogoAuthHash('WC', WC_VERSION, PaymentGateway::VERSION, PaymentGateway::BUILD_TS);
+        return self::getApiHost(self::getInstance()->getApiHost());
     }
 
     public static function getPaywallLogoUrl(): string
     {
-        return self::getApiHost(self::getInstance()->getApiHost())
-            . '/v1/get-paywall-logo?auth='
+        return self::getLogoApiHost() . '/v1/get-paywall-logo?auth='
             . FrontendHelper::getPaywallLogoAuthHash(
                 'WC',
                 WC_VERSION,

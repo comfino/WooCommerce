@@ -44,8 +44,6 @@ final class ApiService
         'paywall' => [self::class, 'getPaywall'],
         'paywallItemDetails' => [self::class, 'getPaywallItemDetails'],
         'productDetails' => [self::class, 'getProductDetails'],
-        'paywallFrontendStyle' => [self::class, 'getPaywallFrontendStyle'],
-        'paywallFrontendScript' => [self::class, 'getPaywallFrontendScript'],
     ];
 
     public static function init(): void
@@ -102,24 +100,6 @@ final class ApiService
                     return self::processRequest('productDetails', $request);
                 },
                 'args' => ['loanTypeSelected' => ['sanitize_callback' => 'sanitize_text_field']],
-            ],
-        ]);
-
-        self::registerWordPressApiEndpoint('paywallFrontendStyle', [
-            [
-                'methods' => \WP_REST_Server::READABLE,
-                'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
-                    return self::processRequest('paywallFrontendStyle', $request);
-                },
-            ],
-        ]);
-
-        self::registerWordPressApiEndpoint('paywallFrontendScript', [
-            [
-                'methods' => \WP_REST_Server::READABLE,
-                'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
-                    return self::processRequest('paywallFrontendScript', $request);
-                },
             ],
         ]);
 
@@ -193,8 +173,6 @@ final class ApiService
             'transactionStatus' => '/transactionstatus',
             'configuration' => '/configuration(?:/(?P<vkey>[a-f0-9]+))?',
             'cacheInvalidate' => '/cacheinvalidate',
-            'paywallFrontendStyle' => '/paywall/style(?:/(?P<timestamp>\d+))?',
-            'paywallFrontendScript' => '/paywall/script(?:/(?P<timestamp>\d+))?',
         ];
 
         add_action('rest_api_init', [self::class, 'init']);
@@ -456,7 +434,7 @@ final class ApiService
         );
 
         echo wp_kses(FrontendManager::getPaywallRenderer()
-            ->renderPaywall(new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes)), 'post');
+            ->renderPaywall(new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes)), FrontendManager::getPaywallAllowedHtml());
 
         if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
             Main::debugLog(
@@ -472,7 +450,7 @@ final class ApiService
     private static function getPaywallItemDetails(\WP_REST_Request $request): \WP_REST_Response
     {
         if (!ConfigManager::isEnabled()) {
-            echo wp_kses(TemplateManager::renderView('plugin-disabled', 'front'), 'post');
+            echo wp_kses(TemplateManager::renderView('plugin-disabled', 'front'), FrontendManager::getPaywallAllowedHtml());
 
             exit;
         }
@@ -510,37 +488,5 @@ final class ApiService
         }
 
         return new \WP_REST_Response(['listItemData' => $response->listItemData, 'productDetails' => $response->productDetails]);
-    }
-
-    private static function getPaywallFrontendStyle(): void
-    {
-        header('Content-Type: text/css');
-        header('Cache-Control: private, max-age=31536000, immutable');
-
-        try {
-            echo wp_kses(FrontendManager::getPaywallIframeRenderer()->getPaywallFrontendStyle(), 'post');
-        } catch (InvalidArgumentException $e) {
-            ErrorLogger::sendError('Paywall frontend style endpoint [cache]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
-        } catch (\Throwable $e) {
-            ErrorLogger::sendError('Paywall frontend style endpoint [api]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
-        }
-
-        exit;
-    }
-
-    private static function getPaywallFrontendScript(): void
-    {
-        header('Content-Type: application/javascript');
-        header('Cache-Control: private, max-age=31536000, immutable');
-
-        try {
-            echo wp_kses(FrontendManager::getPaywallIframeRenderer()->getPaywallFrontendScript(), 'post');
-        } catch (InvalidArgumentException $e) {
-            ErrorLogger::sendError('Paywall frontend script endpoint [cache]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
-        } catch (\Throwable $e) {
-            ErrorLogger::sendError('Paywall frontend script endpoint [api]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
-        }
-
-        exit;
     }
 }

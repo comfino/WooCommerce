@@ -22,7 +22,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
     public const VERSION = '4.1.2';
-    public const BUILD_TS = 1732963498;
+    public const BUILD_TS = 1733735497;
     public const WIDGET_INIT_SCRIPT_HASH = 'b1a0cae1a47d1c5b9264df3573c09c48';
     public const WIDGET_INIT_SCRIPT_LAST_HASH = '4f8e7fe2091417c2b345fb51f1587316';
 
@@ -100,7 +100,7 @@ class PaymentGateway extends \WC_Payment_Gateway
     public function get_icon(): string
     {
         if (ConfigManager::getConfigurationValue('COMFINO_SHOW_LOGO')) {
-            $icon = '<img style="height: 18px; margin: 0 5px;" src="' . ApiClient::getPaywallLogoUrl() . '" alt="' . ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT') . '">';
+            $icon = FrontendManager::renderPaywallLogo();
         } else {
             $icon = '';
         }
@@ -287,7 +287,6 @@ class PaymentGateway extends \WC_Payment_Gateway
             'title' => $this->method_title,
             'description' => $this->method_description,
             'active_tab' => $activeTab,
-            'logo_url' => ApiClient::getLogoUrl(),
             'support_email_address' => SettingsForm::COMFINO_SUPPORT_EMAIL,
             'support_email_subject' => sprintf(
                 /* translators: 1: WordPress version 2: WooCommerce version 3: Comfino plugin version */
@@ -310,6 +309,8 @@ class PaymentGateway extends \WC_Payment_Gateway
                 SettingsForm::COMFINO_SUPPORT_PHONE
             ),
             'plugin_version' => self::VERSION,
+            'comfino_logo_img' => FrontendManager::renderAdminLogo(),
+            'comfino_logo_allowed_html' => FrontendManager::getImageAllowedHtml(),
         ];
 
         if ($activeTab === 'plugin_diagnostics') {
@@ -335,7 +336,9 @@ class PaymentGateway extends \WC_Payment_Gateway
             $viewVariables['settings_html'] = $this->generate_settings_html(SettingsForm::getFormFields($activeTab), false);
         }
 
-        echo wp_kses(TemplateManager::renderView('configuration', 'admin', $viewVariables), 'post');
+        $viewVariables['settings_allowed_html'] = FrontendManager::getAdminPanelAllowedHtml();
+
+        echo wp_kses(TemplateManager::renderView('configuration', 'admin', $viewVariables), $viewVariables['settings_allowed_html']);
     }
 
     public function process_admin_options(): bool
@@ -408,7 +411,7 @@ class PaymentGateway extends \WC_Payment_Gateway
     public function admin_scripts($hook): void
     {
         if ($hook === 'woocommerce_page_wc-settings') {
-            wp_enqueue_script('prod_cat_tree', plugins_url('resources/js/admin/tree.min.js',  Main::getPluginFile()), [], null, ['in_footer' => true]);
+            wp_enqueue_script('prod-cat-tree', plugins_url('resources/js/admin/tree.min.js',  Main::getPluginFile()), [], null, ['in_footer' => false]);
         }
     }
 

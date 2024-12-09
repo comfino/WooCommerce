@@ -20,7 +20,6 @@ function prepare_tab_url(string $subsection): string
 /** @var WP $wp */
 /** @var string $title */
 /** @var string $description */
-/** @var string $logo_url */
 /** @var string $plugin_version */
 /** @var string $contact_msg1 */
 /** @var string $contact_msg2 */
@@ -29,6 +28,7 @@ function prepare_tab_url(string $subsection): string
 /** @var string $support_email_body */
 /** @var string $active_tab */
 /** @var string $settings_html */
+/** @var array $settings_allowed_html */
 /** @var string $shop_info */
 /** @var string $errors_log */
 /** @var string $debug_log */
@@ -37,10 +37,12 @@ function prepare_tab_url(string $subsection): string
 /** @var string $widget_key */
 /** @var string $is_dev_env */
 /** @var string $build_ts */
+/** @var string $comfino_logo_img */
+/** @var array $comfino_logo_allowed_html */
 ?>
 <h2><?php echo esc_html($title); ?></h2>
 <p><?php echo esc_html($description); ?></p>
-<img style="width: 300px" src="<?php echo esc_url($logo_url); ?>" alt="Comfino logo"> <span style="font-weight: bold; font-size: 16px; vertical-align: bottom"><?php echo esc_html($plugin_version); ?></span>
+<?php echo wp_kses($comfino_logo_img, $comfino_logo_allowed_html); ?> <span style="font-weight: bold; font-size: 16px; vertical-align: bottom"><?php echo esc_html($plugin_version); ?></span>
 <p>
     <?php echo esc_html($contact_msg1); ?>
     <a href="mailto:<?php echo esc_html($support_email_address); ?>?subject=<?php echo esc_html($support_email_subject); ?>&body=<?php echo esc_html($support_email_body); ?>">
@@ -64,7 +66,7 @@ function prepare_tab_url(string $subsection): string
         case 'widget_settings':
         case 'abandoned_cart_settings':
         case 'developer_settings':
-            echo wp_kses($settings_html, 'post');
+            echo wp_kses($settings_html, $settings_allowed_html);
             break;
 
         case 'plugin_diagnostics':
