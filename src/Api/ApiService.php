@@ -353,19 +353,17 @@ final class ApiService
         );
 
         try {
-            $financialProducts = $serializer->serialize(
-                ApiClient::getInstance()->getFinancialProductDetails(
-                    new LoanQueryCriteria($loanAmount, null, LoanTypeEnum::from($loanTypeSelected)),
-                    new Cart(
-                        $shopCart->getCartItems(),
-                        $shopCart->getTotalValue(),
-                        $shopCart->getDeliveryCost(),
-                        $shopCart->getDeliveryNetCost(),
-                        $shopCart->getDeliveryTaxRate(),
-                        $shopCart->getDeliveryTaxValue()
-                    )
-                )->financialProducts
-            );
+            $financialProducts = ApiClient::getInstance()->getFinancialProductDetails(
+                new LoanQueryCriteria($loanAmount, null, LoanTypeEnum::from($loanTypeSelected)),
+                new Cart(
+                    $shopCart->getCartItems(),
+                    $shopCart->getTotalValue(),
+                    $shopCart->getDeliveryCost(),
+                    $shopCart->getDeliveryNetCost(),
+                    $shopCart->getDeliveryTaxRate(),
+                    $shopCart->getDeliveryTaxValue()
+                )
+            )->financialProducts;
         } catch (\Throwable $e) {
             ErrorLogger::sendError(
                 'Product details endpoint',
