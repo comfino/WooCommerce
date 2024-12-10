@@ -2,8 +2,7 @@
 
 namespace Comfino\Api;
 
-use Comfino\Api\Exception\ResponseValidationError;
-use Comfino\Api\Exception\ServiceUnavailable;
+use Comfino\Api\Exception\AuthorizationError;
 use Comfino\Common\Backend\Factory\ApiClientFactory;
 use Comfino\Common\Frontend\FrontendHelper;
 use Comfino\Configuration\ConfigManager;
@@ -29,9 +28,9 @@ final class ApiClient
 
         if ($apiKey === null) {
             if ($sandboxMode) {
-                $apiKey = ConfigManager::getConfigurationValue('COMFINO_SANDBOX_API_KEY');
+                $apiKey = (string) ConfigManager::getConfigurationValue('COMFINO_SANDBOX_API_KEY');
             } else {
-                $apiKey = ConfigManager::getConfigurationValue('COMFINO_API_KEY');
+                $apiKey = (string) ConfigManager::getConfigurationValue('COMFINO_API_KEY');
             }
         }
 
@@ -58,8 +57,15 @@ final class ApiClient
 
             self::$apiClient->addCustomHeader('Comfino-Build-Timestamp', (string) PaymentGateway::BUILD_TS);
         } else {
+            self::$apiClient->setCustomApiHost(self::getApiHost());
             self::$apiClient->setApiKey($apiKey);
             self::$apiClient->setApiLanguage(Main::getShopLanguage());
+        }
+
+        if ($sandboxMode) {
+            self::$apiClient->enableSandboxMode();
+        } else {
+            self::$apiClient->disableSandboxMode();
         }
 
         return self::$apiClient;
@@ -67,6 +73,11 @@ final class ApiClient
 
     public static function processApiError(string $errorPrefix, \Throwable $exception): void
     {
+        if ($exception instanceof AuthorizationError) {
+            // Don't collect authorization errors caused by empty or wrong API key (response with status code 401).
+            return;
+        }
+
         if ($exception instanceof HttpErrorExceptionInterface) {
             $url = $exception->getUrl();
             $requestBody = $exception->getRequestBody();
@@ -94,17 +105,14 @@ final class ApiClient
         );
     }
 
-    public static function getLogoUrl(): string
+    public static function getLogoApiHost(): string
     {
-        return self::getApiHost(self::getInstance()->getApiHost())
-            . '/v1/get-logo-url?auth='
-            . FrontendHelper::getLogoAuthHash('WC', WC_VERSION, PaymentGateway::VERSION, PaymentGateway::BUILD_TS);
+        return self::getApiHost(self::getInstance()->getApiHost());
     }
 
     public static function getPaywallLogoUrl(): string
     {
-        return self::getApiHost(self::getInstance()->getApiHost())
-            . '/v1/get-paywall-logo?auth='
+        return self::getLogoApiHost() . '/v1/get-paywall-logo?auth='
             . FrontendHelper::getPaywallLogoAuthHash(
                 'WC',
                 WC_VERSION,

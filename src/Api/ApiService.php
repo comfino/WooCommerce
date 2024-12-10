@@ -44,17 +44,17 @@ final class ApiService
         'paywall' => [self::class, 'getPaywall'],
         'paywallItemDetails' => [self::class, 'getPaywallItemDetails'],
         'productDetails' => [self::class, 'getProductDetails'],
-        'paywallFrontendStyle' => [self::class, 'getPaywallFrontendStyle'],
-        'paywallFrontendScript' => [self::class, 'getPaywallFrontendScript'],
     ];
 
     public static function init(): void
     {
+        global $comfino_payment_gateway;
+
         add_filter(
             'rest_pre_serve_request',
             static function (bool $served, \WP_HTTP_Response $result, \WP_REST_Request $request, \WP_REST_Server $server): bool {
                 if (is_string($result->get_data()) && strpos($request->get_route(), 'comfino') !== false) {
-                    echo $result->get_data();
+                    echo esc_html($result->get_data());
 
                     $served = true;
                 }
@@ -103,24 +103,6 @@ final class ApiService
             ],
         ]);
 
-        self::registerWordPressApiEndpoint('paywallFrontendStyle', [
-            [
-                'methods' => \WP_REST_Server::READABLE,
-                'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
-                    return self::processRequest('paywallFrontendStyle', $request);
-                },
-            ],
-        ]);
-
-        self::registerWordPressApiEndpoint('paywallFrontendScript', [
-            [
-                'methods' => \WP_REST_Server::READABLE,
-                'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
-                    return self::processRequest('paywallFrontendScript', $request);
-                },
-            ],
-        ]);
-
         self::getEndpointManager()->registerEndpoint(
             new StatusNotification(
                 'transactionStatus',
@@ -158,8 +140,9 @@ final class ApiService
                 ]),
                 ConfigManager::getInstance(),
                 'WooCommerce',
-                ...array_values(
-                    ConfigManager::getEnvironmentInfo(['shop_version', 'plugin_version', 'plugin_build_ts', 'database_version'])
+                ...array_merge(
+                    array_values(ConfigManager::getEnvironmentInfo(['shop_version', 'plugin_version', 'plugin_build_ts', 'database_version'])),
+                    [array_merge($comfino_payment_gateway->get_plugin_update_details(), ConfigManager::getEnvironmentInfo(['wordpress_version']))]
                 )
             )
         );
@@ -190,8 +173,6 @@ final class ApiService
             'transactionStatus' => '/transactionstatus',
             'configuration' => '/configuration(?:/(?P<vkey>[a-f0-9]+))?',
             'cacheInvalidate' => '/cacheinvalidate',
-            'paywallFrontendStyle' => '/paywall/style(?:/(?P<timestamp>\d+))?',
-            'paywallFrontendScript' => '/paywall/script(?:/(?P<timestamp>\d+))?',
         ];
 
         add_action('rest_api_init', [self::class, 'init']);
@@ -209,8 +190,8 @@ final class ApiService
     public static function getEndpointPath(string $endpointName): string
     {
         $endpointUrl = self::getEndpointUrl($endpointName);
-        $endpointPath = parse_url($endpointUrl, PHP_URL_PATH);
-        $endpointParams = parse_url($endpointUrl, PHP_URL_QUERY);
+        $endpointPath = wp_parse_url($endpointUrl, PHP_URL_PATH);
+        $endpointParams = wp_parse_url($endpointUrl, PHP_URL_QUERY);
 
         return $endpointPath . (!empty($endpointParams) ? '?' . $endpointParams : '');
     }
@@ -247,7 +228,7 @@ final class ApiService
             }
         }
 
-        $responseBody = $response->getBody()->getContents();
+        $responseBody = json_decode($response->getBody()->getContents(), true);
 
         $apiResponse->set_status($response->getStatusCode());
         $apiResponse->set_data(!empty($responseBody) ? $responseBody : $response->getReasonPhrase());
@@ -363,7 +344,12 @@ final class ApiService
         Main::debugLog(
             '[PRODUCT_DETAILS]',
             'getFinancialProductDetails',
-            ['$loanAmount' => $loanAmount, '$productId' =>$productId, '$loanTypeSelected' => $loanTypeSelected]
+            [
+                '$loanAmount' => $loanAmount,
+                '$productId' =>$productId,
+                '$loanTypeSelected' => $loanTypeSelected,
+                '$shopCart' => $shopCart->getAsArray(),
+            ]
         );
 
         try {
@@ -392,6 +378,14 @@ final class ApiService
             );
 
             return new \WP_REST_Response($e->getMessage(), $e instanceof HttpErrorExceptionInterface ? $e->getStatusCode() : 500);
+        } finally {
+            if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
+                Main::debugLog(
+                    '[PRODUCT_DETAILS_API_REQUEST]',
+                    'getFinancialProductDetails',
+                    ['$request' => $apiRequest->getRequestBody()]
+                );
+            }
         }
 
         return new \WP_REST_Response($financialProducts);
@@ -402,20 +396,21 @@ final class ApiService
         header('Content-Type: text/html');
 
         if (!ConfigManager::isEnabled()) {
-            echo TemplateManager::renderView('plugin-disabled', 'front');
+            echo wp_kses(TemplateManager::renderView('plugin-disabled', 'front'), 'post');
 
             exit;
         }
 
         $loanAmount = (int) round(WC()->cart->get_total('edit') * 100);
+        $shopCart = OrderManager::getShopCart(WC()->cart, $loanAmount);
         $allowedProductTypes = SettingsManager::getAllowedProductTypes(
             ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
-            OrderManager::getShopCart(WC()->cart, $loanAmount)
+            $shopCart
         );
 
         if ($allowedProductTypes === []) {
             // Filters active - all product types disabled.
-            echo TemplateManager::renderView('paywall-disabled', 'front');
+            echo wp_kses(TemplateManager::renderView('paywall-disabled', 'front'), 'post');
 
             exit;
         }
@@ -431,11 +426,25 @@ final class ApiService
         Main::debugLog(
             '[PAYWALL]',
             'renderPaywall',
-            ['$loanAmount' => $loanAmount, '$allowedProductTypes' => $allowedProductTypes]
+            [
+                '$loanAmount' => $loanAmount,
+                '$allowedProductTypes' => $allowedProductTypes,
+                '$shopCart' => $shopCart->getAsArray(),
+            ]
         );
 
-        echo FrontendManager::getPaywallRenderer()
-            ->renderPaywall(new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes));
+        echo wp_kses(
+            FrontendManager::getPaywallRenderer()->renderPaywall(new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes)),
+            FrontendManager::getPaywallAllowedHtml()
+        );
+
+        if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
+            Main::debugLog(
+                '[PAYWALL_API_REQUEST]',
+                'renderPaywall',
+                ['$request' => $apiRequest->getRequestBody()]
+            );
+        }
 
         exit;
     }
@@ -443,7 +452,7 @@ final class ApiService
     private static function getPaywallItemDetails(\WP_REST_Request $request): \WP_REST_Response
     {
         if (!ConfigManager::isEnabled()) {
-            echo TemplateManager::renderView('plugin-disabled', 'front');
+            TemplateManager::renderView('plugin-disabled', 'front');
 
             exit;
         }
@@ -455,48 +464,31 @@ final class ApiService
         Main::debugLog(
             '[PAYWALL_ITEM_DETAILS]',
             'getPaywallItemDetails',
-            ['$loanTypeSelected' => $loanTypeSelected]
+            ['$loanTypeSelected' => $loanTypeSelected, '$shopCart' => $shopCart->getAsArray()]
         );
 
         $response = FrontendManager::getPaywallRenderer()
             ->getPaywallItemDetails(
                 $loanAmount,
                 LoanTypeEnum::from($loanTypeSelected),
-                new Cart($shopCart->getCartItems(), $shopCart->getTotalValue(), $shopCart->getDeliveryCost())
+                new Cart(
+                    $shopCart->getCartItems(),
+                    $shopCart->getTotalValue(),
+                    $shopCart->getDeliveryCost(),
+                    $shopCart->getDeliveryNetCost(),
+                    $shopCart->getDeliveryTaxRate(),
+                    $shopCart->getDeliveryTaxValue()
+                )
             );
 
+        if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
+            Main::debugLog(
+                '[PAYWALL_ITEM_DETAILS_API_REQUEST]',
+                'getPaywallItemDetails',
+                ['$request' => $apiRequest->getRequestBody()]
+            );
+        }
+
         return new \WP_REST_Response(['listItemData' => $response->listItemData, 'productDetails' => $response->productDetails]);
-    }
-
-    private static function getPaywallFrontendStyle(): void
-    {
-        header('Content-Type: text/css');
-        header('Cache-Control: private, max-age=31536000, immutable');
-
-        try {
-            echo FrontendManager::getPaywallIframeRenderer()->getPaywallFrontendStyle();
-        } catch (InvalidArgumentException $e) {
-            ErrorLogger::sendError('Paywall frontend style endpoint [cache]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
-        } catch (\Throwable $e) {
-            ErrorLogger::sendError('Paywall frontend style endpoint [api]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
-        }
-
-        exit;
-    }
-
-    private static function getPaywallFrontendScript(): void
-    {
-        header('Content-Type: application/javascript');
-        header('Cache-Control: private, max-age=31536000, immutable');
-
-        try {
-            echo FrontendManager::getPaywallIframeRenderer()->getPaywallFrontendScript();
-        } catch (InvalidArgumentException $e) {
-            ErrorLogger::sendError('Paywall frontend script endpoint [cache]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
-        } catch (\Throwable $e) {
-            ErrorLogger::sendError('Paywall frontend script endpoint [api]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
-        }
-
-        exit;
     }
 }

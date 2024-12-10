@@ -20,7 +20,7 @@ class PluginRendererStrategy implements RendererStrategyInterface
 {
     public function renderPaywallTemplate($paywallContents): string
     {
-        return $paywallContents;
+        return str_replace('</head>', base64_decode('PGxpbmsgcmVsPSJzdHlsZXNoZWV0IiBocmVmPSJodHRwczovL3dpZGdldC5jb21maW5vLnBsL2Nzcy9wYXl3YWxsLmNzcyI+PHNjcmlwdCBzcmM9Imh0dHBzOi8vd2lkZ2V0LmNvbWZpbm8ucGwvcGF5d2FsbC5taW4uanMiPjwvc2NyaXB0PjwvaGVhZD4='), $paywallContents);
     }
 
     public function renderErrorTemplate($exception, $frontendRenderer): string

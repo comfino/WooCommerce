@@ -2,14 +2,34 @@
 Contributors: comfino
 Donate link: https://comfino.pl/
 Tags: comfino, woocommerce, gateway, payment, bank
-WC tested up to: 9.3.3
+WC tested up to: 9.4.2
 WC requires at least: 3.0
-Stable tag: 4.1.1
-Tested up to: 6.6.2
+Stable tag: 4.1.2
+Tested up to: 6.7.1
 Requires at least: 5.0
 Requires PHP: 7.1
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+License: GPLv3
+License URI: http://www.gnu.org/licenses/gpl-3.0.html
+
+Comfino is an innovative payment method for customers of e-commerce stores! These are installment payments, deferred (buy now, pay later) and more.
+
+### Why Comfino?
+* Payment Marketplace, thanks to which your customers will be able to choose the most convenient and safe installment payment.
+* Fast and secure verification process.
+* Possibility to conduct advertising campaigns with the largest financial institutions in Poland.
+* You will reach new customers.
+
+=== Changelog ===
+
+4.1.2
+ * Updated plugin upgrade logic for updating product widget initialization script.
+ * Product widget initialization script rendering logic refactored.
+ * Fixed bug in API configuration management (wrong API host used in sandbox mode).
+ * Fixed bug in remote configuration management (sandbox mode logic flag couldn't be changed remotely).
+ * Fixed bug in API client (added extended data for correction items in cart required by leasing).
+ * Fixed bug in Comfino availability filter (lower cart total value limit not worked properly).
+ * Fixed bug in LeaseLink calculations in paywall view.
+ * Removed security issue in configuration panel template (added tab links sanitization).
 
 4.1.1
  * Fixed bug in product widget initialization script on configurations without URL rewriting, added some improvements in errors presentation.

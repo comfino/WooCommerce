@@ -61,14 +61,11 @@ final class Main
          */
         add_action('wp_loaded', static function (): void {
             if (version_compare(WC_VERSION, '3.6.0', '>=') && WC()->is_rest_api_request()) {
-                if (empty($_SERVER['REQUEST_URI'])) {
+                if (empty($requestUri = self::getCurrentUrl())) {
                     return;
                 }
 
-                $restPrefix = 'comfino/paywall';
-                $requestUri = esc_url_raw(wp_unslash($_SERVER['REQUEST_URI']));
-
-                if (strpos($requestUri, $restPrefix) === false) {
+                if (strpos($requestUri, 'comfino/paywall') === false) {
                     return;
                 }
 
@@ -131,7 +128,9 @@ final class Main
                     return;
                 }
 
-                echo FrontendManager::renderWidgetInitCode($product->get_id());
+                wp_register_script('comfino-widget-init-script', '', [], null, ['in_footer' => false]);
+                wp_enqueue_script('comfino-widget-init-script');
+                wp_add_inline_script('comfino-widget-init-script', FrontendManager::renderWidgetInitCode($product->get_id()));
             }
         });
 
@@ -171,6 +170,10 @@ final class Main
     {
         ConfigManager::deleteConfigurationValues();
 
+        delete_transient('comfino_plugin_updated');
+        delete_transient('comfino_plugin_prev_version');
+        delete_transient('comfino_plugin_updated_at');
+
         ErrorLogger::init($pluginDirectory);
         ApiClient::getInstance()->notifyPluginRemoval();
 
@@ -188,6 +191,19 @@ final class Main
         return $paywallIframe;
     }
 
+    public static function writeToFile(string $filePath, string $contents): void
+    {
+        global $wp_filesystem;
+
+        if (empty($wp_filesystem)) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+
+            WP_Filesystem();
+        }
+
+        $wp_filesystem->put_contents($filePath, $contents, FS_CHMOD_FILE);
+    }
+
     public static function debugLog(string $debugPrefix, string $debugMessage, ?array $parameters = null): void
     {
         if ((!isset($_COOKIE['COMFINO_SERVICE_SESSION']) || $_COOKIE['COMFINO_SERVICE_SESSION'] !== 'ACTIVE') && ConfigManager::isServiceMode()) {
@@ -200,7 +216,7 @@ final class Main
 
                 foreach ($parameters as $name => $value) {
                     if (is_array($value)) {
-                        $value = json_encode($value);
+                        $value = wp_json_encode($value);
                     } elseif (is_bool($value)) {
                         $value = ($value ? 'true' : 'false');
                     }
@@ -211,13 +227,7 @@ final class Main
                 $debugMessage .= (($debugMessage !== '' ? ': ' : '') . implode(', ', $preparedParameters));
             }
 
-            global $wp_filesystem;
-
-            $wp_filesystem->put_contents(
-                self::$debugLogFilePath,
-                '[' . gmdate('Y-m-d H:i:s') . "] $debugPrefix: $debugMessage\n",
-                FS_CHMOD_FILE
-            );
+            self::writeToFile(self::$debugLogFilePath, '[' . gmdate('Y-m-d H:i:s') . "] $debugPrefix: $debugMessage\n");
         }
     }
 
@@ -246,10 +256,25 @@ final class Main
             return true;
         }
 
-        return SettingsManager::getAllowedProductTypes(
+        $shopCart = OrderManager::getShopCart($cart, $loanAmount);
+        $allowedProductTypes = SettingsManager::getAllowedProductTypes(
             ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
-            OrderManager::getShopCart($cart, $loanAmount)
-        ) !== [];
+            $shopCart
+        );
+        $paymentIsAvailable = ($allowedProductTypes !== []);
+
+        self::debugLog(
+            '[PAYWALL]',
+            sprintf('paymentIsAvailable: (paywall iframe is %s)', $paymentIsAvailable ? 'visible' : 'invisible'),
+            [
+                '$paymentIsAvailable' => $paymentIsAvailable,
+                '$allowedProductTypes' => $allowedProductTypes,
+                '$loanAmount' => $loanAmount,
+                '$cartTotalValue' => $shopCart->getTotalValue(),
+            ]
+        );
+
+        return $paymentIsAvailable;
     }
 
     public static function getPluginDirectory(): string
@@ -274,12 +299,16 @@ final class Main
 
     public static function getShopDomain(): string
     {
-        return parse_url(wc_get_page_permalink('shop'), PHP_URL_HOST);
+        return !empty($shopLink = self::getShopLink()) ? wp_parse_url($shopLink, PHP_URL_HOST) : '';
     }
 
     public static function getShopUrl(): string
     {
-        $urlParts = parse_url(wc_get_page_permalink('shop'));
+        if (empty($shopLink = self::getShopLink())) {
+            return '';
+        }
+
+        $urlParts = wp_parse_url($shopLink);
 
         return $urlParts['host'] . (isset($urlParts['port']) ? ':' . $urlParts['port'] : '');
     }
@@ -294,6 +323,11 @@ final class Main
         return get_woocommerce_currency();
     }
 
+    public static function getCurrentUrl(): string
+    {
+        return sanitize_url(wp_unslash($_SERVER['REQUEST_URI'] ?? ''));
+    }
+
     /**
      * Checks the environment compatibility with Comfino plugin requirements.
      * Returns a string with the first incompatibility found or false if the environment has no problems.
@@ -304,14 +338,18 @@ final class Main
     {
         if (PHP_VERSION_ID < self::MIN_PHP_VERSION_ID) {
             return $duringActivation
-                ? sprintf(__(
-                    'The plugin could not be activated. The minimum PHP version required for Comfino is %s. You are running %s.',
-                    'comfino-payment-gateway'
-                ), self::MIN_PHP_VERSION, PHP_VERSION)
-                : sprintf(__(
-                    'The Comfino plugin has been deactivated. The minimum PHP version required for Comfino is %s. You are running %s.',
-                    'comfino-payment-gateway'
-                ), self::MIN_PHP_VERSION, PHP_VERSION);
+                ? sprintf(
+                    /* translators: 1: Minimum required PHP version 2: Current PHP version */
+                    __('The plugin could not be activated. The minimum PHP version required for Comfino is %1$s. You are running %2$s.', 'comfino-payment-gateway'),
+                    self::MIN_PHP_VERSION,
+                    PHP_VERSION
+                )
+                : sprintf(
+                    /* translators: 1: Minimum required PHP version 2: Current PHP version */
+                    __('The Comfino plugin has been deactivated. The minimum PHP version required for Comfino is %1$s. You are running %2$s.', 'comfino-payment-gateway'),
+                    self::MIN_PHP_VERSION,
+                    PHP_VERSION
+                );
         }
 
         if (!defined('WC_VERSION')) {
@@ -322,22 +360,24 @@ final class Main
 
         if (version_compare(WC_VERSION, self::MIN_WC_VERSION, '<')) {
             return $duringActivation
-                ? sprintf(__(
-                    'The plugin could not be activated. The minimum WooCommerce version required for Comfino is %s. You are running %s.',
-                    'comfino-payment-gateway'
-                ), self::MIN_WC_VERSION, WC_VERSION)
-                : sprintf(__(
-                    'The Comfino plugin has been deactivated. The minimum WooCommerce version required for Comfino is %s. You are running %s.',
-                    'comfino-payment-gateway'
-                ), self::MIN_WC_VERSION, WC_VERSION);
+                ? sprintf(
+                    /* translators: 1: Minimum required WooCommerce version 2: Current WooCommerce version */
+                    __('The plugin could not be activated. The minimum WooCommerce version required for Comfino is %1$s. You are running %2$s.', 'comfino-payment-gateway'),
+                    self::MIN_WC_VERSION,
+                    WC_VERSION
+                )
+                : sprintf(
+                    /* translators: 1: Minimum required WooCommerce version 2: Current WooCommerce version */
+                    __('The Comfino plugin has been deactivated. The minimum WooCommerce version required for Comfino is %1$s. You are running %2$s.', 'comfino-payment-gateway'),
+                    self::MIN_WC_VERSION,
+                    WC_VERSION
+                );
         }
 
         if (!extension_loaded('curl')) {
             return $duringActivation
-                ? __('The plugin could not be activated. It requires PHP cURL extension which is not installed. ' .
-                     'More details: https://www.php.net/manual/en/book.curl.php', 'comfino-payment-gateway')
-                : __('The Comfino plugin has been deactivated. It requires PHP cURL extension which is not installed. ' .
-                     'More details: https://www.php.net/manual/en/book.curl.php', 'comfino-payment-gateway');
+                ? __('The plugin could not be activated. It requires PHP cURL extension which is not installed. More details: https://www.php.net/manual/en/book.curl.php', 'comfino-payment-gateway')
+                : __('The Comfino plugin has been deactivated. It requires PHP cURL extension which is not installed. More details: https://www.php.net/manual/en/book.curl.php', 'comfino-payment-gateway');
         }
 
         return false;
@@ -359,6 +399,21 @@ final class Main
         ];
     }
 
+    private static function getShopLink(): string
+    {
+        global $wp_rewrite;
+
+        if (isset($wp_rewrite)) {
+            return wc_get_page_permalink('shop');
+        }
+
+        if (isset($_SERVER['REQUEST_SCHEME'], $_SERVER['HTTP_HOST'])) {
+            return sanitize_url(wp_unslash($_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST']));
+        }
+
+        return sanitize_url(wp_unslash($_SERVER['HTTP_REFERER'] ?? ''));
+    }
+
     private static function preparePaywallIframe(float $total, bool $isPaymentBlock): ?string
     {
         /** @var \Comfino_Payment_Gateway $comfino_payment_gateway */
@@ -371,18 +426,41 @@ final class Main
 
             $styleTimestamp = $renderer->getPaywallFrontendStyleTimestamp();
             $scriptTimestamp = $renderer->getPaywallFrontendScriptTimestamp();
-            $paywallFrontendStyleUrl = ApiService::getEndpointUrl('paywallFrontendStyle') . ($styleTimestamp !== 0 ? "/$styleTimestamp" : '');
-            $paywallFrontendScriptUrl = ApiService::getEndpointUrl('paywallFrontendScript') . ($scriptTimestamp !== 0 ? "/$scriptTimestamp" : '');
 
-            wp_enqueue_style('comfino-frontend-style', $paywallFrontendStyleUrl, [], null);
-            wp_enqueue_script('comfino-frontend-script', $paywallFrontendScriptUrl, [], null);
+            try {
+                wp_register_style('comfino-frontend-style', '', [], $styleTimestamp !== 0 ? (string) $styleTimestamp : null);
+                wp_enqueue_style('comfino-frontend-style');
+                wp_add_inline_style('comfino-frontend-style', FrontendManager::getPaywallIframeRenderer()->getPaywallFrontendStyle());
+            } catch (InvalidArgumentException $e) {
+                ErrorLogger::sendError('Paywall frontend style [cache]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
+            } catch (\Throwable $e) {
+                ErrorLogger::sendError('Paywall frontend style [api]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
+            }
+
+            try {
+                wp_register_script('comfino-frontend-script', '', [], $scriptTimestamp !== 0 ? (string) $scriptTimestamp : null, true);
+                wp_enqueue_script('comfino-frontend-script');
+                wp_add_inline_script('comfino-frontend-script', FrontendManager::getPaywallIframeRenderer()->getPaywallFrontendScript());
+            } catch (InvalidArgumentException $e) {
+                ErrorLogger::sendError('Paywall frontend script [cache]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
+            } catch (\Throwable $e) {
+                ErrorLogger::sendError('Paywall frontend script [api]', $e->getCode(), $e->getMessage(), null, null, null, $e->getTraceAsString());
+            }
 
             if (!$isPaymentBlock) {
                 wp_enqueue_script(
                     'comfino-payment-gateway-script',
                     $comfino_payment_gateway->plugin_url() . '/resources/js/front/paywall.min.js',
                     [],
-                    null
+                    null,
+                    ['in_footer' => false]
+                );
+
+                wp_register_script('comfino-paywall-init-script', '', [], null, ['in_footer' => false]);
+                wp_enqueue_script('comfino-paywall-init-script');
+                wp_add_inline_script(
+                    'comfino-paywall-init-script',
+                    'ComfinoPaywall.initIframe = () => ComfinoPaywall.init(' . wp_json_encode(self::getPaywallOptions($total)) . ');'
                 );
             }
 
@@ -391,15 +469,12 @@ final class Main
                 'front',
                 [
                     'paywall_iframe' => $paywallElements['iframe'],
+                    'paywall_iframe_allowed_html' => FrontendManager::getPaywallIfarmeAllowedHtml(),
                     'render_init_script' => !$isPaymentBlock,
-                    'paywall_options' => self::getPaywallOptions($total),
-                    'comfino_logo_url' => ApiClient::getPaywallLogoUrl(),
-                    'comfino_label' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
-                    'comfino_redirect_url' => ApiService::getEndpointUrl('payment'),
                 ]
             );
         } catch (\Throwable|InvalidArgumentException $e) {
-            ApiClient::processApiError('Paywall error on page "' . $_SERVER['REQUEST_URI'] . '" (Comfino API)', $e);
+            ApiClient::processApiError('Paywall error on page "' . self::getCurrentUrl() . '" (Comfino API)', $e);
         }
 
         return null;
