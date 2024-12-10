@@ -4,7 +4,7 @@ Donate link: https://comfino.pl/
 Tags: comfino, woocommerce, gateway, payment, bank
 WC tested up to: 9.4.2
 WC requires at least: 3.0
-Stable tag: 4.1.2
+Stable tag: 4.1.3
 Tested up to: 6.7.1
 Requires at least: 5.0
 Requires PHP: 7.1
@@ -20,6 +20,9 @@ Comfino is an innovative payment method for customers of e-commerce stores! Thes
 * You will reach new customers.
 
 === Changelog ===
+
+4.1.3
+ * Resolved problem with product details endpoint for product widget with leasing caused by strict output filtering.
 
 4.1.2
  * Updated plugin upgrade logic for updating product widget initialization script.
