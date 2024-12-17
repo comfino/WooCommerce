@@ -128,6 +128,82 @@ final class FrontendManager
         );
     }
 
+    public static function getLocalScriptUrl(string $scriptFileName): string
+    {
+        global $comfino_payment_gateway;
+
+        if (ConfigManager::isDevEnv() && ConfigManager::useUnminifiedScripts()) {
+            $scriptFileName = str_replace('.min.js', '.js', $scriptFileName);
+        } elseif (strpos($scriptFileName, '.min.') === false) {
+            $scriptFileName = str_replace('.js', '.min.js', $scriptFileName);
+        }
+
+        return $comfino_payment_gateway->plugin_url() . "/resources/js/front/$scriptFileName";
+    }
+
+    public static function getExternalResourcesBaseUrl(): string
+    {
+        if (ConfigManager::isDevEnv() && getenv('COMFINO_DEV_STATIC_RESOURCES_BASE_URL')) {
+            return sanitize_url(wp_unslash(getenv('COMFINO_DEV_STATIC_RESOURCES_BASE_URL')));
+        }
+
+        return ConfigManager::isSandboxMode() ? 'https://widget.craty.pl' : 'https://widget.comfino.pl';
+    }
+
+    public static function getExternalScriptUrl(string $scriptName): string
+    {
+        if (empty($scriptName)) {
+            return '';
+        }
+
+        if (ConfigManager::isSandboxMode()) {
+            $scriptPath = trim(ConfigManager::getConfigurationValue('COMFINO_JS_DEV_PATH'), '/');
+
+            if (strpos($scriptPath, '..') !== false) {
+                $scriptPath = trim(ConfigManager::getDefaultValue('js_dev_path'), '/');
+            }
+        } else {
+            $scriptPath = trim(ConfigManager::getConfigurationValue('COMFINO_JS_PROD_PATH'), '/');
+
+            if (strpos($scriptPath, '..') !== false) {
+                $scriptPath = trim(ConfigManager::getDefaultValue('js_prod_path'), '/');
+            }
+        }
+
+        if (!empty($scriptPath)) {
+            $scriptPath = "/$scriptPath";
+        }
+
+        return sanitize_url(wp_unslash(self::getExternalResourcesBaseUrl() . "$scriptPath/$scriptName"));
+    }
+
+    public static function getExternalStyleUrl(string $styleName): string
+    {
+        if (empty($styleName)) {
+            return '';
+        }
+
+        if (ConfigManager::isSandboxMode()) {
+            $stylePath = trim(ConfigManager::getConfigurationValue('COMFINO_CSS_DEV_PATH'), '/');
+
+            if (strpos($stylePath, '..') !== false) {
+                $stylePath = trim(ConfigManager::getDefaultValue('css_dev_path'), '/');
+            }
+        } else {
+            $stylePath = trim(ConfigManager::getConfigurationValue('COMFINO_CSS_PROD_PATH'), '/');
+
+            if (strpos($stylePath, '..') !== false) {
+                $stylePath = trim(ConfigManager::getDefaultValue('css_prod_path'), '/');
+            }
+        }
+
+        if (!empty($stylePath)) {
+            $stylePath = "/$stylePath";
+        }
+
+        return sanitize_url(wp_unslash(self::getExternalResourcesBaseUrl() . "$stylePath/$styleName"));
+    }
+
     public static function renderWidgetInitCode(?int $productId): string
     {
         try {
@@ -184,26 +260,6 @@ final class FrontendManager
         return ['img' => ['src' => [], 'style' => [], 'alt' => []]];
     }
 
-    public static function getPaywallIfarmeAllowedHtml(): array
-    {
-        return array_merge(
-            [
-                'iframe' => [
-                    'id' => [],
-                    'src' => [],
-                    'class' => [],
-                    'referrer-policy' => [],
-                    'loading' => [],
-                    'scrolling' => [],
-                    'onload' => [],
-                ],
-                'input' => ['id' => [], 'name' => [], 'value' => [], 'class' => [], 'style' => [], 'title' => [], 'placeholder' => [], 'type' => [], 'checked' => [], 'readonly' => [], 'disabled' => [], 'required' => []],
-            ],
-            self::getAllowedScriptHtml(),
-            self::getAllowedStyleHtml()
-        );
-    }
-
     public static function getAllowedScriptHtml(): array
     {
         return ['script' => ['id' => [], 'src' => [], 'type' => [], 'srcset' => [], 'async' => [], 'defer' => []]];
@@ -225,144 +281,6 @@ final class FrontendManager
             ],
             self::getAllowedScriptHtml(),
             self::getAllowedStyleHtml()
-        );
-    }
-
-    public static function getPaywallAllowedHtml(): array
-    {
-        return array_merge(
-            wp_kses_allowed_html('post'),
-            [
-                'html' => [],
-                'head' => [],
-                'title' => [],
-                'meta' => ['name' => [], 'http-equiv' => [], 'content' => []],
-                'link' => ['rel' => [], 'href' => []],
-                'body' => [],
-                'form' => ['id' => [], 'name' => [], 'action' => [], 'method' => []],
-                'input' => ['id' => [], 'name' => [], 'value' => [], 'class' => [], 'style' => [], 'title' => [], 'placeholder' => [], 'type' => [], 'checked' => [], 'readonly' => [], 'disabled' => [], 'required' => []],
-                'svg' => [
-                    'xmlns' => [],
-                    'version' => [],
-                    'id' => [],
-                    'x' => [],
-                    'y' => [],
-                    'viewbox' => [],
-                    'style' => [],
-                    'xml:space' => [],
-                    'width' => [],
-                    'height' => [],
-                    'fill' => [],
-                    'sodipodi:docname' => [],
-                    'inkscape:version' => [],
-                    'enable-background' => [],
-                ],
-                'style' => [
-                    'type' => [],
-                    'id' => [],
-                ],
-                'g' => [
-                    'clip-path' => [],
-                    'id' => [],
-                    'class' => [],
-                    'transform' => [],
-                ],
-                'path' => [
-                    'class' => [],
-                    'd' => [],
-                    'fill' => [],
-                    'id' => [],
-                    'fill-rule' => [],
-                    'clip-rule' => [],
-                    'stroke' => [],
-                    'stroke-width' => [],
-                    'stroke-linejoin' => [],
-                ],
-                'lineargradient' => [
-                    'id' => [],
-                    'gradientunits' => [],
-                    'x1' => [],
-                    'y1' => [],
-                    'x2' => [],
-                    'y2' => [],
-                    'gradienttransform' => [],
-                ],
-                'stop' => [
-                    'offset' => [],
-                    'stop-color' => [],
-                    'id' => [],
-                    'stop-opacity' => [],
-                ],
-                'rect' => [
-                    'x' => [],
-                    'y' => [],
-                    'class' => [],
-                    'width' => [],
-                    'height' => [],
-                    'fill' => [],
-                    'id' => [],
-                ],
-                'defs' => [
-                    'id' => [],
-                ],
-                'clippath' => [
-                    'id' => [],
-                ],
-                'use' => [
-                    'xlink:href' => [],
-                    'overflow' => [],
-                ],
-                'sodipodi:namedview' => [
-                    'id' => [],
-                    'pagecolor' => [],
-                    'bordercolor' => [],
-                    'borderopacity' => [],
-                    'inkscape:pageshadow' => [],
-                    'inkscape:pageopacity' => [],
-                    'inkscape:pagecheckerboard' => [],
-                    'showgrid' => [],
-                    'inkscape:zoom' => [],
-                    'inkscape:cx' => [],
-                    'inkscape:cy' => [],
-                    'inkscape:window-width' => [],
-                    'inkscape:window-height' => [],
-                    'inkscape:window-x' => [],
-                    'inkscape:window-y' => [],
-                    'inkscape:window-maximized' => [],
-                    'inkscape:current-layer' => [],
-                    'width' => [],
-                    'fit-margin-top' => [],
-                    'fit-margin-left' => [],
-                    'fit-margin-right' => [],
-                    'fit-margin-bottom' => [],
-                ],
-                'mask' => [
-                    'id' => [],
-                    'maskunits' => [],
-                    'x' => [],
-                    'y' => [],
-                    'width' => [],
-                    'height' => [],
-                ],
-                'radialgradient' => [
-                    'id' => [],
-                    'cx' => [],
-                    'cy' => [],
-                    'r' => [],
-                    'gradientunits' => [],
-                    'gradienttransform' => [],
-                    'fx' => [],
-                    'fy' => [],
-                ],
-                'circle' => [
-                    'fill' => [],
-                    'cx' => [],
-                    'cy' => [],
-                    'r' => [],
-                ],
-            ],
-            self::getAllowedScriptHtml()
-            //self::getAllowedStyleHtml()
         );
     }
 }

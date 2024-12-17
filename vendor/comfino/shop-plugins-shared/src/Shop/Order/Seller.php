@@ -22,6 +22,6 @@ class Seller implements SellerInterface
      */
     public function getTaxId(): ?string
     {
-        return $this->taxId;
+        return $this->taxId !== null ? trim(strip_tags($this->taxId)) : null;
     }
 }

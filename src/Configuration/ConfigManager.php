@@ -7,6 +7,7 @@ use Comfino\Api\ApiService;
 use Comfino\CategoryTree\BuildStrategy;
 use Comfino\Common\Backend\Configuration\StorageAdapterInterface;
 use Comfino\Common\Backend\ConfigurationManager;
+use Comfino\Common\Frontend\FrontendHelper;
 use Comfino\Common\Frontend\WidgetInitScriptHelper;
 use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Common\Shop\Product\CategoryTree;
@@ -44,13 +45,15 @@ final class ConfigManager
         'COMFINO_WIDGET_OFFER_TYPE' => 'widget_offer_type',
         'COMFINO_WIDGET_EMBED_METHOD' => 'widget_embed_method',
         'COMFINO_WIDGET_CODE' => 'widget_js_code',
-        'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => 'widget_prod_script_version',
-        'COMFINO_WIDGET_DEV_SCRIPT_VERSION' => 'widget_dev_script_version',
         'COMFINO_ABANDONED_CART_ENABLED' => 'abandoned_cart_enabled',
         'COMFINO_ABANDONED_PAYMENTS' => 'abandoned_payments',
         'COMFINO_IGNORED_STATUSES' => 'ignored_statuses',
         'COMFINO_FORBIDDEN_STATUSES' => 'forbidden_statuses',
         'COMFINO_STATUS_MAP' => 'status_map',
+        'COMFINO_JS_PROD_PATH' => 'js_prod_path',
+        'COMFINO_CSS_PROD_PATH' => 'css_prod_path',
+        'COMFINO_JS_DEV_PATH' => 'js_dev_path',
+        'COMFINO_CSS_DEV_PATH' => 'css_dev_path',
         'COMFINO_API_CONNECT_TIMEOUT' => 'api_connect_timeout',
         'COMFINO_API_TIMEOUT' => 'api_timeout',
     ];
@@ -89,12 +92,14 @@ final class ConfigManager
             'COMFINO_SERVICE_MODE' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
         ],
         'hidden_settings' => [
-            'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
-            'COMFINO_WIDGET_DEV_SCRIPT_VERSION' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
             'COMFINO_IGNORED_STATUSES' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
             'COMFINO_FORBIDDEN_STATUSES' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
             'COMFINO_STATUS_MAP' => ConfigurationManager::OPT_VALUE_TYPE_JSON,
+            'COMFINO_JS_PROD_PATH' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
+            'COMFINO_CSS_PROD_PATH' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
+            'COMFINO_JS_DEV_PATH' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
+            'COMFINO_CSS_DEV_PATH' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_API_CONNECT_TIMEOUT' => ConfigurationManager::OPT_VALUE_TYPE_INT,
             'COMFINO_API_TIMEOUT' => ConfigurationManager::OPT_VALUE_TYPE_INT,
         ],
@@ -120,13 +125,15 @@ final class ConfigManager
         'COMFINO_WIDGET_OFFER_TYPE',
         'COMFINO_WIDGET_EMBED_METHOD',
         'COMFINO_WIDGET_CODE',
-        'COMFINO_WIDGET_PROD_SCRIPT_VERSION',
-        'COMFINO_WIDGET_DEV_SCRIPT_VERSION',
         'COMFINO_ABANDONED_CART_ENABLED',
         'COMFINO_ABANDONED_PAYMENTS',
         'COMFINO_IGNORED_STATUSES',
         'COMFINO_FORBIDDEN_STATUSES',
         'COMFINO_STATUS_MAP',
+        'COMFINO_JS_PROD_PATH',
+        'COMFINO_CSS_PROD_PATH',
+        'COMFINO_JS_DEV_PATH',
+        'COMFINO_CSS_DEV_PATH',
         'COMFINO_API_CONNECT_TIMEOUT',
         'COMFINO_API_TIMEOUT',
     ];
@@ -269,6 +276,43 @@ final class ConfigManager
         return self::getInstance()->getConfigurationValue('COMFINO_ABANDONED_CART_ENABLED');
     }
 
+    public static function getLogoApiHost(): string
+    {
+        return self::getApiHost(ApiClient::getInstance()->getApiHost());
+    }
+
+    public static function getPaywallLogoUrl(): string
+    {
+        return self::getLogoApiHost() . '/v1/get-paywall-logo?auth='
+            . FrontendHelper::getPaywallLogoAuthHash(
+                'WC',
+                WC_VERSION,
+                PaymentGateway::VERSION,
+                ApiClient::getInstance()->getApiKey(),
+                self::getWidgetKey(),
+                PaymentGateway::BUILD_TS
+            );
+    }
+
+    public static function getApiHost(?string $apiHost = null): ?string
+    {
+        if (self::isDevEnv() && getenv('COMFINO_DEV_API_HOST')) {
+            return getenv('COMFINO_DEV_API_HOST');
+        }
+
+        return $apiHost;
+    }
+
+    public static function isDevEnv(): bool
+    {
+        return ((string) getenv('COMFINO_DEV')) === ('WC_' . WC_VERSION . '_' . Main::getShopUrl());
+    }
+
+    public static function useUnminifiedScripts(): bool
+    {
+        return getenv('COMFINO_DEV_USE_UNMINIFIED_SCRIPTS') === 'TRUE';
+    }
+
     public static function getApiKey(): ?string
     {
         return self::isSandboxMode()
@@ -329,7 +373,7 @@ final class ConfigManager
 
     public static function updateWidgetCode(?string $lastWidgetCodeHash = null): void
     {
-        ErrorLogger::init(Main::getPluginDirectory());
+        ErrorLogger::init();
 
         try {
             $initialWidgetCode = WidgetInitScriptHelper::getInitialWidgetCode();
@@ -375,12 +419,30 @@ final class ConfigManager
         return $widgetCode;
     }
 
+    public static function getWidgetScriptUrl(): string
+    {
+        if (self::isDevEnv() && getenv('COMFINO_DEV_WIDGET_SCRIPT_URL')) {
+            return sanitize_url(wp_unslash(getenv('COMFINO_DEV_WIDGET_SCRIPT_URL')));
+        }
+
+        $widgetScriptUrl = self::isSandboxMode() ? 'https://widget.craty.pl' : 'https://widget.comfino.pl';
+        $widgetProdScriptVersion = self::getConfigurationValue('COMFINO_WIDGET_PROD_SCRIPT_VERSION');
+
+        if (empty($widgetProdScriptVersion)) {
+            $widgetScriptUrl .= '/comfino.min.js';
+        } else {
+            $widgetScriptUrl .= ('/' . trim($widgetProdScriptVersion, '/'));
+        }
+
+        return $widgetScriptUrl;
+    }
+
     public static function getWidgetVariables(int $productId = null): array
     {
         $productData = self::getProductData($productId);
 
         return [
-            'WIDGET_SCRIPT_URL' => ApiClient::getWidgetScriptUrl(),
+            'WIDGET_SCRIPT_URL' => self::getWidgetScriptUrl(),
             'PRODUCT_ID' => $productData['product_id'],
             'PRODUCT_PRICE' => $productData['price'],
             'PLATFORM' => 'woocommerce',
@@ -446,13 +508,15 @@ final class ConfigManager
             'COMFINO_WIDGET_OFFER_TYPE' => 'CONVENIENT_INSTALLMENTS',
             'COMFINO_WIDGET_EMBED_METHOD' => 'INSERT_INTO_LAST',
             'COMFINO_WIDGET_CODE' => WidgetInitScriptHelper::getInitialWidgetCode(),
-            'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => '',
-            'COMFINO_WIDGET_DEV_SCRIPT_VERSION' => '',
             'COMFINO_ABANDONED_CART_ENABLED' => false,
             'COMFINO_ABANDONED_PAYMENTS' => 'comfino',
             'COMFINO_IGNORED_STATUSES' => implode(',', StatusManager::DEFAULT_IGNORED_STATUSES),
             'COMFINO_FORBIDDEN_STATUSES' => implode(',', StatusManager::DEFAULT_FORBIDDEN_STATUSES),
             'COMFINO_STATUS_MAP' => wp_json_encode(ShopStatusManager::DEFAULT_STATUS_MAP),
+            'COMFINO_JS_PROD_PATH' => '',
+            'COMFINO_CSS_PROD_PATH' => 'css',
+            'COMFINO_JS_DEV_PATH' => '',
+            'COMFINO_CSS_DEV_PATH' => 'css',
             'COMFINO_API_CONNECT_TIMEOUT' => 1,
             'COMFINO_API_TIMEOUT' => 3,
         ];

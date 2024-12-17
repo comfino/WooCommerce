@@ -289,7 +289,8 @@ final class SettingsForm
                 'tree_nodes' => self::buildCategoriesTree($selectedCategories),
                 'close_depth' => 3,
                 'product_type' => $productType,
-            ]
+            ],
+            false
         );
     }
 

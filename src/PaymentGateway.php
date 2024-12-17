@@ -21,8 +21,8 @@ use Comfino\View\TemplateManager;
 class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
-    public const VERSION = '4.1.3';
-    public const BUILD_TS = 1733735497;
+    public const VERSION = '4.2.0';
+    public const BUILD_TS = 1734520734;
     public const WIDGET_INIT_SCRIPT_HASH = 'b1a0cae1a47d1c5b9264df3573c09c48';
     public const WIDGET_INIT_SCRIPT_LAST_HASH = '4f8e7fe2091417c2b345fb51f1587316';
 
@@ -110,12 +110,12 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function payment_fields(): void
     {
-        echo wp_kses($this->generatePaywallIframe(false), FrontendManager::getPaywallIfarmeAllowedHtml());
+        $this->generatePaywallIframe(false);
     }
 
     public function process_payment($order_id): array
     {
-        Main::debugLog('[PAYMENT GATEWAY]', 'process_payment', ['$order_id' => $order_id, '$_POST' => $_POST]);
+        DebugLogger::logEvent('[PAYMENT GATEWAY]', 'process_payment', ['$order_id' => $order_id, '$_POST' => $_POST]);
 
         $orderId = (string) $order_id;
         $shopCart = OrderManager::getShopCart(WC()->cart, (int) sanitize_text_field(wp_unslash($_POST['comfino_loan_amount'] ?? '0')));
@@ -141,6 +141,10 @@ class PaymentGateway extends \WC_Payment_Gateway
                     }
                 }
             }
+        }
+
+        if (empty($phoneNumber)) {
+            $phoneNumber = trim($wcOrder->get_shipping_phone());
         }
 
         if (!empty(trim($wcOrder->get_billing_first_name()))) {
@@ -217,7 +221,7 @@ class PaymentGateway extends \WC_Payment_Gateway
             $shopCart->getDeliveryTaxValue()
         );
 
-        Main::debugLog(
+        DebugLogger::logEvent(
             '[PAYMENT]',
             'process_payment',
             [
@@ -253,7 +257,7 @@ class PaymentGateway extends \WC_Payment_Gateway
             $result = ['result' => 'failure', 'redirect' => ''];
         } finally {
             if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
-                Main::debugLog(
+                DebugLogger::logEvent(
                     '[CREATE_ORDER_API_REQUEST]',
                     'createOrder',
                     ['$request' => $apiRequest->getRequestBody()]
@@ -289,7 +293,7 @@ class PaymentGateway extends \WC_Payment_Gateway
             'active_tab' => $activeTab,
             'support_email_address' => SettingsForm::COMFINO_SUPPORT_EMAIL,
             'support_email_subject' => sprintf(
-                /* translators: 1: WordPress version 2: WooCommerce version 3: Comfino plugin version */
+            /* translators: 1: WordPress version 2: WooCommerce version 3: Comfino plugin version */
                 __('WordPress %1$s WooCommerce %2$s Comfino %3$s - question', 'comfino-payment-gateway'),
                 $wp_version,
                 WC_VERSION,
@@ -304,7 +308,7 @@ class PaymentGateway extends \WC_Payment_Gateway
             ),
             'contact_msg1' => __('Do you want to ask about something? Write to us at', 'comfino-payment-gateway'),
             'contact_msg2' => sprintf(
-                /* translators: s%: Comfino support telephone */
+            /* translators: s%: Comfino support telephone */
                 __('or contact us by phone. We are waiting on the number: %s. We will answer all your questions!', 'comfino-payment-gateway'),
                 SettingsForm::COMFINO_SUPPORT_PHONE
             ),
@@ -325,12 +329,12 @@ class PaymentGateway extends \WC_Payment_Gateway
                     'database_version',
                 ]))
             );
-            $viewVariables['errors_log'] = ErrorLogger::getErrorLog(SettingsForm::ERROR_LOG_NUM_LINES);
-            $viewVariables['debug_log'] = Main::getDebugLog(SettingsForm::DEBUG_LOG_NUM_LINES);
+            $viewVariables['errors_log'] = ErrorLogger::getLoggerInstance()->getErrorLog(SettingsForm::ERROR_LOG_NUM_LINES);
+            $viewVariables['debug_log'] = DebugLogger::getLoggerInstance()->getDebugLog(SettingsForm::DEBUG_LOG_NUM_LINES);
             $viewVariables['api_host'] = ApiClient::getInstance()->getApiHost();
             $viewVariables['shop_domain'] = Main::getShopDomain();
             $viewVariables['widget_key'] = ConfigManager::getWidgetKey();
-            $viewVariables['is_dev_env'] = ApiClient::isDevEnv() ? 'Yes' : 'No';
+            $viewVariables['is_dev_env'] = ConfigManager::isDevEnv() ? 'Yes' : 'No';
             $viewVariables['build_ts'] = \DateTime::createFromFormat('U', self::BUILD_TS)->format('Y-m-d H:i:s');
         } else {
             $viewVariables['settings_html'] = $this->generate_settings_html(SettingsForm::getFormFields($activeTab), false);
@@ -338,7 +342,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 
         $viewVariables['settings_allowed_html'] = FrontendManager::getAdminPanelAllowedHtml();
 
-        echo wp_kses(TemplateManager::renderView('configuration', 'admin', $viewVariables), $viewVariables['settings_allowed_html']);
+        TemplateManager::renderView('configuration', 'admin', $viewVariables);
     }
 
     public function process_admin_options(): bool
@@ -442,6 +446,8 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     private function getSubsection(): string
     {
+        check_admin_referer('comfino_settings', 'comfino_nonce');
+
         $active_tab = sanitize_key(wp_unslash($_GET['subsection'] ?? 'payment_settings'));
 
         if (!in_array(

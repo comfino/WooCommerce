@@ -7,8 +7,9 @@ use Comfino\Api\Exception\AccessDenied;
 use Comfino\Api\Exception\ResponseValidationError;
 use Comfino\Api\Exception\ServiceUnavailable;
 use Comfino\Api\HttpErrorExceptionInterface;
+use Comfino\Common\Frontend\PaywallContents;
 use Comfino\Common\Frontend\TemplateRenderer\RendererStrategyInterface;
-use Comfino\Main;
+use Comfino\DebugLogger;
 use Comfino\View\TemplateManager;
 use ComfinoExternal\Psr\Http\Client\NetworkExceptionInterface;
 
@@ -18,16 +19,20 @@ if (!defined('ABSPATH')) {
 
 class PluginRendererStrategy implements RendererStrategyInterface
 {
+    /**
+     * @param PaywallContents $paywallContents
+     * @return string
+     */
     public function renderPaywallTemplate($paywallContents): string
     {
-        return str_replace('</head>', base64_decode('PGxpbmsgcmVsPSJzdHlsZXNoZWV0IiBocmVmPSJodHRwczovL3dpZGdldC5jb21maW5vLnBsL2Nzcy9wYXl3YWxsLmNzcyI+PHNjcmlwdCBzcmM9Imh0dHBzOi8vd2lkZ2V0LmNvbWZpbm8ucGwvcGF5d2FsbC5taW4uanMiPjwvc2NyaXB0PjwvaGVhZD4='), $paywallContents);
+        return $paywallContents->paywallBody;
     }
 
     public function renderErrorTemplate($exception, $frontendRenderer): string
     {
         $userErrorMessage = 'There was a technical problem. Please try again in a moment and it should work!';
 
-        Main::debugLog(
+        DebugLogger::logEvent(
             '[API_ERROR]',
             'renderErrorTemplate',
             [
@@ -84,7 +89,7 @@ class PluginRendererStrategy implements RendererStrategyInterface
                 'url' => $url,
                 'request_body' => $requestBody,
                 'response_body' => $responseBody,
-                'is_debug_mode' => ApiClient::isDevEnv(),
+                'is_debug_mode' => ConfigManager::isDevEnv(),
             ]
         );
     }

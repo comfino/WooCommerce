@@ -3,9 +3,9 @@
 namespace Comfino\View\Block;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
-use Comfino\Api\ApiClient;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Main;
+use Comfino\View\FrontendManager;
 
 final class PaymentGateway extends AbstractPaymentMethodType
 {
@@ -55,7 +55,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
 
         wp_register_script(
             'comfino-payment-gateway-blocks',
-            $comfino_payment_gateway->plugin_url() . '/resources/js/front/paywall-block.min.js',
+            FrontendManager::getLocalScriptUrl('paywall-block.js'),
             [
                 'wc-blocks-registry',
                 'wc-settings',
@@ -86,7 +86,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
         return [
             'title' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
             'description' => $this->gateway->get_description(),
-            'icon' => ConfigManager::getConfigurationValue('COMFINO_SHOW_LOGO') ? ApiClient::getPaywallLogoUrl() : '',
+            'icon' => ConfigManager::getConfigurationValue('COMFINO_SHOW_LOGO') ? ConfigManager::getPaywallLogoUrl() : '',
             'iframe' => $this->is_active() ? $this->gateway->generatePaywallIframe(true) : '',
             'paywallOptions' => array_merge(
                 Main::getPaywallOptions($this->gateway->getTotal()),

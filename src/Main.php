@@ -29,10 +29,6 @@ final class Main
     private static $pluginDirectory;
     /** @var string */
     private static $pluginFile;
-    /** @var Common\Backend\ErrorLogger */
-    private static $errorLogger;
-    /** @var string */
-    private static $debugLogFilePath;
 
     public static function init(): void
     {
@@ -40,10 +36,7 @@ final class Main
             return;
         }
 
-        self::$errorLogger = ErrorLogger::getLoggerInstance();
-        self::$debugLogFilePath = self::$pluginDirectory . '/var/log/debug.log';
-
-        ErrorLogger::init(self::$pluginDirectory);
+        ErrorLogger::init();
 
         /*
          * Loads the cart, session and notices should it be required.
@@ -94,9 +87,9 @@ final class Main
                         }
 
                         // Customer should be saved during shutdown.
-                        add_action('shutdown', [WC()->customer, 'save'], 10);
+                        add_action('shutdown', [WC()->customer, 'save']);
                     } catch (\Exception $e) {
-                        ErrorLogger::logError('wp_loaded:comfino_rest_load_cart', $e->getMessage());
+                        ErrorLogger::getLoggerInstance()->logError('wp_loaded:comfino_rest_load_cart', $e->getMessage());
                     }
                 }
 
@@ -107,7 +100,7 @@ final class Main
             }
         }, 5);
 
-        add_action('wp_head', static function () {
+        add_action('wp_head', static function (): void {
             global $product;
 
             if (is_single() && is_product() && ConfigManager::isWidgetEnabled() && ConfigManager::getWidgetKey() !== '') {
@@ -123,7 +116,7 @@ final class Main
 
                 if ($allowedProductTypes === []) {
                     // Filters active - all product types disabled.
-                    self::debugLog('[WIDGET]', 'Filters active - all product types disabled.');
+                    DebugLogger::logEvent('[WIDGET]', 'Filters active - all product types disabled.');
 
                     return;
                 }
@@ -136,7 +129,7 @@ final class Main
 
         add_filter('plugin_action_links_' . plugin_basename(self::$pluginFile), static function (array $links): array {
             return array_merge([
-                '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino') . '">' .
+                '<a href="' . wp_nonce_url(admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino'), 'comfino_settings', 'comfino_nonce') . '">' .
                 __('Settings', 'comfino-payment-gateway') . '</a>',
             ], $links);
         });
@@ -174,7 +167,9 @@ final class Main
         delete_transient('comfino_plugin_prev_version');
         delete_transient('comfino_plugin_updated_at');
 
-        ErrorLogger::init($pluginDirectory);
+        self::$pluginDirectory = $pluginDirectory;
+
+        ErrorLogger::init();
         ApiClient::getInstance()->notifyPluginRemoval();
 
         return true;
@@ -183,7 +178,7 @@ final class Main
     public static function renderPaywallIframe(\WC_Cart $cart, float $total, bool $isPaymentBlock): string
     {
         if (!self::paymentIsAvailable($cart, (int) ($total * 100)) || ($paywallIframe = self::preparePaywallIframe($total, $isPaymentBlock)) === null) {
-            self::debugLog('[PAYWALL]', 'renderPaywallIframe: paymentIsAvailable=FALSE or preparePaywallIframe=NULL');
+            DebugLogger::logEvent('[PAYWALL]', 'renderPaywallIframe: paymentIsAvailable=FALSE or preparePaywallIframe=NULL');
 
             return '';
         }
@@ -191,63 +186,18 @@ final class Main
         return $paywallIframe;
     }
 
-    public static function writeToFile(string $filePath, string $contents): void
-    {
-        global $wp_filesystem;
-
-        if (empty($wp_filesystem)) {
-            require_once ABSPATH . 'wp-admin/includes/file.php';
-
-            WP_Filesystem();
-        }
-
-        $wp_filesystem->put_contents($filePath, $contents, FS_CHMOD_FILE);
-    }
-
-    public static function debugLog(string $debugPrefix, string $debugMessage, ?array $parameters = null): void
-    {
-        if ((!isset($_COOKIE['COMFINO_SERVICE_SESSION']) || $_COOKIE['COMFINO_SERVICE_SESSION'] !== 'ACTIVE') && ConfigManager::isServiceMode()) {
-            return;
-        }
-
-        if (ConfigManager::isDebugMode()) {
-            if (!empty($parameters)) {
-                $preparedParameters = [];
-
-                foreach ($parameters as $name => $value) {
-                    if (is_array($value)) {
-                        $value = wp_json_encode($value);
-                    } elseif (is_bool($value)) {
-                        $value = ($value ? 'true' : 'false');
-                    }
-
-                    $preparedParameters[] = "$name=$value";
-                }
-
-                $debugMessage .= (($debugMessage !== '' ? ': ' : '') . implode(', ', $preparedParameters));
-            }
-
-            self::writeToFile(self::$debugLogFilePath, '[' . gmdate('Y-m-d H:i:s') . "] $debugPrefix: $debugMessage\n");
-        }
-    }
-
-    public static function getDebugLog(int $numLines): string
-    {
-        return self::$errorLogger->getErrorLog(self::$debugLogFilePath, $numLines);
-    }
-
     public static function paymentIsAvailable(?\WC_Cart $cart, int $loanAmount): bool
     {
         if (ConfigManager::isServiceMode()) {
             if (isset($_COOKIE['COMFINO_SERVICE_SESSION']) && $_COOKIE['COMFINO_SERVICE_SESSION'] === 'ACTIVE') {
-                self::debugLog('[PAYWALL]', 'paymentIsAvailable: service mode is active.');
+                DebugLogger::logEvent('[PAYWALL]', 'paymentIsAvailable: service mode is active.');
             } else {
                 return false;
             }
         }
 
         if (!ConfigManager::isEnabled() || empty(ConfigManager::getApiKey())) {
-            self::debugLog('[PAYWALL]', 'paymentIsAvailable: plugin disabled or incomplete configuration.');
+            DebugLogger::logEvent('[PAYWALL]', 'paymentIsAvailable: plugin disabled or incomplete configuration.');
 
             return false;
         }
@@ -263,7 +213,7 @@ final class Main
         );
         $paymentIsAvailable = ($allowedProductTypes !== []);
 
-        self::debugLog(
+        DebugLogger::logEvent(
             '[PAYWALL]',
             sprintf('paymentIsAvailable: (paywall iframe is %s)', $paymentIsAvailable ? 'visible' : 'invisible'),
             [
@@ -416,16 +366,14 @@ final class Main
 
     private static function preparePaywallIframe(float $total, bool $isPaymentBlock): ?string
     {
-        /** @var \Comfino_Payment_Gateway $comfino_payment_gateway */
-        global $comfino_payment_gateway;
+        wp_register_script('comfino-frontend-script', FrontendManager::getExternalScriptUrl());
+        wp_enqueue_script('comfino-frontend-script');
+        wp_add_inline_script('comfino-frontend-script', FrontendManager::getPaywallIframeRenderer()->getPaywallFrontendScript());
 
         try {
-            $renderer = FrontendManager::getPaywallIframeRenderer();
-
-            $paywallElements = $renderer->getPaywallElements(ApiService::getEndpointUrl('paywall'));
-
-            $styleTimestamp = $renderer->getPaywallFrontendStyleTimestamp();
-            $scriptTimestamp = $renderer->getPaywallFrontendScriptTimestamp();
+            //$renderer = FrontendManager::getPaywallIframeRenderer();
+            //$styleTimestamp = $renderer->getPaywallFrontendStyleTimestamp();
+            //$scriptTimestamp = $renderer->getPaywallFrontendScriptTimestamp();
 
             try {
                 wp_register_style('comfino-frontend-style', '', [], $styleTimestamp !== 0 ? (string) $styleTimestamp : null);
@@ -450,7 +398,7 @@ final class Main
             if (!$isPaymentBlock) {
                 wp_enqueue_script(
                     'comfino-payment-gateway-script',
-                    $comfino_payment_gateway->plugin_url() . '/resources/js/front/paywall.min.js',
+                    FrontendManager::getLocalScriptUrl('paywall-init.js'),
                     [],
                     null,
                     ['in_footer' => false]
@@ -464,15 +412,7 @@ final class Main
                 );
             }
 
-            return TemplateManager::renderView(
-                'payment',
-                'front',
-                [
-                    'paywall_iframe' => $paywallElements['iframe'],
-                    'paywall_iframe_allowed_html' => FrontendManager::getPaywallIfarmeAllowedHtml(),
-                    'render_init_script' => !$isPaymentBlock,
-                ]
-            );
+            return TemplateManager::renderView('payment', 'front', [], !$isPaymentBlock);
         } catch (\Throwable|InvalidArgumentException $e) {
             ApiClient::processApiError('Paywall error on page "' . self::getCurrentUrl() . '" (Comfino API)', $e);
         }

@@ -34,6 +34,14 @@ final class OrderManager
                     $imageUrl = null;
                 }
 
+                $categoryIds = $product->get_category_ids();
+
+                if (empty($categoryIds) && $product instanceof \WC_Product_Variation
+                    && ($parentProduct = wc_get_product($product->get_parent_id())) instanceof \WC_Product
+                ) {
+                    $categoryIds = $parentProduct->get_category_ids();
+                }
+
                 $grossPrice = (int) round(wc_get_price_including_tax($product) * 100);
                 $netPrice = (int) round(wc_get_price_excluding_tax($product) * 100);
 
@@ -48,10 +56,10 @@ final class OrderManager
                         $product->get_name(),
                         $grossPrice,
                         (string) $product->get_id(),
-                        strip_tags(wc_get_product_category_list($product->get_id(), '→')),
+                        self::getProductCategories($categoryIds),
                         $product->get_sku(),
                         $imageUrl,
-                        $product->get_category_ids(),
+                        $categoryIds,
                         $taxRate !== null ? $netPrice : null,
                         $taxRate !== null ? (int) $taxRate['rate'] : null,
                         $taxRate !== null ? $grossPrice - $netPrice : null
@@ -130,6 +138,14 @@ final class OrderManager
             $taxRate = null;
         }
 
+        $categoryIds = $product->get_category_ids();
+
+        if (empty($categoryIds) && $product instanceof \WC_Product_Variation
+            && ($parentProduct = wc_get_product($product->get_parent_id())) instanceof \WC_Product
+        ) {
+            $categoryIds = $parentProduct->get_category_ids();
+        }
+
         return new Cart(
             (int) (wc_get_price_including_tax($product) * 100),
             (int) round(wc_get_price_excluding_tax($product) * 100),
@@ -144,10 +160,10 @@ final class OrderManager
                         $product->get_name(),
                         (int) (wc_get_price_including_tax($product) * 100),
                         (string) $product->get_id(),
-                        strip_tags(wc_get_product_category_list($product->get_id(), '→')),
+                        self::getProductCategories($categoryIds),
                         $product->get_sku(),
                         null,
-                        $product->get_category_ids(),
+                        $categoryIds,
                         $taxRates !== null ? (int) (wc_get_price_excluding_tax($product) * 100) : null,
                         $taxRate !== null ? (int) $taxRate['rate'] : null,
                         $taxRate !== null ? (int) ((wc_get_price_including_tax($product) - wc_get_price_excluding_tax($product)) * 100) : null
@@ -172,5 +188,25 @@ final class OrderManager
         }
 
         return $notes;
+    }
+
+    /**
+     * @param int[] $categoryIds
+     */
+    private static function getProductCategories(array $categoryIds): string
+    {
+        if (empty($categoryIds)) {
+            return '';
+        }
+
+        $categories = [];
+
+        foreach ($categoryIds as $categoryId) {
+            if (($term = get_term($categoryId, 'product_cat')) instanceof \WP_Term) {
+                $categories[] = trim($term->name);
+            }
+        }
+
+        return implode('→', $categories);
     }
 }

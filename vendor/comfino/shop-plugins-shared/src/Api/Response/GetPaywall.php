@@ -2,24 +2,27 @@
 
 namespace Comfino\Api\Response;
 
-use Comfino\Api\Exception\ResponseValidationError;
-
 class GetPaywall extends Base
 {
     /** @var string
      * @readonly */
-    public $paywallPage;
+    public $paywallBody;
+    /** @var string
+     * @readonly */
+    public $paywallHash;
 
     /**
      * @inheritDoc
-     * @param mixed[]|string|bool|null $deserializedResponseBody
+     * @param mixed[]|string|bool|null|float|int $deserializedResponseBody
      */
     protected function processResponseBody($deserializedResponseBody): void
     {
-        if (!is_string($deserializedResponseBody)) {
-            throw new ResponseValidationError('Invalid response data: string expected.');
-        }
+        $this->checkResponseType($deserializedResponseBody, 'array');
+        $this->checkResponseStructure($deserializedResponseBody, ['paywallBody', 'paywallHash']);
+        $this->checkResponseType($deserializedResponseBody['paywallBody'], 'string');
+        $this->checkResponseType($deserializedResponseBody['paywallHash'], 'string');
 
-        $this->paywallPage = $deserializedResponseBody;
+        $this->paywallBody = $deserializedResponseBody['paywallBody'];
+        $this->paywallHash = $deserializedResponseBody['paywallHash'];
     }
 }

@@ -5,7 +5,6 @@ namespace Comfino\Api\Response;
 use Comfino\Api\Dto\Payment\FinancialProduct;
 use Comfino\Api\Dto\Payment\LoanParameters;
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
-use Comfino\Api\Exception\ResponseValidationError;
 
 class GetFinancialProducts extends Base
 {
@@ -15,17 +14,22 @@ class GetFinancialProducts extends Base
 
     /**
      * @inheritDoc
-     * @param mixed[]|string|bool|null $deserializedResponseBody
+     * @param mixed[]|string|bool|null|float|int $deserializedResponseBody
      */
     protected function processResponseBody($deserializedResponseBody): void
     {
-        if (!is_array($deserializedResponseBody)) {
-            throw new ResponseValidationError('Invalid response data: array expected.');
-        }
+        $this->checkResponseType($deserializedResponseBody, 'array');
 
         $financialProducts = [];
 
         foreach ($deserializedResponseBody as $financialProduct) {
+            $this->checkResponseType($financialProduct, 'array');
+            $this->checkResponseStructure(
+                $financialProduct,
+                ['name', 'type', 'icon', 'instalmentAmount', 'toPay', 'loanTerm', 'loanParameters']
+            );
+            $this->checkResponseType($financialProduct['loanParameters'], 'array', 'loanParameters');
+
             $financialProducts[] = new FinancialProduct(
                 $financialProduct['name'],
                 LoanTypeEnum::from($financialProduct['type']),
@@ -38,7 +42,14 @@ class GetFinancialProducts extends Base
                 $financialProduct['representativeExample'] ?? '',
                 $financialProduct['remarks'] ?? '',
                 array_map(
-                    static function (array $loanParams) : LoanParameters {
+                    function ($loanParams): LoanParameters {
+                        $this->checkResponseType($loanParams, 'array', 'loanParams[]');
+                        $this->checkResponseStructure($loanParams, ['instalmentAmount', 'toPay', 'loanTerm', 'rrso']);
+                        $this->checkResponseType($loanParams['instalmentAmount'], 'integer', 'loanParams[][instalmentAmount]');
+                        $this->checkResponseType($loanParams['toPay'], 'integer', 'loanParams[][toPay]');
+                        $this->checkResponseType($loanParams['loanTerm'], 'integer', 'loanParams[][loanTerm]');
+                        $this->checkResponseType($loanParams['rrso'], 'double', 'loanParams[][rrso]');
+
                         return new LoanParameters(
                             $loanParams['instalmentAmount'],
                             $loanParams['toPay'],

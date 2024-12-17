@@ -18,6 +18,7 @@ use Comfino\Shop\Order\Seller;
 use Comfino\Widget\WidgetTypeEnum;
 use Http\Message\RequestMatcher\RequestMatcher;
 use PHPUnit\Framework\MockObject\Exception;
+use ComfinoExternal\Psr\Http\Client\ClientExceptionInterface;
 use ComfinoExternal\Psr\Http\Client\ClientInterface;
 use ComfinoExternal\Psr\Http\Message\RequestFactoryInterface;
 use ComfinoExternal\Psr\Http\Message\RequestInterface;
@@ -51,6 +52,9 @@ trait ClientTestTrait
         $this->assertEquals($this->getConstantFromObject($apiClient, 'CLIENT_VERSION'), $apiClient->getVersion());
     }
 
+    /**
+     * @throws ClientExceptionInterface
+     */
     public function testIsShopAccountActive(): void
     {
         $apiClient = $this->initApiClient('/v1/user/is-active', 'GET', null, null, true, null, 'API-KEY');
@@ -67,6 +71,9 @@ trait ClientTestTrait
         $this->initApiClient('/v1/user/is-active', 'GET')->isShopAccountActive();
     }
 
+    /**
+     * @throws ClientExceptionInterface
+     */
     public function testGetFinancialProducts(): void
     {
         $queryCriteria = new LoanQueryCriteria(120000);
@@ -109,9 +116,12 @@ trait ClientTestTrait
         $this->initApiClient('/v1/financial-products', 'GET')->getFinancialProducts($queryCriteria);
     }
 
+    /**
+     * @throws ClientExceptionInterface
+     */
     public function testCreateOrder(): void
     {
-        $jsonRequest = '{"notifyUrl":"https:\/\/comfino-shop.test\/notification","returnUrl":"https:\/\/comfino-shop.test","orderId":"11169b13-1f47-4b4a-801e-2934371bc098","loanParameters":{"amount":50000,"term":24,"type":"CONVENIENT_INSTALLMENTS","allowedProductTypes":["PAY_LATER"]},"cart":{"products":[{"name":"Lenovo Ideapad 120S-14IAP","quantity":1,"price":100000,"photoUrl":"https:\/\/beks.pl\/wp-content\/uploads\/2016\/10\/S-2282-popra_low_res_zlota_rama.jpg","ean":"9002490100070","externalId":"123","category":"testtesttest1"},{"name":"Lenovo Ideapad 120S-14IAP","quantity":1,"price":100000,"photoUrl":"https:\/\/mnwr.pl\/wp-content\/uploads\/2020\/06\/Beksinski_Obraz.jpg","ean":"9002490100070","externalId":"123","category":"testtesttest2"},{"name":"Lenovo Ideapad 120S-14IAP","quantity":1,"price":100000,"photoUrl":"https:\/\/beks.pl\/wp-content\/uploads\/2016\/10\/S-2282-popra_low_res_zlota_rama.jpg","ean":"9002490100070","externalId":"123","category":"testtesttest3"},{"name":"Lenovo Ideapad 120S-14IAP","quantity":1,"price":100000,"photoUrl":"https:\/\/mnwr.pl\/wp-content\/uploads\/2020\/06\/Beksinski_Obraz.jpg","ean":"9002490100070","externalId":"123","category":"testtesttest4"},{"name":"Rabat","quantity":1,"price":-352000,"category":"DISCOUNT"}],"totalAmount":50000,"deliveryCost":2000,"category":"elektronika"},"customer":{"firstName":"John","lastName":"Doe","email":"mail@test","phoneNumber":"333333333","taxId":"3559197034","ip":"127.0.0.1","address":{"street":"Test street","buildingNumber":"13","apartmentNumber":"21","postalCode":"10-899","city":"Test city","countryCode":"PL"}},"seller":{"taxId":"472156893"}}';
+        $jsonRequest = '{"notifyUrl":"https:\/\/comfino-shop.test\/notification","returnUrl":"https:\/\/comfino-shop.test","orderId":"11169b13-1f47-4b4a-801e-2934371bc098","loanParameters":{"amount":50000,"term":24,"type":"CONVENIENT_INSTALLMENTS","allowedProductTypes":["PAY_LATER"]},"cart":{"products":[{"name":"Lenovo Ideapad 120S-14IAP","quantity":1,"price":100000,"photoUrl":"https:\/\/beks.pl\/wp-content\/uploads\/2016\/10\/S-2282-popra_low_res_zlota_rama.jpg","ean":"9002490100070","externalId":"123","category":"testtesttest1"},{"name":"Lenovo Ideapad 120S-14IAP","quantity":1,"price":100000,"photoUrl":"https:\/\/mnwr.pl\/wp-content\/uploads\/2020\/06\/Beksinski_Obraz.jpg","ean":"9002490100070","externalId":"123","category":"testtesttest2"},{"name":"Lenovo Ideapad 120S-14IAP","quantity":1,"price":100000,"photoUrl":"https:\/\/beks.pl\/wp-content\/uploads\/2016\/10\/S-2282-popra_low_res_zlota_rama.jpg","ean":"9002490100070","externalId":"123","category":"testtesttest3"},{"name":"Lenovo Ideapad 120S-14IAP","quantity":1,"price":100000,"photoUrl":"https:\/\/mnwr.pl\/wp-content\/uploads\/2020\/06\/Beksinski_Obraz.jpg","ean":"9002490100070","externalId":"123","category":"testtesttest4"},{"name":"Rabat","quantity":1,"price":-352000,"netPrice":-352000,"vatRate":null,"vatAmount":0,"category":"DISCOUNT"}],"totalAmount":50000,"deliveryCost":2000,"category":"elektronika"},"customer":{"firstName":"John","lastName":"Doe","email":"mail@test","phoneNumber":"333333333","taxId":"3559197034","ip":"127.0.0.1","address":{"street":"Test street","buildingNumber":"13","apartmentNumber":"21","postalCode":"10-899","city":"Test city","countryCode":"PL"}},"seller":{"taxId":"472156893"}}';
         $responseData = json_decode('{"status":"CREATED","externalId":"11169b13-1f47-4b4a-801e-2934371bc098","applicationUrl":"http:\/\/wniosek.comfino.test\/ecommerce\/verify?token=4037bf5c33d53a853183","_links":{"self":{"href":"http:\/\/api-ecommerce.comfino.test\/v1\/orders\/11169b13-1f47-4b4a-801e-2934371bc098","method":"GET"},"cancel":{"href":"http:\/\/api-ecommerce.comfino.test\/v1\/orders\/11169b13-1f47-4b4a-801e-2934371bc098\/cancel","method":"PUT"}}}', true);
 
         $order = new Order(
@@ -195,6 +205,9 @@ trait ClientTestTrait
         $this->assertEquals('11169b13-1f47-4b4a-801e-2934371bc098', $response->externalId);
     }
 
+    /**
+     * @throws ClientExceptionInterface
+     */
     public function testGetOrder(): void
     {
         $orderId = 'e43ae07a-2f41-4720-9d93-7103acee3c96';
@@ -282,6 +295,9 @@ trait ClientTestTrait
         $this->initApiClient(sprintf('/v1/orders/%s', $orderId), 'GET')->getOrder($orderId);
     }
 
+    /**
+     * @throws ClientExceptionInterface
+     */
     public function testCancelOrder(): void
     {
         $orderId = 'ORDER-ID';
@@ -293,6 +309,9 @@ trait ClientTestTrait
         $this->initApiClient(sprintf('/v1/orders/%s/cancel', $orderId), 'PUT')->cancelOrder($orderId);
     }
 
+    /**
+     * @throws ClientExceptionInterface
+     */
     public function testGetProductTypes(): void
     {
         $productTypes = [
@@ -321,6 +340,9 @@ trait ClientTestTrait
         $this->initApiClient('/v1/product-types', 'GET', ['listType' => (string) $listType])->getProductTypes($listType);
     }
 
+    /**
+     * @throws ClientExceptionInterface
+     */
     public function testGetWidgetKey(): void
     {
         $widgetKey = 'WIDGET-KEY';
@@ -334,6 +356,9 @@ trait ClientTestTrait
         $this->initApiClient('/v1/widget-key', 'GET')->getWidgetKey();
     }
 
+    /**
+     * @throws ClientExceptionInterface
+     */
     public function testGetWidgetTypes(): void
     {
         $widgetTypes = [
@@ -359,30 +384,23 @@ trait ClientTestTrait
         $this->initApiClient('/v1/widget-types', 'GET')->getWidgetTypes();
     }
 
+    /**
+     * @throws ClientExceptionInterface
+     */
     public function testGetPaywall(): void
     {
-        $paywallPageContents = 'PAYWALL_PAGE_CONTENTS';
+        $paywallPageContents = ['paywallBody' => 'PAYWALL_PAGE_CONTENTS', 'paywallHash' => 'PAYWALL_CONTENTS_HASH'];
 
-        $apiClient = $this->initApiClient('/v1/shop-plugin-paywall', 'GET', ['loanAmount' => 10000], null, $paywallPageContents, 'API-KEY', false, 200, 'text/html');
+        $apiClient = $this->initApiClient('/v2/shop-plugin-paywall', 'GET', ['loanAmount' => 10000], null, $paywallPageContents, 'API-KEY');
         $response = $apiClient->getPaywall(new LoanQueryCriteria(10000));
 
-        $this->assertEquals($paywallPageContents, $response->paywallPage);
+        $this->assertEquals($paywallPageContents['paywallBody'], $response->paywallBody);
+        $this->assertEquals($paywallPageContents['paywallHash'], $response->paywallHash);
     }
 
-    public function testGetPaywallFragments(): void
-    {
-        $paywallPageFragments = [
-            'template' => 'TEMPLATE_CONTENTS',
-            'style' => 'STYLE_CONTENTS',
-            'script' => 'SCRIPT_CONTENTS',
-        ];
-
-        $apiClient = $this->initApiClient('/v1/shop-plugin-paywall-fragments', 'GET', null, null, $paywallPageFragments, 'API-KEY');
-        $response = $apiClient->getPaywallFragments();
-
-        $this->assertEquals($paywallPageFragments, $response->paywallFragments);
-    }
-
+    /**
+     * @throws \ReflectionException
+     */
     protected function setUp(): void
     {
         $this->productionApiHost = parse_url($this->getConstantFromClass(Client::class, 'PRODUCTION_HOST'), PHP_URL_HOST);

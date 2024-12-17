@@ -155,7 +155,7 @@ final class SettingsManager
                 $filterManager->getFilters()
             );
 
-            Main::debugLog(
+            DebugLogger::logEvent(
                 '[PAYWALL]',
                 'getAllowedProductTypes',
                 [

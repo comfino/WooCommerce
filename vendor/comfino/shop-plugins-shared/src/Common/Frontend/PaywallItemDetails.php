@@ -2,7 +2,7 @@
 
 namespace Comfino\Common\Frontend;
 
-class PaywallItemDetails
+final class PaywallItemDetails
 {
     /**
      * @var string
