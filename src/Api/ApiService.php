@@ -16,6 +16,7 @@ use Comfino\DebugLogger;
 use Comfino\ErrorLogger;
 use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
+use Comfino\Main;
 use Comfino\Order\OrderManager;
 use Comfino\Order\StatusAdapter;
 use Comfino\PaymentGateway;
@@ -430,17 +431,30 @@ final class ApiService
             ]
         );
 
-        FrontendManager::getPaywallRenderer()->renderPaywall(
-            new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes)
-        );
+        $paywallRenderer = FrontendManager::getPaywallRenderer();
+
+        $paywallContents = $paywallRenderer->getPaywall(new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes));
+        $templateVariables = [
+            'language' => Main::getShopLanguage(),
+            'styles' => FrontendManager::registerExternalStyles($paywallRenderer->getStyles()),
+            'scripts' => FrontendManager::includeExternalScripts($paywallRenderer->getScripts()),
+            'shop_url' => Main::getShopUrl(),
+            'paywall_hash' => $paywallRenderer->getPaywallHash($paywallContents->paywallBody, ConfigManager::getApiKey()),
+            'frontend_elements' => [
+                'paywallBody' => $paywallContents->paywallBody,
+                'paywallHash' => $paywallContents->paywallHash,
+            ],
+        ];
 
         if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
             DebugLogger::logEvent(
                 '[PAYWALL_API_REQUEST]',
                 'renderPaywall',
-                ['$request' => $apiRequest->getRequestBody()]
+                ['$request' => $apiRequest->getRequestBody(), '$templateVariables' => $templateVariables]
             );
         }
+
+        TemplateManager::renderView('paywall', 'front', $templateVariables);
 
         exit;
     }

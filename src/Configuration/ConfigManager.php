@@ -305,7 +305,7 @@ final class ConfigManager
 
     public static function isDevEnv(): bool
     {
-        return ((string) getenv('COMFINO_DEV')) === ('WC_' . WC_VERSION . '_' . Main::getShopUrl());
+        return ((string) getenv('COMFINO_DEV')) === ('WC_' . WC_VERSION . '_' . Main::getShopUrl(true));
     }
 
     public static function useUnminifiedScripts(): bool

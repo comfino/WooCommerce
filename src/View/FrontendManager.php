@@ -3,7 +3,6 @@
 namespace Comfino\View;
 
 use Comfino\Api\ApiClient;
-use Comfino\Api\ApiService;
 use Comfino\Common\Frontend\FrontendHelper;
 use Comfino\Common\Frontend\PaywallIframeRenderer;
 use Comfino\Common\Frontend\PaywallRenderer;
@@ -11,7 +10,6 @@ use Comfino\Common\Frontend\WidgetInitScriptHelper;
 use Comfino\Configuration\ConfigManager;
 use Comfino\ErrorLogger;
 use Comfino\PaymentGateway;
-use Comfino\PluginShared\CacheManager;
 use Comfino\TemplateRenderer\PluginRendererStrategy;
 
 if (!defined('ABSPATH')) {
@@ -22,32 +20,18 @@ final class FrontendManager
 {
     public static function getPaywallRenderer(): PaywallRenderer
     {
-        return new PaywallRenderer(
-            ApiClient::getInstance(),
-            CacheManager::getCachePool(),
-            new PluginRendererStrategy(),
-            ApiService::getEndpointUrl('cacheInvalidate'),
-            ApiService::getEndpointUrl('configuration')
-        );
+        return new PaywallRenderer(ApiClient::getInstance(), new PluginRendererStrategy());
     }
 
     public static function getPaywallIframeRenderer(): PaywallIframeRenderer
     {
-        return new PaywallIframeRenderer(
-            ApiClient::getInstance(),
-            CacheManager::getCachePool(),
-            new PluginRendererStrategy(),
-            'WooCommerce',
-            WC_VERSION,
-            ApiService::getEndpointUrl('cacheInvalidate'),
-            ApiService::getEndpointUrl('configuration')
-        );
+        return new PaywallIframeRenderer();
     }
 
     public static function renderAdminLogo(): string
     {
         return FrontendHelper::renderAdminLogo(
-            ApiClient::getLogoApiHost(),
+            ConfigManager::getLogoApiHost(),
             'WC',
             WC_VERSION,
             PaymentGateway::VERSION,
@@ -60,7 +44,7 @@ final class FrontendManager
     public static function renderPaywallLogo(): string
     {
         return FrontendHelper::renderPaywallLogo(
-            ApiClient::getLogoApiHost(),
+            ConfigManager::getLogoApiHost(),
             ApiClient::getInstance()->getApiKey(),
             ConfigManager::getWidgetKey(),
             'WC',
@@ -128,17 +112,23 @@ final class FrontendManager
         );
     }
 
-    public static function getLocalScriptUrl(string $scriptFileName): string
+    public static function getLocalScriptUrl(string $scriptFileName, bool $frontScript = true): string
     {
         global $comfino_payment_gateway;
 
+        $scriptDirectory = ($frontScript ? 'front' : 'admin');
+
         if (ConfigManager::isDevEnv() && ConfigManager::useUnminifiedScripts()) {
             $scriptFileName = str_replace('.min.js', '.js', $scriptFileName);
+
+            if (!file_exists($comfino_payment_gateway->plugin_abspath() . "/resources/js/$scriptDirectory/$scriptFileName")) {
+                $scriptFileName = str_replace('.js', '.min.js', $scriptFileName);
+            }
         } elseif (strpos($scriptFileName, '.min.') === false) {
             $scriptFileName = str_replace('.js', '.min.js', $scriptFileName);
         }
 
-        return $comfino_payment_gateway->plugin_url() . "/resources/js/front/$scriptFileName";
+        return $comfino_payment_gateway->plugin_url() . "/resources/js/$scriptDirectory/$scriptFileName";
     }
 
     public static function getExternalResourcesBaseUrl(): string
@@ -202,6 +192,160 @@ final class FrontendManager
         }
 
         return sanitize_url(wp_unslash(self::getExternalResourcesBaseUrl() . "$stylePath/$styleName"));
+    }
+
+    /**
+     * @param string[] $dependencies
+     */
+    public static function embedInlineScript(string $scriptId, string $scriptContents, array $dependencies = [], bool $inFooter = false, $version = null): void
+    {
+        wp_register_script($scriptId, '', $dependencies, $version, ['in_footer' => $inFooter]);
+        wp_enqueue_script($scriptId);
+        wp_add_inline_script($scriptId, $scriptContents);
+    }
+
+    /**
+     * @param string[] $scripts
+     * @param string[][] $dependencies
+     *
+     * @return string[]
+     */
+    public static function includeLocalScripts(array $scripts, array $dependencies = [], bool $frontScript = true, bool $inFooter = false, $version = null): array
+    {
+        $scriptIds = [];
+
+        foreach ($scripts as $scriptName) {
+            $scriptId = 'comfino-script-' . str_replace('.', '-', strtolower(pathinfo($scriptName, PATHINFO_FILENAME)));
+            $scriptIds[] = $scriptId;
+
+            wp_enqueue_script(
+                $scriptId,
+                self::getLocalScriptUrl($scriptName, $frontScript),
+                $dependencies[$scriptName] ?? [],
+                $version,
+                ['in_footer' => $inFooter]
+            );
+        }
+
+        return $scriptIds;
+    }
+
+    /**
+     * @param string[] $scripts
+     * @param string[][] $dependencies
+     *
+     * @return string[]
+     */
+    public static function includeExternalScripts(array $scripts, array $dependencies = [], bool $inFooter = false, $version = null): array
+    {
+        $scriptIds = [];
+
+        foreach ($scripts as $scriptName) {
+            $scriptId = 'comfino-script-' . str_replace('.', '-', strtolower(pathinfo($scriptName, PATHINFO_FILENAME)));
+            $scriptIds[] = $scriptId;
+
+            wp_enqueue_script(
+                $scriptId,
+                self::getExternalScriptUrl($scriptName),
+                $dependencies[$scriptName] ?? [],
+                $version,
+                ['in_footer' => $inFooter]
+            );
+        }
+
+        return $scriptIds;
+    }
+
+    /**
+     * @param string[] $styles
+     * @param string[][] $dependencies
+     *
+     * @return string[]
+     */
+    public static function includeExternalStyles(array $styles, array $dependencies = [], $version = null): array
+    {
+        $styleIds = [];
+
+        foreach ($styles as $styleName) {
+            $styleId = 'comfino-style-' . str_replace('.', '-', strtolower(pathinfo($styleName, PATHINFO_FILENAME)));
+            $styleIds[] = $styleId;
+
+            wp_enqueue_style($styleId, self::getExternalStyleUrl($styleName), $dependencies[$styleName] ?? [], $version);
+        }
+
+        return $styleIds;
+    }
+
+    /**
+     * @param string[] $scripts
+     * @param string[][] $dependencies
+     *
+     * @return string[]
+     */
+    public static function registerLocalScripts(array $scripts, array $dependencies = [], bool $frontScript = true, bool $inFooter = false, $version = null): array
+    {
+        $scriptIds = [];
+
+        foreach ($scripts as $scriptName) {
+            $scriptId = 'comfino-script-' . str_replace('.', '-', strtolower(pathinfo($scriptName, PATHINFO_FILENAME)));
+            $scriptIds[] = $scriptId;
+
+            wp_register_script(
+                $scriptId,
+                self::getLocalScriptUrl($scriptName, $frontScript),
+                $dependencies[$scriptName] ?? [],
+                $version,
+                ['in_footer' => $inFooter]
+            );
+        }
+
+        return $scriptIds;
+    }
+
+    /**
+     * @param string[] $scripts
+     * @param string[][] $dependencies
+     *
+     * @return string[]
+     */
+    public static function registerExternalScripts(array $scripts, array $dependencies = [], bool $inFooter = false, $version = null): array
+    {
+        $scriptIds = [];
+
+        foreach ($scripts as $scriptName) {
+            $scriptId = 'comfino-script-' . str_replace('.', '-', strtolower(pathinfo($scriptName, PATHINFO_FILENAME)));
+            $scriptIds[] = $scriptId;
+
+            wp_register_script(
+                $scriptId,
+                self::getExternalScriptUrl($scriptName),
+                $dependencies[$scriptName] ?? [],
+                $version,
+                ['in_footer' => $inFooter]
+            );
+        }
+
+        return $scriptIds;
+    }
+
+    /**
+     * @param string[] $styles
+     * @param string[][] $dependencies
+     *
+     * @return string[]
+     */
+    public static function registerExternalStyles(array $styles, array $dependencies = [], $version = null): array
+    {
+        $styleIds = [];
+
+        foreach ($styles as $styleName) {
+            $styleId = 'comfino-style-' . str_replace('.', '-', strtolower(pathinfo($styleName, PATHINFO_FILENAME)));
+            $styleIds[] = $styleId;
+
+            wp_register_style($styleId, self::getExternalStyleUrl($styleName), $dependencies[$styleName] ?? [], $version);
+        }
+
+        return $styleIds;
     }
 
     public static function renderWidgetInitCode(?int $productId): string

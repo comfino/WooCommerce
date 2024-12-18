@@ -3,7 +3,9 @@
 namespace Comfino\View\Block;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
+use Comfino\Api\ApiService;
 use Comfino\Configuration\ConfigManager;
+use Comfino\DebugLogger;
 use Comfino\Main;
 use Comfino\View\FrontendManager;
 
@@ -53,29 +55,43 @@ final class PaymentGateway extends AbstractPaymentMethodType
         /** @var \Comfino_Payment_Gateway $comfino_payment_gateway */
         global $comfino_payment_gateway;
 
-        wp_register_script(
-            'comfino-payment-gateway-blocks',
-            FrontendManager::getLocalScriptUrl('paywall-block.js'),
+        $iframeRenderer = FrontendManager::getPaywallIframeRenderer();
+
+        $styleIds = FrontendManager::includeExternalStyles($iframeRenderer->getStyles());
+        $scriptIds = FrontendManager::registerExternalScripts($iframeRenderer->getScripts());
+
+        $scriptIds = array_merge($scriptIds, FrontendManager::registerLocalScripts(
+            ['paywall-block.js'],
             [
-                'wc-blocks-registry',
-                'wc-settings',
-                'wp-element',
-                'wp-html-entities',
-                'wp-i18n',
+                'paywall-block.js' => array_merge(
+                    [
+                        'wc-blocks-registry',
+                        'wc-settings',
+                        'wp-element',
+                        'wp-html-entities',
+                        'wp-i18n',
+                    ],
+                    $scriptIds
+                )
             ],
-            null,
+            true,
             true
+        ));
+
+        DebugLogger::logEvent(
+            '[PAYWALL]', 'get_payment_method_script_handles registered styles and scripts.',
+            ['$styleIds' => $styleIds, '$scriptIds' => $scriptIds]
         );
 
         if (function_exists('wp_set_script_translations')) {
             wp_set_script_translations(
-                'comfino-payment-gateway-blocks',
+                $scriptIds[0],
                 'comfino-payment-gateway',
                 $comfino_payment_gateway->plugin_abspath() . 'languages/'
             );
         }
 
-        return ['comfino-payment-gateway-blocks'];
+        return $scriptIds;
     }
 
     /**
@@ -87,7 +103,8 @@ final class PaymentGateway extends AbstractPaymentMethodType
             'title' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
             'description' => $this->gateway->get_description(),
             'icon' => ConfigManager::getConfigurationValue('COMFINO_SHOW_LOGO') ? ConfigManager::getPaywallLogoUrl() : '',
-            'iframe' => $this->is_active() ? $this->gateway->generatePaywallIframe(true) : '',
+            'iframeTemplate' => $this->is_active() ? $this->gateway->generatePaywallIframe(true) : '',
+            'paywallUrl' => ApiService::getEndpointUrl('paywall'),
             'paywallOptions' => array_merge(
                 Main::getPaywallOptions($this->gateway->getTotal()),
                 ['wcBlocks' => true, 'attachClickHandler' => false]

@@ -4,19 +4,23 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+/** @var string $language */
+/** @var array $styles */
+/** @var string $shop_url */
+/** @var string $paywall_hash */
 /** @var array $frontend_elements */
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="<?php echo esc_attr($language); ?>">
     <head>
         <title><?php echo esc_html__('Comfino - installment and deferred on-line payments', 'comfino-payment-gateway'); ?></title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <?php do_action('embed_head'); ?>
+        <?php wp_print_styles($styles); ?>
+        <?php wp_print_head_scripts(); ?>
     </head>
     <body>
         <div id="paywall-container"></div>
-        <script data-cmp-ab="2">ComfinoPaywall.init('targetOrigin', document.location.href, document.getElementById('paywall-container'), <?php echo wp_json_encode($frontend_elements); ?>);</script>
-        <?php do_action('embed_footer'); ?>
+        <script data-cmp-ab="2">ComfinoPaywall.init('<?php echo esc_js(esc_url_raw($shop_url)); ?>', document.location.href, '<?php echo esc_js($paywall_hash); ?>', document.getElementById('paywall-container'), <?php echo wp_json_encode($frontend_elements); ?>);</script>
     </body>
 </html>

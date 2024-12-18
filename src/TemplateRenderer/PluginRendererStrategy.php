@@ -2,13 +2,12 @@
 
 namespace Comfino\TemplateRenderer;
 
-use Comfino\Api\ApiClient;
 use Comfino\Api\Exception\AccessDenied;
 use Comfino\Api\Exception\ResponseValidationError;
 use Comfino\Api\Exception\ServiceUnavailable;
 use Comfino\Api\HttpErrorExceptionInterface;
-use Comfino\Common\Frontend\PaywallContents;
 use Comfino\Common\Frontend\TemplateRenderer\RendererStrategyInterface;
+use Comfino\Configuration\ConfigManager;
 use Comfino\DebugLogger;
 use Comfino\View\TemplateManager;
 use ComfinoExternal\Psr\Http\Client\NetworkExceptionInterface;
@@ -19,15 +18,6 @@ if (!defined('ABSPATH')) {
 
 class PluginRendererStrategy implements RendererStrategyInterface
 {
-    /**
-     * @param PaywallContents $paywallContents
-     * @return string
-     */
-    public function renderPaywallTemplate($paywallContents): string
-    {
-        return $paywallContents->paywallBody;
-    }
-
     public function renderErrorTemplate($exception, $frontendRenderer): string
     {
         $userErrorMessage = 'There was a technical problem. Please try again in a moment and it should work!';

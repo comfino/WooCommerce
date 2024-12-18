@@ -116,7 +116,21 @@ class Comfino_Payment_Gateway
                 return $tag;
             }
 
-            return str_replace('">', '" data-cmp-ab="2">', $tag);
+            $attributes = [];
+
+            if (strpos($handle, 'async') !== false) {
+                if (strpos($tag, 'async') === false) {
+                    $attributes[] = 'async';
+                }
+            } elseif (strpos($tag, 'defer') !== false) {
+                if (strpos($tag, 'defer') === false) {
+                    $attributes[] = 'defer';
+                }
+            }
+
+            $attributes[] = 'data-cmp-ab="2"';
+
+            return str_replace('">', '" ' . implode(' ', $attributes) . '>', $tag);
         }, 10, 2);
 
         // Add inline script tag filter for adding custom attribute which prevents blocking by Google CMP scripts.
