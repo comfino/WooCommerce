@@ -61,7 +61,7 @@ class PaymentGateway extends \WC_Payment_Gateway
         add_filter(
             'woocommerce_available_payment_gateways',
             static function (array $gateways): array {
-                if (is_wc_endpoint_url('order-pay')) {
+                if (is_wc_endpoint_url('order-pay') && ConfigManager::isAbandonedCartEnabled()) {
                     $order = wc_get_order(absint(get_query_var('order-pay')));
 
                     if ($order instanceof \WC_Order && $order->has_status('failed')) {
