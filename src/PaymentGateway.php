@@ -41,6 +41,7 @@ class PaymentGateway extends \WC_Payment_Gateway
             'comfino-payment-gateway'
         );
         $this->supports = ['products'];
+        $this->title = $this->get_option('title');
 
         if (is_admin() && strpos(Main::getCurrentUrl(), 'comfino') === false) {
             return;
@@ -51,8 +52,6 @@ class PaymentGateway extends \WC_Payment_Gateway
 
         $this->init_form_fields();
         $this->init_settings();
-
-        $this->title = $this->get_option('title');
 
         add_action('admin_enqueue_scripts', [$this, 'admin_scripts']);
 
