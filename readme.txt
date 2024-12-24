@@ -22,7 +22,8 @@ Comfino is an innovative payment method for customers of e-commerce stores! Thes
 === Changelog ===
 
 4.2.0
- * Improved plugin security and compatibility with best practises of WordPress plugins design and development.
+ * Improved plugin security and compatibility with best practices of WordPress plugins design and development.
+ * Fixed a few bugs: empty payment type for Comfino payments, wrong total amount presented at checkout screen, problem with cart rescuing function.
 
 4.1.3
  * Resolved problem with product details endpoint for product widget with leasing caused by strict output filtering.

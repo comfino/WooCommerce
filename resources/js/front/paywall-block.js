@@ -66,6 +66,8 @@ window.Comfino = {
             return;
         }
 
+        ComfinoPaywallFrontend.logEvent('Comfino.init', 'debug');
+
         if (!ComfinoPaywallFrontend.isInitialized()) {
             comfinoSettings.paywallOptions.onUpdateOrderPaymentState = (loanParams) => {
                 ComfinoPaywallFrontend.logEvent('updateOrderPaymentState WooCommerce (Payment Blocks)', 'debug', loanParams);

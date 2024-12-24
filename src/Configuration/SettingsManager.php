@@ -11,6 +11,7 @@ use Comfino\Common\Backend\Payment\ProductTypeFilterInterface;
 use Comfino\Common\Backend\Payment\ProductTypeFilterManager;
 use Comfino\Common\Shop\Cart;
 use Comfino\Common\Shop\Product\CategoryFilter;
+use Comfino\DebugLogger;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Main;
 use Comfino\PluginShared\CacheManager;

@@ -140,10 +140,16 @@ final class FrontendManager
         return ConfigManager::isSandboxMode() ? 'https://widget.craty.pl' : 'https://widget.comfino.pl';
     }
 
-    public static function getExternalScriptUrl(string $scriptName): string
+    public static function getExternalScriptUrl(string $scriptFileName): string
     {
-        if (empty($scriptName)) {
+        if (empty($scriptFileName)) {
             return '';
+        }
+
+        if (ConfigManager::isDevEnv() && ConfigManager::useUnminifiedScripts()) {
+            $scriptFileName = str_replace('.min.js', '.js', $scriptFileName);
+        } elseif (strpos($scriptFileName, '.min.') === false) {
+            $scriptFileName = str_replace('.js', '.min.js', $scriptFileName);
         }
 
         if (ConfigManager::isSandboxMode()) {
@@ -164,12 +170,12 @@ final class FrontendManager
             $scriptPath = "/$scriptPath";
         }
 
-        return sanitize_url(wp_unslash(self::getExternalResourcesBaseUrl() . "$scriptPath/$scriptName"));
+        return sanitize_url(wp_unslash(self::getExternalResourcesBaseUrl() . "$scriptPath/$scriptFileName"));
     }
 
-    public static function getExternalStyleUrl(string $styleName): string
+    public static function getExternalStyleUrl(string $styleFileName): string
     {
-        if (empty($styleName)) {
+        if (empty($styleFileName)) {
             return '';
         }
 
@@ -191,7 +197,7 @@ final class FrontendManager
             $stylePath = "/$stylePath";
         }
 
-        return sanitize_url(wp_unslash(self::getExternalResourcesBaseUrl() . "$stylePath/$styleName"));
+        return sanitize_url(wp_unslash(self::getExternalResourcesBaseUrl() . "$stylePath/$styleFileName"));
     }
 
     /**
