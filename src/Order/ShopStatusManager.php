@@ -5,6 +5,7 @@ namespace Comfino\Order;
 use Comfino\Api\ApiClient;
 use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Configuration\ConfigManager;
+use Comfino\Main;
 use Comfino\View\TemplateManager;
 
 if (!defined('ABSPATH')) {
