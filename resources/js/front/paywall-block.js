@@ -55,7 +55,23 @@ window.Comfino = {
     EditContent: () => {
         return wp.element.RawHTML({ children: '<b>[Comfino Panel]</b>' });
     },
-    init: () => {
+    /**
+     * Initializes paywall frontend.
+     *
+     * orderData:
+     * {
+     *    cart: Cart,
+     *    cartTotals: CartTotals,
+     *    cartNeedsShipping: boolean,
+     *    shippingAddress: CartShippingAddress,
+     *    billingAddress: CartBillingAddress,
+     *    selectedShippingMethods: Record,
+     *    paymentRequirements: string[]
+     * }
+     *
+     * @param {Object} orderData
+     */
+    init: (orderData) => {
         if (!Comfino.isPaywallActive) {
             return;
         }
@@ -66,9 +82,11 @@ window.Comfino = {
             return;
         }
 
-        ComfinoPaywallFrontend.logEvent('Comfino.init', 'debug');
+        ComfinoPaywallFrontend.logEvent('Comfino.init', 'debug', orderData);
 
         if (!ComfinoPaywallFrontend.isInitialized()) {
+            ComfinoPaywallFrontend.logEvent('Paywall frontend initialization.', 'debug', comfinoSettings);
+
             comfinoSettings.paywallOptions.onUpdateOrderPaymentState = (loanParams) => {
                 ComfinoPaywallFrontend.logEvent('updateOrderPaymentState WooCommerce (Payment Blocks)', 'debug', loanParams);
 
@@ -128,6 +146,18 @@ window.Comfino = {
             }
 
             ComfinoPaywallFrontend.init(null, iframe, comfinoSettings.paywallOptions);
+        } else {
+            // Comfino paywall frontend already initialized - update payment amount if shipping method changed and total order value changed.
+            ComfinoPaywallFrontend.logEvent('Paywall frontend already initialized.', 'debug', Comfino.loanParams);
+
+            if (Comfino.loanParams.loanAmount > 0) {
+                const cartTotal = parseInt(orderData.cartTotals.total_price);
+
+                if (Comfino.loanParams.loanAmount !== cartTotal) {
+                    ComfinoPaywallFrontend.logEvent('Total value changed.', 'debug', Comfino.loanParams.loanAmount, cartTotal);
+                    ComfinoPaywallFrontend.reloadPaywall();
+                }
+            }
         }
     }
 }
@@ -167,13 +197,13 @@ wc.wcBlocksRegistry.registerPaymentMethod({
     icon: 'money-alt',
     content: Object(wp.element.createElement)(Comfino.Content, null),
     edit: Object(wp.element.createElement)(Comfino.EditContent, null),
-    canMakePayment: () => {
-        ComfinoPaywallFrontend.logEvent('canMakePayment', 'debug');
+    canMakePayment: (orderData) => {
+        ComfinoPaywallFrontend.logEvent('canMakePayment', 'debug', orderData);
 
         if (document.readyState === 'complete') {
             ComfinoPaywallFrontend.logEvent('document.readyState: complete', 'debug');
 
-            Comfino.init();
+            Comfino.init(orderData);
 
             if (Comfino.isSelected) {
                 ComfinoPaywallFrontend.executeClickLogic();
@@ -183,7 +213,7 @@ wc.wcBlocksRegistry.registerPaymentMethod({
                 ComfinoPaywallFrontend.logEvent(`document.readyState: ${document.readyState}`, 'debug');
 
                 if (document.readyState === 'complete') {
-                    Comfino.init();
+                    Comfino.init(orderData);
 
                     if (Comfino.isSelected) {
                         ComfinoPaywallFrontend.executeClickLogic();

@@ -516,6 +516,7 @@ class Client
      * Returns a complete paywall page with list of financial products according to the specified criteria.
      *
      * @param LoanQueryCriteria $queryCriteria List filtering criteria.
+     * @param string|null $recalculationUrl Paywall form action URL used for offer recalculations initialized by shop cart frontends.
      *
      * @return GetPaywallResponse
      *
@@ -526,10 +527,10 @@ class Client
      * @throws ServiceUnavailable
      * @throws ClientExceptionInterface
      */
-    public function getPaywall($queryCriteria): GetPaywallResponse
+    public function getPaywall($queryCriteria, $recalculationUrl = null): GetPaywallResponse
     {
         try {
-            $this->request = (new GetPaywallRequest($queryCriteria))->setSerializer($this->serializer);
+            $this->request = (new GetPaywallRequest($queryCriteria, $recalculationUrl))->setSerializer($this->serializer);
 
             return new GetPaywallResponse($this->request, $this->sendRequest($this->request, 2), $this->serializer);
         } catch (HttpErrorExceptionInterface $e) {

@@ -28,11 +28,12 @@ final class PaywallRenderer extends FrontendRenderer
 
     /**
      * @param \Comfino\Api\Dto\Payment\LoanQueryCriteria $queryCriteria
+     * @param string|null $recalculationUrl
      */
-    public function getPaywall($queryCriteria): PaywallContents
+    public function getPaywall($queryCriteria, $recalculationUrl = null): PaywallContents
     {
         try {
-            $paywallResponse = $this->client->getPaywall($queryCriteria);
+            $paywallResponse = $this->client->getPaywall($queryCriteria, $recalculationUrl);
 
             return new PaywallContents($paywallResponse->paywallBody, $paywallResponse->paywallHash);
         } catch (\Throwable $e) {
