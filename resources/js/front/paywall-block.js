@@ -72,6 +72,8 @@ window.Comfino = {
      * @param {Object} orderData
      */
     init: (orderData) => {
+        ComfinoPaywallFrontend.logEvent('Comfino.init', 'debug', orderData);
+
         if (!Comfino.isPaywallActive) {
             return;
         }
@@ -82,7 +84,7 @@ window.Comfino = {
             return;
         }
 
-        ComfinoPaywallFrontend.logEvent('Comfino.init', 'debug', orderData);
+        ComfinoPaywallFrontend.logEvent('Comfino.init - initialization started.', 'debug');
 
         if (!ComfinoPaywallFrontend.isInitialized()) {
             ComfinoPaywallFrontend.logEvent('Paywall frontend initialization.', 'debug', comfinoSettings);
@@ -158,6 +160,13 @@ window.Comfino = {
                     ComfinoPaywallFrontend.reloadPaywall();
                 }
             }
+        }
+
+        if (!Comfino.isSelected && Array.isArray(orderData.paymentMethods) && orderData.paymentMethods.length === 1) {
+            // Workaround for Firefox bug (woocommerce_blocks-checkout-render-checkout-form hook fired with incomplete data).
+            ComfinoPaywallFrontend.logEvent('Firefox bug workaround executed.', 'debug', orderData.paymentMethods);
+
+            Comfino.isSelected = (orderData.paymentMethods[0] === 'comfino');
         }
     }
 }
