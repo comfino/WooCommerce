@@ -80,7 +80,8 @@ class PluginRendererStrategy implements RendererStrategyInterface
                 'request_body' => $requestBody,
                 'response_body' => $responseBody,
                 'is_debug_mode' => ConfigManager::isDevEnv(),
-            ]
+            ],
+            false
         );
     }
 }
