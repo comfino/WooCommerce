@@ -3,6 +3,7 @@
 namespace Comfino\Common\Backend\RestEndpoint;
 
 use Comfino\Common\Backend\ConfigurationManager;
+use Comfino\Common\Backend\DebugLogger;
 use Comfino\Common\Backend\RestEndpoint;
 use Comfino\Common\Exception\InvalidEndpoint;
 use Comfino\Common\Exception\InvalidRequest;
@@ -15,6 +16,11 @@ final class Configuration extends RestEndpoint
      * @var \Comfino\Common\Backend\ConfigurationManager
      */
     private $configurationManager;
+    /**
+     * @readonly
+     * @var \Comfino\Common\Backend\DebugLogger
+     */
+    private $debugLogger;
     /**
      * @readonly
      * @var string
@@ -42,17 +48,24 @@ final class Configuration extends RestEndpoint
     private $databaseVersion;
     /**
      * @readonly
+     * @var int
+     */
+    private $debugLogNumLines;
+    /**
+     * @readonly
      * @var mixed[]|null
      */
     private $shopExtraVariables;
-    public function __construct(string $name, string $endpointUrl, ConfigurationManager $configurationManager, string $platformName, string $platformVersion, string $pluginVersion, int $pluginBuildTs, string $databaseVersion, ?array $shopExtraVariables = null)
+    public function __construct(string $name, string $endpointUrl, ConfigurationManager $configurationManager, DebugLogger $debugLogger, string $platformName, string $platformVersion, string $pluginVersion, int $pluginBuildTs, string $databaseVersion, int $debugLogNumLines, ?array $shopExtraVariables = null)
     {
         $this->configurationManager = $configurationManager;
+        $this->debugLogger = $debugLogger;
         $this->platformName = $platformName;
         $this->platformVersion = $platformVersion;
         $this->pluginVersion = $pluginVersion;
         $this->pluginBuildTs = $pluginBuildTs;
         $this->databaseVersion = $databaseVersion;
+        $this->debugLogNumLines = $debugLogNumLines;
         $this->shopExtraVariables = $shopExtraVariables;
         parent::__construct($name, $endpointUrl);
         $this->methods = ['GET', 'POST', 'PUT', 'PATCH'];
@@ -75,6 +88,12 @@ final class Configuration extends RestEndpoint
         }
 
         if (strtoupper($serverRequest->getMethod()) === 'GET') {
+            $responseType = $serverRequest->getQueryParams()['responseType'] ?? 'configuration';
+
+            if ($responseType === 'debug_log') {
+                return ['debug_log' => $this->debugLogger->getDebugLog($this->debugLogNumLines)];
+            }
+
             return [
                 'shop_info' => [
                     'platform' => $this->platformName,
