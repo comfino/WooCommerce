@@ -23,6 +23,7 @@ use Comfino\PaymentGateway;
 use Comfino\PluginShared\CacheManager;
 use Comfino\Shop\Order\Cart;
 use Comfino\View\FrontendManager;
+use Comfino\View\SettingsForm;
 use Comfino\View\TemplateManager;
 use ComfinoExternal\Psr\Http\Message\ServerRequestInterface;
 
@@ -139,10 +140,12 @@ final class ApiService
                     ],
                 ]),
                 ConfigManager::getInstance(),
+                DebugLogger::getLoggerInstance(),
                 'WooCommerce',
                 ...array_merge(
                     array_values(ConfigManager::getEnvironmentInfo(['shop_version', 'plugin_version', 'plugin_build_ts', 'database_version'])),
-                    [array_merge($comfino_payment_gateway->get_plugin_update_details(), ConfigManager::getEnvironmentInfo(['wordpress_version']))]
+                    [SettingsForm::DEBUG_LOG_NUM_LINES], // $debugLogNumLines
+                    [array_merge($comfino_payment_gateway->get_plugin_update_details(), ConfigManager::getEnvironmentInfo(['wordpress_version']))] // $shopExtraVariables
                 )
             )
         );
