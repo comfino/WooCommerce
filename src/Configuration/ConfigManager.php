@@ -330,7 +330,11 @@ final class ConfigManager
      */
     public static function getIgnoredStatuses(): array
     {
-        return self::getConfigurationValue('COMFINO_IGNORED_STATUSES') ?? StatusManager::DEFAULT_IGNORED_STATUSES;
+        if (!is_array($ignoredStatuses = self::getConfigurationValue('COMFINO_IGNORED_STATUSES'))) {
+            $ignoredStatuses = null;
+        }
+
+        return $ignoredStatuses ?? StatusManager::DEFAULT_IGNORED_STATUSES;
     }
 
     /**
@@ -338,7 +342,11 @@ final class ConfigManager
      */
     public static function getForbiddenStatuses(): array
     {
-        return self::getConfigurationValue('COMFINO_FORBIDDEN_STATUSES') ?? StatusManager::DEFAULT_FORBIDDEN_STATUSES;
+        if (!is_array($forbiddenStatuses = self::getConfigurationValue('COMFINO_FORBIDDEN_STATUSES'))) {
+            $forbiddenStatuses = null;
+        }
+
+        return $forbiddenStatuses ?? StatusManager::DEFAULT_FORBIDDEN_STATUSES;
     }
 
     /**
@@ -346,7 +354,11 @@ final class ConfigManager
      */
     public static function getStatusMap(): array
     {
-        return self::getConfigurationValue('COMFINO_STATUS_MAP') ?? ShopStatusManager::DEFAULT_STATUS_MAP;
+        if (!is_array($statusMap = self::getConfigurationValue('COMFINO_STATUS_MAP'))) {
+            $statusMap = null;
+        }
+
+        return $statusMap ?? ShopStatusManager::DEFAULT_STATUS_MAP;
     }
 
     public static function updateConfigurationValue(string $optionName, $optionValue): void
