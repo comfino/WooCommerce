@@ -52,6 +52,12 @@ final class PaymentGateway extends AbstractPaymentMethodType
      */
     public function get_payment_method_script_handles(): array
     {
+        static $scriptIds = [];
+
+        if (count($scriptIds)) {
+            return $scriptIds;
+        }
+
         /** @var \Comfino_Payment_Gateway $comfino_payment_gateway */
         global $comfino_payment_gateway;
 
