@@ -54,7 +54,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
     {
         static $scriptIds = [];
 
-        if (count($scriptIds)) {
+        if (count($scriptIds) > 0) {
             return $scriptIds;
         }
 

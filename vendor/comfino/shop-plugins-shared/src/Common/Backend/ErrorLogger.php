@@ -127,7 +127,7 @@ final class ErrorLogger
                 $requestInfo[] = "API response: $apiResponse";
             }
 
-            if (count($requestInfo)) {
+            if (count($requestInfo) > 0) {
                 $errorMessage .= "\n" . implode("\n", $requestInfo);
             }
 

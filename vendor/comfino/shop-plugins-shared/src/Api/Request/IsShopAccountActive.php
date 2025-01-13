@@ -15,16 +15,17 @@ class IsShopAccountActive extends Request
         $this->setRequestMethod('GET');
         $this->setApiEndpointPath('user/is-active');
 
-        if (!empty($cacheInvalidateUrl) || !empty($configurationUrl)) {
-            $requestHeaders = [];
+        $requestHeaders = [];
 
-            if (!empty($cacheInvalidateUrl)) {
-                $requestHeaders['Comfino-Cache-Invalidate-Url'] = $cacheInvalidateUrl;
-            }
-            if (!empty($cacheInvalidateUrl)) {
-                $requestHeaders['Comfino-Configuration-Url'] = $configurationUrl;
-            }
+        if (!empty($cacheInvalidateUrl)) {
+            $requestHeaders['Comfino-Cache-Invalidate-Url'] = $cacheInvalidateUrl;
+        }
 
+        if (!empty($cacheInvalidateUrl)) {
+            $requestHeaders['Comfino-Configuration-Url'] = $configurationUrl;
+        }
+
+        if (count($requestHeaders) > 0) {
             $this->setRequestHeaders($requestHeaders);
         }
     }

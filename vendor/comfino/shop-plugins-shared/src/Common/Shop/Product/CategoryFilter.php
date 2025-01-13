@@ -55,7 +55,7 @@ class CategoryFilter
 
         $cartCategoryIds = $cart->getCartCategoryIds();
 
-        if (count(array_intersect($cartCategoryIds, $excludedCategoryIds))) {
+        if (count(array_intersect($cartCategoryIds, $excludedCategoryIds)) > 0) {
             return false;
         }
 

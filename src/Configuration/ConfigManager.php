@@ -422,7 +422,7 @@ final class ConfigManager
             $optionsToInject[] = "        availOffersUrl: '$productData[avail_offers_url]'";
         }
 
-        if (count($optionsToInject)) {
+        if (count($optionsToInject) > 0) {
             $injectedInitOptions = implode(",\n", $optionsToInject) . ",\n";
 
             return preg_replace('/\{\n(.*widgetKey:)/', "{\n$injectedInitOptions\$1", $widgetCode);

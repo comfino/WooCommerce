@@ -56,7 +56,7 @@ class Base extends Response
             if ($fieldName !== null) {
                 throw new ResponseValidationError("Invalid response field \"$fieldName\" data type: $expectedType expected.");
             }
-            var_dump($deserializedResponseBody, gettype($deserializedResponseBody));
+
             throw new ResponseValidationError("Invalid response data type: $expectedType expected.");
         }
     }
