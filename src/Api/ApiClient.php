@@ -4,7 +4,6 @@ namespace Comfino\Api;
 
 use Comfino\Api\Exception\AuthorizationError;
 use Comfino\Common\Backend\Factory\ApiClientFactory;
-use Comfino\Common\Frontend\FrontendHelper;
 use Comfino\Configuration\ConfigManager;
 use Comfino\ErrorLogger;
 use Comfino\Main;
@@ -49,7 +48,7 @@ final class ApiClient
                         [Main::getShopDomain()]
                     )
                 ),
-                self::getApiHost(),
+                ConfigManager::getApiHost(),
                 Main::getShopLanguage(),
                 ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_TIMEOUT', 1),
                 ConfigManager::getConfigurationValue('COMFINO_API_TIMEOUT', 3)
@@ -57,7 +56,7 @@ final class ApiClient
 
             self::$apiClient->addCustomHeader('Comfino-Build-Timestamp', (string) PaymentGateway::BUILD_TS);
         } else {
-            self::$apiClient->setCustomApiHost(self::getApiHost());
+            self::$apiClient->setCustomApiHost(ConfigManager::getApiHost());
             self::$apiClient->setApiKey($apiKey);
             self::$apiClient->setApiLanguage(Main::getShopLanguage());
         }
@@ -103,55 +102,5 @@ final class ApiClient
             $responseBody !== '' ? $responseBody : null,
             $exception->getTraceAsString()
         );
-    }
-
-    public static function getLogoApiHost(): string
-    {
-        return self::getApiHost(self::getInstance()->getApiHost());
-    }
-
-    public static function getPaywallLogoUrl(): string
-    {
-        return self::getLogoApiHost() . '/v1/get-paywall-logo?auth='
-            . FrontendHelper::getPaywallLogoAuthHash(
-                'WC',
-                WC_VERSION,
-                PaymentGateway::VERSION,
-                self::getInstance()->getApiKey(),
-                ConfigManager::getWidgetKey(),
-                PaymentGateway::BUILD_TS
-            );
-    }
-
-    public static function getWidgetScriptUrl(): string
-    {
-        if (self::isDevEnv() && getenv('COMFINO_DEV_WIDGET_SCRIPT_URL')) {
-            return getenv('COMFINO_DEV_WIDGET_SCRIPT_URL');
-        }
-
-        $widgetScriptUrl = ConfigManager::isSandboxMode() ? 'https://widget.craty.pl' : 'https://widget.comfino.pl';
-        $widgetProdScriptVersion = ConfigManager::getConfigurationValue('COMFINO_WIDGET_PROD_SCRIPT_VERSION');
-
-        if (empty($widgetProdScriptVersion)) {
-            $widgetScriptUrl .= '/comfino.min.js';
-        } else {
-            $widgetScriptUrl .= ('/' . trim($widgetProdScriptVersion, '/'));
-        }
-
-        return $widgetScriptUrl;
-    }
-
-    public static function isDevEnv(): bool
-    {
-        return ((string) getenv('COMFINO_DEV')) === ('WC_' . WC_VERSION . '_' . Main::getShopUrl());
-    }
-
-    private static function getApiHost(?string $apiHost = null): ?string
-    {
-        if (self::isDevEnv() && getenv('COMFINO_DEV_API_HOST')) {
-            return getenv('COMFINO_DEV_API_HOST');
-        }
-
-        return $apiHost;
     }
 }

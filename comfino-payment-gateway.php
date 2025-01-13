@@ -3,12 +3,12 @@
  * Plugin Name: Comfino Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
  * Description: Comfino Payment Gateway for WooCommerce.
- * Version: 4.1.3
+ * Version: 4.2.0
  * Author: Comfino
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
  * Text Domain: comfino-payment-gateway
- * WC tested up to: 9.4.2
+ * WC tested up to: 9.4.3
  * WC requires at least: 3.0
  * Tested up to: 6.7.1
  * Requires at least: 5.0
@@ -18,6 +18,7 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
+use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Configuration\ConfigManager;
 use Comfino\PaymentGateway;
 
@@ -64,7 +65,7 @@ class Comfino_Payment_Gateway
         });
 
         // Upgrade hook
-        add_action('upgrader_process_complete', static function(WP_Upgrader $upgrader, array $options) {
+        add_action('upgrader_process_complete', static function (WP_Upgrader $upgrader, array $options): void {
             $comfinoPluginPathName = plugin_basename(__FILE__);
 
             if ($options['action'] === 'update' && $options['type'] === 'plugin') {
@@ -94,8 +95,8 @@ class Comfino_Payment_Gateway
         }, 10, 2);
 
         // Overwrite hook
-        add_action('upgrader_overwrote_package', static function(string $package, array $data, string $package_type) {
-            if ($package_type === 'plugin' && $data['Name'] === 'Comfino payment gateway') {
+        add_action('upgrader_overwrote_package', static function (string $package, array $data, string $package_type): void {
+            if ($package_type === 'plugin' && $data['Name'] === 'Comfino Payment Gateway') {
                 // Comfino plugin updated.
                 set_transient('comfino_plugin_updated', 1);
                 set_transient('comfino_plugin_prev_version', PaymentGateway::VERSION);
@@ -110,8 +111,49 @@ class Comfino_Payment_Gateway
             return $methods;
         });
 
+        // Add loaded script tag filter for adding custom attribute which prevents blocking by Google CMP scripts.
+        add_filter('script_loader_tag', static function (string $tag, string $handle): string {
+            if (strpos($handle, 'comfino') !== 0) {
+                return $tag;
+            }
+
+            $attributes = [];
+
+            if (strpos($handle, 'async') !== false) {
+                if (strpos($tag, 'async') === false) {
+                    $attributes[] = 'async';
+                }
+            } elseif (strpos($tag, 'defer') !== false) {
+                if (strpos($tag, 'defer') === false) {
+                    $attributes[] = 'defer';
+                }
+            }
+
+            $attributes[] = 'data-cmp-ab="2"';
+
+            return str_replace('">', '" ' . implode(' ', $attributes) . '>', $tag);
+        }, 10, 2);
+
+        // Add inline script tag filter for adding custom attribute which prevents blocking by Google CMP scripts.
+        add_filter('wp_inline_script_attributes', static function (array $attributes): array {
+            if (isset($attributes['id']) && strpos($attributes['id'], 'comfino') === 0) {
+                $attributes['data-cmp-ab'] = '2';
+            }
+
+            return $attributes;
+        });
+
+        // Add admin URL filter for adding custom nonce parameter to Comfino plugin links which redirect to the settings panel.
+        add_filter('admin_url', static function (string $url): string {
+            if (strpos($url, 'section=comfino') === false || strpos($url, 'comfino_nonce') !== false) {
+                return $url;
+            }
+
+            return wp_nonce_url($url, 'comfino_settings', 'comfino_nonce');
+        }, 10, 2);
+
         // Declare compatibility with WooCommerce HPOS and Payment Blocks.
-        add_action('before_woocommerce_init', static function () {
+        add_action('before_woocommerce_init', static function (): void {
             if (class_exists('Automattic\WooCommerce\Utilities\FeaturesUtil')) {
                 Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__);
                 Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__);
@@ -119,11 +161,11 @@ class Comfino_Payment_Gateway
         });
 
         // Register integration hook for WooCommerce Cart and Checkout Blocks.
-        add_action('woocommerce_blocks_loaded', static function () {
+        add_action('woocommerce_blocks_loaded', static function (): void {
             if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
                 add_action(
                     'woocommerce_blocks_payment_method_type_registration',
-                    static function (Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $paymentMethodRegistry) {
+                    static function (Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $paymentMethodRegistry): void {
                         $paymentMethodRegistry->register(new Comfino\View\Block\PaymentGateway());
                     }
                 );
@@ -144,7 +186,7 @@ class Comfino_Payment_Gateway
         if ($environmentWarning) {
             deactivate_plugins(plugin_basename(__FILE__));
             /** @noinspection ForgottenDebugOutputInspection */
-            wp_die(wp_kses($environmentWarning, 'user_description'));
+            wp_die(wp_kses_post($environmentWarning));
         }
     }
 
@@ -226,6 +268,13 @@ class Comfino_Payment_Gateway
         if (PaymentGateway::WIDGET_INIT_SCRIPT_HASH !== PaymentGateway::WIDGET_INIT_SCRIPT_LAST_HASH) {
             // Update code of widget initialization script if changed.
             ConfigManager::updateWidgetCode(PaymentGateway::WIDGET_INIT_SCRIPT_LAST_HASH);
+        }
+
+        /* 4.2.0 */
+        if (is_array($ignoredStatuses = ConfigManager::getConfigurationValue('COMFINO_IGNORED_STATUSES'))
+            && in_array(StatusManager::STATUS_CANCELLED_BY_SHOP, $ignoredStatuses, true)
+        ) {
+            ConfigManager::updateConfigurationValue('COMFINO_IGNORED_STATUSES', StatusManager::DEFAULT_IGNORED_STATUSES);
         }
 
         set_transient('comfino_plugin_updated', 0);

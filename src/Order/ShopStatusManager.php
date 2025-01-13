@@ -5,6 +5,8 @@ namespace Comfino\Order;
 use Comfino\Api\ApiClient;
 use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Configuration\ConfigManager;
+use Comfino\DebugLogger;
+use Comfino\Main;
 use Comfino\View\TemplateManager;
 
 if (!defined('ABSPATH')) {
@@ -25,6 +27,12 @@ final class ShopStatusManager
             return;
         }
 
+        DebugLogger::logEvent(
+            'orderStatusUpdateEventHandler',
+            'Order status changed.',
+            ['$oldStatus' => $oldStatus, '$newStatus' => $newStatus, 'payment_method' => $order->get_payment_method()]
+        );
+
         switch ($newStatus) {
             case 'failed':
                 if (ConfigManager::isAbandonedCartEnabled() && $order->get_payment_method() !== 'comfino' && in_array($oldStatus, ['on-hold', 'pending'], true)) {
@@ -39,7 +47,7 @@ final class ShopStatusManager
                 if ($order->get_payment_method() === 'comfino') {
                     // Process orders paid by Comfino only.
 
-                    if (count(OrderManager::getOrderStatusNotes($order->get_id(), [StatusManager::STATUS_CANCELLED_BY_SHOP, StatusManager::STATUS_RESIGN]))) {
+                    if (count(OrderManager::getOrderStatusNotes($order->get_id(), [StatusManager::STATUS_CANCELLED_BY_SHOP, StatusManager::STATUS_RESIGN])) > 0) {
                         break;
                     }
 

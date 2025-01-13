@@ -344,12 +344,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:comfino/shop-plugins-shared.git",
-                "reference": "55f1352c1abb6753ba5214d52ed60a67a566688c"
+                "reference": "941032a545da75cd5e493b2781b4cecb9a505103"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/comfino/shop-plugins-shared/zipball/55f1352c1abb6753ba5214d52ed60a67a566688c",
-                "reference": "55f1352c1abb6753ba5214d52ed60a67a566688c",
+                "url": "https://api.github.com/repos/comfino/shop-plugins-shared/zipball/941032a545da75cd5e493b2781b4cecb9a505103",
+                "reference": "941032a545da75cd5e493b2781b4cecb9a505103",
                 "shasum": ""
             },
             "require": {
@@ -397,7 +397,7 @@
                 "source": "https://github.com/comfino/shop-plugins-shared/tree/master",
                 "issues": "https://github.com/comfino/shop-plugins-shared/issues"
             },
-            "time": "2024-12-09T09:10:35+00:00"
+            "time": "2025-01-13T14:40:34+00:00"
         },
         {
             "name": "fig/http-message-util",
@@ -3499,12 +3499,12 @@
             },
             "type": "library",
             "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/contracts",
+                    "name": "symfony/contracts"
+                },
                 "branch-alias": {
                     "dev-main": "3.5-dev"
-                },
-                "thanks": {
-                    "name": "symfony/contracts",
-                    "url": "https://github.com/symfony/contracts"
                 }
             },
             "autoload": {
@@ -3640,8 +3640,8 @@
             "type": "library",
             "extra": {
                 "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
                 }
             },
             "autoload": {
@@ -3713,8 +3713,8 @@
             "type": "library",
             "extra": {
                 "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
                 }
             },
             "autoload": {

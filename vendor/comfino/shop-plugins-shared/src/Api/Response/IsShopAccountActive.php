@@ -2,8 +2,6 @@
 
 namespace Comfino\Api\Response;
 
-use Comfino\Api\Exception\ResponseValidationError;
-
 class IsShopAccountActive extends Base
 {
     /** @var bool
@@ -12,13 +10,11 @@ class IsShopAccountActive extends Base
 
     /**
      * @inheritDoc
-     * @param mixed[]|string|bool|null $deserializedResponseBody
+     * @param mixed[]|string|bool|null|float|int $deserializedResponseBody
      */
     protected function processResponseBody($deserializedResponseBody): void
     {
-        if (!is_bool($deserializedResponseBody)) {
-            throw new ResponseValidationError('Invalid response data: bool expected.');
-        }
+        $this->checkResponseType($deserializedResponseBody, 'boolean');
 
         $this->isActive = $deserializedResponseBody;
     }

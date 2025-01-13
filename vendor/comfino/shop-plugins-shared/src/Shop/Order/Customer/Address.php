@@ -57,7 +57,7 @@ class Address implements AddressInterface
      */
     public function getStreet(): ?string
     {
-        return $this->street;
+        return $this->street !== null ? trim(html_entity_decode(strip_tags($this->street))) : null;
     }
 
     /**
@@ -65,7 +65,7 @@ class Address implements AddressInterface
      */
     public function getBuildingNumber(): ?string
     {
-        return $this->buildingNumber;
+        return $this->buildingNumber ? trim(html_entity_decode(strip_tags($this->buildingNumber))) : null;
     }
 
     /**
@@ -73,7 +73,7 @@ class Address implements AddressInterface
      */
     public function getApartmentNumber(): ?string
     {
-        return $this->apartmentNumber;
+        return $this->apartmentNumber ? trim(html_entity_decode(strip_tags($this->apartmentNumber))) : null;
     }
 
     /**
@@ -81,7 +81,7 @@ class Address implements AddressInterface
      */
     public function getPostalCode(): ?string
     {
-        return $this->postalCode;
+        return $this->postalCode ? trim(html_entity_decode(strip_tags($this->postalCode))) : null;
     }
 
     /**
@@ -89,7 +89,7 @@ class Address implements AddressInterface
      */
     public function getCity(): ?string
     {
-        return $this->city;
+        return $this->city ? trim(html_entity_decode(strip_tags($this->city))) : null;
     }
 
     /**
@@ -97,6 +97,6 @@ class Address implements AddressInterface
      */
     public function getCountryCode(): ?string
     {
-        return $this->countryCode;
+        return $this->countryCode ? trim(html_entity_decode(strip_tags($this->countryCode))) : null;
     }
 }

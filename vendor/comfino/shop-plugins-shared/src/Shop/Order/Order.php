@@ -86,7 +86,7 @@ class Order implements OrderInterface
      */
     public function getNotifyUrl(): ?string
     {
-        return $this->notifyUrl;
+        return $this->notifyUrl !== null ? trim(strip_tags($this->notifyUrl)) : null;
     }
 
     /**
@@ -94,7 +94,7 @@ class Order implements OrderInterface
      */
     public function getReturnUrl(): string
     {
-        return $this->returnUrl;
+        return trim(strip_tags($this->returnUrl));
     }
 
     /**
@@ -134,7 +134,7 @@ class Order implements OrderInterface
      */
     public function getAccountNumber(): ?string
     {
-        return $this->accountNumber;
+        return $this->accountNumber !== null ? trim(html_entity_decode(strip_tags($this->accountNumber))) : null;
     }
 
     /**
@@ -142,6 +142,6 @@ class Order implements OrderInterface
      */
     public function getTransferTitle(): ?string
     {
-        return $this->transferTitle;
+        return $this->transferTitle !== null ? trim(html_entity_decode(strip_tags($this->transferTitle))) : null;
     }
 }

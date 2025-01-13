@@ -7,6 +7,7 @@ window.Comfino = {
     loanParams: { loanAmount: 0, loanType: '', loanTerm: 0 },
     listItemContainer: null,
     labelObserver: null,
+    paywallTemplate: null,
     Label: () => {
         Comfino.isPaywallActive = true;
 
@@ -41,12 +42,38 @@ window.Comfino = {
             [emitResponse.responseTypes.SUCCESS, onPaymentSetup]
         );
 
-        return wp.element.RawHTML({ children: wp.htmlEntities.decodeEntities(comfinoSettings.iframe) });
+        if (Comfino.paywallTemplate === null) {
+            const paywallTemplate = new DOMParser().parseFromString(comfinoSettings.iframeTemplate, 'text/html');
+            paywallTemplate.body.firstChild.innerHTML = ComfinoPaywallFrontend.renderPaywallIframe(comfinoSettings.paywallUrl, comfinoSettings.paywallOptions);
+            Comfino.paywallTemplate = paywallTemplate.body.innerHTML;
+
+            ComfinoPaywallFrontend.logEvent('Comfino paywall template initialized.', 'debug', paywallTemplate.body.firstChild);
+        }
+
+        return wp.element.RawHTML({ children: wp.htmlEntities.decodeEntities(Comfino.paywallTemplate) });
     },
     EditContent: () => {
         return wp.element.RawHTML({ children: '<b>[Comfino Panel]</b>' });
     },
-    init: () => {
+    /**
+     * Initializes paywall frontend.
+     *
+     * orderData:
+     * {
+     *    cart: Cart,
+     *    cartTotals: CartTotals,
+     *    cartNeedsShipping: boolean,
+     *    shippingAddress: CartShippingAddress,
+     *    billingAddress: CartBillingAddress,
+     *    selectedShippingMethods: Record,
+     *    paymentRequirements: string[]
+     * }
+     *
+     * @param {Object} orderData
+     */
+    init: (orderData) => {
+        ComfinoPaywallFrontend.logEvent('Comfino.init', 'debug', orderData);
+
         if (!Comfino.isPaywallActive) {
             return;
         }
@@ -57,7 +84,11 @@ window.Comfino = {
             return;
         }
 
+        ComfinoPaywallFrontend.logEvent('Comfino.init - initialization started.', 'debug');
+
         if (!ComfinoPaywallFrontend.isInitialized()) {
+            ComfinoPaywallFrontend.logEvent('Paywall frontend initialization.', 'debug', comfinoSettings);
+
             comfinoSettings.paywallOptions.onUpdateOrderPaymentState = (loanParams) => {
                 ComfinoPaywallFrontend.logEvent('updateOrderPaymentState WooCommerce (Payment Blocks)', 'debug', loanParams);
 
@@ -117,19 +148,47 @@ window.Comfino = {
             }
 
             ComfinoPaywallFrontend.init(null, iframe, comfinoSettings.paywallOptions);
+        } else {
+            // Comfino paywall frontend already initialized - update payment amount if shipping method changed and total order value changed.
+            ComfinoPaywallFrontend.logEvent('Paywall frontend already initialized.', 'debug', Comfino.loanParams);
+
+            if (Comfino.loanParams.loanAmount > 0) {
+                const cartTotal = parseInt(orderData.cartTotals.total_price);
+
+                if (Comfino.loanParams.loanAmount !== cartTotal) {
+                    ComfinoPaywallFrontend.logEvent('Total value changed.', 'debug', Comfino.loanParams.loanAmount, cartTotal);
+                    ComfinoPaywallFrontend.reloadPaywall();
+                }
+            }
+        }
+
+        if (!Comfino.isSelected && Array.isArray(orderData.paymentMethods) && orderData.paymentMethods.length === 1) {
+            // Workaround for Firefox bug (woocommerce_blocks-checkout-render-checkout-form hook fired with incomplete data).
+            ComfinoPaywallFrontend.logEvent('Firefox bug workaround executed.', 'debug', orderData.paymentMethods);
+
+            Comfino.isSelected = (orderData.paymentMethods[0] === 'comfino');
         }
     }
 }
 
 wp.hooks.addAction('experimental__woocommerce_blocks-checkout-render-checkout-form', 'comfino', () => {
-    if (wp.data.select('wc/store/payment').getActivePaymentMethod() === 'comfino') {
-        Comfino.isSelected = true
-    } else {
-        Comfino.isSelected = false
-    }
+    const payment = wp.data.select('wc/store/payment');
+
+    ComfinoPaywallFrontend.logEvent(
+        'woocommerce_blocks-checkout-render-checkout-form',
+        'debug',
+        payment.getActivePaymentMethod(),
+        payment.getAvailablePaymentMethods(),
+        payment.getPaymentMethodData(),
+        payment.getState()
+    );
+
+    Comfino.isSelected = (payment.getActivePaymentMethod() === 'comfino');
 });
 
 wp.hooks.addAction('experimental__woocommerce_blocks-checkout-set-active-payment-method', 'comfino', (paymentMethod) => {
+    ComfinoPaywallFrontend.logEvent('woocommerce_blocks-checkout-set-active-payment-method', 'debug', paymentMethod);
+
     if (paymentMethod.value === 'comfino') {
         Comfino.isSelected = true
 
@@ -147,17 +206,23 @@ wc.wcBlocksRegistry.registerPaymentMethod({
     icon: 'money-alt',
     content: Object(wp.element.createElement)(Comfino.Content, null),
     edit: Object(wp.element.createElement)(Comfino.EditContent, null),
-    canMakePayment: () => {
+    canMakePayment: (orderData) => {
+        ComfinoPaywallFrontend.logEvent('canMakePayment', 'debug', orderData);
+
         if (document.readyState === 'complete') {
-            Comfino.init();
+            ComfinoPaywallFrontend.logEvent('document.readyState: complete', 'debug');
+
+            Comfino.init(orderData);
 
             if (Comfino.isSelected) {
                 ComfinoPaywallFrontend.executeClickLogic();
             }
         } else {
             document.addEventListener('readystatechange', () => {
+                ComfinoPaywallFrontend.logEvent(`document.readyState: ${document.readyState}`, 'debug');
+
                 if (document.readyState === 'complete') {
-                    Comfino.init();
+                    Comfino.init(orderData);
 
                     if (Comfino.isSelected) {
                         ComfinoPaywallFrontend.executeClickLogic();

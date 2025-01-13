@@ -2,8 +2,6 @@
 
 namespace Comfino\Common\Api;
 
-use Comfino\Api\Exception\RequestValidationError;
-use Comfino\Api\Exception\ResponseValidationError;
 use Comfino\Api\Request;
 use ComfinoExternal\Psr\Http\Client\ClientExceptionInterface;
 use ComfinoExternal\Psr\Http\Message\ResponseInterface;
@@ -136,18 +134,17 @@ class Client extends \Comfino\Extended\Api\Client
     }
 
     /**
-     * @throws RequestValidationError
-     * @throws ResponseValidationError
      * @throws ClientExceptionInterface
      * @param \Comfino\Api\Request $request
+     * @param int|null $apiVersion
      */
-    protected function sendRequest($request): ResponseInterface
+    protected function sendRequest($request, $apiVersion = null): ResponseInterface
     {
         $response = null;
 
         for ($connectAttemptIdx = 1; $connectAttemptIdx <= $this->connectionMaxNumAttempts; $connectAttemptIdx++) {
             try {
-                $response = parent::sendRequest($request);
+                $response = parent::sendRequest($request, $apiVersion);
 
                 break;
             } catch (ClientExceptionInterface $e) {

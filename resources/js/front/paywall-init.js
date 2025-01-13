@@ -1,18 +1,21 @@
-window.ComfinoPaywall = {
-    init: (paywallOptions) => {
+window.ComfinoPaywallInit = {
+    init: (paywallUrl, paywallOptions) => {
         window.Comfino = {
+            paywallUrl: paywallUrl,
             paywallOptions: paywallOptions,
             init: () => {
-                let iframe = document.getElementById('comfino-paywall-container');
-                let frontendInitElement = document.getElementById('payment_method_comfino');
+                const iframe = ComfinoPaywallFrontend.createPaywallIframe(Comfino.paywallUrl, Comfino.paywallOptions);
+                const frontendInitElement = document.getElementById('payment_method_comfino');
 
                 if ('priceModifier' in frontendInitElement.dataset) {
-                    let priceModifier = parseInt(frontendInitElement.dataset.priceModifier);
+                    const priceModifier = parseInt(frontendInitElement.dataset.priceModifier);
 
                     if (!Number.isNaN(priceModifier)) {
                         iframe.src += ('&priceModifier=' + priceModifier);
                     }
                 }
+
+                document.getElementById('comfino-iframe-container').appendChild(iframe);
 
                 ComfinoPaywallFrontend.init(frontendInitElement, iframe, Comfino.paywallOptions);
             },

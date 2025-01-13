@@ -50,6 +50,13 @@ class AuthorizationError extends \RuntimeException implements HttpErrorException
         return '';
     }
 
+    /**
+     * @param string $responseBody
+     */
+    public function setResponseBody($responseBody): void
+    {
+    }
+
     public function getStatusCode(): int
     {
         return 401;

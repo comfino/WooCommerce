@@ -4,7 +4,6 @@ namespace Comfino;
 
 use Comfino\Api\ApiClient;
 use Comfino\Configuration\ConfigManager;
-use Comfino\ErrorLogger\StorageAdapter;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -14,18 +13,13 @@ final class ErrorLogger
 {
     /** @var Common\Backend\ErrorLogger */
     private static $errorLogger;
-    /** @var string */
-    private static $logFilePath;
 
-    public static function init(string $pluginDirectory): void
+    public static function init(): void
     {
         static $initialized = false;
 
         if (!$initialized) {
-            self::$errorLogger = self::getLoggerInstance();
-            self::$errorLogger->init();
-
-            self::$logFilePath = "$pluginDirectory/var/log/errors.log";
+            self::getLoggerInstance()->init();
 
             $initialized = true;
         }
@@ -33,14 +27,23 @@ final class ErrorLogger
 
     public static function getLoggerInstance(): Common\Backend\ErrorLogger
     {
-        return Common\Backend\ErrorLogger::getInstance(
-            Main::getShopDomain(),
-            'WooCommerce',
-            'plugins/comfino',
-            ConfigManager::getEnvironmentInfo(),
-            ApiClient::getInstance(),
-            new StorageAdapter()
-        );
+        if (self::$errorLogger === null) {
+            self::$errorLogger = Common\Backend\ErrorLogger::getInstance(
+                ApiClient::getInstance(),
+                Main::getPluginDirectory() . '/var/log/errors.log',
+                Main::getShopDomain(),
+                'WooCommerce',
+                'plugins/comfino',
+                ConfigManager::getEnvironmentInfo()
+            );
+        }
+
+        return self::$errorLogger;
+    }
+
+    public static function logError(string $errorPrefix, string $errorMessage): void
+    {
+        self::$errorLogger->logError($errorPrefix, $errorMessage);
     }
 
     public static function sendError(
@@ -55,15 +58,5 @@ final class ErrorLogger
         self::$errorLogger->sendError(
             $errorPrefix, $errorCode, $errorMessage, $apiRequestUrl, $apiRequest, $apiResponse, $stackTrace
         );
-    }
-
-    public static function logError(string $errorPrefix, string $errorMessage): void
-    {
-        Main::writeToFile(self::$logFilePath, '[' . gmdate('Y-m-d H:i:s') . "] $errorPrefix: $errorMessage\n");
-    }
-
-    public static function getErrorLog(int $numLines): string
-    {
-        return self::$errorLogger->getErrorLog(self::$logFilePath, $numLines);
     }
 }

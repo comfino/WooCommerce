@@ -2,12 +2,21 @@
 
 namespace Comfino\Common\Backend;
 
-use Comfino\Common\Backend\Logger\StorageAdapterInterface;
 use Comfino\Extended\Api\Client;
 use Comfino\Extended\Api\Dto\Plugin\ShopPluginError;
 
 final class ErrorLogger
 {
+    /**
+     * @readonly
+     * @var \Comfino\Extended\Api\Client
+     */
+    private $apiClient;
+    /**
+     * @readonly
+     * @var string
+     */
+    private $logFilePath;
     /**
      * @readonly
      * @var string
@@ -28,16 +37,6 @@ final class ErrorLogger
      * @var mixed[]
      */
     private $environment;
-    /**
-     * @readonly
-     * @var \Comfino\Extended\Api\Client
-     */
-    private $apiClient;
-    /**
-     * @readonly
-     * @var \Comfino\Common\Backend\Logger\StorageAdapterInterface
-     */
-    private $storageAdapter;
     private const ERROR_TYPES = [
         E_ERROR => 'E_ERROR',
         E_WARNING => 'E_WARNING',
@@ -61,23 +60,23 @@ final class ErrorLogger
      */
     private static $instance;
 
-    public static function getInstance(string $host, string $platform, string $modulePath, array $environment, Client $apiClient, StorageAdapterInterface $storageAdapter): self
+    public static function getInstance(Client $apiClient, string $logFilePath, string $host, string $platform, string $modulePath, array $environment): self
     {
         if (self::$instance === null) {
-            self::$instance = new self($host, $platform, $modulePath, $environment, $apiClient, $storageAdapter);
+            self::$instance = new self($apiClient, $logFilePath, $host, $platform, $modulePath, $environment);
         }
 
         return self::$instance;
     }
 
-    private function __construct(string $host, string $platform, string $modulePath, array $environment, Client $apiClient, StorageAdapterInterface $storageAdapter)
+    private function __construct(Client $apiClient, string $logFilePath, string $host, string $platform, string $modulePath, array $environment)
     {
+        $this->apiClient = $apiClient;
+        $this->logFilePath = $logFilePath;
         $this->host = $host;
         $this->platform = $platform;
         $this->modulePath = $modulePath;
         $this->environment = $environment;
-        $this->apiClient = $apiClient;
-        $this->storageAdapter = $storageAdapter;
     }
 
     public function sendError(
@@ -128,7 +127,7 @@ final class ErrorLogger
                 $requestInfo[] = "API response: $apiResponse";
             }
 
-            if (count($requestInfo)) {
+            if (count($requestInfo) > 0) {
                 $errorMessage .= "\n" . implode("\n", $requestInfo);
             }
 
@@ -136,30 +135,18 @@ final class ErrorLogger
                 $errorMessage .= "\nStack trace: $stackTrace";
             }
 
-            $this->storageAdapter->save($errorPrefix, $errorMessage);
+            $this->logError($errorPrefix, $errorMessage);
         }
     }
 
-    public function getErrorLog(string $logFilePath, int $numLines): string
+    public function logError(string $errorPrefix, string $errorMessage): void
     {
-        $errorsLog = '';
+        FileUtils::append($this->logFilePath, '[' . date('Y-m-d H:i:s') . "] $errorPrefix: $errorMessage\n");
+    }
 
-        if (file_exists($logFilePath)) {
-            $file = new \SplFileObject($logFilePath, 'r');
-            $file->seek(PHP_INT_MAX);
-
-            $lastLine = $file->key();
-
-            $lines = new \LimitIterator(
-                $file,
-                $lastLine > $numLines ? $lastLine - $numLines : 0,
-                $lastLine ?: 1
-            );
-
-            $errorsLog = implode('', iterator_to_array($lines));
-        }
-
-        return $errorsLog;
+    public function getErrorLog(int $numLines): string
+    {
+        return implode('', FileUtils::readLastLines($this->logFilePath, $numLines));
     }
 
     public function errorHandler($errNo, $errMsg, $file, $line)

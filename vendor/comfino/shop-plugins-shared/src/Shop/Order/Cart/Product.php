@@ -85,7 +85,7 @@ class Product implements ProductInterface
      */
     public function getName(): string
     {
-        return $this->name;
+        return trim(html_entity_decode(strip_tags($this->name)));
     }
 
     /**
@@ -125,7 +125,7 @@ class Product implements ProductInterface
      */
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id !== null ? trim(strip_tags($this->id)) : null;
     }
 
     /**
@@ -133,7 +133,7 @@ class Product implements ProductInterface
      */
     public function getCategory(): ?string
     {
-        return $this->category;
+        return $this->category !== null ? trim(strip_tags($this->category)) : null;
     }
 
     /**
@@ -141,7 +141,7 @@ class Product implements ProductInterface
      */
     public function getEan(): ?string
     {
-        return $this->ean;
+        return $this->ean !== null ? trim(strip_tags($this->ean)) : null;
     }
 
     /**
@@ -149,7 +149,7 @@ class Product implements ProductInterface
      */
     public function getPhotoUrl(): ?string
     {
-        return $this->photoUrl;
+        return $this->photoUrl !== null ? trim(strip_tags($this->photoUrl)) : null;
     }
 
     /**

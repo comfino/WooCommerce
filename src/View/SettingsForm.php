@@ -289,7 +289,8 @@ final class SettingsForm
                 'tree_nodes' => self::buildCategoriesTree($selectedCategories),
                 'close_depth' => 3,
                 'product_type' => $productType,
-            ]
+            ],
+            false
         );
     }
 
@@ -317,7 +318,7 @@ final class SettingsForm
                 $categoryTreeNode = ['id' => $node->term_id, 'text' => $node->name];
                 $childNodes = self::processTreeNodes($treeNodes, $selectedNodes, $node->term_id);
 
-                if (count($childNodes)) {
+                if (count($childNodes) > 0) {
                     $categoryTreeNode['children'] = $childNodes;
                 } elseif (in_array($node->term_id, $selectedNodes, true)) {
                     $categoryTreeNode['checked'] = true;

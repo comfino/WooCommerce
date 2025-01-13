@@ -3,7 +3,6 @@
 namespace Comfino\View;
 
 use Comfino\Api\ApiClient;
-use Comfino\Api\ApiService;
 use Comfino\Common\Frontend\FrontendHelper;
 use Comfino\Common\Frontend\PaywallIframeRenderer;
 use Comfino\Common\Frontend\PaywallRenderer;
@@ -11,7 +10,6 @@ use Comfino\Common\Frontend\WidgetInitScriptHelper;
 use Comfino\Configuration\ConfigManager;
 use Comfino\ErrorLogger;
 use Comfino\PaymentGateway;
-use Comfino\PluginShared\CacheManager;
 use Comfino\TemplateRenderer\PluginRendererStrategy;
 
 if (!defined('ABSPATH')) {
@@ -22,32 +20,18 @@ final class FrontendManager
 {
     public static function getPaywallRenderer(): PaywallRenderer
     {
-        return new PaywallRenderer(
-            ApiClient::getInstance(),
-            CacheManager::getCachePool(),
-            new PluginRendererStrategy(),
-            ApiService::getEndpointUrl('cacheInvalidate'),
-            ApiService::getEndpointUrl('configuration')
-        );
+        return new PaywallRenderer(ApiClient::getInstance(), new PluginRendererStrategy());
     }
 
     public static function getPaywallIframeRenderer(): PaywallIframeRenderer
     {
-        return new PaywallIframeRenderer(
-            ApiClient::getInstance(),
-            CacheManager::getCachePool(),
-            new PluginRendererStrategy(),
-            'WooCommerce',
-            WC_VERSION,
-            ApiService::getEndpointUrl('cacheInvalidate'),
-            ApiService::getEndpointUrl('configuration')
-        );
+        return new PaywallIframeRenderer();
     }
 
     public static function renderAdminLogo(): string
     {
         return FrontendHelper::renderAdminLogo(
-            ApiClient::getLogoApiHost(),
+            ConfigManager::getLogoApiHost(),
             'WC',
             WC_VERSION,
             PaymentGateway::VERSION,
@@ -60,7 +44,7 @@ final class FrontendManager
     public static function renderPaywallLogo(): string
     {
         return FrontendHelper::renderPaywallLogo(
-            ApiClient::getLogoApiHost(),
+            ConfigManager::getLogoApiHost(),
             ApiClient::getInstance()->getApiKey(),
             ConfigManager::getWidgetKey(),
             'WC',
@@ -128,6 +112,248 @@ final class FrontendManager
         );
     }
 
+    public static function getLocalScriptUrl(string $scriptFileName, bool $frontScript = true): string
+    {
+        global $comfino_payment_gateway;
+
+        $scriptDirectory = ($frontScript ? 'front' : 'admin');
+
+        if (ConfigManager::isDevEnv() && ConfigManager::useUnminifiedScripts()) {
+            $scriptFileName = str_replace('.min.js', '.js', $scriptFileName);
+
+            if (!file_exists($comfino_payment_gateway->plugin_abspath() . "/resources/js/$scriptDirectory/$scriptFileName")) {
+                $scriptFileName = str_replace('.js', '.min.js', $scriptFileName);
+            }
+        } elseif (strpos($scriptFileName, '.min.') === false) {
+            $scriptFileName = str_replace('.js', '.min.js', $scriptFileName);
+        }
+
+        return $comfino_payment_gateway->plugin_url() . "/resources/js/$scriptDirectory/$scriptFileName";
+    }
+
+    public static function getExternalResourcesBaseUrl(): string
+    {
+        if (ConfigManager::isDevEnv() && getenv('COMFINO_DEV_STATIC_RESOURCES_BASE_URL')) {
+            return sanitize_url(wp_unslash(getenv('COMFINO_DEV_STATIC_RESOURCES_BASE_URL')));
+        }
+
+        return ConfigManager::isSandboxMode() ? 'https://widget.craty.pl' : 'https://widget.comfino.pl';
+    }
+
+    public static function getExternalScriptUrl(string $scriptFileName): string
+    {
+        if (empty($scriptFileName)) {
+            return '';
+        }
+
+        if (ConfigManager::isDevEnv() && ConfigManager::useUnminifiedScripts()) {
+            $scriptFileName = str_replace('.min.js', '.js', $scriptFileName);
+        } elseif (strpos($scriptFileName, '.min.') === false) {
+            $scriptFileName = str_replace('.js', '.min.js', $scriptFileName);
+        }
+
+        if (ConfigManager::isSandboxMode()) {
+            $scriptPath = trim(ConfigManager::getConfigurationValue('COMFINO_JS_DEV_PATH'), '/');
+
+            if (strpos($scriptPath, '..') !== false) {
+                $scriptPath = trim(ConfigManager::getDefaultValue('js_dev_path'), '/');
+            }
+        } else {
+            $scriptPath = trim(ConfigManager::getConfigurationValue('COMFINO_JS_PROD_PATH'), '/');
+
+            if (strpos($scriptPath, '..') !== false) {
+                $scriptPath = trim(ConfigManager::getDefaultValue('js_prod_path'), '/');
+            }
+        }
+
+        if (!empty($scriptPath)) {
+            $scriptPath = "/$scriptPath";
+        }
+
+        return sanitize_url(wp_unslash(self::getExternalResourcesBaseUrl() . "$scriptPath/$scriptFileName"));
+    }
+
+    public static function getExternalStyleUrl(string $styleFileName): string
+    {
+        if (empty($styleFileName)) {
+            return '';
+        }
+
+        if (ConfigManager::isSandboxMode()) {
+            $stylePath = trim(ConfigManager::getConfigurationValue('COMFINO_CSS_DEV_PATH'), '/');
+
+            if (strpos($stylePath, '..') !== false) {
+                $stylePath = trim(ConfigManager::getDefaultValue('css_dev_path'), '/');
+            }
+        } else {
+            $stylePath = trim(ConfigManager::getConfigurationValue('COMFINO_CSS_PROD_PATH'), '/');
+
+            if (strpos($stylePath, '..') !== false) {
+                $stylePath = trim(ConfigManager::getDefaultValue('css_prod_path'), '/');
+            }
+        }
+
+        if (!empty($stylePath)) {
+            $stylePath = "/$stylePath";
+        }
+
+        return sanitize_url(wp_unslash(self::getExternalResourcesBaseUrl() . "$stylePath/$styleFileName"));
+    }
+
+    /**
+     * @param string[] $dependencies
+     */
+    public static function embedInlineScript(string $scriptId, string $scriptContents, array $dependencies = [], bool $inFooter = false, $version = null): void
+    {
+        wp_register_script($scriptId, '', $dependencies, $version, ['in_footer' => $inFooter]);
+        wp_enqueue_script($scriptId);
+        wp_add_inline_script($scriptId, $scriptContents);
+    }
+
+    /**
+     * @param string[] $scripts
+     * @param string[][] $dependencies
+     *
+     * @return string[]
+     */
+    public static function includeLocalScripts(array $scripts, array $dependencies = [], bool $frontScript = true, bool $inFooter = false, $version = null): array
+    {
+        $scriptIds = [];
+
+        foreach ($scripts as $scriptName) {
+            $scriptId = 'comfino-script-' . str_replace('.', '-', strtolower(pathinfo($scriptName, PATHINFO_FILENAME)));
+            $scriptIds[] = $scriptId;
+
+            wp_enqueue_script(
+                $scriptId,
+                self::getLocalScriptUrl($scriptName, $frontScript),
+                $dependencies[$scriptName] ?? [],
+                $version,
+                ['in_footer' => $inFooter]
+            );
+        }
+
+        return $scriptIds;
+    }
+
+    /**
+     * @param string[] $scripts
+     * @param string[][] $dependencies
+     *
+     * @return string[]
+     */
+    public static function includeExternalScripts(array $scripts, array $dependencies = [], bool $inFooter = false, $version = null): array
+    {
+        $scriptIds = [];
+
+        foreach ($scripts as $scriptName) {
+            $scriptId = 'comfino-script-' . str_replace('.', '-', strtolower(pathinfo($scriptName, PATHINFO_FILENAME)));
+            $scriptIds[] = $scriptId;
+
+            wp_enqueue_script(
+                $scriptId,
+                self::getExternalScriptUrl($scriptName),
+                $dependencies[$scriptName] ?? [],
+                $version,
+                ['in_footer' => $inFooter]
+            );
+        }
+
+        return $scriptIds;
+    }
+
+    /**
+     * @param string[] $styles
+     * @param string[][] $dependencies
+     *
+     * @return string[]
+     */
+    public static function includeExternalStyles(array $styles, array $dependencies = [], $version = null): array
+    {
+        $styleIds = [];
+
+        foreach ($styles as $styleName) {
+            $styleId = 'comfino-style-' . str_replace('.', '-', strtolower(pathinfo($styleName, PATHINFO_FILENAME)));
+            $styleIds[] = $styleId;
+
+            wp_enqueue_style($styleId, self::getExternalStyleUrl($styleName), $dependencies[$styleName] ?? [], $version);
+        }
+
+        return $styleIds;
+    }
+
+    /**
+     * @param string[] $scripts
+     * @param string[][] $dependencies
+     *
+     * @return string[]
+     */
+    public static function registerLocalScripts(array $scripts, array $dependencies = [], bool $frontScript = true, bool $inFooter = false, $version = null): array
+    {
+        $scriptIds = [];
+
+        foreach ($scripts as $scriptName) {
+            $scriptId = 'comfino-script-' . str_replace('.', '-', strtolower(pathinfo($scriptName, PATHINFO_FILENAME)));
+            $scriptIds[] = $scriptId;
+
+            wp_register_script(
+                $scriptId,
+                self::getLocalScriptUrl($scriptName, $frontScript),
+                $dependencies[$scriptName] ?? [],
+                $version,
+                ['in_footer' => $inFooter]
+            );
+        }
+
+        return $scriptIds;
+    }
+
+    /**
+     * @param string[] $scripts
+     * @param string[][] $dependencies
+     *
+     * @return string[]
+     */
+    public static function registerExternalScripts(array $scripts, array $dependencies = [], bool $inFooter = false, $version = null): array
+    {
+        $scriptIds = [];
+
+        foreach ($scripts as $scriptName) {
+            $scriptId = 'comfino-script-' . str_replace('.', '-', strtolower(pathinfo($scriptName, PATHINFO_FILENAME)));
+            $scriptIds[] = $scriptId;
+
+            wp_register_script(
+                $scriptId,
+                self::getExternalScriptUrl($scriptName),
+                $dependencies[$scriptName] ?? [],
+                $version,
+                ['in_footer' => $inFooter]
+            );
+        }
+
+        return $scriptIds;
+    }
+
+    /**
+     * @param string[] $styles
+     * @param string[][] $dependencies
+     *
+     * @return string[]
+     */
+    public static function registerExternalStyles(array $styles, array $dependencies = [], $version = null): array
+    {
+        $styleIds = [];
+
+        foreach ($styles as $styleName) {
+            $styleId = 'comfino-style-' . str_replace('.', '-', strtolower(pathinfo($styleName, PATHINFO_FILENAME)));
+            $styleIds[] = $styleId;
+
+            wp_register_style($styleId, self::getExternalStyleUrl($styleName), $dependencies[$styleName] ?? [], $version);
+        }
+
+        return $styleIds;
+    }
+
     public static function renderWidgetInitCode(?int $productId): string
     {
         try {
@@ -184,26 +410,6 @@ final class FrontendManager
         return ['img' => ['src' => [], 'style' => [], 'alt' => []]];
     }
 
-    public static function getPaywallIfarmeAllowedHtml(): array
-    {
-        return array_merge(
-            [
-                'iframe' => [
-                    'id' => [],
-                    'src' => [],
-                    'class' => [],
-                    'referrer-policy' => [],
-                    'loading' => [],
-                    'scrolling' => [],
-                    'onload' => [],
-                ],
-                'input' => ['id' => [], 'name' => [], 'value' => [], 'class' => [], 'style' => [], 'title' => [], 'placeholder' => [], 'type' => [], 'checked' => [], 'readonly' => [], 'disabled' => [], 'required' => []],
-            ],
-            self::getAllowedScriptHtml(),
-            self::getAllowedStyleHtml()
-        );
-    }
-
     public static function getAllowedScriptHtml(): array
     {
         return ['script' => ['id' => [], 'src' => [], 'type' => [], 'srcset' => [], 'async' => [], 'defer' => []]];
@@ -225,144 +431,6 @@ final class FrontendManager
             ],
             self::getAllowedScriptHtml(),
             self::getAllowedStyleHtml()
-        );
-    }
-
-    public static function getPaywallAllowedHtml(): array
-    {
-        return array_merge(
-            wp_kses_allowed_html('post'),
-            [
-                'html' => [],
-                'head' => [],
-                'title' => [],
-                'meta' => ['name' => [], 'http-equiv' => [], 'content' => []],
-                'link' => ['rel' => [], 'href' => []],
-                'body' => [],
-                'form' => ['id' => [], 'name' => [], 'action' => [], 'method' => []],
-                'input' => ['id' => [], 'name' => [], 'value' => [], 'class' => [], 'style' => [], 'title' => [], 'placeholder' => [], 'type' => [], 'checked' => [], 'readonly' => [], 'disabled' => [], 'required' => []],
-                'svg' => [
-                    'xmlns' => [],
-                    'version' => [],
-                    'id' => [],
-                    'x' => [],
-                    'y' => [],
-                    'viewbox' => [],
-                    'style' => [],
-                    'xml:space' => [],
-                    'width' => [],
-                    'height' => [],
-                    'fill' => [],
-                    'sodipodi:docname' => [],
-                    'inkscape:version' => [],
-                    'enable-background' => [],
-                ],
-                'style' => [
-                    'type' => [],
-                    'id' => [],
-                ],
-                'g' => [
-                    'clip-path' => [],
-                    'id' => [],
-                    'class' => [],
-                    'transform' => [],
-                ],
-                'path' => [
-                    'class' => [],
-                    'd' => [],
-                    'fill' => [],
-                    'id' => [],
-                    'fill-rule' => [],
-                    'clip-rule' => [],
-                    'stroke' => [],
-                    'stroke-width' => [],
-                    'stroke-linejoin' => [],
-                ],
-                'lineargradient' => [
-                    'id' => [],
-                    'gradientunits' => [],
-                    'x1' => [],
-                    'y1' => [],
-                    'x2' => [],
-                    'y2' => [],
-                    'gradienttransform' => [],
-                ],
-                'stop' => [
-                    'offset' => [],
-                    'stop-color' => [],
-                    'id' => [],
-                    'stop-opacity' => [],
-                ],
-                'rect' => [
-                    'x' => [],
-                    'y' => [],
-                    'class' => [],
-                    'width' => [],
-                    'height' => [],
-                    'fill' => [],
-                    'id' => [],
-                ],
-                'defs' => [
-                    'id' => [],
-                ],
-                'clippath' => [
-                    'id' => [],
-                ],
-                'use' => [
-                    'xlink:href' => [],
-                    'overflow' => [],
-                ],
-                'sodipodi:namedview' => [
-                    'id' => [],
-                    'pagecolor' => [],
-                    'bordercolor' => [],
-                    'borderopacity' => [],
-                    'inkscape:pageshadow' => [],
-                    'inkscape:pageopacity' => [],
-                    'inkscape:pagecheckerboard' => [],
-                    'showgrid' => [],
-                    'inkscape:zoom' => [],
-                    'inkscape:cx' => [],
-                    'inkscape:cy' => [],
-                    'inkscape:window-width' => [],
-                    'inkscape:window-height' => [],
-                    'inkscape:window-x' => [],
-                    'inkscape:window-y' => [],
-                    'inkscape:window-maximized' => [],
-                    'inkscape:current-layer' => [],
-                    'width' => [],
-                    'fit-margin-top' => [],
-                    'fit-margin-left' => [],
-                    'fit-margin-right' => [],
-                    'fit-margin-bottom' => [],
-                ],
-                'mask' => [
-                    'id' => [],
-                    'maskunits' => [],
-                    'x' => [],
-                    'y' => [],
-                    'width' => [],
-                    'height' => [],
-                ],
-                'radialgradient' => [
-                    'id' => [],
-                    'cx' => [],
-                    'cy' => [],
-                    'r' => [],
-                    'gradientunits' => [],
-                    'gradienttransform' => [],
-                    'fx' => [],
-                    'fy' => [],
-                ],
-                'circle' => [
-                    'fill' => [],
-                    'cx' => [],
-                    'cy' => [],
-                    'r' => [],
-                ],
-            ],
-            self::getAllowedScriptHtml()
-            //self::getAllowedStyleHtml()
         );
     }
 }

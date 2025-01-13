@@ -152,6 +152,7 @@ class Cart
                             'category' => $cartItem->getProduct()->getCategory(),
                             'ean' => $cartItem->getProduct()->getEan(),
                             'photoUrl' => $cartItem->getProduct()->getPhotoUrl(),
+                            'categoryIds' => $cartItem->getProduct()->getCategoryIds(),
                         ];
 
                         return $withNulls ? $product : array_filter($product, static function ($productFieldValue) : bool {

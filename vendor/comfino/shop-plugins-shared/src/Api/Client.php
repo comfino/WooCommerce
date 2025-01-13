@@ -15,7 +15,6 @@ use Comfino\Api\Request\GetFinancialProductDetails as GetFinancialProductDetails
 use Comfino\Api\Request\GetFinancialProducts as GetFinancialProductsRequest;
 use Comfino\Api\Request\GetOrder as GetOrderRequest;
 use Comfino\Api\Request\GetPaywall as GetPaywallRequest;
-use Comfino\Api\Request\GetPaywallFragments as GetPaywallFragmentsRequest;
 use Comfino\Api\Request\GetPaywallItemDetails as GetPaywallItemDetailsRequest;
 use Comfino\Api\Request\GetProductTypes as GetProductTypesRequest;
 use Comfino\Api\Request\GetWidgetKey as GetWidgetKeyRequest;
@@ -27,7 +26,6 @@ use Comfino\Api\Response\GetFinancialProductDetails as GetFinancialProductDetail
 use Comfino\Api\Response\GetFinancialProducts as GetFinancialProductsResponse;
 use Comfino\Api\Response\GetOrder as GetOrderResponse;
 use Comfino\Api\Response\GetPaywall as GetPaywallResponse;
-use Comfino\Api\Response\GetPaywallFragments as GetPaywallFragmentsResponse;
 use Comfino\Api\Response\GetPaywallItemDetails as GetPaywallItemDetailsResponse;
 use Comfino\Api\Response\GetProductTypes as GetProductTypesResponse;
 use Comfino\Api\Response\GetWidgetKey as GetWidgetKeyResponse;
@@ -35,7 +33,6 @@ use Comfino\Api\Response\GetWidgetTypes as GetWidgetTypesResponse;
 use Comfino\Api\Response\IsShopAccountActive as IsShopAccountActiveResponse;
 use Comfino\Api\Serializer\Json as JsonSerializer;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
-use Comfino\Paywall\PaywallViewTypeEnum;
 use Comfino\Shop\Order\CartInterface;
 use Comfino\Shop\Order\OrderInterface;
 use ComfinoExternal\Psr\Http\Client\ClientExceptionInterface;
@@ -75,7 +72,7 @@ class Client
      */
     protected $apiVersion = 1;
     /**
-     * @var \Comfino\Api\SerializerInterface|null
+     * @var SerializerInterface|null
      */
     protected $serializer;
     protected const CLIENT_VERSION = '1.0';
@@ -102,23 +99,18 @@ class Client
      * @param StreamFactoryInterface $streamFactory External PSR-18 compatible stream factory.
      * @param ClientInterface $client External PSR-18 compatible HTTP client which will be used to communicate with the API.
      * @param string|null $apiKey Unique authentication key required for access to the Comfino API.
-     * @param int $apiVersion Selected API version (default: v1).
+     * @param int $apiVersion Selected default API version (default: v1).
+     * @param SerializerInterface|null $serializer JSON serializer.
      */
-    public function __construct(
-        RequestFactoryInterface $requestFactory,
-        StreamFactoryInterface $streamFactory,
-        ClientInterface $client,
-        ?string $apiKey,
-        int $apiVersion = 1,
-        ?SerializerInterface $serializer = null
-    ) {
+    public function __construct(RequestFactoryInterface $requestFactory, StreamFactoryInterface $streamFactory, ClientInterface $client, ?string $apiKey, int $apiVersion = 1, ?SerializerInterface $serializer = null)
+    {
+        $serializer = $serializer ?? null ?? new JsonSerializer();
         $this->requestFactory = $requestFactory;
         $this->streamFactory = $streamFactory;
         $this->client = $client;
         $this->apiKey = $apiKey;
         $this->apiVersion = $apiVersion;
         $this->serializer = $serializer;
-        $this->serializer = $serializer ?? new JsonSerializer();
     }
 
     /**
@@ -283,14 +275,16 @@ class Client
      * @throws AccessDenied
      * @throws ServiceUnavailable
      * @throws ClientExceptionInterface
+     * @param string|null $cacheInvalidateUrl
+     * @param string|null $configurationUrl
      */
-    public function isShopAccountActive(): bool
+    public function isShopAccountActive($cacheInvalidateUrl = null, $configurationUrl = null): bool
     {
         try {
-            $this->request = (new IsShopAccountActiveRequest())->setSerializer($this->serializer);
+            $this->request = (new IsShopAccountActiveRequest($cacheInvalidateUrl, $configurationUrl))->setSerializer($this->serializer);
 
             return (new IsShopAccountActiveResponse($this->request, $this->sendRequest($this->request), $this->serializer))->isActive;
-        } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
+        } catch (HttpErrorExceptionInterface $e) {
             if (isset($this->request)) {
                 $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
@@ -320,7 +314,7 @@ class Client
             $this->request = (new GetFinancialProductDetailsRequest($queryCriteria, $cart))->setSerializer($this->serializer);
 
             return new GetFinancialProductDetailsResponse($this->request, $this->sendRequest($this->request), $this->serializer);
-        } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
+        } catch (HttpErrorExceptionInterface $e) {
             if (isset($this->request)) {
                 $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
@@ -349,7 +343,7 @@ class Client
             $this->request = (new GetFinancialProductsRequest($queryCriteria))->setSerializer($this->serializer);
 
             return new GetFinancialProductsResponse($this->request, $this->sendRequest($this->request), $this->serializer);
-        } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
+        } catch (HttpErrorExceptionInterface $e) {
             if (isset($this->request)) {
                 $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
@@ -378,7 +372,7 @@ class Client
             $this->request = (new CreateOrderRequest($order))->setSerializer($this->serializer);
 
             return new CreateOrderResponse($this->request, $this->sendRequest($this->request), $this->serializer);
-        } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
+        } catch (HttpErrorExceptionInterface $e) {
             if (isset($this->request)) {
                 $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
@@ -407,7 +401,7 @@ class Client
             $this->request = (new GetOrderRequest($orderId))->setSerializer($this->serializer);
 
             return new GetOrderResponse($this->request, $this->sendRequest($this->request), $this->serializer);
-        } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
+        } catch (HttpErrorExceptionInterface $e) {
             if (isset($this->request)) {
                 $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
@@ -433,7 +427,7 @@ class Client
             $this->request = (new CancelOrderRequest($orderId))->setSerializer($this->serializer);
 
             new BaseApiResponse($this->request, $this->sendRequest($this->request), $this->serializer);
-        } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
+        } catch (HttpErrorExceptionInterface $e) {
             if (isset($this->request)) {
                 $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
@@ -459,7 +453,7 @@ class Client
             $this->request = (new GetProductTypesRequest($listType))->setSerializer($this->serializer);
 
             return new GetProductTypesResponse($this->request, $this->sendRequest($this->request), $this->serializer);
-        } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
+        } catch (HttpErrorExceptionInterface $e) {
             if (isset($this->request)) {
                 $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
@@ -484,7 +478,7 @@ class Client
             $this->request = (new GetWidgetKeyRequest())->setSerializer($this->serializer);
 
             return (new GetWidgetKeyResponse($this->request, $this->sendRequest($this->request), $this->serializer))->widgetKey;
-        } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
+        } catch (HttpErrorExceptionInterface $e) {
             if (isset($this->request)) {
                 $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
@@ -509,7 +503,7 @@ class Client
             $this->request = (new GetWidgetTypesRequest())->setSerializer($this->serializer);
 
             return new GetWidgetTypesResponse($this->request, $this->sendRequest($this->request), $this->serializer);
-        } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
+        } catch (HttpErrorExceptionInterface $e) {
             if (isset($this->request)) {
                 $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
@@ -522,7 +516,7 @@ class Client
      * Returns a complete paywall page with list of financial products according to the specified criteria.
      *
      * @param LoanQueryCriteria $queryCriteria List filtering criteria.
-     * @param PaywallViewTypeEnum|null $viewType Paywall view type.
+     * @param string|null $recalculationUrl Paywall form action URL used for offer recalculations initialized by shop cart frontends.
      *
      * @return GetPaywallResponse
      *
@@ -533,13 +527,13 @@ class Client
      * @throws ServiceUnavailable
      * @throws ClientExceptionInterface
      */
-    public function getPaywall($queryCriteria, $viewType = null): GetPaywallResponse
+    public function getPaywall($queryCriteria, $recalculationUrl = null): GetPaywallResponse
     {
         try {
-            $this->request = (new GetPaywallRequest($queryCriteria, $viewType))->setSerializer($this->serializer);
+            $this->request = (new GetPaywallRequest($queryCriteria, $recalculationUrl))->setSerializer($this->serializer);
 
-            return new GetPaywallResponse($this->request, $this->sendRequest($this->request), $this->serializer);
-        } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
+            return new GetPaywallResponse($this->request, $this->sendRequest($this->request, 2), $this->serializer);
+        } catch (HttpErrorExceptionInterface $e) {
             if (isset($this->request)) {
                 $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
@@ -570,34 +564,7 @@ class Client
             $this->request = (new GetPaywallItemDetailsRequest($loanAmount, $loanType, $cart))->setSerializer($this->serializer);
 
             return new GetPaywallItemDetailsResponse($this->request, $this->sendRequest($this->request), $this->serializer);
-        } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
-            if (isset($this->request)) {
-                $e->setRequestBody($this->request->getRequestBody() ?? '');
-            }
-
-            throw $e;
-        }
-    }
-
-    /**
-     * Returns a list of paywall fragments.
-     *
-     * @throws RequestValidationError
-     * @throws ResponseValidationError
-     * @throws AuthorizationError
-     * @throws AccessDenied
-     * @throws ServiceUnavailable
-     * @throws ClientExceptionInterface
-     * @param string|null $cacheInvalidateUrl
-     * @param string|null $configurationUrl
-     */
-    public function getPaywallFragments($cacheInvalidateUrl = null, $configurationUrl = null): GetPaywallFragmentsResponse
-    {
-        try {
-            $this->request = (new GetPaywallFragmentsRequest($cacheInvalidateUrl, $configurationUrl))->setSerializer($this->serializer);
-
-            return new GetPaywallFragmentsResponse($this->request, $this->sendRequest($this->request), $this->serializer);
-        } catch (RequestValidationError | ResponseValidationError | AuthorizationError | AccessDenied | ServiceUnavailable $e) {
+        } catch (HttpErrorExceptionInterface $e) {
             if (isset($this->request)) {
                 $e->setRequestBody($this->request->getRequestBody() ?? '');
             }
@@ -611,14 +578,15 @@ class Client
      * @throws ResponseValidationError
      * @throws ClientExceptionInterface
      * @param \Comfino\Api\Request $request
+     * @param int|null $apiVersion
      */
-    protected function sendRequest($request): ResponseInterface
+    protected function sendRequest($request, $apiVersion = null): ResponseInterface
     {
         $apiRequest = $request->getPsrRequest(
             $this->requestFactory,
             $this->streamFactory,
             $this->getApiHost(),
-            $this->apiVersion
+            $apiVersion ?? $this->apiVersion
         )
         ->withHeader('Content-Type', 'application/json')
         ->withHeader('Api-Language', $this->apiLanguage)

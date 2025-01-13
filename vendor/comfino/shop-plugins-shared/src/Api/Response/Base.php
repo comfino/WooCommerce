@@ -31,9 +31,48 @@ class Base extends Response
 
     /**
      * @inheritDoc
-     * @param mixed[]|string|bool|null $deserializedResponseBody
+     * @param mixed[]|string|int|float|bool|null $deserializedResponseBody
      */
     protected function processResponseBody($deserializedResponseBody): void
     {
+    }
+
+    /**
+     * @param array|string|bool|null $deserializedResponseBody
+     * @param string $expectedType
+     * @param string|null $fieldName
+     *
+     * @return void
+     *
+     * @throws ResponseValidationError
+     */
+    protected function checkResponseType($deserializedResponseBody, $expectedType, $fieldName = null): void
+    {
+        if (gettype($deserializedResponseBody) !== $expectedType) {
+            if ($expectedType === 'double' && is_int($deserializedResponseBody)) {
+                return;
+            }
+
+            if ($fieldName !== null) {
+                throw new ResponseValidationError("Invalid response field \"$fieldName\" data type: $expectedType expected.");
+            }
+
+            throw new ResponseValidationError("Invalid response data type: $expectedType expected.");
+        }
+    }
+
+    /**
+     * @param array $deserializedResponseBody
+     * @param string[] $expectedKeys
+     *
+     * @return void
+     *
+     * @throws ResponseValidationError
+     */
+    protected function checkResponseStructure($deserializedResponseBody, $expectedKeys): void
+    {
+        if (count($responseKeysDiff = array_diff($expectedKeys, array_keys($deserializedResponseBody))) > 0) {
+            throw new ResponseValidationError('Invalid response data structure: missing fields: ' . implode(', ', $responseKeysDiff));
+        }
     }
 }

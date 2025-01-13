@@ -8,4 +8,14 @@ class WidgetIframeRenderer extends FrontendRenderer
     {
         return '';
     }
+
+    public function getStyles(): array
+    {
+        return [];
+    }
+
+    public function getScripts(): array
+    {
+        return [];
+    }
 }
