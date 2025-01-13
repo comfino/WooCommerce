@@ -18,6 +18,7 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
+use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Configuration\ConfigManager;
 use Comfino\PaymentGateway;
 
@@ -267,6 +268,13 @@ class Comfino_Payment_Gateway
         if (PaymentGateway::WIDGET_INIT_SCRIPT_HASH !== PaymentGateway::WIDGET_INIT_SCRIPT_LAST_HASH) {
             // Update code of widget initialization script if changed.
             ConfigManager::updateWidgetCode(PaymentGateway::WIDGET_INIT_SCRIPT_LAST_HASH);
+        }
+
+        /* 4.2.0 */
+        if (is_array($ignoredStatuses = ConfigManager::getConfigurationValue('COMFINO_IGNORED_STATUSES'))
+            && in_array(StatusManager::STATUS_CANCELLED_BY_SHOP, $ignoredStatuses, true)
+        ) {
+            ConfigManager::updateConfigurationValue('COMFINO_IGNORED_STATUSES', StatusManager::DEFAULT_IGNORED_STATUSES);
         }
 
         set_transient('comfino_plugin_updated', 0);

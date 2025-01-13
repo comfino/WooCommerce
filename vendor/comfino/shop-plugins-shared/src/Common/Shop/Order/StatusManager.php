@@ -40,7 +40,6 @@ final class StatusManager
         self::STATUS_WAITING_FOR_CONFIRMATION,
         self::STATUS_WAITING_FOR_PAYMENT,
         self::STATUS_PAID,
-        self::STATUS_CANCELLED_BY_SHOP,
     ];
 
     public const DEFAULT_FORBIDDEN_STATUSES = [self::STATUS_RESIGN];
