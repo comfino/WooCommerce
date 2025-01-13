@@ -43,7 +43,7 @@ class PaymentGateway extends \WC_Payment_Gateway
         $this->supports = ['products'];
         $this->title = $this->get_option('title');
 
-        if (is_admin() && strpos(Main::getCurrentUrl(), 'comfino') === false) {
+        if (is_admin() && strpos(Main::getCurrentUrl(), 'comfino') === false && strpos(Main::getCurrentUrl(), 'wc-orders') === false) {
             return;
         }
 
