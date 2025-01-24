@@ -49,3 +49,9 @@ window.ComfinoPaywallInit = {
         }
     }
 }
+
+document.addEventListener('readystatechange', () => {
+    if (document.readyState === 'complete' && window.ComfinoPaywallData) {
+        window.ComfinoPaywallInit.init(window.ComfinoPaywallData.paywallUrl, window.ComfinoPaywallData.paywallOptions);
+    }
+});
