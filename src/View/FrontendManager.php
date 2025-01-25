@@ -3,6 +3,7 @@
 namespace Comfino\View;
 
 use Comfino\Api\ApiClient;
+use Comfino\Api\HttpErrorExceptionInterface;
 use Comfino\Common\Frontend\FrontendHelper;
 use Comfino\Common\Frontend\PaywallIframeRenderer;
 use Comfino\Common\Frontend\PaywallRenderer;
@@ -180,13 +181,13 @@ final class FrontendManager
         }
 
         if (ConfigManager::isSandboxMode()) {
-            $stylePath = trim(ConfigManager::getConfigurationValue('COMFINO_CSS_DEV_PATH'), '/');
+            $stylePath = trim(ConfigManager::getConfigurationValue('COMFINO_CSS_DEV_PATH', 'css'), '/');
 
             if (strpos($stylePath, '..') !== false) {
                 $stylePath = trim(ConfigManager::getDefaultValue('css_dev_path'), '/');
             }
         } else {
-            $stylePath = trim(ConfigManager::getConfigurationValue('COMFINO_CSS_PROD_PATH'), '/');
+            $stylePath = trim(ConfigManager::getConfigurationValue('COMFINO_CSS_PROD_PATH', 'css'), '/');
 
             if (strpos($stylePath, '..') !== false) {
                 $stylePath = trim(ConfigManager::getDefaultValue('css_prod_path'), '/');
@@ -216,7 +217,7 @@ final class FrontendManager
      *
      * @return string[]
      */
-    public static function includeLocalScripts(array $scripts, array $dependencies = [], bool $frontScript = true, bool $inFooter = false, $version = null): array
+    public static function includeLocalScripts(array $scripts, array $dependencies = [], bool $frontScript = true, bool $inFooter = true, $version = null): array
     {
         $scriptIds = [];
 
@@ -242,7 +243,7 @@ final class FrontendManager
      *
      * @return string[]
      */
-    public static function includeExternalScripts(array $scripts, array $dependencies = [], bool $inFooter = false, $version = null): array
+    public static function includeExternalScripts(array $scripts, array $dependencies = [], bool $inFooter = true, $version = null): array
     {
         $scriptIds = [];
 
@@ -288,7 +289,7 @@ final class FrontendManager
      *
      * @return string[]
      */
-    public static function registerLocalScripts(array $scripts, array $dependencies = [], bool $frontScript = true, bool $inFooter = false, $version = null): array
+    public static function registerLocalScripts(array $scripts, array $dependencies = [], bool $frontScript = true, bool $inFooter = true, $version = null): array
     {
         $scriptIds = [];
 
@@ -314,7 +315,7 @@ final class FrontendManager
      *
      * @return string[]
      */
-    public static function registerExternalScripts(array $scripts, array $dependencies = [], bool $inFooter = false, $version = null): array
+    public static function registerExternalScripts(array $scripts, array $dependencies = [], bool $inFooter = true, $version = null): array
     {
         $scriptIds = [];
 
@@ -392,12 +393,13 @@ final class FrontendManager
             );
         } catch (\Throwable $e) {
             ErrorLogger::sendError(
+                $e,
                 'Widget script endpoint',
                 $e->getCode(),
                 $e->getMessage(),
-                null,
-                null,
-                null,
+                $e instanceof HttpErrorExceptionInterface ? $e->getUrl() : null,
+                $e instanceof HttpErrorExceptionInterface ? $e->getRequestBody() : null,
+                $e instanceof HttpErrorExceptionInterface ? $e->getResponseBody() : null,
                 $e->getTraceAsString()
             );
         }

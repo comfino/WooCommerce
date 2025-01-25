@@ -51,7 +51,8 @@ final class ApiClient
                 ConfigManager::getApiHost(),
                 Main::getShopLanguage(),
                 ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_TIMEOUT', 1),
-                ConfigManager::getConfigurationValue('COMFINO_API_TIMEOUT', 3)
+                ConfigManager::getConfigurationValue('COMFINO_API_TIMEOUT', 3),
+                ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_NUM_ATTEMPTS', 3)
             );
 
             self::$apiClient->addCustomHeader('Comfino-Build-Timestamp', (string) PaymentGateway::BUILD_TS);
@@ -72,11 +73,6 @@ final class ApiClient
 
     public static function processApiError(string $errorPrefix, \Throwable $exception): void
     {
-        if ($exception instanceof AuthorizationError) {
-            // Don't collect authorization errors caused by empty or wrong API key (response with status code 401).
-            return;
-        }
-
         if ($exception instanceof HttpErrorExceptionInterface) {
             $url = $exception->getUrl();
             $requestBody = $exception->getRequestBody();
@@ -94,6 +90,7 @@ final class ApiClient
         }
 
         ErrorLogger::sendError(
+            $exception,
             $errorPrefix,
             $exception->getCode(),
             $exception->getMessage(),

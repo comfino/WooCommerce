@@ -6,9 +6,12 @@ use Comfino\Api\Exception\AccessDenied;
 use Comfino\Api\Exception\ResponseValidationError;
 use Comfino\Api\Exception\ServiceUnavailable;
 use Comfino\Api\HttpErrorExceptionInterface;
+use Comfino\Common\Frontend\FrontendHelper;
 use Comfino\Common\Frontend\TemplateRenderer\RendererStrategyInterface;
 use Comfino\Configuration\ConfigManager;
 use Comfino\DebugLogger;
+use Comfino\Main;
+use Comfino\View\FrontendManager;
 use Comfino\View\TemplateManager;
 use ComfinoExternal\Psr\Http\Client\NetworkExceptionInterface;
 
@@ -18,9 +21,13 @@ if (!defined('ABSPATH')) {
 
 class PluginRendererStrategy implements RendererStrategyInterface
 {
+    /**
+     * @param \Throwable $exception
+     * @param \Comfino\Common\Frontend\FrontendRenderer $frontendRenderer
+     */
     public function renderErrorTemplate($exception, $frontendRenderer): string
     {
-        $userErrorMessage = 'There was a technical problem. Please try again in a moment and it should work!';
+        $userErrorMessage = __('There was a technical problem. Please try again in a moment and it should work!', 'comfino-payment-gateway');
 
         DebugLogger::logEvent(
             '[API_ERROR]',
@@ -70,16 +77,18 @@ class PluginRendererStrategy implements RendererStrategyInterface
             $templateName,
             'front',
             [
-                'exception_class' => get_class($exception),
-                'error_message' => $exception->getMessage(),
-                'error_code' => $exception->getCode(),
-                'error_file' => $exception->getFile(),
-                'error_line' => $exception->getLine(),
-                'error_trace' => $exception->getTraceAsString(),
-                'url' => $url,
-                'request_body' => $requestBody,
-                'response_body' => $responseBody,
-                'is_debug_mode' => ConfigManager::isDevEnv(),
+                'language' => Main::getShopLanguage(),
+                'title' => $userErrorMessage,
+                'styles' => FrontendManager::registerExternalStyles($frontendRenderer->getStyles()),
+                'scripts' => FrontendManager::includeExternalScripts($frontendRenderer->getScripts()),
+                'error_details' => FrontendHelper::prepareErrorDetails(
+                    $userErrorMessage,
+                    ConfigManager::isDevEnv(),
+                    $exception,
+                    $url,
+                    $requestBody,
+                    $responseBody
+                ),
             ],
             false
         );

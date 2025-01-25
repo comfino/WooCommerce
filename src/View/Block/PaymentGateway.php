@@ -79,9 +79,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
                     ],
                     $scriptIds
                 )
-            ],
-            true,
-            true
+            ]
         ));
 
         DebugLogger::logEvent(

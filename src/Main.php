@@ -175,7 +175,10 @@ final class Main
     public static function renderPaywallIframe(\WC_Cart $cart, float $total, bool $isPaymentBlock): string
     {
         if (!self::paymentIsAvailable($cart, (int) ($total * 100))) {
-            DebugLogger::logEvent('[PAYWALL]', 'renderPaywallIframe: paymentIsAvailable=FALSE or preparePaywallIframe=NULL');
+            DebugLogger::logEvent(
+                '[PAYWALL]',
+                'renderPaywallIframe: paymentIsAvailable=FALSE or preparePaywallIframe=NULL'
+            );
 
             return '';
         }
@@ -186,7 +189,10 @@ final class Main
             $styleIds = FrontendManager::includeExternalStyles($iframeRenderer->getStyles());
             $scriptIds = FrontendManager::includeExternalScripts($iframeRenderer->getScripts());
 
-            $scriptIds = array_merge($scriptIds, FrontendManager::includeLocalScripts(['paywall-init.js'], ['paywall-init.js' => $scriptIds]));
+            $scriptIds = array_merge(
+                $scriptIds,
+                FrontendManager::includeLocalScripts(['paywall-init.js'], ['paywall-init.js' => $scriptIds])
+            );
 
             DebugLogger::logEvent(
                 '[PAYWALL]', 'renderPaywallIframe registered styles and scripts.',

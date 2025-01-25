@@ -3,6 +3,9 @@
 namespace Comfino;
 
 use Comfino\Api\ApiClient;
+use Comfino\Api\Exception\AuthorizationError;
+use Comfino\Api\Exception\ResponseValidationError;
+use Comfino\Api\HttpErrorExceptionInterface;
 use Comfino\Configuration\ConfigManager;
 
 if (!defined('ABSPATH')) {
@@ -41,12 +44,8 @@ final class ErrorLogger
         return self::$errorLogger;
     }
 
-    public static function logError(string $errorPrefix, string $errorMessage): void
-    {
-        self::$errorLogger->logError($errorPrefix, $errorMessage);
-    }
-
     public static function sendError(
+        \Throwable $exception,
         string  $errorPrefix,
         string  $errorCode,
         string  $errorMessage,
@@ -55,6 +54,12 @@ final class ErrorLogger
         ?string $apiResponse = null,
         ?string $stackTrace = null
     ): void {
+        if ($exception instanceof ResponseValidationError || $exception instanceof AuthorizationError) {
+            /* - Don't collect validation errors - validation errors are already collected at API side (response with status code 400).
+               - Don't collect authorization errors caused by empty or wrong API key (response with status code 401). */
+            return;
+        }
+
         self::$errorLogger->sendError(
             $errorPrefix, $errorCode, $errorMessage, $apiRequestUrl, $apiRequest, $apiResponse, $stackTrace
         );

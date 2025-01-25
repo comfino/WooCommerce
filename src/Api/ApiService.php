@@ -143,9 +143,16 @@ final class ApiService
                 DebugLogger::getLoggerInstance(),
                 'WooCommerce',
                 ...array_merge(
-                    array_values(ConfigManager::getEnvironmentInfo(['shop_version', 'plugin_version', 'plugin_build_ts', 'database_version'])),
+                    array_values(
+                        ConfigManager::getEnvironmentInfo(
+                            ['shop_version', 'plugin_version', 'plugin_build_ts', 'database_version']
+                        )
+                    ),
                     [SettingsForm::DEBUG_LOG_NUM_LINES], // $debugLogNumLines
-                    [array_merge($comfino_payment_gateway->get_plugin_update_details(), ConfigManager::getEnvironmentInfo(['wordpress_version']))] // $shopExtraVariables
+                    [
+                        array_merge($comfino_payment_gateway->get_plugin_update_details(),
+                        ConfigManager::getEnvironmentInfo(['wordpress_version'])),
+                    ] // $shopExtraVariables
                 )
             )
         );
@@ -369,6 +376,7 @@ final class ApiService
             )->financialProducts;
         } catch (\Throwable $e) {
             ErrorLogger::sendError(
+                $e,
                 'Product details endpoint',
                 $e->getCode(),
                 $e->getMessage(),
@@ -442,7 +450,7 @@ final class ApiService
         $templateVariables = [
             'language' => Main::getShopLanguage(),
             'styles' => FrontendManager::registerExternalStyles($paywallRenderer->getStyles()),
-            'scripts' => FrontendManager::includeExternalScripts($paywallRenderer->getScripts()),
+            'scripts' => FrontendManager::includeExternalScripts($paywallRenderer->getScripts(), [], false),
             'shop_url' => Main::getShopUrl(),
             'paywall_hash' => $paywallRenderer->getPaywallHash($paywallContents->paywallBody, ConfigManager::getApiKey()),
             'frontend_elements' => [
@@ -479,7 +487,11 @@ final class ApiService
         DebugLogger::logEvent(
             '[PAYWALL_ITEM_DETAILS]',
             'getPaywallItemDetails',
-            ['$loanTypeSelected' => $loanTypeSelected, '$shopCart' => $shopCart->getAsArray()]
+            [
+                '$loanAmount' => $loanAmount,
+                '$loanTypeSelected' => $loanTypeSelected,
+                '$shopCart' => $shopCart->getAsArray(),
+            ]
         );
 
         $response = FrontendManager::getPaywallRenderer()
