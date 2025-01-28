@@ -93,7 +93,7 @@ final class ApiClient
             $requestBody = $exception->getRequestBody();
             $responseBody = $exception->getResponseBody();
 
-            if ($exception instanceof AccessDenied && $exception->getCode() === 404) {
+            if ($exception instanceof AccessDenied && $exception->getStatusCode() === 404) {
                 $userErrorMessage = $exception->getMessage();
             } elseif ($exception instanceof ConnectionTimeout) {
                 $isTimeout = true;

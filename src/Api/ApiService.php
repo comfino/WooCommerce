@@ -374,18 +374,10 @@ final class ApiService
                 )
             )->financialProducts;
         } catch (\Throwable $e) {
-            ErrorLogger::sendError(
-                $e,
-                'Product details endpoint',
-                $e->getCode(),
-                $e->getMessage(),
-                $e instanceof HttpErrorExceptionInterface ? $e->getUrl() : null,
-                $e instanceof HttpErrorExceptionInterface ? $e->getRequestBody() : null,
-                $e instanceof HttpErrorExceptionInterface ? $e->getResponseBody() : null,
-                $e->getTraceAsString()
+            return new \WP_REST_Response(
+                ApiClient::processApiError('Product details endpoint', $e)['error_details'],
+                $e instanceof HttpErrorExceptionInterface ? $e->getStatusCode() : 500
             );
-
-            return new \WP_REST_Response($e->getMessage(), $e instanceof HttpErrorExceptionInterface ? $e->getStatusCode() : 500);
         } finally {
             if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
                 DebugLogger::logEvent(
@@ -466,7 +458,6 @@ final class ApiService
             ];
         } catch (\Throwable $e) {
             $templateVariables = array_merge($templateVariables, ApiClient::processApiError('Paywall endpoint', $e));
-
             $templateName = 'api-error';
         } finally {
             if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
@@ -505,8 +496,8 @@ final class ApiService
             ]
         );
 
-        $response = FrontendManager::getPaywallRenderer()
-            ->getPaywallItemDetails(
+        try {
+            $paywallItemDetails = ApiClient::getInstance()->getPaywallItemDetails(
                 $loanAmount,
                 LoanTypeEnum::from($loanTypeSelected),
                 new Cart(
@@ -518,15 +509,24 @@ final class ApiService
                     $shopCart->getDeliveryTaxValue()
                 )
             );
-
-        if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
-            DebugLogger::logEvent(
-                '[PAYWALL_ITEM_DETAILS_API_REQUEST]',
-                'getPaywallItemDetails',
-                ['$request' => $apiRequest->getRequestBody()]
+        } catch (\Throwable $e) {
+            return new \WP_REST_Response(
+                ApiClient::processApiError('Paywall item details endpoint', $e)['error_details'],
+                $e instanceof HttpErrorExceptionInterface ? $e->getStatusCode() : 500
             );
+        } finally {
+            if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
+                DebugLogger::logEvent(
+                    '[PAYWALL_ITEM_DETAILS_API_REQUEST]',
+                    'getPaywallItemDetails',
+                    ['$request' => $apiRequest->getRequestBody()]
+                );
+            }
         }
 
-        return new \WP_REST_Response(['listItemData' => $response->listItemData, 'productDetails' => $response->productDetails]);
+        return new \WP_REST_Response([
+            'listItemData' => $paywallItemDetails->listItemData,
+            'productDetails' => $paywallItemDetails->productDetails
+        ]);
     }
 }
