@@ -11,7 +11,6 @@ use Comfino\Common\Frontend\WidgetInitScriptHelper;
 use Comfino\Configuration\ConfigManager;
 use Comfino\ErrorLogger;
 use Comfino\PaymentGateway;
-use Comfino\TemplateRenderer\PluginRendererStrategy;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -21,12 +20,24 @@ final class FrontendManager
 {
     public static function getPaywallRenderer(): PaywallRenderer
     {
-        return new PaywallRenderer(ApiClient::getInstance(), new PluginRendererStrategy());
+        static $renderer = null;
+
+        if ($renderer === null) {
+            $renderer = new PaywallRenderer();
+        }
+
+        return $renderer;
     }
 
     public static function getPaywallIframeRenderer(): PaywallIframeRenderer
     {
-        return new PaywallIframeRenderer();
+        static $renderer = null;
+
+        if ($renderer === null) {
+            $renderer = new PaywallIframeRenderer();
+        }
+
+        return $renderer;
     }
 
     public static function renderAdminLogo(): string

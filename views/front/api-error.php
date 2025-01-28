@@ -8,9 +8,7 @@ if (!defined('ABSPATH')) {
 /** @var string $title */
 /** @var array $styles */
 /** @var array $error_details */
-/** @var bool $full_document_structure */
 ?>
-<?php if ($full_document_structure): ?>
 <!DOCTYPE html>
 <html lang="<?php echo esc_attr($language); ?>">
     <head>
@@ -21,10 +19,8 @@ if (!defined('ABSPATH')) {
         <?php wp_print_head_scripts(); ?>
     </head>
     <body>
-<?php endif; ?>
-        <div id="paywall-container"></div>
-        <script data-cmp-ab="2">ComfinoPaywall<?php if (!$full_document_structure): ?>Frontend<?php endif; ?>.processError(<?php echo wp_json_encode($error_details); ?>);</script>
-<?php if ($full_document_structure): ?>
+        <div id="paywall-error-container"></div>
+        <?php wp_print_footer_scripts(); ?>
+        <script data-cmp-ab="2">ComfinoPaywall.processError(document.getElementById('paywall-error-container'), <?php echo wp_json_encode($error_details); ?>);</script>
     </body>
 </html>
-<?php endif; ?>

@@ -92,6 +92,10 @@ final class FrontendHelper
         string $userErrorMessage,
         bool $isDebugMode,
         \Throwable $exception,
+        bool $isTimeout,
+        int $connectAttemptIdx,
+        int $connectionTimeout,
+        int $transferTimeout,
         ?string $url = null,
         ?string $requestBody = null,
         ?string $responseBody = null
@@ -108,11 +112,23 @@ final class FrontendHelper
                 'url' => $url,
                 'requestBody' => $requestBody,
                 'responseBody' => $responseBody,
+                'connectAttemptIdx' => $connectAttemptIdx,
+                'connectionTimeout' => $connectionTimeout,
+                'transferTimeout' => $transferTimeout,
+                'isTimeout' => $isTimeout,
                 'isDebugMode' => true,
             ]);
         }
 
-        return ['userErrorMessage' => $userErrorMessage, 'isDebugMode' => false];
+        return [
+            'userErrorMessage' => $userErrorMessage,
+            'errorCode' => $exception->getCode(),
+            'connectAttemptIdx' => $connectAttemptIdx,
+            'connectionTimeout' => $connectionTimeout,
+            'transferTimeout' => $transferTimeout,
+            'isTimeout' => $isTimeout,
+            'isDebugMode' => false
+        ];
     }
 
     private static function renderLogoImg(string $apiHost, string $apiEndpoint, string $auth, string $style, string $alt): string

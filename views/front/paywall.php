@@ -21,6 +21,7 @@ if (!defined('ABSPATH')) {
     </head>
     <body>
         <div id="paywall-container"></div>
+        <?php wp_print_footer_scripts(); ?>
         <script data-cmp-ab="2">ComfinoPaywall.init('<?php echo esc_js(esc_url_raw($shop_url)); ?>', document.location.href, '<?php echo esc_js($paywall_hash); ?>', document.getElementById('paywall-container'), <?php echo wp_json_encode($frontend_elements); ?>);</script>
     </body>
 </html>

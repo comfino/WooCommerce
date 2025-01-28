@@ -25,6 +25,7 @@ use Comfino\Shop\Order\Cart;
 use Comfino\View\FrontendManager;
 use Comfino\View\SettingsForm;
 use Comfino\View\TemplateManager;
+use ComfinoExternal\Psr\Http\Client\ClientExceptionInterface;
 use ComfinoExternal\Psr\Http\Message\ServerRequestInterface;
 
 if (!defined('ABSPATH')) {
@@ -335,8 +336,6 @@ final class ApiService
 
     private static function getProductDetails(\WP_REST_Request $request): \WP_REST_Response
     {
-        $serializer = new JsonSerializer();
-
         if (empty($productId = $request->get_param('product_id') ?? '')) {
             return new \WP_REST_Response();
         }
@@ -443,31 +442,43 @@ final class ApiService
         );
 
         $paywallRenderer = FrontendManager::getPaywallRenderer();
-        $paywallContents = $paywallRenderer->getPaywall(
-            new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes),
-            self::getEndpointUrl('paywall')
-        );
         $templateVariables = [
             'language' => Main::getShopLanguage(),
             'styles' => FrontendManager::registerExternalStyles($paywallRenderer->getStyles()),
-            'scripts' => FrontendManager::includeExternalScripts($paywallRenderer->getScripts(), [], false),
+            'scripts' => FrontendManager::includeExternalScripts($paywallRenderer->getScripts()),
             'shop_url' => Main::getShopUrl(),
-            'paywall_hash' => $paywallRenderer->getPaywallHash($paywallContents->paywallBody, ConfigManager::getApiKey()),
-            'frontend_elements' => [
-                'paywallBody' => $paywallContents->paywallBody,
-                'paywallHash' => $paywallContents->paywallHash,
-            ],
         ];
 
-        if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
-            DebugLogger::logEvent(
-                '[PAYWALL_API_REQUEST]',
-                'renderPaywall',
-                ['$request' => $apiRequest->getRequestBody(), '$templateVariables' => $templateVariables]
+        try {
+            $paywallContents = ApiClient::getInstance()->getPaywall(
+                new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes),
+                self::getEndpointUrl('paywall')
             );
+
+            $templateName = 'paywall';
+            $templateVariables['paywall_hash'] = $paywallRenderer->getPaywallHash(
+                $paywallContents->paywallBody,
+                ConfigManager::getApiKey()
+            );
+            $templateVariables['frontend_elements'] = [
+                'paywallBody' => $paywallContents->paywallBody,
+                'paywallHash' => $paywallContents->paywallHash,
+            ];
+        } catch (\Throwable $e) {
+            $templateVariables = array_merge($templateVariables, ApiClient::processApiError('Paywall endpoint', $e));
+
+            $templateName = 'api-error';
+        } finally {
+            if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
+                DebugLogger::logEvent(
+                    '[PAYWALL_API_REQUEST]',
+                    'renderPaywall',
+                    ['$request' => $apiRequest->getRequestBody(), '$templateVariables' => $templateVariables]
+                );
+            }
         }
 
-        TemplateManager::renderView('paywall', 'front', $templateVariables);
+        TemplateManager::renderView($templateName, 'front', $templateVariables);
 
         exit;
     }

@@ -2,12 +2,17 @@
 
 namespace Comfino\Api;
 
+use Comfino\Api\Exception\AccessDenied;
 use Comfino\Api\Exception\AuthorizationError;
 use Comfino\Common\Backend\Factory\ApiClientFactory;
+use Comfino\Common\Exception\ConnectionTimeout;
+use Comfino\Common\Frontend\FrontendHelper;
 use Comfino\Configuration\ConfigManager;
+use Comfino\DebugLogger;
 use Comfino\ErrorLogger;
 use Comfino\Main;
 use Comfino\PaymentGateway;
+use Comfino\View\FrontendManager;
 use ComfinoExternal\Psr\Http\Client\NetworkExceptionInterface;
 
 if (!defined('ABSPATH')) {
@@ -71,14 +76,47 @@ final class ApiClient
         return self::$apiClient;
     }
 
-    public static function processApiError(string $errorPrefix, \Throwable $exception): void
+    public static function processApiError(string $errorPrefix, \Throwable $exception): array
     {
+        $isTimeout = false;
+        $connectAttemptIdx = 1;
+        $connectionTimeout = ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_TIMEOUT', 1);
+        $transferTimeout = ConfigManager::getConfigurationValue('COMFINO_API_TIMEOUT', 3);
+
+        $userErrorMessage = __(
+            'There was a technical problem. Please try again in a moment and it should work!',
+            'comfino-payment-gateway'
+        );
+
         if ($exception instanceof HttpErrorExceptionInterface) {
             $url = $exception->getUrl();
             $requestBody = $exception->getRequestBody();
             $responseBody = $exception->getResponseBody();
+
+            if ($exception instanceof AccessDenied && $exception->getCode() === 404) {
+                $userErrorMessage = $exception->getMessage();
+            } elseif ($exception instanceof ConnectionTimeout) {
+                $isTimeout = true;
+                $connectAttemptIdx = $exception->getConnectAttemptIdx();
+                $connectionTimeout = $exception->getConnectionTimeout();
+                $transferTimeout = $exception->getTransferTimeout();
+
+                DebugLogger::logEvent(
+                    '[API_TIMEOUT]',
+                    $errorPrefix,
+                    [
+                        'exception' => $exception->getPrevious() !== null ? get_class($exception->getPrevious()) : '',
+                        'code' => $exception->getPrevious() !== null ? $exception->getPrevious()->getCode() : 0,
+                        'connect_attempt_idx' => $exception->getConnectAttemptIdx(),
+                        'connection_timeout' => $exception->getConnectionTimeout(),
+                        'transfer_timeout' => $exception->getTransferTimeout(),
+                    ]
+                );
+            }
         } elseif ($exception instanceof NetworkExceptionInterface) {
             $exception->getRequest()->getBody()->rewind();
+
+            DebugLogger::logEvent('[API_NETWORK_ERROR]', $errorPrefix . " [{$exception->getMessage()}]");
 
             $url = $exception->getRequest()->getRequestTarget();
             $requestBody = $exception->getRequest()->getBody()->getContents();
@@ -88,6 +126,19 @@ final class ApiClient
             $requestBody = null;
             $responseBody = null;
         }
+
+        DebugLogger::logEvent(
+            '[API_ERROR]',
+            $errorPrefix,
+            [
+                'exception' => get_class($exception),
+                'error_message' => $exception->getMessage(),
+                'error_code' => $exception->getCode(),
+                'error_file' => $exception->getFile(),
+                'error_line' => $exception->getLine(),
+                'error_trace' => $exception->getTraceAsString(),
+            ]
+        );
 
         ErrorLogger::sendError(
             $exception,
@@ -99,5 +150,21 @@ final class ApiClient
             $responseBody !== '' ? $responseBody : null,
             $exception->getTraceAsString()
         );
+
+        return [
+            'title' => $userErrorMessage,
+            'error_details' => FrontendHelper::prepareErrorDetails(
+                $userErrorMessage,
+                ConfigManager::isDevEnv(),
+                $exception,
+                $isTimeout,
+                $connectAttemptIdx,
+                $connectionTimeout,
+                $transferTimeout,
+                $url,
+                $requestBody,
+                $responseBody
+            ),
+        ];
     }
 }
