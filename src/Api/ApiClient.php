@@ -78,17 +78,19 @@ final class ApiClient
 
     public static function processApiError(string $errorPrefix, \Throwable $exception): array
     {
-        $isTimeout = false;
-        $connectAttemptIdx = 1;
-        $connectionTimeout = ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_TIMEOUT', 1);
-        $transferTimeout = ConfigManager::getConfigurationValue('COMFINO_API_TIMEOUT', 3);
-
         $userErrorMessage = __(
             'There was a technical problem. Please try again in a moment and it should work!',
             'comfino-payment-gateway'
         );
 
+        $statusCode = 500;
+        $isTimeout = false;
+        $connectAttemptIdx = 1;
+        $connectionTimeout = ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_TIMEOUT', 1);
+        $transferTimeout = ConfigManager::getConfigurationValue('COMFINO_API_TIMEOUT', 3);
+
         if ($exception instanceof HttpErrorExceptionInterface) {
+            $statusCode = $exception->getStatusCode();
             $url = $exception->getUrl();
             $requestBody = $exception->getRequestBody();
             $responseBody = $exception->getResponseBody();
@@ -155,6 +157,7 @@ final class ApiClient
             'title' => $userErrorMessage,
             'error_details' => FrontendHelper::prepareErrorDetails(
                 $userErrorMessage,
+                $statusCode,
                 ConfigManager::isDevEnv(),
                 $exception,
                 $isTimeout,

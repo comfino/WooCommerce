@@ -395,6 +395,9 @@ final class ApiService
     {
         header('Content-Type: text/html');
 
+        FrontendManager::resetScripts();
+        FrontendManager::resetStyles();
+
         if (!ConfigManager::isEnabled()) {
             TemplateManager::renderView('plugin-disabled', 'front');
 
@@ -457,6 +460,8 @@ final class ApiService
                 'paywallHash' => $paywallContents->paywallHash,
             ];
         } catch (\Throwable $e) {
+            http_response_code($e instanceof HttpErrorExceptionInterface ? $e->getStatusCode() : 500);
+
             $templateVariables = array_merge($templateVariables, ApiClient::processApiError('Paywall endpoint', $e));
             $templateName = 'api-error';
         } finally {

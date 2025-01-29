@@ -90,6 +90,7 @@ final class FrontendHelper
 
     public static function prepareErrorDetails(
         string $userErrorMessage,
+        int $statusCode,
         bool $isDebugMode,
         \Throwable $exception,
         bool $isTimeout,
@@ -103,6 +104,7 @@ final class FrontendHelper
         if ($isDebugMode) {
             return array_filter([
                 'userErrorMessage' => $userErrorMessage,
+                'statusCode' => $statusCode,
                 'exceptionClass' => get_class($exception),
                 'errorMessage' => $exception->getMessage(),
                 'errorCode' => $exception->getCode(),
@@ -122,6 +124,7 @@ final class FrontendHelper
 
         return [
             'userErrorMessage' => $userErrorMessage,
+            'statusCode' => $statusCode,
             'errorCode' => $exception->getCode(),
             'connectAttemptIdx' => $connectAttemptIdx,
             'connectionTimeout' => $connectionTimeout,

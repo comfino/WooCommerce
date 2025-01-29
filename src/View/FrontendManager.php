@@ -212,6 +212,18 @@ final class FrontendManager
         return sanitize_url(wp_unslash(self::getExternalResourcesBaseUrl() . "$stylePath/$styleFileName"));
     }
 
+    public static function resetScripts(): void
+    {
+        wp_scripts()->registered = [];
+        wp_scripts()->queue = [];
+    }
+
+    public static function resetStyles(): void
+    {
+        wp_styles()->registered = [];
+        wp_styles()->queue = [];
+    }
+
     /**
      * @param string[] $dependencies
      */

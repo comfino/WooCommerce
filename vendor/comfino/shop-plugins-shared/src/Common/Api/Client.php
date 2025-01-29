@@ -164,8 +164,8 @@ class Client extends \Comfino\Extended\Api\Client
                             $connectAttemptIdx,
                             $connectionTimeout,
                             $transferTimeout,
-                            $request->getRequestUri(),
-                            $request->getRequestBody()
+                            $request->getRequestUri() ?? '',
+                            $request->getRequestBody() ?? ''
                         );
                     }
                 } else {
