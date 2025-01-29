@@ -96,6 +96,6 @@ class ConnectionTimeout extends \RuntimeException implements HttpErrorExceptionI
 
     public function getStatusCode(): int
     {
-        return 503;
+        return 504;
     }
 }
