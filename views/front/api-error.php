@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
         <?php wp_print_head_scripts(); ?>
     </head>
     <body>
-        <div id="paywall-error-container"></div>
+        <div id="paywall-error-container" class="paywall-error-container"></div>
         <?php wp_print_footer_scripts(); ?>
         <script data-cmp-ab="2">ComfinoPaywall.processError(document.getElementById('paywall-error-container'), <?php echo wp_json_encode($error_details); ?>);</script>
     </body>

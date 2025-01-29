@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 /** @var string $paywall_url */
 /** @var array $paywall_options */
 ?>
-<div id="comfino-iframe-container"></div>
+<div id="comfino-iframe-container" class="comfino-iframe-container"></div>
 <?php if ($render_init_script): ?>
 <input id="comfino-loan-amount" name="comfino_loan_amount" type="hidden" />
 <input id="comfino-loan-type" name="comfino_loan_type" type="hidden" />
