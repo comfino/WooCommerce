@@ -5,8 +5,8 @@ msgstr ""
 "Project-Id-Version: Comfino payment gateway 4.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/comfino-payment-"
 "gateway\n"
-"POT-Creation-Date: 2025-01-29T15:00:44+00:00\n"
-"PO-Revision-Date: 2025-01-29 16:05+0100\n"
+"POT-Creation-Date: 2025-01-29T15:25:43+00:00\n"
+"PO-Revision-Date: 2025-01-29 16:27+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: pl_PL\n"
@@ -52,6 +52,16 @@ msgid ""
 "work!"
 msgstr ""
 "Wystąpił problem techniczny. Spróbuj ponownie za chwilę i powinno się udać!"
+
+#: src/Api/ApiClient.php:118
+msgid ""
+"We have a configuration problem. The store is already working on a solution!"
+msgstr "Mamy problem z konfiguracją. Sklep już pracuje nad rozwiązaniem!"
+
+#: src/Api/ApiClient.php:123
+msgid "It looks like we have an outage. We'll fix it as soon as possible!"
+msgstr ""
+"Wygląda na to, że mamy awarię. Naprawimy ją tak szybko, jak to możliwe!"
 
 #: src/Main.php:130
 msgid "Settings"

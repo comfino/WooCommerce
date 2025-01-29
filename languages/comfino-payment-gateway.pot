@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-01-29T15:00:44+00:00\n"
+"POT-Creation-Date: 2025-01-29T15:25:43+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.10.0\n"
 "X-Domain: comfino-payment-gateway\n"
@@ -46,6 +46,14 @@ msgstr ""
 
 #: src/Api/ApiClient.php:81
 msgid "There was a technical problem. Please try again in a moment and it should work!"
+msgstr ""
+
+#: src/Api/ApiClient.php:118
+msgid "We have a configuration problem. The store is already working on a solution!"
+msgstr ""
+
+#: src/Api/ApiClient.php:123
+msgid "It looks like we have an outage. We'll fix it as soon as possible!"
 msgstr ""
 
 #: src/Main.php:130

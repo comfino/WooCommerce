@@ -95,7 +95,7 @@ final class ApiClient
             $requestBody = $exception->getRequestBody();
             $responseBody = $exception->getResponseBody();
 
-            if ($exception instanceof AccessDenied && $exception->getStatusCode() === 404) {
+            if ($exception instanceof AccessDenied && $statusCode === 404) {
                 $userErrorMessage = $exception->getMessage();
             } elseif ($exception instanceof ConnectionTimeout) {
                 $isTimeout = true;
@@ -113,6 +113,16 @@ final class ApiClient
                         'connection_timeout' => $exception->getConnectionTimeout(),
                         'transfer_timeout' => $exception->getTransferTimeout(),
                     ]
+                );
+            } elseif ($statusCode < 500) {
+                $userErrorMessage = __(
+                    'We have a configuration problem. The store is already working on a solution!',
+                    'comfino-payment-gateway'
+                );
+            } elseif ($statusCode < 504) {
+                $userErrorMessage = __(
+                    'It looks like we have an outage. We\'ll fix it as soon as possible!',
+                    'comfino-payment-gateway'
                 );
             }
         } elseif ($exception instanceof NetworkExceptionInterface) {
