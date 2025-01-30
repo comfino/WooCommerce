@@ -99,10 +99,10 @@ window.Comfino = {
                 }
             }
 
-            let iframe = document.getElementById('comfino-paywall-container');
+            const iframe = document.getElementById('comfino-paywall-container');
 
             if (iframe === null) {
-                let logoImgElement = document.getElementById('comfino-gateway-logo');
+                const logoImgElement = document.getElementById('comfino-gateway-logo');
 
                 if (logoImgElement === null) {
                     ComfinoPaywallFrontend.logEvent('Comfino logo not found in the payment block.', 'error');
@@ -111,7 +111,7 @@ window.Comfino = {
                 }
 
                 if (Comfino.listItemContainer === null) {
-                    let initInputElement = ComfinoPaywallFrontend.findMatchingParentElement(
+                    const initInputElement = ComfinoPaywallFrontend.findMatchingParentElement(
                         logoImgElement,
                         (currentElement) => (currentElement.querySelector('input[type="radio"][value="comfino"]') !== null)
                     );
@@ -132,12 +132,38 @@ window.Comfino = {
                     Comfino.labelObserver = new MutationObserver((mutationsList, observer) => {
                         ComfinoPaywallFrontend.logEvent('Comfino item changed.', 'debug', mutationsList, observer);
 
-                        if (Comfino.isSelected) {
-                            let iframe = document.getElementById('comfino-paywall-container');
+                        const iframe = document.getElementById('comfino-paywall-container');
 
+                        if (iframe.style.display === 'block') {
+                            return;
+                        }
+
+                        if (Comfino.isSelected) {
                             ComfinoPaywallFrontend.logEvent('Deferred Comfino initialization started.', 'debug', iframe);
                             ComfinoPaywallFrontend.init(null, iframe, comfinoSettings.paywallOptions);
                             ComfinoPaywallFrontend.executeClickLogic();
+                        } else {
+                            for (let i = 0; i < mutationsList.length; i++) {
+                                let inputElement = null;
+
+                                if (mutationsList[i].target.tagName === 'INPUT' && mutationsList[i].target.type === 'radio') {
+                                    inputElement = mutationsList[i].target;
+                                } else {
+                                    inputElement = mutationsList[i].target.querySelector('input[type="radio"]');
+                                }
+
+                                if (inputElement !== null && inputElement.value === 'comfino') {
+                                    Comfino.isSelected = true;
+
+                                    ComfinoPaywallFrontend.logEvent('Comfino item selected.', 'debug', inputElement);
+                                    ComfinoPaywallFrontend.logEvent('Deferred Comfino initialization started.', 'debug', iframe);
+
+                                    ComfinoPaywallFrontend.init(null, iframe, comfinoSettings.paywallOptions);
+                                    ComfinoPaywallFrontend.executeClickLogic();
+
+                                    break;
+                                }
+                            }
                         }
                     });
 
