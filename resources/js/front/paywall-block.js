@@ -5,10 +5,15 @@ window.Comfino = {
     isSelected: false,
     isPaywallActive: false,
     loanParams: { loanAmount: 0, loanType: '', loanTerm: 0 },
+    shippingMethods: null,
     listItemContainer: null,
     labelObserver: null,
     paywallTemplate: null,
     Label: () => {
+        if (!Comfino.isPaywallActive) {
+            ComfinoPaywallFrontend.logEvent('Comfino.Label', 'debug', Comfino.label, comfinoSettings.icon);
+        }
+
         Comfino.isPaywallActive = true;
 
         if (comfinoSettings.icon) {
@@ -17,11 +22,15 @@ window.Comfino = {
             });
         }
 
-        return label;
+        return Comfino.label;
     },
     Content: (properties) => {
         const { eventRegistration, emitResponse } = properties;
         const { onPaymentSetup } = eventRegistration;
+
+        if (Comfino.paywallTemplate === null) {
+            ComfinoPaywallFrontend.logEvent('Comfino.Content', 'debug', properties);
+        }
 
         wp.element.useEffect(() => {
                 const unsubscribe = onPaymentSetup(async () => {
@@ -134,7 +143,7 @@ window.Comfino = {
 
                         const iframe = document.getElementById('comfino-paywall-container');
 
-                        if (iframe.style.display === 'block') {
+                        if (iframe === null || iframe.style.display === 'block') {
                             return;
                         }
 
@@ -238,10 +247,14 @@ wc.wcBlocksRegistry.registerPaymentMethod({
         if (document.readyState === 'complete') {
             ComfinoPaywallFrontend.logEvent('document.readyState: complete', 'debug');
 
-            Comfino.init(orderData);
+            if (document.getElementById('comfino-paywall-container') === null || Comfino.shippingMethods === null ||
+                Comfino.shippingMethods.toString() !== Object.values(orderData.selectedShippingMethods).toString())
+            {
+                Comfino.init(orderData);
 
-            if (Comfino.isSelected) {
-                ComfinoPaywallFrontend.executeClickLogic();
+                if (Comfino.isSelected) {
+                    ComfinoPaywallFrontend.executeClickLogic();
+                }
             }
         } else {
             document.addEventListener('readystatechange', () => {
@@ -256,6 +269,8 @@ wc.wcBlocksRegistry.registerPaymentMethod({
                 }
             });
         }
+
+        Comfino.shippingMethods = Object.values(orderData.selectedShippingMethods);
 
         return true;
     },
