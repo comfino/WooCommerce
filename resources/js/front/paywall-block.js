@@ -248,8 +248,8 @@ wc.wcBlocksRegistry.registerPaymentMethod({
             ComfinoPaywallFrontend.logEvent('document.readyState: complete', 'debug');
 
             if (document.getElementById('comfino-paywall-container') === null || Comfino.shippingMethods === null ||
-                Comfino.shippingMethods.toString() !== Object.values(orderData.selectedShippingMethods).toString())
-            {
+                Comfino.shippingMethods.toString() !== Object.values(orderData.selectedShippingMethods).toString()
+            ) {
                 Comfino.init(orderData);
 
                 if (Comfino.isSelected) {
