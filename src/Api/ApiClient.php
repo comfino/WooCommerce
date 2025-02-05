@@ -3,7 +3,6 @@
 namespace Comfino\Api;
 
 use Comfino\Api\Exception\AccessDenied;
-use Comfino\Api\Exception\AuthorizationError;
 use Comfino\Common\Backend\Factory\ApiClientFactory;
 use Comfino\Common\Exception\ConnectionTimeout;
 use Comfino\Common\Frontend\FrontendHelper;
@@ -12,7 +11,6 @@ use Comfino\DebugLogger;
 use Comfino\ErrorLogger;
 use Comfino\Main;
 use Comfino\PaymentGateway;
-use Comfino\View\FrontendManager;
 use ComfinoExternal\Psr\Http\Client\NetworkExceptionInterface;
 
 if (!defined('ABSPATH')) {

@@ -5,7 +5,6 @@ namespace Comfino;
 use Comfino\Api\ApiClient;
 use Comfino\Api\Exception\AuthorizationError;
 use Comfino\Api\Exception\ResponseValidationError;
-use Comfino\Api\HttpErrorExceptionInterface;
 use Comfino\Configuration\ConfigManager;
 
 if (!defined('ABSPATH')) {
