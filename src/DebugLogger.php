@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class DebugLogger
+final class DebugLogger
 {
     /** @var Common\Backend\DebugLogger */
     private static $debugLogger;
