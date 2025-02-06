@@ -2,7 +2,7 @@ window.ComfinoPaywallInit = {
     init: () => {
         const iframeContainer = document.getElementById('comfino-iframe-container');
 
-        if (iframeContainer.querySelector('#comfino-iframe-container') !== null) {
+        if (iframeContainer.querySelector('#comfino-paywall-container') !== null) {
             ComfinoPaywallFrontend.logEvent('Comfino paywall iframe already initialized.', 'info', iframeContainer);
 
             return;
