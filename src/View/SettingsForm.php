@@ -8,6 +8,7 @@ use Comfino\Api\Exception\AuthorizationError;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
+use Comfino\Main;
 use Comfino\PluginShared\CacheManager;
 
 if (!defined('ABSPATH')) {
@@ -249,7 +250,7 @@ final class SettingsForm
                     self::getFormFieldsDefinitions(),
                     array_flip([
                         'widget_settings_basic',
-                        'widget_enabled', 'widget_key', 'widget_type', 'widget_offer_type',
+                        'widget_enabled', 'widget_key', 'widget_type', 'widget_offer_types',
                         'widget_settings_advanced',
                         'widget_price_selector', 'widget_target_selector', 'widget_price_observer_selector',
                         'widget_price_observer_level', 'widget_embed_method', 'widget_js_code',
@@ -425,11 +426,12 @@ final class SettingsForm
                 'type' => 'select',
                 'options' => SettingsManager::getWidgetTypesSelectList(),
             ],
-            'widget_offer_type' => [
-                'title' => __('Widget offer type', 'comfino-payment-gateway'),
-                'type' => 'select',
+            'widget_offer_types' => [
+                'title' => __('Widget offer types', 'comfino-payment-gateway'),
+                'type' => 'multiselect',
                 'options' => SettingsManager::getProductTypesSelectList(ProductTypesListTypeEnum::LIST_TYPE_WIDGET),
-                'description' => __('Other payment methods (Installments 0%, Buy now, pay later, Installments for Companies) available after consulting a Comfino advisor (kontakt@comfino.pl).', 'comfino-payment-gateway'),
+                'default' => [key(SettingsManager::getProductTypesSelectList(ProductTypesListTypeEnum::LIST_TYPE_WIDGET))],
+                'description' => __('Other payment methods (Installments 0%, Buy now, pay later, Installments for companies, Leasing) available after consulting a Comfino advisor (kontakt@comfino.pl).', 'comfino-payment-gateway'),
             ],
             'widget_settings_advanced' => [
                 'title' => __('Advanced settings', 'comfino-payment-gateway'),

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-01-29T15:25:43+00:00\n"
+"POT-Creation-Date: 2025-02-11T13:51:17+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.10.0\n"
 "X-Domain: comfino-payment-gateway\n"
@@ -44,15 +44,15 @@ msgstr ""
 msgid "Comfino plugin updated from version %1$s to %2$s."
 msgstr ""
 
-#: src/Api/ApiClient.php:81
+#: src/Api/ApiClient.php:79
 msgid "There was a technical problem. Please try again in a moment and it should work!"
 msgstr ""
 
-#: src/Api/ApiClient.php:118
+#: src/Api/ApiClient.php:116
 msgid "We have a configuration problem. The store is already working on a solution!"
 msgstr ""
 
-#: src/Api/ApiClient.php:123
+#: src/Api/ApiClient.php:121
 msgid "It looks like we have an outage. We'll fix it as soon as possible!"
 msgstr ""
 
@@ -140,199 +140,199 @@ msgid "or contact us by phone. We are waiting on the number: %s. We will answer 
 msgstr ""
 
 #. translators: s%: Validated form field name
-#: src/View/SettingsForm.php:31
+#: src/View/SettingsForm.php:32
 msgid "Field '%s' can not be empty."
 msgstr ""
 
 #. translators: s%: Validated form field name
-#: src/View/SettingsForm.php:33
+#: src/View/SettingsForm.php:34
 msgid "Field '%s' has wrong numeric format."
 msgstr ""
 
-#: src/View/SettingsForm.php:45
-#: src/View/SettingsForm.php:355
+#: src/View/SettingsForm.php:46
+#: src/View/SettingsForm.php:356
 msgid "Production environment API key"
 msgstr ""
 
-#: src/View/SettingsForm.php:48
+#: src/View/SettingsForm.php:49
 msgid "Payment text"
 msgstr ""
 
-#: src/View/SettingsForm.php:51
-#: src/View/SettingsForm.php:53
-#: src/View/SettingsForm.php:350
+#: src/View/SettingsForm.php:52
+#: src/View/SettingsForm.php:54
+#: src/View/SettingsForm.php:351
 msgid "Minimal amount in cart"
 msgstr ""
 
 #. translators: s%: Comfino API key
-#: src/View/SettingsForm.php:88
-#: src/View/SettingsForm.php:171
+#: src/View/SettingsForm.php:89
+#: src/View/SettingsForm.php:172
 msgid "API key %s is not valid."
 msgstr ""
 
-#: src/View/SettingsForm.php:148
-#: src/View/SettingsForm.php:458
+#: src/View/SettingsForm.php:149
+#: src/View/SettingsForm.php:460
 msgid "Price change detection - container hierarchy level"
 msgstr ""
 
-#: src/View/SettingsForm.php:338
-#: src/View/SettingsForm.php:491
+#: src/View/SettingsForm.php:339
+#: src/View/SettingsForm.php:493
 msgid "Enable/Disable"
 msgstr ""
 
-#: src/View/SettingsForm.php:340
+#: src/View/SettingsForm.php:341
 msgid "Enable Comfino payment module"
 msgstr ""
 
-#: src/View/SettingsForm.php:342
+#: src/View/SettingsForm.php:343
 msgid "Shows Comfino payment option at the payment list."
 msgstr ""
 
-#: src/View/SettingsForm.php:345
+#: src/View/SettingsForm.php:346
 msgid "Title"
 msgstr ""
 
-#: src/View/SettingsForm.php:357
+#: src/View/SettingsForm.php:358
 msgid "Please enter the key provided during registration"
 msgstr ""
 
-#: src/View/SettingsForm.php:360
+#: src/View/SettingsForm.php:361
 msgid "Show logo"
 msgstr ""
 
-#: src/View/SettingsForm.php:362
+#: src/View/SettingsForm.php:363
 msgid "Show logo on payment method"
 msgstr ""
 
-#: src/View/SettingsForm.php:366
+#: src/View/SettingsForm.php:367
 msgid "Test environment"
 msgstr ""
 
-#: src/View/SettingsForm.php:368
+#: src/View/SettingsForm.php:369
 msgid "Use test environment"
 msgstr ""
 
-#: src/View/SettingsForm.php:370
+#: src/View/SettingsForm.php:371
 msgid "The test environment allows the store owner to get acquainted with the functionality of the Comfino module. This is a Comfino simulator, thanks to which you can get to know all the advantages of this payment method. The use of the test mode is free (there are also no charges for orders)."
 msgstr ""
 
-#: src/View/SettingsForm.php:376
+#: src/View/SettingsForm.php:377
 msgid "Test environment API key"
 msgstr ""
 
-#: src/View/SettingsForm.php:378
+#: src/View/SettingsForm.php:379
 msgid "Ask the supervisor for access to the test environment (key, login, password, link). Remember, the test key is different from the production key."
 msgstr ""
 
-#: src/View/SettingsForm.php:381
+#: src/View/SettingsForm.php:382
 msgid "Debug mode"
 msgstr ""
 
-#: src/View/SettingsForm.php:383
+#: src/View/SettingsForm.php:384
 msgid "Enable debug mode"
 msgstr ""
 
-#: src/View/SettingsForm.php:385
+#: src/View/SettingsForm.php:386
 msgid "Debug mode is useful in case of problems with Comfino payment availability. In this mode module logs details of internal process responsible for displaying of Comfino payment option at the payment methods list."
 msgstr ""
 
-#: src/View/SettingsForm.php:391
+#: src/View/SettingsForm.php:392
 msgid "Service mode"
 msgstr ""
 
-#: src/View/SettingsForm.php:393
+#: src/View/SettingsForm.php:394
 msgid "Enable service mode"
 msgstr ""
 
-#: src/View/SettingsForm.php:395
+#: src/View/SettingsForm.php:396
 msgid "Service mode is useful in testing Comfino payment gateway without sharing it with customers. In this mode Comfino payment method is visible only for selected sessions and debug logs are collected only for these sessions."
 msgstr ""
 
-#: src/View/SettingsForm.php:405
+#: src/View/SettingsForm.php:406
 msgid "Rules for the availability of financial products"
 msgstr ""
 
-#: src/View/SettingsForm.php:409
+#: src/View/SettingsForm.php:410
 msgid "Basic settings"
 msgstr ""
 
-#: src/View/SettingsForm.php:413
+#: src/View/SettingsForm.php:414
 msgid "Widget enable"
 msgstr ""
 
-#: src/View/SettingsForm.php:415
+#: src/View/SettingsForm.php:416
 msgid "Enable Comfino widget"
 msgstr ""
 
-#: src/View/SettingsForm.php:417
+#: src/View/SettingsForm.php:418
 msgid "Show Comfino widget in the product."
 msgstr ""
 
-#: src/View/SettingsForm.php:420
+#: src/View/SettingsForm.php:421
 msgid "Widget key"
 msgstr ""
 
-#: src/View/SettingsForm.php:424
+#: src/View/SettingsForm.php:425
 msgid "Widget type"
 msgstr ""
 
-#: src/View/SettingsForm.php:429
-msgid "Widget offer type"
+#: src/View/SettingsForm.php:430
+msgid "Widget offer types"
 msgstr ""
 
-#: src/View/SettingsForm.php:432
-msgid "Other payment methods (Installments 0%, Buy now, pay later, Installments for Companies) available after consulting a Comfino advisor (kontakt@comfino.pl)."
+#: src/View/SettingsForm.php:434
+msgid "Other payment methods (Installments 0%, Buy now, pay later, Installments for companies, Leasing) available after consulting a Comfino advisor (kontakt@comfino.pl)."
 msgstr ""
 
-#: src/View/SettingsForm.php:435
+#: src/View/SettingsForm.php:437
 msgid "Advanced settings"
 msgstr ""
 
-#: src/View/SettingsForm.php:439
+#: src/View/SettingsForm.php:441
 msgid "Widget price element selector"
 msgstr ""
 
-#: src/View/SettingsForm.php:444
+#: src/View/SettingsForm.php:446
 msgid "Widget anchor element selector"
 msgstr ""
 
-#: src/View/SettingsForm.php:449
+#: src/View/SettingsForm.php:451
 msgid "Price change detection - container selector"
 msgstr ""
 
-#: src/View/SettingsForm.php:452
+#: src/View/SettingsForm.php:454
 msgid "Selector of observed parent element which contains price element."
 msgstr ""
 
-#: src/View/SettingsForm.php:461
+#: src/View/SettingsForm.php:463
 msgid "Hierarchy level of observed parent element relative to the price element."
 msgstr ""
 
-#: src/View/SettingsForm.php:467
+#: src/View/SettingsForm.php:469
 msgid "Embedding method"
 msgstr ""
 
-#: src/View/SettingsForm.php:477
+#: src/View/SettingsForm.php:479
 msgid "Widget initialization code"
 msgstr ""
 
-#: src/View/SettingsForm.php:493
+#: src/View/SettingsForm.php:495
 msgid "By enabling \"Saving shopping cart\", you agree and accept <a href=\"https://cdn.comfino.pl/regulamin/Regulamin-Ratowanie-Koszyka.pdf\">Regulations</a>"
 msgstr ""
 
-#: src/View/SettingsForm.php:495
+#: src/View/SettingsForm.php:497
 msgid "With the \"Cart Rescue\" feature, you will effectively minimize the problem of abandoned carts that all sellers face. When a customer adds products to the cart but abandons it, also due to an unsuccessful payment, they will automatically receive a reminder e-mail with a direct link leading to payment. This service allows you to effectively recover potential transactions and increase order conversions."
 msgstr ""
 
-#: src/View/SettingsForm.php:498
+#: src/View/SettingsForm.php:500
 msgid "View in payment list"
 msgstr ""
 
-#: src/View/SettingsForm.php:501
+#: src/View/SettingsForm.php:503
 msgid "Only Comfino"
 msgstr ""
 
-#: src/View/SettingsForm.php:502
+#: src/View/SettingsForm.php:504
 msgid "All payments"
 msgstr ""
 

@@ -42,7 +42,7 @@ final class ConfigManager
         'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR' => 'widget_price_observer_selector',
         'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL' => 'widget_price_observer_level',
         'COMFINO_WIDGET_TYPE' => 'widget_type',
-        'COMFINO_WIDGET_OFFER_TYPE' => 'widget_offer_type',
+        'COMFINO_WIDGET_OFFER_TYPES' => 'widget_offer_types',
         'COMFINO_WIDGET_EMBED_METHOD' => 'widget_embed_method',
         'COMFINO_WIDGET_CODE' => 'widget_js_code',
         'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => 'widget_prod_script_version',
@@ -80,7 +80,7 @@ final class ConfigManager
             'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL' => ConfigurationManager::OPT_VALUE_TYPE_INT,
             'COMFINO_WIDGET_TYPE' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
-            'COMFINO_WIDGET_OFFER_TYPE' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
+            'COMFINO_WIDGET_OFFER_TYPES' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
             'COMFINO_WIDGET_EMBED_METHOD' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_WIDGET_CODE' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
         ],
@@ -128,7 +128,7 @@ final class ConfigManager
         'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR',
         'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL',
         'COMFINO_WIDGET_TYPE',
-        'COMFINO_WIDGET_OFFER_TYPE',
+        'COMFINO_WIDGET_OFFER_TYPES',
         'COMFINO_WIDGET_EMBED_METHOD',
         'COMFINO_WIDGET_CODE',
         'COMFINO_WIDGET_PROD_SCRIPT_VERSION',
@@ -147,6 +147,8 @@ final class ConfigManager
         'COMFINO_API_CONNECT_NUM_ATTEMPTS',
     ];
 
+    private const CONFIG_MANAGER_OPTIONS = 0;
+
     /** @var ConfigurationManager */
     private static $configurationManager;
     /** @var StorageAdapterInterface */
@@ -161,6 +163,7 @@ final class ConfigManager
             self::$configurationManager = ConfigurationManager::getInstance(
                 self::getAvailableConfigOptions(),
                 self::ACCESSIBLE_CONFIG_OPTIONS,
+                self::CONFIG_MANAGER_OPTIONS,
                 self::$storageAdapter,
                 new JsonSerializer()
             );
@@ -291,6 +294,20 @@ final class ConfigManager
     public static function isAbandonedCartEnabled(): bool
     {
         return self::getInstance()->getConfigurationValue('COMFINO_ABANDONED_CART_ENABLED');
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function getWidgetOfferTypes(): array
+    {
+        if (is_array($offerTypes = self::getConfigurationValue('COMFINO_WIDGET_OFFER_TYPES'))) {
+            return $offerTypes;
+        }
+
+        $offerType = self::getConfigurationValue('COMFINO_WIDGET_OFFER_TYPE');
+
+        return !empty($offerType) ? [$offerType] : [];
     }
 
     public static function getLogoApiHost(): string
@@ -517,7 +534,7 @@ final class ConfigManager
             'COMFINO_DEBUG' => false,
             'COMFINO_SERVICE_MODE' => false,
             'COMFINO_PRODUCT_CATEGORY_FILTERS' => '',
-            'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => 'INSTALLMENTS_ZERO_PERCENT,PAY_LATER',
+            'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => 'INSTALLMENTS_ZERO_PERCENT,PAY_LATER,LEASING',
             'COMFINO_WIDGET_ENABLED' => false,
             'COMFINO_WIDGET_KEY' => '',
             'COMFINO_WIDGET_PRICE_SELECTOR' => '.price .woocommerce-Price-amount bdi',
@@ -525,7 +542,7 @@ final class ConfigManager
             'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR' => '',
             'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL' => 0,
             'COMFINO_WIDGET_TYPE' => 'extended-modal',
-            'COMFINO_WIDGET_OFFER_TYPE' => 'CONVENIENT_INSTALLMENTS',
+            'COMFINO_WIDGET_OFFER_TYPES' => ['CONVENIENT_INSTALLMENTS'],
             'COMFINO_WIDGET_EMBED_METHOD' => 'INSERT_INTO_LAST',
             'COMFINO_WIDGET_CODE' => WidgetInitScriptHelper::getInitialWidgetCode(),
             'COMFINO_ABANDONED_CART_ENABLED' => false,

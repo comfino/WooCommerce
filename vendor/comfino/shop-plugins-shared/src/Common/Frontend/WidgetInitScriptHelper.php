@@ -11,7 +11,7 @@ class WidgetInitScriptHelper
         'WIDGET_PRICE_OBSERVER_SELECTOR',
         'WIDGET_PRICE_OBSERVER_LEVEL',
         'WIDGET_TYPE',
-        'OFFER_TYPE',
+        'OFFER_TYPES',
         'EMBED_METHOD',
     ];
 
@@ -55,7 +55,17 @@ class WidgetInitScriptHelper
             ),
             array_merge(
                 array_merge($widgetInitParamsAssocKeys, $widgetInitParams),
-                array_values($widgetInitVariables)
+                array_map(static function ($varValue): string {
+                    if (is_bool($varValue)) {
+                        return $varValue ? 'true' : 'false';
+                    }
+
+                    if (is_array($varValue)) {
+                        return ($result = json_encode($varValue)) !== false ? $result : '[]';
+                    }
+
+                    return $varValue !== null ? (string) $varValue : 'null';
+                }, array_values($widgetInitVariables))
             ),
             $widgetInitCode
         );
@@ -86,7 +96,7 @@ script.onload = function () {
         priceObserverSelector: '{WIDGET_PRICE_OBSERVER_SELECTOR}',
         priceObserverLevel: {WIDGET_PRICE_OBSERVER_LEVEL},
         type: '{WIDGET_TYPE}',
-        offerType: '{OFFER_TYPE}',
+        offerTypes: {OFFER_TYPES},
         embedMethod: '{EMBED_METHOD}',
         numOfInstallments: 0,
         price: null,

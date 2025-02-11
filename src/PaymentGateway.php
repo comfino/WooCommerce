@@ -22,9 +22,9 @@ class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
     public const VERSION = '4.2.1';
-    public const BUILD_TS = 1738248654;
-    public const WIDGET_INIT_SCRIPT_HASH = 'b1a0cae1a47d1c5b9264df3573c09c48';
-    public const WIDGET_INIT_SCRIPT_LAST_HASH = '4f8e7fe2091417c2b345fb51f1587316';
+    public const BUILD_TS = 1739199326;
+    public const WIDGET_INIT_SCRIPT_HASH = 'c0af7eac44e1da646156fb12f2b7dbd7';
+    public const WIDGET_INIT_SCRIPT_LAST_HASH = '55e4306bb493ff6f99b2f8f617e18038';
 
     public function __construct()
     {
