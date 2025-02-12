@@ -177,7 +177,7 @@ final class ApiService
             'availableOfferTypes' => '/availableoffertypes(?:/(?P<product_id>\d+))?',
             'paywall' => '/paywall',
             'paywallItemDetails' => '/paywallitemdetails',
-            'productDetails' => '/productdetails(?:/(?P<product_id>\d+)/(?P<loanTypeSelected>[A-Z_]+))?',
+            'productDetails' => '/productdetails(?:/(?P<product_id>\d+))?(?:/(?P<loanTypeSelected>[A-Z_]+))?',
             'transactionStatus' => '/transactionstatus',
             'configuration' => '/configuration(?:/(?P<vkey>[a-f0-9]+))?',
             'cacheInvalidate' => '/cacheinvalidate',
@@ -360,7 +360,11 @@ final class ApiService
 
         try {
             $financialProducts = ApiClient::getInstance()->getFinancialProductDetails(
-                new LoanQueryCriteria($loanAmount, null, LoanTypeEnum::from($loanTypeSelected)),
+                new LoanQueryCriteria(
+                    $loanAmount,
+                    null,
+                    !empty($loanTypeSelected) ? LoanTypeEnum::from($loanTypeSelected) : null
+                ),
                 new Cart(
                     $shopCart->getCartItems(),
                     $shopCart->getTotalValue(),
