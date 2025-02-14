@@ -294,6 +294,8 @@ class Comfino_Payment_Gateway
             );
         }
 
+        ConfigManager::updateConfigurationValue('COMFINO_WIDGET_TYPE', 'extended-modal');
+
         set_transient('comfino_plugin_updated', 0);
     }
 
