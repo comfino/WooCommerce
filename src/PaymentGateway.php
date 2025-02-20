@@ -22,7 +22,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
     public const VERSION = '4.2.1';
-    public const BUILD_TS = 1739199326;
+    public const BUILD_TS = 1739805369;
     public const WIDGET_INIT_SCRIPT_HASH = 'c0af7eac44e1da646156fb12f2b7dbd7';
     public const WIDGET_INIT_SCRIPT_LAST_HASH = '55e4306bb493ff6f99b2f8f617e18038';
 
@@ -372,6 +372,9 @@ class PaymentGateway extends \WC_Payment_Gateway
                 try {
                     if ($configurationOptions[$fieldKey] === 'yes' || $configurationOptions[$fieldKey] === 'no') {
                         $configurationOptionsToSave[$optionsMap[$key]] = ($configurationOptions[$fieldKey] === 'yes');
+                    } elseif ($key === 'widget_offer_types') {
+                        $configurationOptions[$fieldKey] = implode(',', $configurationOptions[$fieldKey]);
+                        $configurationOptionsToSave[$optionsMap[$key]] = explode(',', $this->get_field_value($key, $field, $configurationOptions));
                     } else {
                         $configurationOptionsToSave[$optionsMap[$key]] = $this->get_field_value($key, $field, $configurationOptions);
                     }
@@ -423,8 +426,18 @@ class PaymentGateway extends \WC_Payment_Gateway
         return FrontendManager::renderHiddenInput(
             $this->get_field_key($key),
             $this->get_option($key),
-            $this->get_custom_attribute_html($data),
-            $data
+            $data,
+            $this
+        );
+    }
+
+    public function generate_checkboxset_html(string $key, $data)
+    {
+        return FrontendManager::renderCheckboxSet(
+            $this->get_field_key($key),
+            ConfigManager::getConfigurationValueByInternalName($key),
+            $data,
+            $this
         );
     }
 

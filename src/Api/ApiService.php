@@ -490,6 +490,7 @@ final class ApiService
 
         $loanAmount = (int) round(WC()->cart->get_total('edit') * 100);
         $loanTypeSelected = $request->get_param('loanTypeSelected');
+        $loadProductCategories = ($request->get_param('reqProdCat') === 'yes');
         $shopCart = OrderManager::getShopCart(WC()->cart, $loanAmount);
 
         DebugLogger::logEvent(
@@ -498,6 +499,7 @@ final class ApiService
             [
                 '$loanAmount' => $loanAmount,
                 '$loanTypeSelected' => $loanTypeSelected,
+                '$loadProductCategories' => $loadProductCategories,
                 '$shopCart' => $shopCart->getAsArray(),
             ]
         );

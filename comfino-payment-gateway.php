@@ -295,6 +295,8 @@ class Comfino_Payment_Gateway
         }
 
         ConfigManager::updateConfigurationValue('COMFINO_WIDGET_TYPE', 'extended-modal');
+        ConfigManager::updateConfigurationValue('COMFINO_API_CONNECT_TIMEOUT', 3);
+        ConfigManager::updateConfigurationValue('COMFINO_API_TIMEOUT', 5);
 
         set_transient('comfino_plugin_updated', 0);
     }

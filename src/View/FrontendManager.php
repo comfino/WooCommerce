@@ -69,7 +69,7 @@ final class FrontendManager
         );
     }
 
-    public static function renderHiddenInput(string $fieldKey, ?string $fieldValue, string $customAttributes, array $data): string
+    public static function renderHiddenInput(string $fieldKey, ?string $fieldValue, array $data, \WC_Settings_API $wcSettings): string
     {
         $defaults = [
             'title' => '',
@@ -95,7 +95,76 @@ final class FrontendManager
             $fieldValue,
             esc_attr($data['placeholder']),
             disabled($data['disabled']),
-            $customAttributes
+            $wcSettings->get_custom_attribute_html($data)
+        );
+    }
+
+    public static function renderCheckboxSet(string $fieldKey, ?array $fieldValue, array $data, \WC_Settings_API $wcSettings): string
+    {
+        $defaults = [
+            'title' => '',
+            'label' => '',
+            'disabled' => false,
+            'class' => '',
+            'css' => '',
+            'type' => 'text',
+            'desc_tip' => false,
+            'description' => '',
+            'custom_attributes' => [],
+        ];
+
+        $data = wp_parse_args($data, $defaults);
+
+        if (!$data['label']) {
+            $data['label'] = $data['title'];
+        }
+
+        if (!isset($data['values']) || !is_array($data['values'])) {
+            return '';
+        }
+
+        if ($fieldValue === null) {
+            $fieldValue = [];
+        }
+
+        $inputs = [];
+
+        foreach ($data['values'] as $valueKey => $valueName) {
+            $fieldName = esc_attr($fieldKey . '[' . $valueKey . ']');
+            $inputs[] = sprintf(
+                '<label for="%s"><input %s class="%s" type="checkbox" name="%s" id="%s" style="%s" value="%s" %s %s /> %s</label>', // WPCS: XSS ok.
+                $fieldName,
+                disabled($data['disabled']),
+                esc_attr($data['class']),
+                $fieldName,
+                $fieldName,
+                esc_attr($data['css']),
+                $valueKey,
+                checked(in_array($valueKey, $fieldValue, true) ? 'yes' : 'no', 'yes'),
+                $wcSettings->get_custom_attribute_html($data),
+                wp_kses_post($valueName)
+            );
+        }
+
+        return sprintf(
+            '<tr valign="top">
+                <th scope="row" class="titledesc">
+                    <label for="%s">%s %s</label>
+                </th>
+                <td class="forminp">
+                    <fieldset>
+                        <legend class="screen-reader-text"><span>%s</span></legend>
+                        %s
+                        <br/>%s
+                    </fieldset>
+                </td>
+		    </tr>', // WPCS: XSS ok.
+            esc_attr($fieldKey),
+            wp_kses_post($data['title']),
+            $wcSettings->get_tooltip_html($data),
+            wp_kses_post($data['title']),
+            implode('<br/>', $inputs),
+            $wcSettings->get_description_html($data)
         );
     }
 
@@ -381,6 +450,8 @@ final class FrontendManager
 
     public static function renderWidgetInitCode(?int $productId): string
     {
+        $serializer = new JsonSerializer();
+
         try {
             return str_replace(
                 ['&#039;', '&gt;', '&amp;', '&quot;', '&#34;'],
@@ -399,8 +470,8 @@ final class FrontendManager
                             'EMBED_METHOD',
                         ],
                         array_map(
-                            static function ($optionValue) {
-                                return is_array($optionValue) ? (new JsonSerializer())->serialize($optionValue) : $optionValue;
+                            static function ($optionValue) use ($serializer) {
+                                return is_array($optionValue) ? $serializer->serialize($optionValue) : $optionValue;
                             },
                             ConfigManager::getConfigurationValues(
                                 'widget_settings',

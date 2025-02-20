@@ -239,6 +239,15 @@ final class ConfigManager
         return $categoriesTree;
     }
 
+    public static function getConfigurationValueByInternalName(string $optionName, $defaultValue = null)
+    {
+        if (($externalOptionName = self::getExternalOptionName($optionName)) === null) {
+            return $defaultValue;
+        }
+
+        return self::getConfigurationValue($externalOptionName, $defaultValue);
+    }
+
     public static function getConfigurationValue(string $optionName, $defaultValue = null)
     {
         if ($defaultValue === null && array_key_exists($optionName, self::CONFIG_OPTIONS_MAP) &&
@@ -504,23 +513,17 @@ final class ConfigManager
 
     public static function getDefaultValue(string $optionName)
     {
-        static $optionsMap = null;
-
-        if ($optionsMap === null) {
-            $optionsMap = array_flip(self::CONFIG_OPTIONS_MAP);
-        }
-
-        if (!isset($optionsMap[$optionName])) {
-            return null;
-        }
-
         static $defaultValues = null;
 
         if ($defaultValues === null) {
             $defaultValues = self::getDefaultConfigurationValues();
         }
 
-        return $defaultValues[$optionsMap[$optionName]] ?? null;
+        if (($externalOptionName = self::getExternalOptionName($optionName)) === null) {
+            return null;
+        }
+
+        return $defaultValues[$externalOptionName] ?? null;
     }
 
     public static function getDefaultConfigurationValues(): array
@@ -560,6 +563,17 @@ final class ConfigManager
             'COMFINO_API_TIMEOUT' => 3,
             'COMFINO_API_CONNECT_NUM_ATTEMPTS' => 3,
         ];
+    }
+
+    private static function getExternalOptionName(string $internalOptionName): ?string
+    {
+        static $optionsMap = null;
+
+        if ($optionsMap === null) {
+            $optionsMap = array_flip(self::CONFIG_OPTIONS_MAP);
+        }
+
+        return $optionsMap[$internalOptionName] ?? null;
     }
 
     private static function getStorageAdapter(): StorageAdapterInterface

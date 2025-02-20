@@ -12,6 +12,9 @@ class FinancialProduct
     public $type;
     /** @var string
      * @readonly */
+    public $creditorName;
+    /** @var string
+     * @readonly */
     public $description;
     /** @var string
      * @readonly */
@@ -56,6 +59,7 @@ class FinancialProduct
     /**
      * @param string $name
      * @param LoanTypeEnum $type
+     * @param string $creditorName
      * @param string $description
      * @param string $icon
      * @param int $instalmentAmount
@@ -74,6 +78,7 @@ class FinancialProduct
     public function __construct(
         string $name,
         LoanTypeEnum $type,
+        string $creditorName,
         string $description,
         string $icon,
         int $instalmentAmount,
@@ -91,6 +96,7 @@ class FinancialProduct
     ) {
         $this->name = $name;
         $this->type = $type;
+        $this->creditorName = $creditorName;
         $this->description = $description;
         $this->icon = $icon;
         $this->instalmentAmount = $instalmentAmount;
