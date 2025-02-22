@@ -21,7 +21,7 @@ class IsShopAccountActive extends Request
             $requestHeaders['Comfino-Cache-Invalidate-Url'] = $cacheInvalidateUrl;
         }
 
-        if (!empty($cacheInvalidateUrl)) {
+        if (!empty($configurationUrl)) {
             $requestHeaders['Comfino-Configuration-Url'] = $configurationUrl;
         }
 
