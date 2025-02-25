@@ -423,19 +423,27 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function generate_hidden_html(string $key, array $data): string
     {
+        if (is_array($optionValue = ConfigManager::getConfigurationValueByInternalName($key))) {
+            $optionValue = implode(',', $optionValue);
+        }
+
         return FrontendManager::renderHiddenInput(
             $this->get_field_key($key),
-            $this->get_option($key),
+            $optionValue,
             $data,
             $this
         );
     }
 
-    public function generate_checkboxset_html(string $key, $data)
+    public function generate_checkboxset_html(string $key, $data): string
     {
+        if (!is_array($optionValue = ConfigManager::getConfigurationValueByInternalName($key))) {
+            $optionValue = explode(',', $optionValue);
+        }
+
         return FrontendManager::renderCheckboxSet(
             $this->get_field_key($key),
-            ConfigManager::getConfigurationValueByInternalName($key),
+            $optionValue,
             $data,
             $this
         );
