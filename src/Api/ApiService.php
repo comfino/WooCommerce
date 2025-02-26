@@ -439,6 +439,7 @@ final class ApiService
         );
 
         $paywallRenderer = FrontendManager::getPaywallRenderer();
+        $paywallUrl = self::getEndpointUrl('paywall');
         $templateVariables = [
             'language' => Main::getShopLanguage(),
             'styles' => FrontendManager::registerExternalStyles($paywallRenderer->getStyles()),
@@ -449,7 +450,7 @@ final class ApiService
         try {
             $paywallContents = ApiClient::getInstance()->getPaywall(
                 new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes),
-                self::getEndpointUrl('paywall')
+                $paywallUrl
             );
 
             $templateName = 'paywall';
@@ -471,7 +472,11 @@ final class ApiService
                 DebugLogger::logEvent(
                     '[PAYWALL_API_REQUEST]',
                     'renderPaywall',
-                    ['$request' => $apiRequest->getRequestBody(), '$templateVariables' => $templateVariables]
+                    [
+                        '$paywallUrl' => $paywallUrl,
+                        '$request' => $apiRequest->getRequestBody(),
+                        '$templateVariables' => $templateVariables
+                    ]
                 );
             }
         }
