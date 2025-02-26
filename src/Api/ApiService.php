@@ -405,8 +405,15 @@ final class ApiService
             exit;
         }
 
+        if ($request->has_param('priceModifier') && is_numeric($request->get_param('priceModifier'))) {
+            $priceModifier = (int) $request->get_param('priceModifier');
+        } else {
+            $priceModifier = 0;
+        }
+
         $loanAmount = (int) round(WC()->cart->get_total('edit') * 100);
-        $shopCart = OrderManager::getShopCart(WC()->cart, $loanAmount);
+
+        $shopCart = OrderManager::getShopCart(WC()->cart, $priceModifier);
         $allowedProductTypes = SettingsManager::getAllowedProductTypes(
             ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
             $shopCart
@@ -419,19 +426,13 @@ final class ApiService
             exit;
         }
 
-        if ($request->has_param('priceModifier') && is_numeric($request->get_param('priceModifier'))) {
-            $priceModifier = (float) $request->get_param('priceModifier');
-
-            if ($priceModifier > 0) {
-                $loanAmount += ((int) ($priceModifier * 100));
-            }
-        }
-
         DebugLogger::logEvent(
             '[PAYWALL]',
             'renderPaywall',
             [
                 '$loanAmount' => $loanAmount,
+                '$priceModifier' => $priceModifier,
+                '$cartTotalValue' => $shopCart->getTotalValue(),
                 '$allowedProductTypes' => $allowedProductTypes,
                 '$shopCart' => $shopCart->getAsArray(),
             ]
@@ -491,7 +492,14 @@ final class ApiService
         $loanAmount = (int) round(WC()->cart->get_total('edit') * 100);
         $loanTypeSelected = $request->get_param('loanTypeSelected');
         $loadProductCategories = ($request->get_param('reqProdCat') === 'yes');
-        $shopCart = OrderManager::getShopCart(WC()->cart, $loanAmount);
+
+        if ($request->has_param('priceModifier') && is_numeric($request->get_param('priceModifier'))) {
+            $priceModifier = (int) $request->get_param('priceModifier');
+        } else {
+            $priceModifier = 0;
+        }
+
+        $shopCart = OrderManager::getShopCart(WC()->cart, $priceModifier);
 
         DebugLogger::logEvent(
             '[PAYWALL_ITEM_DETAILS]',
@@ -499,6 +507,7 @@ final class ApiService
             [
                 '$loanAmount' => $loanAmount,
                 '$loanTypeSelected' => $loanTypeSelected,
+                '$priceModifier' => $priceModifier,
                 '$loadProductCategories' => $loadProductCategories,
                 '$shopCart' => $shopCart->getAsArray(),
             ]

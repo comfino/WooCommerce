@@ -8,6 +8,21 @@ window.ComfinoPaywallInit = {
             return;
         }
 
+        const iframe = ComfinoPaywallFrontend.createPaywallIframe(ComfinoPaywallData.paywallUrl, ComfinoPaywallData.paywallOptions);
+        const frontendInitElement = document.getElementById('payment_method_comfino');
+
+        let priceModifier = 0;
+
+        if ('priceModifier' in frontendInitElement.dataset) {
+            priceModifier = parseInt(frontendInitElement.dataset.priceModifier);
+
+            if (!Number.isNaN(priceModifier)) {
+                iframe.src += ('&priceModifier=' + priceModifier);
+            } else {
+                priceModifier = 0;
+            }
+        }
+
         ComfinoPaywallData.paywallOptions.onUpdateOrderPaymentState = (loanParams) => {
             ComfinoPaywallFrontend.logEvent('updateOrderPaymentState WooCommerce', 'debug', loanParams);
 
@@ -15,17 +30,7 @@ window.ComfinoPaywallInit = {
                 document.getElementById('comfino-loan-amount').value = loanParams.loanAmount;
                 document.getElementById('comfino-loan-type').value = loanParams.loanType;
                 document.getElementById('comfino-loan-term').value = loanParams.loanTerm;
-            }
-        }
-
-        const iframe = ComfinoPaywallFrontend.createPaywallIframe(ComfinoPaywallData.paywallUrl, ComfinoPaywallData.paywallOptions);
-        const frontendInitElement = document.getElementById('payment_method_comfino');
-
-        if ('priceModifier' in frontendInitElement.dataset) {
-            const priceModifier = parseInt(frontendInitElement.dataset.priceModifier);
-
-            if (!Number.isNaN(priceModifier)) {
-                iframe.src += ('&priceModifier=' + priceModifier);
+                document.getElementById('comfino-price-modifier').value = priceModifier;
             }
         }
 

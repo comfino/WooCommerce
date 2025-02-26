@@ -174,7 +174,7 @@ final class Main
 
     public static function renderPaywallIframe(\WC_Cart $cart, float $total, bool $isPaymentBlock): string
     {
-        if (!self::paymentIsAvailable($cart, (int) ($total * 100))) {
+        if (!self::paymentIsAvailable($cart)) {
             DebugLogger::logEvent(
                 '[PAYWALL]',
                 'renderPaywallIframe: paymentIsAvailable=FALSE or preparePaywallIframe=NULL'
@@ -209,7 +209,7 @@ final class Main
         return TemplateManager::renderView('payment', 'front', $templateVariables, !$isPaymentBlock);
     }
 
-    public static function paymentIsAvailable(?\WC_Cart $cart, int $loanAmount): bool
+    public static function paymentIsAvailable(?\WC_Cart $cart): bool
     {
         if (ConfigManager::isServiceMode()) {
             if (isset($_COOKIE['COMFINO_SERVICE_SESSION']) && $_COOKIE['COMFINO_SERVICE_SESSION'] === 'ACTIVE') {
@@ -229,7 +229,7 @@ final class Main
             return true;
         }
 
-        $shopCart = OrderManager::getShopCart($cart, $loanAmount);
+        $shopCart = OrderManager::getShopCart($cart);
         $allowedProductTypes = SettingsManager::getAllowedProductTypes(
             ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
             $shopCart
@@ -242,7 +242,6 @@ final class Main
             [
                 '$paymentIsAvailable' => $paymentIsAvailable,
                 '$allowedProductTypes' => $allowedProductTypes,
-                '$loanAmount' => $loanAmount,
                 '$cartTotalValue' => $shopCart->getTotalValue(),
             ]
         );

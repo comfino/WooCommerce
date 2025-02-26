@@ -91,7 +91,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function is_available(): bool
     {
-        return parent::is_available() && Main::paymentIsAvailable(WC()->cart, WC()->cart !== null ? (int) ($this->get_order_total() * 100) : 0);
+        return parent::is_available() && Main::paymentIsAvailable(WC()->cart);
     }
 
     /* Shop cart checkout front logic. */
@@ -117,7 +117,10 @@ class PaymentGateway extends \WC_Payment_Gateway
         DebugLogger::logEvent('[PAYMENT GATEWAY]', 'process_payment', ['$order_id' => $order_id, '$_POST' => $_POST]);
 
         $orderId = (string) $order_id;
-        $shopCart = OrderManager::getShopCart(WC()->cart, (int) sanitize_text_field(wp_unslash($_POST['comfino_loan_amount'] ?? '0')));
+        $initLoanAmount = (int) sanitize_text_field(wp_unslash($_POST['comfino_loan_amount'] ?? '0'));
+        $priceModifier = (int) sanitize_text_field(wp_unslash($_POST['comfino_price_modifier'] ?? '0'));
+
+        $shopCart = OrderManager::getShopCart(WC()->cart, $priceModifier);
 
         $wcOrder = wc_get_order($order_id);
         $phoneNumber = trim($wcOrder->get_billing_phone());
@@ -224,6 +227,9 @@ class PaymentGateway extends \WC_Payment_Gateway
             '[PAYMENT]',
             'process_payment',
             [
+                '$initLoanAmount' => $initLoanAmount,
+                '$priceModifier' => $priceModifier,
+                '$cartTotalValue' => $shopCart->getTotalValue(),
                 '$loanAmount' => $order->getCart()->getTotalAmount(),
                 '$loanType' => (string) $order->getLoanParameters()->getType(),
                 '$loanTerm' => $order->getLoanParameters()->getTerm(),

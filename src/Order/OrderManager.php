@@ -13,13 +13,13 @@ if (!defined('ABSPATH')) {
 
 final class OrderManager
 {
-    public static function getShopCart(\WC_Cart $cart, int $loanAmount): Cart
+    public static function getShopCart(\WC_Cart $cart, int $priceModifier = 0): Cart
     {
         $totalValue = (int) round($cart->get_total('edit') * 100);
 
-        if ($loanAmount > $totalValue) {
-            // Loan amount with price modifier (e.g. custom commission).
-            $totalValue = $loanAmount;
+        if ($priceModifier > 0) {
+            // Add price modifier (e.g. custom commission).
+            $totalValue += $priceModifier;
         }
 
         $cartItems = array_map(
