@@ -140,7 +140,7 @@ final class FrontendManager
                 $fieldName,
                 esc_attr($data['css']),
                 $valueKey,
-                checked(in_array($valueKey, $fieldValue, true) ? 'yes' : 'no', 'yes'),
+                checked(in_array($valueKey, $fieldValue, true) ? 'yes' : 'no', 'yes', false),
                 $wcSettings->get_custom_attribute_html($data),
                 wp_kses_post($valueName)
             );
