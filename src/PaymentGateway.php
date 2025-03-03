@@ -360,7 +360,7 @@ class PaymentGateway extends \WC_Payment_Gateway
         $errorMessages = [];
 
         foreach (SettingsForm::getFormFields($activeTab) as $key => $field) {
-            if (($fieldType = $this->get_field_type($field)) === 'hidden') {
+            if (($fieldType = $this->get_field_type($field)) === 'hidden' || $fieldType === 'title') {
                 continue;
             }
 
@@ -374,7 +374,19 @@ class PaymentGateway extends \WC_Payment_Gateway
                 }
             }
 
-            if (array_key_exists($fieldKey, $configurationOptions) && $fieldType !== 'title') {
+            if ($activeTab === 'sale_settings') {
+                $productCategories = array_keys(ConfigManager::getAllProductCategories());
+                $productCategoryFilters = [];
+
+                foreach ($configurationOptions['product_categories'] as $productType => $categoryIds) {
+                    $productCategoryFilters[$productType] = array_values(array_diff(
+                        $productCategories,
+                        explode(',', $configurationOptions['product_categories'][$productType])
+                    ));
+                }
+
+                $configurationOptionsToSave[$optionsMap['product_category_filters']] = $productCategoryFilters;
+            } elseif (array_key_exists($fieldKey, $configurationOptions)) {
                 try {
                     if ($configurationOptions[$fieldKey] === 'yes' || $configurationOptions[$fieldKey] === 'no') {
                         $configurationOptionsToSave[$optionsMap[$key]] = ($configurationOptions[$fieldKey] === 'yes');
@@ -387,18 +399,8 @@ class PaymentGateway extends \WC_Payment_Gateway
                 } catch (\Exception $e) {
                     $errorMessages[] = $e->getMessage();
                 }
-            } elseif ($activeTab === 'sale_settings') {
-                $productCategories = array_keys(ConfigManager::getAllProductCategories());
-                $productCategoryFilters = [];
-
-                foreach ($configurationOptions['product_categories'] as $productType => $categoryIds) {
-                    $productCategoryFilters[$productType] = array_values(array_diff(
-                        $productCategories,
-                        explode(',', $configurationOptions['product_categories'][$productType])
-                    ));
-                }
-
-                $configurationOptionsToSave[$optionsMap['product_category_filters']] = $productCategoryFilters;
+            } elseif ($key === 'widget_offer_types') {
+                $configurationOptionsToSave[$optionsMap[$key]] = [];
             }
         }
 
