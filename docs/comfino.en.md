@@ -1,6 +1,6 @@
 ## PLUGIN DOWNLOAD
 
-Download the latest version of the plugin from the website: https://github.com/comfino/WooCommerce/releases
+Download the latest version of the plugin from the website: https://github.com/comfino/WooCommerce/releases or https://wordpress.org/plugins/comfino-payment-gateway
 
 ## INSTALLATION
 
@@ -14,8 +14,8 @@ Go to the `"Plugins"` tab, then click the `"Add new -> Upload plugin"` button. S
 
 ## CONFIGURATION
 
-The configuration parameters of the module are grouped by categories corresponding to the tabs of the configuration panel: `"Payment settings"`, `"Sale settings"`, `"Widget settings"`, `"Developer settings"`.
-The last tab `"Plugin diagnostics"` does not contain any parameters to be set and has an information-diagnostic function. Among other things, it contains a local error log.
+The configuration parameters of the module are grouped by categories corresponding to the tabs of the configuration panel: `"Payment settings"`, `"Sale settings"`, `"Widget settings"`, `"Abandoned cart settings"`, `"Developer settings"`.
+The last tab `"Plugin diagnostics"` does not contain any parameters to be set and has an information-diagnostic function. It contains, among other things, a local error log and a list of the plugin's internal operations recorded in debug mode (debug mode log).
 
 Before using Comfino payments, the module must be configured. You can do this by clicking `"Settings"` in the module info panel.
 
@@ -37,11 +37,11 @@ Configuration parameter fields:
 
 The tab contains settings related to sales management.
 
-Financial product availability rules (product category filters) enable Comfino payments to be assigned to specific product categories. Category filters are divided into sections corresponding to available methods of financing purchases under the contract concluded with Comfino. Moreover, managing the availability of Comfino payments is only possible for the following types of financial products: "Zero percent installments", "Pay later". If the concluded contract does not include one or all of these items, the tab will contain a list of trees limited to this one financing method or it will contain a list of trees for other types of products from the contract, if the contract does not include the "Zero percent installments" and "Pay later" products.
+Financial product availability rules (product category filters) enable Comfino payments to be assigned to specific product categories. Category filters are divided into sections corresponding to available methods of financing purchases under the contract concluded with Comfino. Moreover, managing the availability of Comfino payments is only possible for the following types of financial products: "Zero percent installments", "Pay later", "Leasing". If the concluded contract does not include one or all of these items, the tab will contain a list of trees limited to this one financing method or it will contain a list of trees for other types of products from the contract, if the contract does not include the "Zero percent installments", "Pay later" and "Leasing" products.
 
 By default, Comfino payments are available unconditionally for all product types. To disable Comfino for selected product types, uncheck the appropriate categories in the category tree for each type of financial offer and click "Save".
 
-![Konfiguracja](images/en/configuration5.png "Konfiguracja")
+![Konfiguracja](images/en/configuration2.png "Konfiguracja")
 
 **WIDGET SETTINGS**
 
@@ -49,10 +49,12 @@ By default, Comfino payments are available unconditionally for all product types
 
 * **Widget enable** — promotional widget activation/deactivation switch on the product page
 * **Widget key** - a unique access key which enables the widget to communicate with the Comfino API (set automatically when saving the configuration with the correct API key)
-* **Widget type** — way of presenting the widget [`Textual widget`, `Graphical widget with banner`, `Graphical widget with installments calculator`]
-* **Widget offer type** — type of financing offer promoted [`Zero percent installments`, `Convenient installments`, `Pay later`, `Deferred payments for companies`]
+* **Widget type** — way of presenting the widget [`Installment calculator`, `Extended calculator - products`]
+* **Offer types** — types of financing offers promoted [`Zero percent installments`, `Convenient installments`, `Pay later`, `Installments for companies`, `Deferred payments for companies`, `Leasing`]
 
 The availability of offer types on the list depends on the individual contract and may differ from that described in the documentation.
+
+![Configuration](images/en/configuration3a.png "Configuration")
 
 **Advanced settings**
 
@@ -65,14 +67,27 @@ The availability of offer types on the list depends on the individual contract a
 
 Detailed information on the operation of the widget and its configuration options can be found in a separate [Comfino widget documentation](https://comfino.pl/widgets/comfino-woocommerce/en).
 
-![Configuration](images/en/configuration2.png "Configuration")
+![Configuration](images/en/configuration3b.png "Configuration")
+
+**ABANDONED CART SETTINGS**
+
+![Konfiguracja](images/en/configuration4.png "Konfiguracja")
+
+The "Abandoned cart rescue" feature allows you to minimize the problem of abandoned carts. When a customer adds products to the cart but abandons it, also due to an unsuccessful payment, they will automatically receive a reminder email with a direct link to the payment. This service allows you to effectively recover potential transactions and increase order conversions.
 
 **DEVELOPER SETTINGS**
 
 * **Test environment** — developer mode activation/deactivation switch
 * **Test environment API key** — a unique access key enabling the module to communicate with the Comfino test API
+* **Debug mode** — debug mode activation/deactivation switch
+* **Service mode** — service mode activation/deactivation switch
 
-![Configuration](images/en/configuration3.png "Configuration")
+Debug mode is useful in case of problems with Comfino payment availability. In this mode module logs details of internal process responsible for displaying of Comfino payment option at the payment methods list. It is recommended to use this option together with activating the second option `"Service mode"` to minimize the saved logs.
+
+Debug mode is useful in case of problems with Comfino payment availability. In this mode module logs details of internal process responsible for displaying of Comfino payment option at the payment methods list.
+
+![Configuration](images/en/configuration5a.png "Configuration")
+![Configuration](images/en/configuration5b.png "Configuration")
 
 **Note**
 
@@ -81,9 +96,9 @@ Before launching payments on the production store, disable developer mode to blo
 **PLUGIN DIAGNOSTICS**
 
 The tab contains technical information about the plugin and the environment (plugin version, store version, PHP and web server version, etc.).\
-It also contains a list of recent errors with a preview of the local error log.
+It also contains a list of recent errors with a preview of the local error log and a list of the plugin's internal operations recorded in debug mode (debug mode log).
 
-![Configuration](images/en/configuration4.png "Configuration")
+![Configuration](images/en/configuration6.png "Configuration")
 
 ## REMARKS
 

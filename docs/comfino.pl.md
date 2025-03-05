@@ -1,6 +1,6 @@
 ## POBIERANIE WTYCZKI
 
-Pobierz najnowszą wersję wtyczki ze strony: https://github.com/comfino/WooCommerce/releases lub https://wordpress.org/plugins/comfino-payment-gateway.
+Pobierz najnowszą wersję wtyczki ze strony: https://github.com/comfino/WooCommerce/releases lub https://wordpress.org/plugins/comfino-payment-gateway
 
 ## INSTALACJA
 
@@ -14,7 +14,7 @@ Przejdź do zakładki `"Wtyczki"`, następnie kliknij przycisk `"Dodaj nową -> 
 
 ## KONFIGURACJA
 Parametry konfiguracyjne modułu są pogrupowane kategoriami odpowiadającymi zakładkom panelu konfiguracyjnego: `"Ustawienia płatności"`, `"Ustawienia sprzedaży"`, `"Ustawienia widgetu"`, `"Ustawienia ratowania koszyków"`, `"Ustawienia deweloperskie"`.
-Ostatnia zakładka `"Diagnostyka wtyczki"` nie zawiera żadnych parametrów do ustawienia i pełni funkcję informacyjno-diagnostyczną. Zawiera między innymi lokalny dziennik błędów (log błędów).
+Ostatnia zakładka `"Diagnostyka wtyczki"` nie zawiera żadnych parametrów do ustawienia i pełni funkcję informacyjno-diagnostyczną. Zawiera między innymi lokalny dziennik błędów (log błędów) oraz listę z zapisanymi w trybie debug operacjami wewnętrznymi wtyczki (log trybu debugowania).
 
 Przed użyciem płatności Comfino, moduł musi zostać skonfigurowany. Możesz to zrobić, klikając `"Ustawienia"` w panelu informacyjnym modułu.
 
@@ -48,7 +48,7 @@ Domyślnie płatności Comfino są dostępne bezwarunkowo dla wszystkich typów 
 
 * **Widget włączony** — przełącznik aktywacji/deaktywacji widgetu promocyjnego na stronie produktu
 * **Klucz widgetu** — unikalny klucz dostępowy umożliwiający komunikację widgetu z API Comfino (ustawiany automatycznie przy zapisie konfiguracji z poprawnym kluczem API)
-* **Typ widgetu** — sposób prezentacji widgetu [`Widget tekstowy`, `Widget graficzny z banerem`, `Widget graficzny z kalkulatorem rat`]
+* **Typ widgetu** — sposób prezentacji widgetu [`Kalkulator rat`, `Rozszerzony kalkulator - produkty`]
 * **Typy ofert** — typy promowanych ofert finansowania [`Raty zero procent`, `Niskie raty`, `Zapłać później`, `Raty dla firm`, `Odroczone płatności dla firm`, `Leasing`]
 
 Dostępność typów ofert na liście jest uzależniona od indywidualnej umowy i może różnić się od tej opisanej w dokumentacji.
