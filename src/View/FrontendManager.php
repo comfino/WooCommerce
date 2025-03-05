@@ -3,14 +3,15 @@
 namespace Comfino\View;
 
 use Comfino\Api\ApiClient;
+use Comfino\Api\HttpErrorExceptionInterface;
 use Comfino\Common\Frontend\FrontendHelper;
 use Comfino\Common\Frontend\PaywallIframeRenderer;
 use Comfino\Common\Frontend\PaywallRenderer;
 use Comfino\Common\Frontend\WidgetInitScriptHelper;
 use Comfino\Configuration\ConfigManager;
 use Comfino\ErrorLogger;
+use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
 use Comfino\PaymentGateway;
-use Comfino\TemplateRenderer\PluginRendererStrategy;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -20,12 +21,24 @@ final class FrontendManager
 {
     public static function getPaywallRenderer(): PaywallRenderer
     {
-        return new PaywallRenderer(ApiClient::getInstance(), new PluginRendererStrategy());
+        static $renderer = null;
+
+        if ($renderer === null) {
+            $renderer = new PaywallRenderer();
+        }
+
+        return $renderer;
     }
 
     public static function getPaywallIframeRenderer(): PaywallIframeRenderer
     {
-        return new PaywallIframeRenderer();
+        static $renderer = null;
+
+        if ($renderer === null) {
+            $renderer = new PaywallIframeRenderer();
+        }
+
+        return $renderer;
     }
 
     public static function renderAdminLogo(): string
@@ -56,7 +69,7 @@ final class FrontendManager
         );
     }
 
-    public static function renderHiddenInput(string $fieldKey, ?string $fieldValue, string $customAttributes, array $data): string
+    public static function renderHiddenInput(string $fieldKey, ?string $fieldValue, array $data, \WC_Settings_API $wcSettings): string
     {
         $defaults = [
             'title' => '',
@@ -82,7 +95,76 @@ final class FrontendManager
             $fieldValue,
             esc_attr($data['placeholder']),
             disabled($data['disabled']),
-            $customAttributes
+            $wcSettings->get_custom_attribute_html($data)
+        );
+    }
+
+    public static function renderCheckboxSet(string $fieldKey, ?array $fieldValue, array $data, \WC_Settings_API $wcSettings): string
+    {
+        $defaults = [
+            'title' => '',
+            'label' => '',
+            'disabled' => false,
+            'class' => '',
+            'css' => '',
+            'type' => 'text',
+            'desc_tip' => false,
+            'description' => '',
+            'custom_attributes' => [],
+        ];
+
+        $data = wp_parse_args($data, $defaults);
+
+        if (!$data['label']) {
+            $data['label'] = $data['title'];
+        }
+
+        if (!isset($data['values']) || !is_array($data['values'])) {
+            return '';
+        }
+
+        if ($fieldValue === null) {
+            $fieldValue = [];
+        }
+
+        $inputs = [];
+
+        foreach ($data['values'] as $valueKey => $valueName) {
+            $fieldName = esc_attr($fieldKey . '[' . $valueKey . ']');
+            $inputs[] = sprintf(
+                '<label for="%s"><input %s class="%s" type="checkbox" name="%s" id="%s" style="%s" value="%s" %s %s /> %s</label>', // WPCS: XSS ok.
+                $fieldName,
+                disabled($data['disabled']),
+                esc_attr($data['class']),
+                $fieldName,
+                $fieldName,
+                esc_attr($data['css']),
+                $valueKey,
+                checked(in_array($valueKey, $fieldValue, true) ? 'yes' : 'no', 'yes', false),
+                $wcSettings->get_custom_attribute_html($data),
+                wp_kses_post($valueName)
+            );
+        }
+
+        return sprintf(
+            '<tr valign="top">
+                <th scope="row" class="titledesc">
+                    <label for="%s">%s %s</label>
+                </th>
+                <td class="forminp">
+                    <fieldset>
+                        <legend class="screen-reader-text"><span>%s</span></legend>
+                        %s
+                        <br/>%s
+                    </fieldset>
+                </td>
+		    </tr>', // WPCS: XSS ok.
+            esc_attr($fieldKey),
+            wp_kses_post($data['title']),
+            $wcSettings->get_tooltip_html($data),
+            wp_kses_post($data['title']),
+            implode('<br/>', $inputs),
+            $wcSettings->get_description_html($data)
         );
     }
 
@@ -180,13 +262,13 @@ final class FrontendManager
         }
 
         if (ConfigManager::isSandboxMode()) {
-            $stylePath = trim(ConfigManager::getConfigurationValue('COMFINO_CSS_DEV_PATH'), '/');
+            $stylePath = trim(ConfigManager::getConfigurationValue('COMFINO_CSS_DEV_PATH', 'css'), '/');
 
             if (strpos($stylePath, '..') !== false) {
                 $stylePath = trim(ConfigManager::getDefaultValue('css_dev_path'), '/');
             }
         } else {
-            $stylePath = trim(ConfigManager::getConfigurationValue('COMFINO_CSS_PROD_PATH'), '/');
+            $stylePath = trim(ConfigManager::getConfigurationValue('COMFINO_CSS_PROD_PATH', 'css'), '/');
 
             if (strpos($stylePath, '..') !== false) {
                 $stylePath = trim(ConfigManager::getDefaultValue('css_prod_path'), '/');
@@ -198,6 +280,18 @@ final class FrontendManager
         }
 
         return sanitize_url(wp_unslash(self::getExternalResourcesBaseUrl() . "$stylePath/$styleFileName"));
+    }
+
+    public static function resetScripts(): void
+    {
+        wp_scripts()->registered = [];
+        wp_scripts()->queue = [];
+    }
+
+    public static function resetStyles(): void
+    {
+        wp_styles()->registered = [];
+        wp_styles()->queue = [];
     }
 
     /**
@@ -216,7 +310,7 @@ final class FrontendManager
      *
      * @return string[]
      */
-    public static function includeLocalScripts(array $scripts, array $dependencies = [], bool $frontScript = true, bool $inFooter = false, $version = null): array
+    public static function includeLocalScripts(array $scripts, array $dependencies = [], bool $frontScript = true, bool $inFooter = true, $version = null): array
     {
         $scriptIds = [];
 
@@ -242,7 +336,7 @@ final class FrontendManager
      *
      * @return string[]
      */
-    public static function includeExternalScripts(array $scripts, array $dependencies = [], bool $inFooter = false, $version = null): array
+    public static function includeExternalScripts(array $scripts, array $dependencies = [], bool $inFooter = true, $version = null): array
     {
         $scriptIds = [];
 
@@ -288,7 +382,7 @@ final class FrontendManager
      *
      * @return string[]
      */
-    public static function registerLocalScripts(array $scripts, array $dependencies = [], bool $frontScript = true, bool $inFooter = false, $version = null): array
+    public static function registerLocalScripts(array $scripts, array $dependencies = [], bool $frontScript = true, bool $inFooter = true, $version = null): array
     {
         $scriptIds = [];
 
@@ -314,7 +408,7 @@ final class FrontendManager
      *
      * @return string[]
      */
-    public static function registerExternalScripts(array $scripts, array $dependencies = [], bool $inFooter = false, $version = null): array
+    public static function registerExternalScripts(array $scripts, array $dependencies = [], bool $inFooter = true, $version = null): array
     {
         $scriptIds = [];
 
@@ -356,6 +450,8 @@ final class FrontendManager
 
     public static function renderWidgetInitCode(?int $productId): string
     {
+        $serializer = new JsonSerializer();
+
         try {
             return str_replace(
                 ['&#039;', '&gt;', '&amp;', '&quot;', '&#34;'],
@@ -370,21 +466,26 @@ final class FrontendManager
                             'WIDGET_PRICE_OBSERVER_SELECTOR',
                             'WIDGET_PRICE_OBSERVER_LEVEL',
                             'WIDGET_TYPE',
-                            'OFFER_TYPE',
+                            'OFFER_TYPES',
                             'EMBED_METHOD',
                         ],
-                        ConfigManager::getConfigurationValues(
-                            'widget_settings',
-                            [
-                                'COMFINO_WIDGET_KEY',
-                                'COMFINO_WIDGET_PRICE_SELECTOR',
-                                'COMFINO_WIDGET_TARGET_SELECTOR',
-                                'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR',
-                                'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL',
-                                'COMFINO_WIDGET_TYPE',
-                                'COMFINO_WIDGET_OFFER_TYPE',
-                                'COMFINO_WIDGET_EMBED_METHOD',
-                            ]
+                        array_map(
+                            static function ($optionValue) use ($serializer) {
+                                return is_array($optionValue) ? $serializer->serialize($optionValue) : $optionValue;
+                            },
+                            ConfigManager::getConfigurationValues(
+                                'widget_settings',
+                                [
+                                    'COMFINO_WIDGET_KEY',
+                                    'COMFINO_WIDGET_PRICE_SELECTOR',
+                                    'COMFINO_WIDGET_TARGET_SELECTOR',
+                                    'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR',
+                                    'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL',
+                                    'COMFINO_WIDGET_TYPE',
+                                    'COMFINO_WIDGET_OFFER_TYPES',
+                                    'COMFINO_WIDGET_EMBED_METHOD',
+                                ]
+                            )
                         )
                     ),
                     ConfigManager::getWidgetVariables($productId)
@@ -392,12 +493,13 @@ final class FrontendManager
             );
         } catch (\Throwable $e) {
             ErrorLogger::sendError(
+                $e,
                 'Widget script endpoint',
                 $e->getCode(),
                 $e->getMessage(),
-                null,
-                null,
-                null,
+                $e instanceof HttpErrorExceptionInterface ? $e->getUrl() : null,
+                $e instanceof HttpErrorExceptionInterface ? $e->getRequestBody() : null,
+                $e instanceof HttpErrorExceptionInterface ? $e->getResponseBody() : null,
                 $e->getTraceAsString()
             );
         }

@@ -18,6 +18,11 @@ final class ConfigurationManager
      */
     private $accessibleConfigOptions;
     /**
+     * @var int
+     * @readonly
+     */
+    private $options;
+    /**
      * @readonly
      * @var \Comfino\Common\Backend\Configuration\StorageAdapterInterface
      */
@@ -39,6 +44,8 @@ final class ConfigurationManager
     public const OPT_VALUE_TYPE_FLOAT_ARRAY = self::OPT_VALUE_TYPE_FLOAT | self::OPT_VALUE_TYPE_ARRAY;
     public const OPT_VALUE_TYPE_BOOL_ARRAY = self::OPT_VALUE_TYPE_BOOL | self::OPT_VALUE_TYPE_ARRAY;
 
+    public const OPT_SERIALIZE_ARRAYS = 1 << 0;
+
     /**
      * @var $this|null
      */
@@ -57,34 +64,39 @@ final class ConfigurationManager
     private $loaded = false;
 
     /**
+     * @param int $options Options (bit field with flags set by OPT_X constants).
      * @param int[] $availConfigOptions List of available configuration options with data types as pairs [OPTION_NAME => OPT_VALUE_TYPE].
      * @param string[] $accessibleConfigOptions List of accessible configuration options via REST endpoints.
      */
     public static function getInstance(
         array $availConfigOptions,
         array $accessibleConfigOptions,
+        int $options,
         StorageAdapterInterface $storageAdapter,
         SerializerInterface $serializer
     ): self {
         if (self::$instance === null) {
-            self::$instance = new self($availConfigOptions, $accessibleConfigOptions, $storageAdapter, $serializer);
+            self::$instance = new self($availConfigOptions, $accessibleConfigOptions, $options, $storageAdapter, $serializer);
         }
 
         return self::$instance;
     }
 
     /**
+     * @param int $options Options (bit field with flags set by OPT_X constants).
      * @param int[] $availConfigOptions List of available configuration options with data types as pairs [OPTION_NAME => OPT_VALUE_TYPE].
      * @param string[] $accessibleConfigOptions List of accessible configuration options via REST endpoints.
      */
     private function __construct(
         array $availConfigOptions,
         array $accessibleConfigOptions,
+        int $options,
         StorageAdapterInterface $storageAdapter,
         SerializerInterface $serializer
     ) {
         $this->availConfigOptions = $availConfigOptions;
         $this->accessibleConfigOptions = $accessibleConfigOptions;
+        $this->options = $options;
         $this->storageAdapter = $storageAdapter;
         $this->serializer = $serializer;
         $this->modified = array_combine(array_keys($availConfigOptions), array_fill(0, count($availConfigOptions), false));
@@ -155,7 +167,9 @@ final class ConfigurationManager
                 }
 
                 if (($this->availConfigOptions[$optionName] & self::OPT_VALUE_TYPE_ARRAY) && is_array($optionValue)) {
-                    $optionValue = implode(',', $optionValue);
+                    if ($this->options & self::OPT_SERIALIZE_ARRAYS) {
+                        $optionValue = implode(',', $optionValue);
+                    }
                 } elseif ($this->availConfigOptions[$optionName] & self::OPT_VALUE_TYPE_JSON) {
                     $optionValue = $this->serializer->serialize($optionValue);
                 }
@@ -196,12 +210,21 @@ final class ConfigurationManager
                 switch ($this->availConfigOptions[$optionName] & (~self::OPT_VALUE_TYPE_ARRAY)) {
                     case self::OPT_VALUE_TYPE_STRING:
                         if ($this->availConfigOptions[$optionName] & self::OPT_VALUE_TYPE_ARRAY) {
-                            $this->configuration[$optionName] = (!empty($optionValue) ? array_map(
-                                static function ($value) : string {
-                                    return (string) $value;
-                                },
-                                explode(',', $optionValue)
-                            ) : ($optionValue !== null ? [] : null));
+                            if (is_array($optionValue)) {
+                                $this->configuration[$optionName] = array_map(
+                                    static function ($value) : string {
+                                        return (string) $value;
+                                    },
+                                    $optionValue
+                                );
+                            } else {
+                                $this->configuration[$optionName] = (!empty($optionValue) ? array_map(
+                                    static function ($value) : string {
+                                        return (string) $value;
+                                    },
+                                    explode(',', $optionValue)
+                                ) : ($optionValue !== null ? [] : null));
+                            }
                         } else {
                             $this->configuration[$optionName] = ($optionValue !== null ? (string) $optionValue : null);
                         }
@@ -210,12 +233,21 @@ final class ConfigurationManager
 
                     case self::OPT_VALUE_TYPE_INT:
                         if ($this->availConfigOptions[$optionName] & self::OPT_VALUE_TYPE_ARRAY) {
-                            $this->configuration[$optionName] = (!empty($optionValue) ? array_map(
-                                static function ($value) : int {
-                                    return (int) $value;
-                                },
-                                explode(',', $optionValue)
-                            ) : ($optionValue !== null ? [] : null));
+                            if (is_array($optionValue)) {
+                                $this->configuration[$optionName] = array_map(
+                                    static function ($value) : int {
+                                        return (int) $value;
+                                    },
+                                    $optionValue
+                                );
+                            } else {
+                                $this->configuration[$optionName] = (!empty($optionValue) ? array_map(
+                                    static function ($value) : int {
+                                        return (int) $value;
+                                    },
+                                    explode(',', $optionValue)
+                                ) : ($optionValue !== null ? [] : null));
+                            }
                         } else {
                             $this->configuration[$optionName] = ($optionValue !== null ? (int) $optionValue : null);
                         }
@@ -224,12 +256,21 @@ final class ConfigurationManager
 
                     case self::OPT_VALUE_TYPE_FLOAT:
                         if ($this->availConfigOptions[$optionName] & self::OPT_VALUE_TYPE_ARRAY) {
-                            $this->configuration[$optionName] = (!empty($optionValue) ? array_map(
-                                static function ($value) : float {
-                                    return (float) $value;
-                                },
-                                explode(',', $optionValue)
-                            ) : ($optionValue !== null ? [] : null));
+                            if (is_array($optionValue)) {
+                                $this->configuration[$optionName] = array_map(
+                                    static function ($value) : float {
+                                        return (float) $value;
+                                    },
+                                    $optionValue
+                                );
+                            } else {
+                                $this->configuration[$optionName] = (!empty($optionValue) ? array_map(
+                                    static function ($value) : float {
+                                        return (float) $value;
+                                    },
+                                    explode(',', $optionValue)
+                                ) : ($optionValue !== null ? [] : null));
+                            }
                         } else {
                             $this->configuration[$optionName] = ($optionValue !== null ? (float) $optionValue : null);
                         }
@@ -238,12 +279,21 @@ final class ConfigurationManager
 
                     case self::OPT_VALUE_TYPE_BOOL:
                         if ($this->availConfigOptions[$optionName] & self::OPT_VALUE_TYPE_ARRAY) {
-                            $this->configuration[$optionName] = (!empty($optionValue) ? array_map(
-                                static function ($value) : bool {
-                                    return (bool) $value;
-                                },
-                                explode(',', $optionValue)
-                            ) : ($optionValue !== null ? [] : null));
+                            if (is_array($optionValue)) {
+                                $this->configuration[$optionName] = array_map(
+                                    static function ($value) : bool {
+                                        return (bool) $value;
+                                    },
+                                    $optionValue
+                                );
+                            } else {
+                                $this->configuration[$optionName] = (!empty($optionValue) ? array_map(
+                                    static function ($value) : bool {
+                                        return (bool) $value;
+                                    },
+                                    explode(',', $optionValue)
+                                ) : ($optionValue !== null ? [] : null));
+                            }
                         } else {
                             $this->configuration[$optionName] = (bool) $optionValue;
                         }
@@ -251,7 +301,12 @@ final class ConfigurationManager
                         break;
 
                     case self::OPT_VALUE_TYPE_JSON:
-                        $this->configuration[$optionName] = !empty($optionValue) ? $this->serializer->unserialize($optionValue) : null;
+                        if (is_array($optionValue)) {
+                            $this->configuration[$optionName] = $optionValue;
+                        } else {
+                            $this->configuration[$optionName] = !empty($optionValue) ? $this->serializer->unserialize($optionValue) : null;
+                        }
+
                         break;
                 }
             }

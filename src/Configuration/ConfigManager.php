@@ -42,9 +42,11 @@ final class ConfigManager
         'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR' => 'widget_price_observer_selector',
         'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL' => 'widget_price_observer_level',
         'COMFINO_WIDGET_TYPE' => 'widget_type',
-        'COMFINO_WIDGET_OFFER_TYPE' => 'widget_offer_type',
+        'COMFINO_WIDGET_OFFER_TYPES' => 'widget_offer_types',
         'COMFINO_WIDGET_EMBED_METHOD' => 'widget_embed_method',
         'COMFINO_WIDGET_CODE' => 'widget_js_code',
+        'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => 'widget_prod_script_version',
+        'COMFINO_WIDGET_DEV_SCRIPT_VERSION' => 'widget_dev_script_version',
         'COMFINO_ABANDONED_CART_ENABLED' => 'abandoned_cart_enabled',
         'COMFINO_ABANDONED_PAYMENTS' => 'abandoned_payments',
         'COMFINO_IGNORED_STATUSES' => 'ignored_statuses',
@@ -56,6 +58,7 @@ final class ConfigManager
         'COMFINO_CSS_DEV_PATH' => 'css_dev_path',
         'COMFINO_API_CONNECT_TIMEOUT' => 'api_connect_timeout',
         'COMFINO_API_TIMEOUT' => 'api_timeout',
+        'COMFINO_API_CONNECT_NUM_ATTEMPTS' => 'api_connect_num_attempts',
     ];
 
     public const CONFIG_OPTIONS = [
@@ -77,7 +80,7 @@ final class ConfigManager
             'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL' => ConfigurationManager::OPT_VALUE_TYPE_INT,
             'COMFINO_WIDGET_TYPE' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
-            'COMFINO_WIDGET_OFFER_TYPE' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
+            'COMFINO_WIDGET_OFFER_TYPES' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
             'COMFINO_WIDGET_EMBED_METHOD' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_WIDGET_CODE' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
         ],
@@ -92,6 +95,8 @@ final class ConfigManager
             'COMFINO_SERVICE_MODE' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
         ],
         'hidden_settings' => [
+            'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
+            'COMFINO_WIDGET_DEV_SCRIPT_VERSION' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
             'COMFINO_IGNORED_STATUSES' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
             'COMFINO_FORBIDDEN_STATUSES' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
@@ -102,6 +107,7 @@ final class ConfigManager
             'COMFINO_CSS_DEV_PATH' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_API_CONNECT_TIMEOUT' => ConfigurationManager::OPT_VALUE_TYPE_INT,
             'COMFINO_API_TIMEOUT' => ConfigurationManager::OPT_VALUE_TYPE_INT,
+            'COMFINO_API_CONNECT_NUM_ATTEMPTS' => ConfigurationManager::OPT_VALUE_TYPE_INT,
         ],
     ];
 
@@ -122,9 +128,11 @@ final class ConfigManager
         'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR',
         'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL',
         'COMFINO_WIDGET_TYPE',
-        'COMFINO_WIDGET_OFFER_TYPE',
+        'COMFINO_WIDGET_OFFER_TYPES',
         'COMFINO_WIDGET_EMBED_METHOD',
         'COMFINO_WIDGET_CODE',
+        'COMFINO_WIDGET_PROD_SCRIPT_VERSION',
+        'COMFINO_WIDGET_DEV_SCRIPT_VERSION',
         'COMFINO_ABANDONED_CART_ENABLED',
         'COMFINO_ABANDONED_PAYMENTS',
         'COMFINO_IGNORED_STATUSES',
@@ -136,7 +144,10 @@ final class ConfigManager
         'COMFINO_CSS_DEV_PATH',
         'COMFINO_API_CONNECT_TIMEOUT',
         'COMFINO_API_TIMEOUT',
+        'COMFINO_API_CONNECT_NUM_ATTEMPTS',
     ];
+
+    private const CONFIG_MANAGER_OPTIONS = 0;
 
     /** @var ConfigurationManager */
     private static $configurationManager;
@@ -149,11 +160,10 @@ final class ConfigManager
     {
         if (self::$configurationManager === null) {
             self::$storageAdapter = new StorageAdapter();
-            self::$availConfigOptions = array_merge(array_merge(...array_values(self::CONFIG_OPTIONS)));
-
             self::$configurationManager = ConfigurationManager::getInstance(
-                self::$availConfigOptions,
+                self::getAvailableConfigOptions(),
                 self::ACCESSIBLE_CONFIG_OPTIONS,
+                self::CONFIG_MANAGER_OPTIONS,
                 self::$storageAdapter,
                 new JsonSerializer()
             );
@@ -229,6 +239,15 @@ final class ConfigManager
         return $categoriesTree;
     }
 
+    public static function getConfigurationValueByInternalName(string $optionName, $defaultValue = null)
+    {
+        if (($externalOptionName = self::getExternalOptionName($optionName)) === null) {
+            return $defaultValue;
+        }
+
+        return self::getConfigurationValue($externalOptionName, $defaultValue);
+    }
+
     public static function getConfigurationValue(string $optionName, $defaultValue = null)
     {
         if ($defaultValue === null && array_key_exists($optionName, self::CONFIG_OPTIONS_MAP) &&
@@ -243,7 +262,7 @@ final class ConfigManager
 
     public static function getConfigurationValueType(string $optionName): int
     {
-        return self::$availConfigOptions[$optionName] ?? ConfigurationManager::OPT_VALUE_TYPE_STRING;
+        return self::getAvailableConfigOptions()[$optionName] ?? ConfigurationManager::OPT_VALUE_TYPE_STRING;
     }
 
     public static function isEnabled(): bool
@@ -271,9 +290,33 @@ final class ConfigManager
         return self::getInstance()->getConfigurationValue('COMFINO_SERVICE_MODE') ?? false;
     }
 
+    public static function isDevEnv(): bool
+    {
+        return ((string) getenv('COMFINO_DEV')) === ('WC_' . WC_VERSION . '_' . Main::getShopUrl(true));
+    }
+
+    public static function useUnminifiedScripts(): bool
+    {
+        return getenv('COMFINO_DEV_USE_UNMINIFIED_SCRIPTS') === 'TRUE';
+    }
+
     public static function isAbandonedCartEnabled(): bool
     {
         return self::getInstance()->getConfigurationValue('COMFINO_ABANDONED_CART_ENABLED');
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function getWidgetOfferTypes(): array
+    {
+        if (is_array($offerTypes = self::getConfigurationValue('COMFINO_WIDGET_OFFER_TYPES'))) {
+            return $offerTypes;
+        }
+
+        $offerType = self::getConfigurationValue('COMFINO_WIDGET_OFFER_TYPE');
+
+        return !empty($offerType) ? [$offerType] : [];
     }
 
     public static function getLogoApiHost(): string
@@ -301,16 +344,6 @@ final class ConfigManager
         }
 
         return $apiHost;
-    }
-
-    public static function isDevEnv(): bool
-    {
-        return ((string) getenv('COMFINO_DEV')) === ('WC_' . WC_VERSION . '_' . Main::getShopUrl(true));
-    }
-
-    public static function useUnminifiedScripts(): bool
-    {
-        return getenv('COMFINO_DEV_USE_UNMINIFIED_SCRIPTS') === 'TRUE';
     }
 
     public static function getApiKey(): ?string
@@ -397,6 +430,7 @@ final class ConfigManager
             }
         } catch (\Throwable $e) {
             ErrorLogger::sendError(
+                $e,
                 'Widget code update',
                 $e->getCode(),
                 $e->getMessage(),
@@ -479,23 +513,17 @@ final class ConfigManager
 
     public static function getDefaultValue(string $optionName)
     {
-        static $optionsMap = null;
-
-        if ($optionsMap === null) {
-            $optionsMap = array_flip(self::CONFIG_OPTIONS_MAP);
-        }
-
-        if (!isset($optionsMap[$optionName])) {
-            return null;
-        }
-
         static $defaultValues = null;
 
         if ($defaultValues === null) {
             $defaultValues = self::getDefaultConfigurationValues();
         }
 
-        return $defaultValues[$optionsMap[$optionName]] ?? null;
+        if (($externalOptionName = self::getExternalOptionName($optionName)) === null) {
+            return null;
+        }
+
+        return $defaultValues[$externalOptionName] ?? null;
     }
 
     public static function getDefaultConfigurationValues(): array
@@ -509,19 +537,21 @@ final class ConfigManager
             'COMFINO_DEBUG' => false,
             'COMFINO_SERVICE_MODE' => false,
             'COMFINO_PRODUCT_CATEGORY_FILTERS' => '',
-            'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => 'INSTALLMENTS_ZERO_PERCENT,PAY_LATER',
+            'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => 'INSTALLMENTS_ZERO_PERCENT,PAY_LATER,LEASING',
             'COMFINO_WIDGET_ENABLED' => false,
             'COMFINO_WIDGET_KEY' => '',
             'COMFINO_WIDGET_PRICE_SELECTOR' => '.price .woocommerce-Price-amount bdi',
             'COMFINO_WIDGET_TARGET_SELECTOR' => '.summary .product_meta',
             'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR' => '',
             'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL' => 0,
-            'COMFINO_WIDGET_TYPE' => 'with-modal',
-            'COMFINO_WIDGET_OFFER_TYPE' => 'CONVENIENT_INSTALLMENTS',
+            'COMFINO_WIDGET_TYPE' => 'extended-modal',
+            'COMFINO_WIDGET_OFFER_TYPES' => ['CONVENIENT_INSTALLMENTS'],
             'COMFINO_WIDGET_EMBED_METHOD' => 'INSERT_INTO_LAST',
             'COMFINO_WIDGET_CODE' => WidgetInitScriptHelper::getInitialWidgetCode(),
             'COMFINO_ABANDONED_CART_ENABLED' => false,
             'COMFINO_ABANDONED_PAYMENTS' => 'comfino',
+            'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => '',
+            'COMFINO_WIDGET_DEV_SCRIPT_VERSION' => '',
             'COMFINO_IGNORED_STATUSES' => implode(',', StatusManager::DEFAULT_IGNORED_STATUSES),
             'COMFINO_FORBIDDEN_STATUSES' => implode(',', StatusManager::DEFAULT_FORBIDDEN_STATUSES),
             'COMFINO_STATUS_MAP' => wp_json_encode(ShopStatusManager::DEFAULT_STATUS_MAP),
@@ -531,7 +561,19 @@ final class ConfigManager
             'COMFINO_CSS_DEV_PATH' => 'css',
             'COMFINO_API_CONNECT_TIMEOUT' => 1,
             'COMFINO_API_TIMEOUT' => 3,
+            'COMFINO_API_CONNECT_NUM_ATTEMPTS' => 3,
         ];
+    }
+
+    private static function getExternalOptionName(string $internalOptionName): ?string
+    {
+        static $optionsMap = null;
+
+        if ($optionsMap === null) {
+            $optionsMap = array_flip(self::CONFIG_OPTIONS_MAP);
+        }
+
+        return $optionsMap[$internalOptionName] ?? null;
     }
 
     private static function getStorageAdapter(): StorageAdapterInterface
@@ -551,17 +593,11 @@ final class ConfigManager
             $productDetailsUrl  .= "/$productId";
 
             if (($product = wc_get_product($productId)) instanceof \WC_Product) {
-                $price = (float) preg_replace([
-                    '/[^\d,.]/',
-                    '/(?<=\d),(?=\d{3}(?:[^\d]|$))/',
-                    '/,00$/',
-                    '/,/'
-                ], [
-                    '',
-                    '',
-                    '',
-                    '.'
-                ], $product->get_price());
+                $price = (float) preg_replace(
+                    ['/[^\d,.]/', '/(?<=\d),(?=\d{3}(?:[^\d]|$))/', '/,00$/', '/,/'],
+                    ['', '', '', '.'],
+                    $product->get_price()
+                );
             }
         } else {
             $productId = 'null';
@@ -573,5 +609,14 @@ final class ConfigManager
             'avail_offers_url' => $availOffersUrl,
             'product_details_url' => $productDetailsUrl,
         ];
+    }
+
+    private static function getAvailableConfigOptions(): array
+    {
+        if (self::$availConfigOptions === null) {
+            self::$availConfigOptions = array_merge(array_merge(...array_values(self::CONFIG_OPTIONS)));
+        }
+
+        return self::$availConfigOptions;
     }
 }

@@ -5,10 +5,15 @@ window.Comfino = {
     isSelected: false,
     isPaywallActive: false,
     loanParams: { loanAmount: 0, loanType: '', loanTerm: 0 },
+    shippingMethods: null,
     listItemContainer: null,
     labelObserver: null,
     paywallTemplate: null,
     Label: () => {
+        if (!Comfino.isPaywallActive) {
+            ComfinoPaywallFrontend.logEvent('Comfino.Label', 'debug', Comfino.label, comfinoSettings.icon);
+        }
+
         Comfino.isPaywallActive = true;
 
         if (comfinoSettings.icon) {
@@ -17,11 +22,15 @@ window.Comfino = {
             });
         }
 
-        return label;
+        return Comfino.label;
     },
     Content: (properties) => {
         const { eventRegistration, emitResponse } = properties;
         const { onPaymentSetup } = eventRegistration;
+
+        if (Comfino.paywallTemplate === null) {
+            ComfinoPaywallFrontend.logEvent('Comfino.Content', 'debug', properties);
+        }
 
         wp.element.useEffect(() => {
                 const unsubscribe = onPaymentSetup(async () => {
@@ -99,10 +108,10 @@ window.Comfino = {
                 }
             }
 
-            let iframe = document.getElementById('comfino-paywall-container');
+            const iframe = document.getElementById('comfino-paywall-container');
 
             if (iframe === null) {
-                let logoImgElement = document.getElementById('comfino-gateway-logo');
+                const logoImgElement = document.getElementById('comfino-gateway-logo');
 
                 if (logoImgElement === null) {
                     ComfinoPaywallFrontend.logEvent('Comfino logo not found in the payment block.', 'error');
@@ -111,7 +120,7 @@ window.Comfino = {
                 }
 
                 if (Comfino.listItemContainer === null) {
-                    let initInputElement = ComfinoPaywallFrontend.findMatchingParentElement(
+                    const initInputElement = ComfinoPaywallFrontend.findMatchingParentElement(
                         logoImgElement,
                         (currentElement) => (currentElement.querySelector('input[type="radio"][value="comfino"]') !== null)
                     );
@@ -132,12 +141,38 @@ window.Comfino = {
                     Comfino.labelObserver = new MutationObserver((mutationsList, observer) => {
                         ComfinoPaywallFrontend.logEvent('Comfino item changed.', 'debug', mutationsList, observer);
 
-                        if (Comfino.isSelected) {
-                            let iframe = document.getElementById('comfino-paywall-container');
+                        const iframe = document.getElementById('comfino-paywall-container');
 
+                        if (iframe === null || iframe.style.display === 'block') {
+                            return;
+                        }
+
+                        if (Comfino.isSelected) {
                             ComfinoPaywallFrontend.logEvent('Deferred Comfino initialization started.', 'debug', iframe);
                             ComfinoPaywallFrontend.init(null, iframe, comfinoSettings.paywallOptions);
                             ComfinoPaywallFrontend.executeClickLogic();
+                        } else {
+                            for (let i = 0; i < mutationsList.length; i++) {
+                                let inputElement = null;
+
+                                if (mutationsList[i].target.tagName === 'INPUT' && mutationsList[i].target.type === 'radio') {
+                                    inputElement = mutationsList[i].target;
+                                } else {
+                                    inputElement = mutationsList[i].target.querySelector('input[type="radio"]');
+                                }
+
+                                if (inputElement !== null && inputElement.value === 'comfino') {
+                                    Comfino.isSelected = true;
+
+                                    ComfinoPaywallFrontend.logEvent('Comfino item selected.', 'debug', inputElement);
+                                    ComfinoPaywallFrontend.logEvent('Deferred Comfino initialization started.', 'debug', iframe);
+
+                                    ComfinoPaywallFrontend.init(null, iframe, comfinoSettings.paywallOptions);
+                                    ComfinoPaywallFrontend.executeClickLogic();
+
+                                    break;
+                                }
+                            }
                         }
                     });
 
@@ -212,10 +247,14 @@ wc.wcBlocksRegistry.registerPaymentMethod({
         if (document.readyState === 'complete') {
             ComfinoPaywallFrontend.logEvent('document.readyState: complete', 'debug');
 
-            Comfino.init(orderData);
+            if (document.getElementById('comfino-paywall-container') === null || Comfino.shippingMethods === null ||
+                Comfino.shippingMethods.toString() !== Object.values(orderData.selectedShippingMethods).toString()
+            ) {
+                Comfino.init(orderData);
 
-            if (Comfino.isSelected) {
-                ComfinoPaywallFrontend.executeClickLogic();
+                if (Comfino.isSelected) {
+                    ComfinoPaywallFrontend.executeClickLogic();
+                }
             }
         } else {
             document.addEventListener('readystatechange', () => {
@@ -230,6 +269,8 @@ wc.wcBlocksRegistry.registerPaymentMethod({
                 }
             });
         }
+
+        Comfino.shippingMethods = Object.values(orderData.selectedShippingMethods);
 
         return true;
     },

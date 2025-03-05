@@ -243,9 +243,9 @@ final class SettingsManager
 
         if ($listType === ProductTypesListTypeEnum::LIST_TYPE_WIDGET
             && ConfigManager::getConfigurationValue('COMFINO_WIDGET_TYPE') === 'with-modal'
-            && !empty($widgetProductType = ConfigManager::getConfigurationValue('COMFINO_WIDGET_OFFER_TYPE'))
+            && !empty($widgetProductTypes = ConfigManager::getWidgetOfferTypes())
         ) {
-            $filters[] = new FilterByProductType([new LoanTypeEnum($widgetProductType)]);
+            $filters[] = new FilterByProductType([new LoanTypeEnum(current($widgetProductTypes))]);
         }
 
         if (self::productCategoryFiltersActive($productCategoryFilters = self::getProductCategoryFilters())) {

@@ -33,6 +33,7 @@ class GetFinancialProducts extends Base
             $financialProducts[] = new FinancialProduct(
                 $financialProduct['name'],
                 LoanTypeEnum::from($financialProduct['type']),
+                $financialProduct['creditorName'],
                 $financialProduct['description'] ?? '',
                 $financialProduct['icon'],
                 $financialProduct['instalmentAmount'],

@@ -4,19 +4,23 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-/** @var string $error_message */
-/** @var string $url */
-/** @var string $request_body */
-/** @var string $response_body */
-/** @var bool $is_debug_mode */
+/** @var string $language */
+/** @var string $title */
+/** @var array $styles */
+/** @var array $error_details */
 ?>
-<?php echo esc_html($error_message); ?>
-<?php if ($is_debug_mode): ?>
-<h2>API error</h2>
-<?php echo esc_html($error_message); ?>
-<p>URL: <?php echo esc_html($url); ?></p>
-<p>Request:</p>
-<code><?php echo esc_html($request_body); ?></code>
-<p>Response:</p>
-<code><?php echo esc_html($response_body); ?></code>
-<?php endif; ?>
+<!DOCTYPE html>
+<html lang="<?php echo esc_attr($language); ?>">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title><?php echo esc_html($title); ?></title>
+        <?php wp_print_styles($styles); ?>
+        <?php wp_print_head_scripts(); ?>
+    </head>
+    <body>
+        <div id="paywall-error-container" class="paywall-error-container"></div>
+        <?php wp_print_footer_scripts(); ?>
+        <script data-cmp-ab="2">ComfinoPaywall.processError(document.getElementById('paywall-error-container'), <?php echo wp_json_encode($error_details); ?>);</script>
+    </body>
+</html>

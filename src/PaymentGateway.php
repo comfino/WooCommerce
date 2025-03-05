@@ -21,10 +21,10 @@ use Comfino\View\TemplateManager;
 class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
-    public const VERSION = '4.2.0';
-    public const BUILD_TS = 1736779371;
-    public const WIDGET_INIT_SCRIPT_HASH = 'b1a0cae1a47d1c5b9264df3573c09c48';
-    public const WIDGET_INIT_SCRIPT_LAST_HASH = '4f8e7fe2091417c2b345fb51f1587316';
+    public const VERSION = '4.2.1';
+    public const BUILD_TS = 1740515381;
+    public const WIDGET_INIT_SCRIPT_HASH = 'c0af7eac44e1da646156fb12f2b7dbd7';
+    public const WIDGET_INIT_SCRIPT_LAST_HASH = '55e4306bb493ff6f99b2f8f617e18038';
 
     public function __construct()
     {
@@ -91,7 +91,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function is_available(): bool
     {
-        return parent::is_available() && Main::paymentIsAvailable(WC()->cart, WC()->cart !== null ? (int) ($this->get_order_total() * 100) : 0);
+        return parent::is_available() && Main::paymentIsAvailable(WC()->cart);
     }
 
     /* Shop cart checkout front logic. */
@@ -117,7 +117,10 @@ class PaymentGateway extends \WC_Payment_Gateway
         DebugLogger::logEvent('[PAYMENT GATEWAY]', 'process_payment', ['$order_id' => $order_id, '$_POST' => $_POST]);
 
         $orderId = (string) $order_id;
-        $shopCart = OrderManager::getShopCart(WC()->cart, (int) sanitize_text_field(wp_unslash($_POST['comfino_loan_amount'] ?? '0')));
+        $initLoanAmount = (int) sanitize_text_field(wp_unslash($_POST['comfino_loan_amount'] ?? '0'));
+        $priceModifier = (int) sanitize_text_field(wp_unslash($_POST['comfino_price_modifier'] ?? '0'));
+
+        $shopCart = OrderManager::getShopCart(WC()->cart, $priceModifier);
 
         $wcOrder = wc_get_order($order_id);
         $phoneNumber = trim($wcOrder->get_billing_phone());
@@ -224,6 +227,9 @@ class PaymentGateway extends \WC_Payment_Gateway
             '[PAYMENT]',
             'process_payment',
             [
+                '$initLoanAmount' => $initLoanAmount,
+                '$priceModifier' => $priceModifier,
+                '$cartTotalValue' => $shopCart->getTotalValue(),
                 '$loanAmount' => $order->getCart()->getTotalAmount(),
                 '$loanType' => (string) $order->getLoanParameters()->getType(),
                 '$loanTerm' => $order->getLoanParameters()->getTerm(),
@@ -354,7 +360,7 @@ class PaymentGateway extends \WC_Payment_Gateway
         $errorMessages = [];
 
         foreach (SettingsForm::getFormFields($activeTab) as $key => $field) {
-            if (($fieldType = $this->get_field_type($field)) === 'hidden') {
+            if (($fieldType = $this->get_field_type($field)) === 'hidden' || $fieldType === 'title') {
                 continue;
             }
 
@@ -368,17 +374,7 @@ class PaymentGateway extends \WC_Payment_Gateway
                 }
             }
 
-            if (array_key_exists($fieldKey, $configurationOptions) && $fieldType !== 'title') {
-                try {
-                    if ($configurationOptions[$fieldKey] === 'yes' || $configurationOptions[$fieldKey] === 'no') {
-                        $configurationOptionsToSave[$optionsMap[$key]] = ($configurationOptions[$fieldKey] === 'yes');
-                    } else {
-                        $configurationOptionsToSave[$optionsMap[$key]] = $this->get_field_value($key, $field, $configurationOptions);
-                    }
-                } catch (\Exception $e) {
-                    $errorMessages[] = $e->getMessage();
-                }
-            } elseif ($activeTab === 'sale_settings') {
+            if ($activeTab === 'sale_settings') {
                 $productCategories = array_keys(ConfigManager::getAllProductCategories());
                 $productCategoryFilters = [];
 
@@ -390,6 +386,21 @@ class PaymentGateway extends \WC_Payment_Gateway
                 }
 
                 $configurationOptionsToSave[$optionsMap['product_category_filters']] = $productCategoryFilters;
+            } elseif (array_key_exists($fieldKey, $configurationOptions)) {
+                try {
+                    if ($configurationOptions[$fieldKey] === 'yes' || $configurationOptions[$fieldKey] === 'no') {
+                        $configurationOptionsToSave[$optionsMap[$key]] = ($configurationOptions[$fieldKey] === 'yes');
+                    } elseif ($key === 'widget_offer_types') {
+                        $configurationOptions[$fieldKey] = implode(',', $configurationOptions[$fieldKey]);
+                        $configurationOptionsToSave[$optionsMap[$key]] = explode(',', $this->get_field_value($key, $field, $configurationOptions));
+                    } else {
+                        $configurationOptionsToSave[$optionsMap[$key]] = $this->get_field_value($key, $field, $configurationOptions);
+                    }
+                } catch (\Exception $e) {
+                    $errorMessages[] = $e->getMessage();
+                }
+            } elseif ($key === 'widget_offer_types') {
+                $configurationOptionsToSave[$optionsMap[$key]] = [];
             }
         }
 
@@ -414,17 +425,35 @@ class PaymentGateway extends \WC_Payment_Gateway
     public function admin_scripts($hook): void
     {
         if ($hook === 'woocommerce_page_wc-settings') {
-            FrontendManager::includeLocalScripts(['tree.min.js'], [], false);
+            FrontendManager::includeLocalScripts(['tree.min.js'], [], false, false);
         }
     }
 
     public function generate_hidden_html(string $key, array $data): string
     {
+        if (is_array($optionValue = ConfigManager::getConfigurationValueByInternalName($key))) {
+            $optionValue = implode(',', $optionValue);
+        }
+
         return FrontendManager::renderHiddenInput(
             $this->get_field_key($key),
-            $this->get_option($key),
-            $this->get_custom_attribute_html($data),
-            $data
+            $optionValue,
+            $data,
+            $this
+        );
+    }
+
+    public function generate_checkboxset_html(string $key, $data): string
+    {
+        if (!is_array($optionValue = ConfigManager::getConfigurationValueByInternalName($key))) {
+            $optionValue = explode(',', $optionValue);
+        }
+
+        return FrontendManager::renderCheckboxSet(
+            $this->get_field_key($key),
+            $optionValue,
+            $data,
+            $this
         );
     }
 

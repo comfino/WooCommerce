@@ -24,6 +24,6 @@ final class TemplateManager
             return '';
         }
 
-        return wc_get_template_html("$name.php", $variables, '', "$templatePath/");
+        return trim(wc_get_template_html("$name.php", $variables, '', "$templatePath/"));
     }
 }

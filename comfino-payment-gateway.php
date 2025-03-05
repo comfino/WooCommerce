@@ -3,7 +3,7 @@
  * Plugin Name: Comfino Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
  * Description: Comfino Payment Gateway for WooCommerce.
- * Version: 4.2.0
+ * Version: 4.2.1
  * Author: Comfino
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
@@ -276,6 +276,27 @@ class Comfino_Payment_Gateway
         ) {
             ConfigManager::updateConfigurationValue('COMFINO_IGNORED_STATUSES', StatusManager::DEFAULT_IGNORED_STATUSES);
         }
+
+        /* 4.2.1 */
+        if (!is_array(ConfigManager::getConfigurationValue('COMFINO_WIDGET_OFFER_TYPES'))) {
+            ConfigManager::updateConfigurationValue(
+                'COMFINO_WIDGET_OFFER_TYPES',
+                [ConfigManager::getConfigurationValue('COMFINO_WIDGET_OFFER_TYPE')]
+            );
+        }
+
+        if (is_array($catFilterAvailProdTypes = ConfigManager::getConfigurationValue('COMFINO_CAT_FILTER_AVAIL_PROD_TYPES'))
+            && !in_array('LEASING', $catFilterAvailProdTypes, true)
+        ) {
+            ConfigManager::updateConfigurationValue(
+                'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES',
+                ['INSTALLMENTS_ZERO_PERCENT', 'PAY_LATER', 'LEASING']
+            );
+        }
+
+        ConfigManager::updateConfigurationValue('COMFINO_WIDGET_TYPE', 'extended-modal');
+        ConfigManager::updateConfigurationValue('COMFINO_API_CONNECT_TIMEOUT', 3);
+        ConfigManager::updateConfigurationValue('COMFINO_API_TIMEOUT', 5);
 
         set_transient('comfino_plugin_updated', 0);
     }

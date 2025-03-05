@@ -174,8 +174,11 @@ final class Main
 
     public static function renderPaywallIframe(\WC_Cart $cart, float $total, bool $isPaymentBlock): string
     {
-        if (!self::paymentIsAvailable($cart, (int) ($total * 100))) {
-            DebugLogger::logEvent('[PAYWALL]', 'renderPaywallIframe: paymentIsAvailable=FALSE or preparePaywallIframe=NULL');
+        if (!self::paymentIsAvailable($cart)) {
+            DebugLogger::logEvent(
+                '[PAYWALL]',
+                'renderPaywallIframe: paymentIsAvailable=FALSE or preparePaywallIframe=NULL'
+            );
 
             return '';
         }
@@ -186,7 +189,10 @@ final class Main
             $styleIds = FrontendManager::includeExternalStyles($iframeRenderer->getStyles());
             $scriptIds = FrontendManager::includeExternalScripts($iframeRenderer->getScripts());
 
-            $scriptIds = array_merge($scriptIds, FrontendManager::includeLocalScripts(['paywall-init.js'], ['paywall-init.js' => $scriptIds]));
+            $scriptIds = array_merge(
+                $scriptIds,
+                FrontendManager::includeLocalScripts(['paywall-init.js'], ['paywall-init.js' => $scriptIds])
+            );
 
             DebugLogger::logEvent(
                 '[PAYWALL]', 'renderPaywallIframe registered styles and scripts.',
@@ -203,7 +209,7 @@ final class Main
         return TemplateManager::renderView('payment', 'front', $templateVariables, !$isPaymentBlock);
     }
 
-    public static function paymentIsAvailable(?\WC_Cart $cart, int $loanAmount): bool
+    public static function paymentIsAvailable(?\WC_Cart $cart): bool
     {
         if (ConfigManager::isServiceMode()) {
             if (isset($_COOKIE['COMFINO_SERVICE_SESSION']) && $_COOKIE['COMFINO_SERVICE_SESSION'] === 'ACTIVE') {
@@ -223,7 +229,7 @@ final class Main
             return true;
         }
 
-        $shopCart = OrderManager::getShopCart($cart, $loanAmount);
+        $shopCart = OrderManager::getShopCart($cart);
         $allowedProductTypes = SettingsManager::getAllowedProductTypes(
             ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
             $shopCart
@@ -236,7 +242,6 @@ final class Main
             [
                 '$paymentIsAvailable' => $paymentIsAvailable,
                 '$allowedProductTypes' => $allowedProductTypes,
-                '$loanAmount' => $loanAmount,
                 '$cartTotalValue' => $shopCart->getTotalValue(),
             ]
         );
@@ -282,7 +287,7 @@ final class Main
 
     public static function getShopLanguage(): string
     {
-        return substr(get_locale(), 0, 2);
+        return substr(get_bloginfo('language'), 0, 2);
     }
 
     public static function getShopCurrency(): string

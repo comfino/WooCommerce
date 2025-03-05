@@ -3,11 +3,13 @@
 namespace Comfino\Common\Api;
 
 use Comfino\Api\Request;
+use Comfino\Common\Exception\ConnectionTimeout;
 use ComfinoExternal\Psr\Http\Client\ClientExceptionInterface;
 use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 use ComfinoExternal\Sunrise\Http\Factory\RequestFactory;
 use ComfinoExternal\Sunrise\Http\Factory\ResponseFactory;
 use ComfinoExternal\Sunrise\Http\Factory\StreamFactory;
+use ComfinoExternal\Sunrise\Http\Message\Response;
 
 class Client extends \Comfino\Extended\Api\Client
 {
@@ -140,28 +142,39 @@ class Client extends \Comfino\Extended\Api\Client
      */
     protected function sendRequest($request, $apiVersion = null): ResponseInterface
     {
-        $response = null;
+        $connectionTimeout = $this->connectionTimeout;
+        $transferTimeout = $this->transferTimeout;
 
         for ($connectAttemptIdx = 1; $connectAttemptIdx <= $this->connectionMaxNumAttempts; $connectAttemptIdx++) {
             try {
-                $response = parent::sendRequest($request, $apiVersion);
-
-                break;
+                return parent::sendRequest($request, $apiVersion);
             } catch (ClientExceptionInterface $e) {
-                if ($connectAttemptIdx < $this->connectionMaxNumAttempts && $e->getCode() === CURLE_OPERATION_TIMEDOUT) {
-                    // Connection or transfer timeout - try again with higher timeout limits.
-                    $this->client = $this->createClient(
-                        $this->calculateConnectionTimeout($connectAttemptIdx),
-                        $this->calculateTransferTimeout($connectAttemptIdx),
-                        $this->options
-                    );
+                if ($e->getCode() === CURLE_OPERATION_TIMEDOUT) {
+                    if ($connectAttemptIdx < $this->connectionMaxNumAttempts) {
+                        // Connection or transfer timeout - try again with higher timeout limits.
+                        $connectionTimeout = $this->calculateConnectionTimeout($connectAttemptIdx);
+                        $transferTimeout = $this->calculateTransferTimeout($connectAttemptIdx);
+
+                        $this->client = $this->createClient($connectionTimeout, $transferTimeout, $this->options);
+                    } else {
+                        throw new ConnectionTimeout(
+                            $e->getMessage(),
+                            $e->getCode(),
+                            $e,
+                            $connectAttemptIdx,
+                            $connectionTimeout,
+                            $transferTimeout,
+                            $request->getRequestUri() ?? '',
+                            $request->getRequestBody() ?? ''
+                        );
+                    }
                 } else {
                     throw $e;
                 }
             }
         }
 
-        return $response;
+        return new Response();
     }
 
     /**

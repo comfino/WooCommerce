@@ -13,8 +13,6 @@ use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
 use Comfino\DebugLogger;
-use Comfino\ErrorLogger;
-use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Main;
 use Comfino\Order\OrderManager;
@@ -143,9 +141,16 @@ final class ApiService
                 DebugLogger::getLoggerInstance(),
                 'WooCommerce',
                 ...array_merge(
-                    array_values(ConfigManager::getEnvironmentInfo(['shop_version', 'plugin_version', 'plugin_build_ts', 'database_version'])),
+                    array_values(
+                        ConfigManager::getEnvironmentInfo(
+                            ['shop_version', 'plugin_version', 'plugin_build_ts', 'database_version']
+                        )
+                    ),
                     [SettingsForm::DEBUG_LOG_NUM_LINES], // $debugLogNumLines
-                    [array_merge($comfino_payment_gateway->get_plugin_update_details(), ConfigManager::getEnvironmentInfo(['wordpress_version']))] // $shopExtraVariables
+                    [
+                        array_merge($comfino_payment_gateway->get_plugin_update_details(),
+                        ConfigManager::getEnvironmentInfo(['wordpress_version'])),
+                    ] // $shopExtraVariables
                 )
             )
         );
@@ -172,7 +177,7 @@ final class ApiService
             'availableOfferTypes' => '/availableoffertypes(?:/(?P<product_id>\d+))?',
             'paywall' => '/paywall',
             'paywallItemDetails' => '/paywallitemdetails',
-            'productDetails' => '/productdetails(?:/(?P<product_id>\d+)/(?P<loanTypeSelected>[A-Z_]+))?',
+            'productDetails' => '/productdetails(?:/(?P<product_id>\d+))?(?:/(?P<loanTypeSelected>[A-Z_]+))?',
             'transactionStatus' => '/transactionstatus',
             'configuration' => '/configuration(?:/(?P<vkey>[a-f0-9]+))?',
             'cacheInvalidate' => '/cacheinvalidate',
@@ -328,8 +333,6 @@ final class ApiService
 
     private static function getProductDetails(\WP_REST_Request $request): \WP_REST_Response
     {
-        $serializer = new JsonSerializer();
-
         if (empty($productId = $request->get_param('product_id') ?? '')) {
             return new \WP_REST_Response();
         }
@@ -357,7 +360,11 @@ final class ApiService
 
         try {
             $financialProducts = ApiClient::getInstance()->getFinancialProductDetails(
-                new LoanQueryCriteria($loanAmount, null, LoanTypeEnum::from($loanTypeSelected)),
+                new LoanQueryCriteria(
+                    $loanAmount,
+                    null,
+                    !empty($loanTypeSelected) ? LoanTypeEnum::from($loanTypeSelected) : null
+                ),
                 new Cart(
                     $shopCart->getCartItems(),
                     $shopCart->getTotalValue(),
@@ -368,17 +375,10 @@ final class ApiService
                 )
             )->financialProducts;
         } catch (\Throwable $e) {
-            ErrorLogger::sendError(
-                'Product details endpoint',
-                $e->getCode(),
-                $e->getMessage(),
-                $e instanceof HttpErrorExceptionInterface ? $e->getUrl() : null,
-                $e instanceof HttpErrorExceptionInterface ? $e->getRequestBody() : null,
-                $e instanceof HttpErrorExceptionInterface ? $e->getResponseBody() : null,
-                $e->getTraceAsString()
+            return new \WP_REST_Response(
+                ApiClient::processApiError('Product details endpoint', $e)['error_details'],
+                $e instanceof HttpErrorExceptionInterface ? $e->getStatusCode() : 500
             );
-
-            return new \WP_REST_Response($e->getMessage(), $e instanceof HttpErrorExceptionInterface ? $e->getStatusCode() : 500);
         } finally {
             if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
                 DebugLogger::logEvent(
@@ -396,14 +396,24 @@ final class ApiService
     {
         header('Content-Type: text/html');
 
+        FrontendManager::resetScripts();
+        FrontendManager::resetStyles();
+
         if (!ConfigManager::isEnabled()) {
             TemplateManager::renderView('plugin-disabled', 'front');
 
             exit;
         }
 
+        if ($request->has_param('priceModifier') && is_numeric($request->get_param('priceModifier'))) {
+            $priceModifier = (int) $request->get_param('priceModifier');
+        } else {
+            $priceModifier = 0;
+        }
+
         $loanAmount = (int) round(WC()->cart->get_total('edit') * 100);
-        $shopCart = OrderManager::getShopCart(WC()->cart, $loanAmount);
+
+        $shopCart = OrderManager::getShopCart(WC()->cart, $priceModifier);
         $allowedProductTypes = SettingsManager::getAllowedProductTypes(
             ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
             $shopCart
@@ -416,50 +426,62 @@ final class ApiService
             exit;
         }
 
-        if ($request->has_param('priceModifier') && is_numeric($request->get_param('priceModifier'))) {
-            $priceModifier = (float) $request->get_param('priceModifier');
-
-            if ($priceModifier > 0) {
-                $loanAmount += ((int) ($priceModifier * 100));
-            }
-        }
-
         DebugLogger::logEvent(
             '[PAYWALL]',
             'renderPaywall',
             [
                 '$loanAmount' => $loanAmount,
+                '$priceModifier' => $priceModifier,
+                '$cartTotalValue' => $shopCart->getTotalValue(),
                 '$allowedProductTypes' => $allowedProductTypes,
                 '$shopCart' => $shopCart->getAsArray(),
             ]
         );
 
         $paywallRenderer = FrontendManager::getPaywallRenderer();
-        $paywallContents = $paywallRenderer->getPaywall(
-            new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes),
-            self::getEndpointUrl('paywall')
-        );
+        $paywallUrl = self::getEndpointUrl('paywall');
         $templateVariables = [
             'language' => Main::getShopLanguage(),
             'styles' => FrontendManager::registerExternalStyles($paywallRenderer->getStyles()),
             'scripts' => FrontendManager::includeExternalScripts($paywallRenderer->getScripts()),
             'shop_url' => Main::getShopUrl(),
-            'paywall_hash' => $paywallRenderer->getPaywallHash($paywallContents->paywallBody, ConfigManager::getApiKey()),
-            'frontend_elements' => [
-                'paywallBody' => $paywallContents->paywallBody,
-                'paywallHash' => $paywallContents->paywallHash,
-            ],
         ];
 
-        if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
-            DebugLogger::logEvent(
-                '[PAYWALL_API_REQUEST]',
-                'renderPaywall',
-                ['$request' => $apiRequest->getRequestBody(), '$templateVariables' => $templateVariables]
+        try {
+            $paywallContents = ApiClient::getInstance()->getPaywall(
+                new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes),
+                $paywallUrl
             );
+
+            $templateName = 'paywall';
+            $templateVariables['paywall_hash'] = $paywallRenderer->getPaywallHash(
+                $paywallContents->paywallBody,
+                ConfigManager::getApiKey()
+            );
+            $templateVariables['frontend_elements'] = [
+                'paywallBody' => $paywallContents->paywallBody,
+                'paywallHash' => $paywallContents->paywallHash,
+            ];
+        } catch (\Throwable $e) {
+            http_response_code($e instanceof HttpErrorExceptionInterface ? $e->getStatusCode() : 500);
+
+            $templateVariables = array_merge($templateVariables, ApiClient::processApiError('Paywall endpoint', $e));
+            $templateName = 'api-error';
+        } finally {
+            if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
+                DebugLogger::logEvent(
+                    '[PAYWALL_API_REQUEST]',
+                    'renderPaywall',
+                    [
+                        '$paywallUrl' => $paywallUrl,
+                        '$request' => $apiRequest->getRequestBody(),
+                        '$templateVariables' => $templateVariables
+                    ]
+                );
+            }
         }
 
-        TemplateManager::renderView('paywall', 'front', $templateVariables);
+        TemplateManager::renderView($templateName, 'front', $templateVariables);
 
         exit;
     }
@@ -474,16 +496,30 @@ final class ApiService
 
         $loanAmount = (int) round(WC()->cart->get_total('edit') * 100);
         $loanTypeSelected = $request->get_param('loanTypeSelected');
-        $shopCart = OrderManager::getShopCart(WC()->cart, $loanAmount);
+        $loadProductCategories = ($request->get_param('reqProdCat') === 'yes');
+
+        if ($request->has_param('priceModifier') && is_numeric($request->get_param('priceModifier'))) {
+            $priceModifier = (int) $request->get_param('priceModifier');
+        } else {
+            $priceModifier = 0;
+        }
+
+        $shopCart = OrderManager::getShopCart(WC()->cart, $priceModifier);
 
         DebugLogger::logEvent(
             '[PAYWALL_ITEM_DETAILS]',
             'getPaywallItemDetails',
-            ['$loanTypeSelected' => $loanTypeSelected, '$shopCart' => $shopCart->getAsArray()]
+            [
+                '$loanAmount' => $loanAmount,
+                '$loanTypeSelected' => $loanTypeSelected,
+                '$priceModifier' => $priceModifier,
+                '$loadProductCategories' => $loadProductCategories,
+                '$shopCart' => $shopCart->getAsArray(),
+            ]
         );
 
-        $response = FrontendManager::getPaywallRenderer()
-            ->getPaywallItemDetails(
+        try {
+            $paywallItemDetails = ApiClient::getInstance()->getPaywallItemDetails(
                 $loanAmount,
                 LoanTypeEnum::from($loanTypeSelected),
                 new Cart(
@@ -495,15 +531,24 @@ final class ApiService
                     $shopCart->getDeliveryTaxValue()
                 )
             );
-
-        if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
-            DebugLogger::logEvent(
-                '[PAYWALL_ITEM_DETAILS_API_REQUEST]',
-                'getPaywallItemDetails',
-                ['$request' => $apiRequest->getRequestBody()]
+        } catch (\Throwable $e) {
+            return new \WP_REST_Response(
+                ApiClient::processApiError('Paywall item details endpoint', $e)['error_details'],
+                $e instanceof HttpErrorExceptionInterface ? $e->getStatusCode() : 500
             );
+        } finally {
+            if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
+                DebugLogger::logEvent(
+                    '[PAYWALL_ITEM_DETAILS_API_REQUEST]',
+                    'getPaywallItemDetails',
+                    ['$request' => $apiRequest->getRequestBody()]
+                );
+            }
         }
 
-        return new \WP_REST_Response(['listItemData' => $response->listItemData, 'productDetails' => $response->productDetails]);
+        return new \WP_REST_Response([
+            'listItemData' => $paywallItemDetails->listItemData,
+            'productDetails' => $paywallItemDetails->productDetails
+        ]);
     }
 }
