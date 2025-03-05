@@ -127,7 +127,6 @@ It also contains a list of recent errors with a preview of the local error log a
 ## SAMPLE CART VIEW WITH A LIST OF PAYMENT METHODS
 
 ![Cart](images/en/cart_payment_view_folded.png "Cart")
-
 ![Cart](images/en/cart_payment_view_unfolded.png "Cart")
 
 ## COMFINO PROCESS FLOW
