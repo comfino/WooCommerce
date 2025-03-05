@@ -287,7 +287,7 @@ final class Main
 
     public static function getShopLanguage(): string
     {
-        return substr(get_locale(), 0, 2);
+        return substr(get_bloginfo('language'), 0, 2);;
     }
 
     public static function getShopCurrency(): string
