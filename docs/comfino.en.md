@@ -48,7 +48,6 @@ By default, Comfino payments are available unconditionally for all product types
 **Basic Settings**
 
 * **Widget enable** — promotional widget activation/deactivation switch on the product page
-* **Widget key** - a unique access key which enables the widget to communicate with the Comfino API (set automatically when saving the configuration with the correct API key)
 * **Widget type** — way of presenting the widget [`Installment calculator`, `Extended calculator - products`]
 * **Offer types** — types of financing offers promoted [`Zero percent installments`, `Convenient installments`, `Pay later`, `Installments for companies`, `Deferred payments for companies`, `Leasing`]
 

@@ -108,6 +108,16 @@ window.Comfino = {
                 }
             }
 
+            comfinoSettings.paywallOptions.onOfferLoadSuccess = (loanParams) => {
+                ComfinoPaywallFrontend.logEvent('onOfferLoadSuccess WooCommerce (Payment Blocks)', 'debug', loanParams);
+
+                const paywallIframe = document.getElementById('comfino-paywall-container');
+
+                if (paywallIframe.style.display === 'block' && !ComfinoPaywallFrontend.isLoaded()) {
+                    ComfinoPaywallFrontend.onload(paywallIframe, comfinoSettings.paywallOptions.platformName, comfinoSettings.paywallOptions.platformVersion);
+                }
+            }
+
             const iframe = document.getElementById('comfino-paywall-container');
 
             if (iframe === null) {
