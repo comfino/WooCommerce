@@ -47,7 +47,6 @@ Domyślnie płatności Comfino są dostępne bezwarunkowo dla wszystkich typów 
 **Ustawienia podstawowe**
 
 * **Widget włączony** — przełącznik aktywacji/deaktywacji widgetu promocyjnego na stronie produktu
-* **Klucz widgetu** — unikalny klucz dostępowy umożliwiający komunikację widgetu z API Comfino (ustawiany automatycznie przy zapisie konfiguracji z poprawnym kluczem API)
 * **Typ widgetu** — sposób prezentacji widgetu [`Kalkulator rat`, `Rozszerzony kalkulator - produkty`]
 * **Typy ofert** — typy promowanych ofert finansowania [`Raty zero procent`, `Niskie raty`, `Zapłać później`, `Raty dla firm`, `Odroczone płatności dla firm`, `Leasing`]
 

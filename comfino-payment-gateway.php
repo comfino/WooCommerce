@@ -3,14 +3,14 @@
  * Plugin Name: Comfino Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
  * Description: Comfino Payment Gateway for WooCommerce.
- * Version: 4.2.1
+ * Version: 4.2.2
  * Author: Comfino
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
  * Text Domain: comfino-payment-gateway
- * WC tested up to: 9.4.3
+ * WC tested up to: 9.7.0
  * WC requires at least: 3.0
- * Tested up to: 6.7.1
+ * Tested up to: 6.7.2
  * Requires at least: 5.0
  * Requires PHP: 7.1
  * License: GPLv3

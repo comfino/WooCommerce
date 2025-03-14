@@ -518,6 +518,11 @@ final class ApiService
             ]
         );
 
+        if (empty($loanTypeSelected)) {
+            // Financial product type not passed - return empty response.
+            return new \WP_REST_Response(['listItemData' => '', 'productDetails' => '']);
+        }
+
         try {
             $paywallItemDetails = ApiClient::getInstance()->getPaywallItemDetails(
                 $loanAmount,
