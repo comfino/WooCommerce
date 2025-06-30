@@ -15,17 +15,17 @@ abstract class Request
     /** @var SerializerInterface */
     protected $serializer;
     /** @var string */
-    private $method;
+    protected $method;
     /** @var string */
-    private $apiEndpointPath;
+    protected $apiEndpointPath;
     /** @var string[]|null */
-    private $requestHeaders;
+    protected $requestHeaders;
     /** @var string[]|null */
-    private $requestParams;
+    protected $requestParams;
     /** @var string|null */
-    private $requestUri;
+    protected $requestUri;
     /** @var string|null */
-    private $requestBody;
+    protected $requestBody;
 
     /**
      * @param \Comfino\Api\SerializerInterface $serializer
@@ -104,7 +104,7 @@ abstract class Request
      *
      * @throws RequestValidationError
      */
-    final public function __toString(): string
+    public function __toString(): string
     {
         return ($serializedBody = $this->serializeRequestBody()) !== null ? $serializedBody : '';
     }
@@ -167,7 +167,7 @@ abstract class Request
      *
      * @throws RequestValidationError
      */
-    final protected function serializeRequestBody(): ?string
+    protected function serializeRequestBody(): ?string
     {
         return ($body = $this->prepareRequestBody()) !== null ? $this->serializer->serialize($body) : null;
     }
@@ -178,7 +178,7 @@ abstract class Request
      *
      * @return string
      */
-    final protected function getApiEndpointUri($apiHost, $apiVersion): string
+    protected function getApiEndpointUri($apiHost, $apiVersion): string
     {
         $uri = implode('/', [trim($apiHost, " /\n\r\t\v\0"), "v$apiVersion", $this->apiEndpointPath]);
 

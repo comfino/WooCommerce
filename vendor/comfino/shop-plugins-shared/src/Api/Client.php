@@ -77,7 +77,7 @@ class Client
     protected $serializer;
     protected const CLIENT_VERSION = '1.0';
     protected const PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
-    protected const SANDBOX_HOST = 'https://api-ecommerce.ecraty.pl';
+    protected const SANDBOX_HOST = 'https://api-ecommerce.craty.pl';
 
     /** @var string */
     protected $apiLanguage = 'pl';
@@ -267,6 +267,9 @@ class Client
     /**
      * Checks if registered user shop account is active.
      *
+     * @param string|null $cacheInvalidateUrl Integrated platform API endpoint for local cache invalidation.
+     * @param string|null $configurationUrl Integrated platform API endpoint for local configuration management.
+     *
      * @return bool
      *
      * @throws RequestValidationError
@@ -275,8 +278,6 @@ class Client
      * @throws AccessDenied
      * @throws ServiceUnavailable
      * @throws ClientExceptionInterface
-     * @param string|null $cacheInvalidateUrl
-     * @param string|null $configurationUrl
      */
     public function isShopAccountActive($cacheInvalidateUrl = null, $configurationUrl = null): bool
     {
@@ -490,6 +491,8 @@ class Client
     /**
      * Returns a list of available widget types associated with an authorized shop account.
      *
+     * @param bool $useNewApi Whether to use a new widget type and new API endpoint.
+     *
      * @throws RequestValidationError
      * @throws ResponseValidationError
      * @throws AuthorizationError
@@ -497,10 +500,10 @@ class Client
      * @throws ServiceUnavailable
      * @throws ClientExceptionInterface
      */
-    public function getWidgetTypes(): GetWidgetTypesResponse
+    public function getWidgetTypes($useNewApi = true): GetWidgetTypesResponse
     {
         try {
-            $this->request = (new GetWidgetTypesRequest())->setSerializer($this->serializer);
+            $this->request = (new GetWidgetTypesRequest($useNewApi))->setSerializer($this->serializer);
 
             return new GetWidgetTypesResponse($this->request, $this->sendRequest($this->request), $this->serializer);
         } catch (HttpErrorExceptionInterface $e) {

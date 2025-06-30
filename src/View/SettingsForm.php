@@ -257,7 +257,7 @@ final class SettingsForm
                     self::getFormFieldsDefinitions(),
                     array_flip([
                         'widget_settings_basic',
-                        'widget_enabled', 'widget_key', 'widget_type', 'widget_offer_types',
+                        'widget_enabled', 'widget_key', 'widget_type', 'widget_offer_types', 'widget_show_provider_logos',
                         'widget_settings_advanced',
                         'widget_price_selector', 'widget_target_selector', 'widget_price_observer_selector',
                         'widget_price_observer_level', 'widget_embed_method', 'widget_js_code',
@@ -439,6 +439,12 @@ final class SettingsForm
                 'values' => SettingsManager::getProductTypesSelectList(ProductTypesListTypeEnum::LIST_TYPE_WIDGET),
                 'default' => [key(SettingsManager::getProductTypesSelectList(ProductTypesListTypeEnum::LIST_TYPE_WIDGET))],
                 'description' => __('Other payment methods (Installments 0%, Buy now, pay later, Installments for companies, Leasing) available after consulting a Comfino advisor (kontakt@comfino.pl).', 'comfino-payment-gateway'),
+            ],
+            'widget_show_provider_logos' => [
+                'title' => __('Show logos', 'comfino-payment-gateway'),
+                'type' => 'checkbox',
+                'label' => __('Show logos of financial services providers', 'comfino-payment-gateway'),
+                'default' => ConfigManager::getDefaultValue('widget_show_provider_logos') === true ? 'yes' : 'no',
             ],
             'widget_settings_advanced' => [
                 'title' => __('Advanced settings', 'comfino-payment-gateway'),
