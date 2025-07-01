@@ -120,7 +120,7 @@ function prepare_tab_url(string $subsection): string
 
                         $internalFlags = '<li><b>comfino_plugin_updated</b>: ' . get_transient('comfino_plugin_updated') . '</li>';
                         $internalFlags .= '<li><b>comfino_plugin_prev_version</b>: ' . get_transient('comfino_plugin_prev_version') . '</li>';
-                        $internalFlags .= '<li><b>comfino_plugin_updated_at</b>: ' . date('Y-m-d H:i:s', get_transient('comfino_plugin_updated_at')) . '</li>';
+                        $internalFlags .= '<li><b>comfino_plugin_updated_at</b>: ' . gmdate('Y-m-d H:i:s', get_transient('comfino_plugin_updated_at')) . '</li>';
 
                         echo wp_kses(
                             "<hr><h4>Internal flags:</h4><ul>$internalFlags</ul>",
