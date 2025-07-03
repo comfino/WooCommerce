@@ -468,6 +468,7 @@ final class FrontendManager
                             'WIDGET_TYPE',
                             'OFFER_TYPES',
                             'EMBED_METHOD',
+                            'SHOW_PROVIDER_LOGOS',
                         ],
                         array_map(
                             static function ($optionValue) use ($serializer) {
@@ -484,6 +485,7 @@ final class FrontendManager
                                     'COMFINO_WIDGET_TYPE',
                                     'COMFINO_WIDGET_OFFER_TYPES',
                                     'COMFINO_WIDGET_EMBED_METHOD',
+                                    'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS',
                                 ]
                             )
                         )

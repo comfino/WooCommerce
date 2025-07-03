@@ -13,6 +13,7 @@ class WidgetInitScriptHelper
         'WIDGET_TYPE',
         'OFFER_TYPES',
         'EMBED_METHOD',
+        'SHOW_PROVIDER_LOGOS',
     ];
 
     public const WIDGET_INIT_VARIABLES = [
@@ -23,8 +24,10 @@ class WidgetInitScriptHelper
         'PLATFORM_VERSION',
         'PLATFORM_DOMAIN',
         'PLUGIN_VERSION',
-        'AVAILABLE_OFFER_TYPES_URL',
-        'PRODUCT_DETAILS_URL',
+        'AVAILABLE_PRODUCT_TYPES',
+        'PRODUCT_CART_DETAILS',
+        'LANGUAGE',
+        'CURRENCY',
     ];
 
     /**
@@ -53,9 +56,8 @@ class WidgetInitScriptHelper
                 },
                 array_merge(self::WIDGET_INIT_PARAMS, array_keys($widgetInitVariables))
             ),
-            array_merge(
-                array_merge($widgetInitParamsAssocKeys, $widgetInitParams),
-                array_map(static function ($varValue): string {
+            array_map(
+                static function ($varValue): string {
                     if (is_bool($varValue)) {
                         return $varValue ? 'true' : 'false';
                     }
@@ -65,7 +67,11 @@ class WidgetInitScriptHelper
                     }
 
                     return $varValue !== null ? (string) $varValue : 'null';
-                }, array_values($widgetInitVariables))
+                },
+                array_merge(
+                    array_merge($widgetInitParamsAssocKeys, $widgetInitParams),
+                    array_values($widgetInitVariables)
+                )
             ),
             $widgetInitCode
         );
@@ -87,9 +93,9 @@ class WidgetInitScriptHelper
     public static function getInitialWidgetCode(): string
     {
         return trim("
-var script = document.createElement('script');
+const script = document.createElement('script');
 script.onload = function () {
-    ComfinoProductWidget.init({
+    ComfinoWidgetFrontend.init({
         widgetKey: '{WIDGET_KEY}',
         priceSelector: '{WIDGET_PRICE_SELECTOR}',
         widgetTargetSelector: '{WIDGET_TARGET_SELECTOR}',
@@ -103,14 +109,20 @@ script.onload = function () {
         productId: {PRODUCT_ID},
         productPrice: {PRODUCT_PRICE},
         platform: '{PLATFORM}',
+        platformName: '{PLATFORM_NAME}',
         platformVersion: '{PLATFORM_VERSION}',
         platformDomain: '{PLATFORM_DOMAIN}',
         pluginVersion: '{PLUGIN_VERSION}',
-        availOffersUrl: '{AVAILABLE_OFFER_TYPES_URL}',
-        productDetailsUrl: '{PRODUCT_DETAILS_URL}',
+        availableProductTypes: {AVAILABLE_PRODUCT_TYPES},
+        productCartDetails: {PRODUCT_CART_DETAILS},
+        language: '{LANGUAGE}',
+        currency: '{CURRENCY}',
+        showProviderLogos: {SHOW_PROVIDER_LOGOS},
         callbackBefore: function () {},
         callbackAfter: function () {},
         onOfferRendered: function (jsonResponse, widgetTarget, widgetNode) { },
+        onWidgetBannerLoaded: function (loadedOffers) { },
+        onWidgetCalculatorLoaded: function (loadedOffers) { },
         onGetPriceElement: function (priceSelector, priceObserverSelector) { return null; },
         debugMode: window.location.hash && window.location.hash.substring(1) === 'comfino_debug'
     });

@@ -130,6 +130,10 @@ final class OrderManager
         );
     }
 
+    /**
+     * @param \WC_Product $product WooCommerce product entity.
+     * @return Cart Comfino cart structure.
+     */
     public static function getShopCartFromProduct(\WC_Product $product): Cart
     {
         if (!empty($taxRates = \WC_Tax::get_rates($product->get_tax_class()))) {
@@ -146,10 +150,14 @@ final class OrderManager
             $categoryIds = $parentProduct->get_category_ids();
         }
 
+        $grossPrice = (int) (wc_get_price_including_tax($product) * 100);
+        $netPrice = ($taxRates !== null ? (int) (wc_get_price_excluding_tax($product) * 100) : null);
+        $taxValue = ($taxRate !== null ? $grossPrice - $netPrice : null);
+
         return new Cart(
-            (int) (wc_get_price_including_tax($product) * 100),
-            (int) round(wc_get_price_excluding_tax($product) * 100),
-            null,
+            $grossPrice,
+            $netPrice,
+            $taxValue,
             0,
             null,
             null,
@@ -158,15 +166,15 @@ final class OrderManager
                 new CartItem(
                     new Product(
                         $product->get_name(),
-                        (int) (wc_get_price_including_tax($product) * 100),
+                        $grossPrice,
                         (string) $product->get_id(),
                         self::getProductCategories($categoryIds),
                         $product->get_sku(),
                         null,
                         $categoryIds,
-                        $taxRates !== null ? (int) (wc_get_price_excluding_tax($product) * 100) : null,
+                        $netPrice,
                         $taxRate !== null ? (int) $taxRate['rate'] : null,
-                        $taxRate !== null ? (int) ((wc_get_price_including_tax($product) - wc_get_price_excluding_tax($product)) * 100) : null
+                        $taxValue
                     ),
                     1
                 ),

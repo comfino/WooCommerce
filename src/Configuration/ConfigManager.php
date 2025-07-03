@@ -13,7 +13,9 @@ use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Common\Shop\Product\CategoryTree;
 use Comfino\ErrorLogger;
 use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
+use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Main;
+use Comfino\Order\OrderManager;
 use Comfino\Order\ShopStatusManager;
 use Comfino\PaymentGateway;
 
@@ -44,6 +46,7 @@ final class ConfigManager
         'COMFINO_WIDGET_TYPE' => 'widget_type',
         'COMFINO_WIDGET_OFFER_TYPES' => 'widget_offer_types',
         'COMFINO_WIDGET_EMBED_METHOD' => 'widget_embed_method',
+        'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS' => 'widget_show_provider_logos',
         'COMFINO_WIDGET_CODE' => 'widget_js_code',
         'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => 'widget_prod_script_version',
         'COMFINO_WIDGET_DEV_SCRIPT_VERSION' => 'widget_dev_script_version',
@@ -59,6 +62,7 @@ final class ConfigManager
         'COMFINO_API_CONNECT_TIMEOUT' => 'api_connect_timeout',
         'COMFINO_API_TIMEOUT' => 'api_timeout',
         'COMFINO_API_CONNECT_NUM_ATTEMPTS' => 'api_connect_num_attempts',
+        'COMFINO_NEW_WIDGET_ACTIVE' => 'new_widget_active',
     ];
 
     public const CONFIG_OPTIONS = [
@@ -82,6 +86,7 @@ final class ConfigManager
             'COMFINO_WIDGET_TYPE' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_WIDGET_OFFER_TYPES' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
             'COMFINO_WIDGET_EMBED_METHOD' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
+            'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_WIDGET_CODE' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
         ],
         'abandoned_cart_settings' => [
@@ -108,6 +113,7 @@ final class ConfigManager
             'COMFINO_API_CONNECT_TIMEOUT' => ConfigurationManager::OPT_VALUE_TYPE_INT,
             'COMFINO_API_TIMEOUT' => ConfigurationManager::OPT_VALUE_TYPE_INT,
             'COMFINO_API_CONNECT_NUM_ATTEMPTS' => ConfigurationManager::OPT_VALUE_TYPE_INT,
+            'COMFINO_NEW_WIDGET_ACTIVE' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
         ],
     ];
 
@@ -133,6 +139,7 @@ final class ConfigManager
         'COMFINO_WIDGET_CODE',
         'COMFINO_WIDGET_PROD_SCRIPT_VERSION',
         'COMFINO_WIDGET_DEV_SCRIPT_VERSION',
+        'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS',
         'COMFINO_ABANDONED_CART_ENABLED',
         'COMFINO_ABANDONED_PAYMENTS',
         'COMFINO_IGNORED_STATUSES',
@@ -145,6 +152,7 @@ final class ConfigManager
         'COMFINO_API_CONNECT_TIMEOUT',
         'COMFINO_API_TIMEOUT',
         'COMFINO_API_CONNECT_NUM_ATTEMPTS',
+        'COMFINO_NEW_WIDGET_ACTIVE',
     ];
 
     private const CONFIG_MANAGER_OPTIONS = 0;
@@ -416,7 +424,7 @@ final class ConfigManager
         return delete_option(self::getStorageAdapter()->get_option_key());
     }
 
-    public static function updateWidgetCode(?string $lastWidgetCodeHash = null): void
+    public static function updateWidgetCode(?string $lastWidgetCodeHash = null): bool
     {
         ErrorLogger::init();
 
@@ -427,6 +435,8 @@ final class ConfigManager
             if ($lastWidgetCodeHash === null || md5($currentWidgetCode) === $lastWidgetCodeHash) {
                 // Widget code not changed since last installed version - safely replace with new one.
                 self::updateConfigurationValue('COMFINO_WIDGET_CODE', $initialWidgetCode);
+
+                return true;
             }
         } catch (\Throwable $e) {
             ErrorLogger::sendError(
@@ -440,6 +450,8 @@ final class ConfigManager
                 $e->getTraceAsString()
             );
         }
+
+        return false;
     }
 
     public static function getCurrentWidgetCode(?int $productId = null): string
@@ -452,8 +464,8 @@ final class ConfigManager
         if (strpos($widgetCode, 'productId') === false) {
             $optionsToInject[] = "        productId: $productData[product_id]";
         }
-        if (strpos($widgetCode, 'availOffersUrl') === false) {
-            $optionsToInject[] = "        availOffersUrl: '$productData[avail_offers_url]'";
+        if (strpos($widgetCode, 'availableProductTypes') === false) {
+            $optionsToInject[] = '        availableProductTypes: ' . implode(',', $productData['available_product_types']);
         }
 
         if (count($optionsToInject) > 0) {
@@ -475,7 +487,7 @@ final class ConfigManager
         $widgetProdScriptVersion = self::getConfigurationValue('COMFINO_WIDGET_PROD_SCRIPT_VERSION');
 
         if (empty($widgetProdScriptVersion)) {
-            $widgetScriptUrl .= '/comfino.min.js';
+            $widgetScriptUrl .= '/v2/widget-frontend.min.js';
         } else {
             $widgetScriptUrl .= ('/' . trim($widgetProdScriptVersion, '/'));
         }
@@ -492,11 +504,14 @@ final class ConfigManager
             'PRODUCT_ID' => $productData['product_id'],
             'PRODUCT_PRICE' => $productData['price'],
             'PLATFORM' => 'woocommerce',
+            'PLATFORM_NAME' => 'WooCommerce',
             'PLATFORM_VERSION' => WC_VERSION,
             'PLATFORM_DOMAIN' => Main::getShopDomain(),
             'PLUGIN_VERSION' => PaymentGateway::VERSION,
-            'AVAILABLE_OFFER_TYPES_URL' => $productData['avail_offers_url'],
-            'PRODUCT_DETAILS_URL' => $productData['product_details_url'],
+            'AVAILABLE_PRODUCT_TYPES' => $productData['available_product_types'],
+            'PRODUCT_CART_DETAILS' => $productData['product_cart_details'],
+            'LANGUAGE' => Main::getShopLanguage(),
+            'CURRENCY' => Main::getShopCurrency(),
         ];
     }
 
@@ -508,7 +523,7 @@ final class ConfigManager
 
         return count($optionsToReturn)
             ? self::getInstance()->getConfigurationValues($optionsToReturn)
-            : self::getInstance()->getConfigurationValues(self::CONFIG_OPTIONS[$optionsGroup]);
+            : self::getInstance()->getConfigurationValues(array_keys(self::CONFIG_OPTIONS[$optionsGroup]));
     }
 
     public static function getDefaultValue(string $optionName)
@@ -544,7 +559,7 @@ final class ConfigManager
             'COMFINO_WIDGET_TARGET_SELECTOR' => '.summary .product_meta',
             'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR' => '',
             'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL' => 0,
-            'COMFINO_WIDGET_TYPE' => 'extended-modal',
+            'COMFINO_WIDGET_TYPE' => 'standard',
             'COMFINO_WIDGET_OFFER_TYPES' => ['CONVENIENT_INSTALLMENTS'],
             'COMFINO_WIDGET_EMBED_METHOD' => 'INSERT_INTO_LAST',
             'COMFINO_WIDGET_CODE' => WidgetInitScriptHelper::getInitialWidgetCode(),
@@ -552,6 +567,7 @@ final class ConfigManager
             'COMFINO_ABANDONED_PAYMENTS' => 'comfino',
             'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => '',
             'COMFINO_WIDGET_DEV_SCRIPT_VERSION' => '',
+            'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS' => false,
             'COMFINO_IGNORED_STATUSES' => implode(',', StatusManager::DEFAULT_IGNORED_STATUSES),
             'COMFINO_FORBIDDEN_STATUSES' => implode(',', StatusManager::DEFAULT_FORBIDDEN_STATUSES),
             'COMFINO_STATUS_MAP' => wp_json_encode(ShopStatusManager::DEFAULT_STATUS_MAP),
@@ -562,6 +578,7 @@ final class ConfigManager
             'COMFINO_API_CONNECT_TIMEOUT' => 1,
             'COMFINO_API_TIMEOUT' => 3,
             'COMFINO_API_CONNECT_NUM_ATTEMPTS' => 3,
+            'COMFINO_NEW_WIDGET_ACTIVE' => true,
         ];
     }
 
@@ -583,31 +600,34 @@ final class ConfigManager
 
     private static function getProductData(?int $productId): array
     {
-        $availOffersUrl = ApiService::getEndpointUrl('availableOfferTypes');
-        $productDetailsUrl = ApiService::getEndpointUrl('productDetails');
-
         $price = 'null';
+        $productCartDetails = 'null';
 
-        if ($productId !== null) {
-            $availOffersUrl .= "/$productId";
-            $productDetailsUrl  .= "/$productId";
+        if ($productId !== null && ($product = wc_get_product($productId)) instanceof \WC_Product) {
+            $shopCart = OrderManager::getShopCartFromProduct($product);
 
-            if (($product = wc_get_product($productId)) instanceof \WC_Product) {
-                $price = (float) preg_replace(
-                    ['/[^\d,.]/', '/(?<=\d),(?=\d{3}(?:[^\d]|$))/', '/,00$/', '/,/'],
-                    ['', '', '', '.'],
-                    $product->get_price()
-                );
-            }
+            $price = (float) preg_replace(
+                ['/[^\d,.]/', '/(?<=\d),(?=\d{3}(?:[^\d]|$))/', '/,00$/', '/,/'],
+                ['', '', '', '.'],
+                $product->get_price()
+            );
+            $availableProductTypes = SettingsManager::getAllowedProductTypes(
+                ProductTypesListTypeEnum::LIST_TYPE_WIDGET,
+                $shopCart,
+                true
+            );
+            $productCartDetails = $shopCart->getAsArray();
         } else {
-            $productId = 'null';
+            $availableProductTypes = SettingsManager::getProductTypesStrings(
+                ProductTypesListTypeEnum::LIST_TYPE_WIDGET
+            );
         }
 
         return [
-            'product_id' => $productId,
+            'product_id' => $productId ?? 'null',
             'price' => $price,
-            'avail_offers_url' => $availOffersUrl,
-            'product_details_url' => $productDetailsUrl,
+            'available_product_types' => $availableProductTypes,
+            'product_cart_details' => $productCartDetails,
         ];
     }
 

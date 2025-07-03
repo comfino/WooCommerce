@@ -39,10 +39,8 @@ final class ApiService
     private static $endpointUrls = [];
     /** @var callable[] */
     private static $requestCallbacks = [
-        'availableOfferTypes' => [self::class, 'getAvailableOfferTypes'],
         'paywall' => [self::class, 'getPaywall'],
         'paywallItemDetails' => [self::class, 'getPaywallItemDetails'],
-        'productDetails' => [self::class, 'getProductDetails'],
     ];
 
     public static function init(): void
@@ -312,84 +310,6 @@ final class ApiService
         return count($requestParams = $request->get_params())
             ? self::getEndpointManager()->getServerRequest()->withQueryParams($requestParams)
             : null;
-    }
-
-    private static function getAvailableOfferTypes(\WP_REST_Request $request): \WP_REST_Response
-    {
-        $availableProductTypes = SettingsManager::getProductTypesStrings(ProductTypesListTypeEnum::LIST_TYPE_WIDGET);
-
-        if (empty($productId = $request->get_param('product_id') ?? '')) {
-            return new \WP_REST_Response($availableProductTypes);
-        }
-
-        $product = wc_get_product($productId);
-
-        if (!$product) {
-            return new \WP_REST_Response($availableProductTypes);
-        }
-
-        return new \WP_REST_Response(SettingsManager::getAllowedProductTypes('widget', OrderManager::getShopCartFromProduct($product), true));
-    }
-
-    private static function getProductDetails(\WP_REST_Request $request): \WP_REST_Response
-    {
-        if (empty($productId = $request->get_param('product_id') ?? '')) {
-            return new \WP_REST_Response();
-        }
-
-        $product = wc_get_product($productId);
-
-        if (!$product) {
-            return new \WP_REST_Response();
-        }
-
-        $shopCart = OrderManager::getShopCartFromProduct($product);
-        $loanAmount = $shopCart->getTotalValue();
-        $loanTypeSelected = $request->get_param('loanTypeSelected') ?? '';
-
-        DebugLogger::logEvent(
-            '[PRODUCT_DETAILS]',
-            'getFinancialProductDetails',
-            [
-                '$loanAmount' => $loanAmount,
-                '$productId' =>$productId,
-                '$loanTypeSelected' => $loanTypeSelected,
-                '$shopCart' => $shopCart->getAsArray(),
-            ]
-        );
-
-        try {
-            $financialProducts = ApiClient::getInstance()->getFinancialProductDetails(
-                new LoanQueryCriteria(
-                    $loanAmount,
-                    null,
-                    !empty($loanTypeSelected) ? LoanTypeEnum::from($loanTypeSelected) : null
-                ),
-                new Cart(
-                    $shopCart->getCartItems(),
-                    $shopCart->getTotalValue(),
-                    $shopCart->getDeliveryCost(),
-                    $shopCart->getDeliveryNetCost(),
-                    $shopCart->getDeliveryTaxRate(),
-                    $shopCart->getDeliveryTaxValue()
-                )
-            )->financialProducts;
-        } catch (\Throwable $e) {
-            return new \WP_REST_Response(
-                ApiClient::processApiError('Product details endpoint', $e)['error_details'],
-                $e instanceof HttpErrorExceptionInterface ? $e->getStatusCode() : 500
-            );
-        } finally {
-            if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
-                DebugLogger::logEvent(
-                    '[PRODUCT_DETAILS_API_REQUEST]',
-                    'getFinancialProductDetails',
-                    ['$request' => $apiRequest->getRequestBody()]
-                );
-            }
-        }
-
-        return new \WP_REST_Response($financialProducts);
     }
 
     private static function getPaywall(\WP_REST_Request $request): void

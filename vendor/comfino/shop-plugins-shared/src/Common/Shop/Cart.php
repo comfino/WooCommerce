@@ -132,39 +132,38 @@ class Cart
      */
     public function getAsArray($withNulls = true): array
     {
-        return array_filter(
-            [
-                'totalAmount' => $this->totalValue,
-                'deliveryCost' => $this->deliveryCost,
-                'deliveryNetCost' => $this->deliveryNetCost,
-                'deliveryCostVatRate' => $this->deliveryTaxRate,
-                'deliveryCostVatAmount' => $this->deliveryTaxValue,
-                'products' => array_map(
-                    static function (CartItemInterface $cartItem) use ($withNulls): array {
-                        $product = [
-                            'name' => $cartItem->getProduct()->getName(),
-                            'quantity' => $cartItem->getQuantity(),
-                            'price' => $cartItem->getProduct()->getPrice(),
-                            'netPrice' => $cartItem->getProduct()->getNetPrice(),
-                            'vatRate' => $cartItem->getProduct()->getTaxRate(),
-                            'vatAmount' => $cartItem->getProduct()->getTaxValue(),
-                            'externalId' => $cartItem->getProduct()->getId(),
-                            'category' => $cartItem->getProduct()->getCategory(),
-                            'ean' => $cartItem->getProduct()->getEan(),
-                            'photoUrl' => $cartItem->getProduct()->getPhotoUrl(),
-                            'categoryIds' => $cartItem->getProduct()->getCategoryIds(),
-                        ];
+        $cart = [
+            'totalAmount' => $this->totalValue,
+            'deliveryCost' => $this->deliveryCost,
+            'deliveryNetCost' => $this->deliveryNetCost,
+            'deliveryCostVatRate' => $this->deliveryTaxRate,
+            'deliveryCostVatAmount' => $this->deliveryTaxValue,
+            'products' => array_map(
+                static function (CartItemInterface $cartItem) use ($withNulls): array {
+                    $product = [
+                        'name' => $cartItem->getProduct()->getName(),
+                        'quantity' => $cartItem->getQuantity(),
+                        'price' => $cartItem->getProduct()->getPrice(),
+                        'netPrice' => $cartItem->getProduct()->getNetPrice(),
+                        'vatRate' => $cartItem->getProduct()->getTaxRate(),
+                        'vatAmount' => $cartItem->getProduct()->getTaxValue(),
+                        'externalId' => $cartItem->getProduct()->getId(),
+                        'category' => $cartItem->getProduct()->getCategory(),
+                        'ean' => $cartItem->getProduct()->getEan(),
+                        'photoUrl' => $cartItem->getProduct()->getPhotoUrl(),
+                        'categoryIds' => $cartItem->getProduct()->getCategoryIds(),
+                    ];
 
-                        return $withNulls ? $product : array_filter($product, static function ($productFieldValue) : bool {
-                            return $productFieldValue !== null;
-                        });
-                    },
-                    $this->cartItems
-                ),
-            ],
-            static function ($cartFieldValue) : bool {
-                return $cartFieldValue !== null;
-            }
-        );
+                    return $withNulls ? $product : array_filter($product, static function ($productFieldValue) : bool {
+                        return $productFieldValue !== null;
+                    });
+                },
+                $this->cartItems
+            ),
+        ];
+
+        return $withNulls ? $cart : array_filter($cart, static function ($cartFieldValue) : bool {
+            return $cartFieldValue !== null;
+        });
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use Comfino\Configuration\ConfigManager;
 use Comfino\Main;
 
 if (!defined('ABSPATH')) {
@@ -99,6 +100,30 @@ function prepare_tab_url(string $subsection): string
                                     $devEnvVariables
                                 ))
                             ),
+                            ['hr' => [], 'h4' => [], 'ul' => [], 'li' => [], 'b' => []]
+                        );
+
+                        $internalOptions = '';
+
+                        foreach (ConfigManager::getConfigurationValues('hidden_settings') as $optionName => $optionValue) {
+                            if (is_array($optionValue) || is_bool($optionValue)) {
+                                $optionValue = wp_json_encode($optionValue);
+                            }
+
+                            $internalOptions .= "<li><b>$optionName</b> = \"$optionValue\"</li>";
+                        }
+
+                        echo wp_kses(
+                            "<hr><h4>Internal configuration options:</h4><ul>$internalOptions</ul>",
+                            ['hr' => [], 'h4' => [], 'ul' => [], 'li' => [], 'b' => []]
+                        );
+
+                        $internalFlags = '<li><b>comfino_plugin_updated</b>: ' . get_transient('comfino_plugin_updated') . '</li>';
+                        $internalFlags .= '<li><b>comfino_plugin_prev_version</b>: ' . get_transient('comfino_plugin_prev_version') . '</li>';
+                        $internalFlags .= '<li><b>comfino_plugin_updated_at</b>: ' . gmdate('Y-m-d H:i:s', get_transient('comfino_plugin_updated_at')) . '</li>';
+
+                        echo wp_kses(
+                            "<hr><h4>Internal flags:</h4><ul>$internalFlags</ul>",
                             ['hr' => [], 'h4' => [], 'ul' => [], 'li' => [], 'b' => []]
                         );
                     }
