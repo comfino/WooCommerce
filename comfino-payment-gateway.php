@@ -306,6 +306,15 @@ class Comfino_Payment_Gateway
         ConfigManager::updateConfigurationValue('COMFINO_WIDGET_SHOW_PROVIDER_LOGOS', false);
         ConfigManager::updateConfigurationValue('COMFINO_NEW_WIDGET_ACTIVE', true);
 
+        if (is_array($catFilterAvailProdTypes = ConfigManager::getConfigurationValue('COMFINO_CAT_FILTER_AVAIL_PROD_TYPES'))
+            && (!in_array('COMPANY_BNPL', $catFilterAvailProdTypes, true) || !in_array('COMPANY_INSTALLMENTS', $catFilterAvailProdTypes, true))
+        ) {
+            ConfigManager::updateConfigurationValue(
+                'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES',
+                ['INSTALLMENTS_ZERO_PERCENT', 'PAY_LATER', 'COMPANY_BNPL', 'COMPANY_INSTALLMENTS', 'LEASING']
+            );
+        }
+
         CacheManager::getCachePool()->clear();
 
         set_transient('comfino_plugin_updated', 0);
