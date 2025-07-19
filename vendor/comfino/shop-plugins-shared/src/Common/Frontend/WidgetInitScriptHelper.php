@@ -14,6 +14,8 @@ class WidgetInitScriptHelper
         'OFFER_TYPES',
         'EMBED_METHOD',
         'SHOW_PROVIDER_LOGOS',
+        'CUSTOM_BANNER_CSS_URL',
+        'CUSTOM_CALCULATOR_CSS_URL',
     ];
 
     public const WIDGET_INIT_VARIABLES = [
@@ -118,11 +120,16 @@ script.onload = function () {
         language: '{LANGUAGE}',
         currency: '{CURRENCY}',
         showProviderLogos: {SHOW_PROVIDER_LOGOS},
+        customBannerCss: '{CUSTOM_BANNER_CSS_URL}',
+        customCalculatorCss: '{CUSTOM_CALCULATOR_CSS_URL}',
         callbackBefore: function () {},
         callbackAfter: function () {},
         onOfferRendered: function (jsonResponse, widgetTarget, widgetNode) { },
         onWidgetBannerLoaded: function (loadedOffers) { },
         onWidgetCalculatorLoaded: function (loadedOffers) { },
+        onWidgetCalculatorUpdated: function (activeOffer) { },
+        onWidgetBannerCustomCssLoaded: function (cssUrl) { },
+        onWidgetCalculatorCustomCssLoaded: function (cssUrl) { },
         onGetPriceElement: function (priceSelector, priceObserverSelector) { return null; },
         debugMode: window.location.hash && window.location.hash.substring(1) === 'comfino_debug'
     });

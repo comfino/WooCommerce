@@ -469,6 +469,8 @@ final class FrontendManager
                             'OFFER_TYPES',
                             'EMBED_METHOD',
                             'SHOW_PROVIDER_LOGOS',
+                            'CUSTOM_BANNER_CSS_URL',
+                            'CUSTOM_CALCULATOR_CSS_URL',
                         ],
                         array_map(
                             static function ($optionValue) use ($serializer) {
@@ -486,6 +488,8 @@ final class FrontendManager
                                     'COMFINO_WIDGET_OFFER_TYPES',
                                     'COMFINO_WIDGET_EMBED_METHOD',
                                     'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS',
+                                    'COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL',
+                                    'COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL',
                                 ]
                             )
                         )
