@@ -61,6 +61,8 @@ Dostępność typów ofert na liście jest uzależniona od indywidualnej umowy i
 * **Wykrywanie zmian ceny — selektor kontenera** — element dokumentu HTML zawierający w sobie element ceny bezpośrednio lub pośrednio używany do śledzenia zmian cen i przeliczania ofert
 * **Wykrywanie zmian ceny — poziom hierarchii kontenera** — poziom hierarchii DOM używany do śledzenia zmian cen i przeliczania ofert
 * **Metoda osadzania** — sposób orientacji widgetu względem elementu kontenera [`INSERT_INTO_FIRST`, `INSERT_INTO_LAST`, `INSERT_BEFORE`, `INSERT_AFTER`]
+* **Niestandardowy styl CSS banera** — Odnośnik do pliku CSS ze stylami nadpisującymi wygląd banera (akceptowane są tylko adresy bezwzględne z domeny sklepu)
+* **Niestandardowy styl CSS kalkulatora** — Odnośnik do pliku CSS ze stylami nadpisującymi wygląd kalkulatora (akceptowane są tylko adresy bezwzględne z domeny sklepu)
 * **Kod inicjalizacji widgetu** — skrypt JavaScript inicjalizujący widget na stronie produktu (wprowadzanie zmian niezalecane dla niezaawansowanych użytkowników bez znajomości JavaScript)
 
 Szczegółowe informacje o działaniu widgetu i jego opcjach konfiguracyjnych znajdziesz w osobnej [dokumentacji widgetu Comfino](https://comfino.pl/widgets/comfino-woocommerce/pl).
