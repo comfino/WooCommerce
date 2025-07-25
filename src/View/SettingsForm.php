@@ -154,6 +154,30 @@ final class SettingsForm
                     );
                 }
 
+                $customCssUrlOptionNames = [
+                    'COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL',
+                    'COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL',
+                ];
+
+                foreach ($customCssUrlOptionNames as $customCssUrlOptionName) {
+                    if (!empty($customCssUrl = $configurationOptionsToSave[$customCssUrlOptionName] ?? '')) {
+                        if (!wp_http_validate_url($customCssUrl)) {
+                            /* translators: s%: Custom CSS URL */
+                            $errorMessages[] = sprintf(__('Custom CSS URL "%s" is not valid.', 'comfino-payment-gateway'), $customCssUrl);
+                        } elseif (wp_parse_url($customCssUrl, PHP_URL_SCHEME) === null) {
+                            /* translators: s%: Custom CSS URL */
+                            $errorMessages[] = sprintf(__('Custom CSS URL "%s" is not absolute.', 'comfino-payment-gateway'), $customCssUrl);
+                        } elseif (stripos($customCssUrl, Main::getShopDomain()) === false) {
+                            $errorMessages[] = sprintf(
+                                /* translators: 1: Custom CSS URL 2: Shop domain */
+                                __('Custom CSS URL "%1$s" is not in shop domain "%2$s".', 'comfino-payment-gateway'),
+                                $customCssUrl,
+                                Main::getShopDomain()
+                            );
+                        }
+                    }
+                }
+
                 if (!count($errorMessages) && !empty($apiKey = ConfigManager::getApiKey())) {
                     // Update widget key.
                     try {
@@ -260,8 +284,9 @@ final class SettingsForm
                         'widget_enabled', 'widget_key', 'widget_type', 'widget_offer_types', 'widget_show_provider_logos',
                         'widget_settings_advanced',
                         'widget_price_selector', 'widget_target_selector', 'widget_price_observer_selector',
-                        'widget_price_observer_level', 'widget_embed_method', 'widget_js_code',
-                        'widget_prod_script_version', 'widget_dev_script_version'
+                        'widget_price_observer_level', 'widget_embed_method', 'widget_custom_banner_css_url',
+                        'widget_custom_calculator_css_url', 'widget_js_code', 'widget_prod_script_version',
+                        'widget_dev_script_version',
                     ])
                 );
                 break;
@@ -487,6 +512,24 @@ final class SettingsForm
                     'INSERT_BEFORE' => 'INSERT_BEFORE',
                     'INSERT_AFTER' => 'INSERT_AFTER',
                 ],
+            ],
+            'widget_custom_banner_css_url' => [
+                'title' => __('Custom banner CSS style', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'default' => ConfigManager::getDefaultValue('widget_custom_banner_css_url'),
+                'description' => __(
+                    'URL for the custom banner style. Only links from your store domain are allowed.',
+                    'comfino-payment-gateway'
+                ),
+            ],
+            'widget_custom_calculator_css_url' => [
+                'title' => __('Custom calculator CSS style', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'default' => ConfigManager::getDefaultValue('widget_custom_calculator_css_url'),
+                'description' => __(
+                    'URL for the custom calculator style. Only links from your store domain are allowed.',
+                    'comfino-payment-gateway'
+                ),
             ],
             'widget_js_code' => [
                 'title' => __('Widget initialization code', 'comfino-payment-gateway'),

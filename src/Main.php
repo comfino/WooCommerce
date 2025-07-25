@@ -271,7 +271,17 @@ final class Main
 
     public static function getShopDomain(): string
     {
-        return !empty($shopLink = self::getShopLink()) ? wp_parse_url($shopLink, PHP_URL_HOST) : '';
+        $shopDomain = !empty($shopLink = self::getShopLink()) ? wp_parse_url($shopLink, PHP_URL_HOST) : '';
+
+        if (!empty($shopDomain)) {
+            $shopPort = wp_parse_url($shopLink, PHP_URL_PORT);
+
+            if (!empty($shopPort) && $shopPort !== 80) {
+                $shopDomain .= ":$shopPort";
+            }
+        }
+
+        return $shopDomain;
     }
 
     public static function getShopUrl(bool $withoutScheme = false): string

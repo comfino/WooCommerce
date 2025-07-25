@@ -23,6 +23,7 @@ Comfino is an innovative payment method for customers of e-commerce stores! Thes
 
 4.2.3
  * Integration with new widget API.
+ * New widget init options (customBannerCss, customCalculatorCss) for overwriting standard widget CSS styles with external styles.
 
 4.2.2
  * Fixed a bug with iframe rendering in the new WC UI (blocks), some updates in documentation.

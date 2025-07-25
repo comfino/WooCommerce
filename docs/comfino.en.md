@@ -62,6 +62,8 @@ The availability of offer types on the list depends on the individual contract a
 * **Price change detection — container selector** — HTML document element containing a price element directly or indirectly used to track price changes and recalculate offers
 * **Price change detection — container hierarchy level** — DOM hierarchy level used to track price changes and recalculate offers
 * **Embedding method** — how the widget is oriented relative to the container element [`INSERT_INTO_FIRST`, `INSERT_INTO_LAST`, `INSERT_BEFORE`, `INSERT_AFTER`]
+* **Custom banner CSS style** — Link to a CSS file with styles overriding the banner's appearance (only absolute addresses from the store's domain are accepted)
+* **Custom calculator CSS style** — Link to a CSS file with styles overriding the calculator's appearance (only absolute addresses from the store's domain are accepted)
 * **Widget initialization code** — JavaScript script to initialize the widget on the product page (making changes not recommended for non-advanced users without JavaScript knowledge)
 
 Detailed information on the operation of the widget and its configuration options can be found in a separate [Comfino widget documentation](https://comfino.pl/widgets/comfino-woocommerce/en).
