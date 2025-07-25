@@ -339,7 +339,7 @@ class PaymentGateway extends \WC_Payment_Gateway
             $viewVariables['api_host'] = ApiClient::getInstance()->getApiHost();
             $viewVariables['shop_domain'] = Main::getShopDomain();
             $viewVariables['widget_key'] = ConfigManager::getWidgetKey();
-            $viewVariables['is_dev_env'] = ConfigManager::isDevEnv() ? 'Yes' : 'No';
+            $viewVariables['is_dev_env'] = ConfigManager::useDevEnvVars() ? 'Yes' : 'No';
             $viewVariables['build_ts'] = \DateTime::createFromFormat('U', self::BUILD_TS)->format('Y-m-d H:i:s');
         } else {
             $viewVariables['settings_html'] = $this->generate_settings_html(SettingsForm::getFormFields($activeTab), false);

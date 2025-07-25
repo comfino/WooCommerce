@@ -305,6 +305,7 @@ class Comfino_Payment_Gateway
         ConfigManager::updateConfigurationValue('COMFINO_WIDGET_TYPE', 'standard');
         ConfigManager::updateConfigurationValue('COMFINO_WIDGET_SHOW_PROVIDER_LOGOS', false);
         ConfigManager::updateConfigurationValue('COMFINO_NEW_WIDGET_ACTIVE', true);
+        ConfigManager::updateConfigurationValue('COMFINO_DEV_ENV_VARS', false);
 
         if (is_array($catFilterAvailProdTypes = ConfigManager::getConfigurationValue('COMFINO_CAT_FILTER_AVAIL_PROD_TYPES'))
             && (!in_array('COMPANY_BNPL', $catFilterAvailProdTypes, true) || !in_array('COMPANY_INSTALLMENTS', $catFilterAvailProdTypes, true))

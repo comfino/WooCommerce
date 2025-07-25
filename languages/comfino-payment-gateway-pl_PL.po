@@ -5,8 +5,8 @@ msgstr ""
 "Project-Id-Version: Comfino payment gateway 4.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/comfino-payment-"
 "gateway\n"
-"POT-Creation-Date: 2025-07-19T13:24:30+00:00\n"
-"PO-Revision-Date: 2025-07-19 15:27+0200\n"
+"POT-Creation-Date: 2025-07-25T12:29:22+00:00\n"
+"PO-Revision-Date: 2025-07-25 14:31+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: pl_PL\n"
@@ -206,7 +206,7 @@ msgstr "Pole '%s' nie może być puste."
 msgid "Field '%s' has wrong numeric format."
 msgstr "Pole '%s' ma nieprawidłowy format numeryczny."
 
-#: src/View/SettingsForm.php:47 src/View/SettingsForm.php:388
+#: src/View/SettingsForm.php:47 src/View/SettingsForm.php:395
 msgid "Production environment API key"
 msgstr "Klucz API środowiska produkcyjnego"
 
@@ -215,73 +215,73 @@ msgid "Payment text"
 msgstr "Tekst płatności"
 
 #: src/View/SettingsForm.php:53 src/View/SettingsForm.php:55
-#: src/View/SettingsForm.php:383
+#: src/View/SettingsForm.php:390
 msgid "Minimal amount in cart"
 msgstr "Minimalna kwota w koszyku"
 
 #. translators: s%: Comfino API key
-#: src/View/SettingsForm.php:93 src/View/SettingsForm.php:203
+#: src/View/SettingsForm.php:100 src/View/SettingsForm.php:210
 msgid "API key %s is not valid."
 msgstr "Klucz API %s jest nieprawidłowy."
 
-#: src/View/SettingsForm.php:153 src/View/SettingsForm.php:498
+#: src/View/SettingsForm.php:160 src/View/SettingsForm.php:505
 msgid "Price change detection - container hierarchy level"
 msgstr "Wykrywanie zmian ceny - poziom hierarchii kontenera"
 
 #. translators: s%: Custom CSS URL
-#: src/View/SettingsForm.php:166
+#: src/View/SettingsForm.php:173
 msgid "Custom CSS URL \"%s\" is not valid."
 msgstr "Niestandardowy adres URL CSS \"%s\" jest nieprawidłowy."
 
 #. translators: s%: Custom CSS URL
-#: src/View/SettingsForm.php:169
+#: src/View/SettingsForm.php:176
 msgid "Custom CSS URL \"%s\" is not absolute."
 msgstr "Niestandardowy adres URL CSS \"%s\" nie jest absolutny."
 
 #. translators: 1: Custom CSS URL 2: Shop domain
-#: src/View/SettingsForm.php:173
+#: src/View/SettingsForm.php:180
 msgid "Custom CSS URL \"%1$s\" is not in shop domain \"%2$s\"."
 msgstr ""
 "Niestandardowy adres URL CSS \"%1$s\" nie znajduje się w domenie sklepu "
 "\"%2$s\"."
 
-#: src/View/SettingsForm.php:371 src/View/SettingsForm.php:549
+#: src/View/SettingsForm.php:378 src/View/SettingsForm.php:556
 msgid "Enable/Disable"
 msgstr "Włączony/Wyłączony"
 
-#: src/View/SettingsForm.php:373
+#: src/View/SettingsForm.php:380
 msgid "Enable Comfino payment module"
 msgstr "Włączony moduł płatności Comfino"
 
-#: src/View/SettingsForm.php:375
+#: src/View/SettingsForm.php:382
 msgid "Shows Comfino payment option at the payment list."
 msgstr "Pokaż opcję płatności Comfino na liście płatności."
 
-#: src/View/SettingsForm.php:378
+#: src/View/SettingsForm.php:385
 msgid "Title"
 msgstr "Tytuł"
 
-#: src/View/SettingsForm.php:390
+#: src/View/SettingsForm.php:397
 msgid "Please enter the key provided during registration"
 msgstr "Proszę wprowadzić klucz podany podczas rejestracji"
 
-#: src/View/SettingsForm.php:393
+#: src/View/SettingsForm.php:400
 msgid "Show logo"
 msgstr "Wyświetlanie logo"
 
-#: src/View/SettingsForm.php:395
+#: src/View/SettingsForm.php:402
 msgid "Show logo on payment method"
 msgstr "Pokaż logo na metodzie płatności"
 
-#: src/View/SettingsForm.php:399
+#: src/View/SettingsForm.php:406
 msgid "Test environment"
 msgstr "Środowisko testowe"
 
-#: src/View/SettingsForm.php:401
+#: src/View/SettingsForm.php:408
 msgid "Use test environment"
 msgstr "Użyj środowiska testowego"
 
-#: src/View/SettingsForm.php:403
+#: src/View/SettingsForm.php:410
 msgid ""
 "The test environment allows the store owner to get acquainted with the "
 "functionality of the Comfino module. This is a Comfino simulator, thanks to "
@@ -293,11 +293,11 @@ msgstr ""
 "poznać wszystkie zalety tej metody płatności. Użycie trybu testowego jest "
 "darmowe (nie są również pobierane opłaty za zamówienia)."
 
-#: src/View/SettingsForm.php:409
+#: src/View/SettingsForm.php:416
 msgid "Test environment API key"
 msgstr "Klucz API środowiska testowego"
 
-#: src/View/SettingsForm.php:411
+#: src/View/SettingsForm.php:418
 msgid ""
 "Ask the supervisor for access to the test environment (key, login, password, "
 "link). Remember, the test key is different from the production key."
@@ -305,15 +305,15 @@ msgstr ""
 "Poproś opiekuna o dostęp do środowiska testowego (klucz, login, hasło, "
 "link). Pamiętaj, klucz testowy różni się od klucza produkcyjnego."
 
-#: src/View/SettingsForm.php:414
+#: src/View/SettingsForm.php:421
 msgid "Debug mode"
 msgstr "Tryb debugowania"
 
-#: src/View/SettingsForm.php:416
+#: src/View/SettingsForm.php:423
 msgid "Enable debug mode"
 msgstr "Włącz tryb debugowania"
 
-#: src/View/SettingsForm.php:418
+#: src/View/SettingsForm.php:425
 msgid ""
 "Debug mode is useful in case of problems with Comfino payment availability. "
 "In this mode module logs details of internal process responsible for "
@@ -324,15 +324,15 @@ msgstr ""
 "odpowiedzialnego za wyświetlenie opcji płatności Comfino na liście metod "
 "płatności."
 
-#: src/View/SettingsForm.php:424
+#: src/View/SettingsForm.php:431
 msgid "Service mode"
 msgstr "Tryb serwisowy"
 
-#: src/View/SettingsForm.php:426
+#: src/View/SettingsForm.php:433
 msgid "Enable service mode"
 msgstr "Włącz tryb serwisowy"
 
-#: src/View/SettingsForm.php:428
+#: src/View/SettingsForm.php:435
 msgid ""
 "Service mode is useful in testing Comfino payment gateway without sharing it "
 "with customers. In this mode Comfino payment method is visible only for "
@@ -343,39 +343,39 @@ msgstr ""
 "Comfino widoczna jest tylko dla wybranych sesji, a logi debugowania są "
 "zbierane wyłącznie dla tych sesji."
 
-#: src/View/SettingsForm.php:438
+#: src/View/SettingsForm.php:445
 msgid "Rules for the availability of financial products"
 msgstr "Reguły dostępności produktów finansowych"
 
-#: src/View/SettingsForm.php:442
+#: src/View/SettingsForm.php:449
 msgid "Basic settings"
 msgstr "Ustawienia podstawowe"
 
-#: src/View/SettingsForm.php:446
+#: src/View/SettingsForm.php:453
 msgid "Widget enable"
 msgstr "Widget włączony"
 
-#: src/View/SettingsForm.php:448
+#: src/View/SettingsForm.php:455
 msgid "Enable Comfino widget"
 msgstr "Włączony widget Comfino"
 
-#: src/View/SettingsForm.php:450
+#: src/View/SettingsForm.php:457
 msgid "Show Comfino widget in the product."
 msgstr "Pokazuj widget Comfino w produkcie."
 
-#: src/View/SettingsForm.php:453
+#: src/View/SettingsForm.php:460
 msgid "Widget key"
 msgstr "Klucz widgetu"
 
-#: src/View/SettingsForm.php:457
+#: src/View/SettingsForm.php:464
 msgid "Widget type"
 msgstr "Typ widgetu"
 
-#: src/View/SettingsForm.php:462
+#: src/View/SettingsForm.php:469
 msgid "Offer types"
 msgstr "Typy ofert"
 
-#: src/View/SettingsForm.php:466
+#: src/View/SettingsForm.php:473
 msgid ""
 "Other payment methods (Installments 0%, Buy now, pay later, Installments for "
 "companies, Leasing) available after consulting a Comfino advisor "
@@ -384,50 +384,50 @@ msgstr ""
 "Inne sposoby płatności (Raty 0%, Kup teraz, zapłać później, Raty dla firm, "
 "Leasing) dostępne po konsultacji z doradcą Comfino (kontakt@comfino.pl)."
 
-#: src/View/SettingsForm.php:469
+#: src/View/SettingsForm.php:476
 msgid "Show logos"
 msgstr "Wyświetlanie logotypów"
 
-#: src/View/SettingsForm.php:471
+#: src/View/SettingsForm.php:478
 msgid "Show logos of financial services providers"
 msgstr "Pokaż loga dostawców usług finansowych"
 
-#: src/View/SettingsForm.php:475
+#: src/View/SettingsForm.php:482
 msgid "Advanced settings"
 msgstr "Ustawienia zaawansowane"
 
-#: src/View/SettingsForm.php:479
+#: src/View/SettingsForm.php:486
 msgid "Widget price element selector"
 msgstr "Selektor elementu ceny widgetu"
 
-#: src/View/SettingsForm.php:484
+#: src/View/SettingsForm.php:491
 msgid "Widget anchor element selector"
 msgstr "Selektor elementu zakotwiczenia widgetu"
 
-#: src/View/SettingsForm.php:489
+#: src/View/SettingsForm.php:496
 msgid "Price change detection - container selector"
 msgstr "Wykrywanie zmian ceny - selektor kontenera"
 
-#: src/View/SettingsForm.php:492
+#: src/View/SettingsForm.php:499
 msgid "Selector of observed parent element which contains price element."
 msgstr ""
 "Selektor obserwowanego elementu nadrzędnego, który zawiera element ceny."
 
-#: src/View/SettingsForm.php:501
+#: src/View/SettingsForm.php:508
 msgid ""
 "Hierarchy level of observed parent element relative to the price element."
 msgstr ""
 "Poziom hierarchii obserwowanego elementu nadrzędnego względem elementu ceny."
 
-#: src/View/SettingsForm.php:507
+#: src/View/SettingsForm.php:514
 msgid "Embedding method"
 msgstr "Metoda osadzania"
 
-#: src/View/SettingsForm.php:517
+#: src/View/SettingsForm.php:524
 msgid "Custom banner CSS style"
 msgstr "Niestandardowy styl CSS banera"
 
-#: src/View/SettingsForm.php:520
+#: src/View/SettingsForm.php:527
 msgid ""
 "URL for the custom banner style. Only links from your store domain are "
 "allowed."
@@ -435,11 +435,11 @@ msgstr ""
 "Adres URL niestandardowego stylu banera. Dozwolone są tylko linki z domeny "
 "sklepu."
 
-#: src/View/SettingsForm.php:526
+#: src/View/SettingsForm.php:533
 msgid "Custom calculator CSS style"
 msgstr "Niestandardowy styl CSS kalkulatora"
 
-#: src/View/SettingsForm.php:529
+#: src/View/SettingsForm.php:536
 msgid ""
 "URL for the custom calculator style. Only links from your store domain are "
 "allowed."
@@ -447,11 +447,11 @@ msgstr ""
 "Adres URL niestandardowego stylu kalkulatora. Dozwolone są tylko linki z "
 "domeny sklepu."
 
-#: src/View/SettingsForm.php:535
+#: src/View/SettingsForm.php:542
 msgid "Widget initialization code"
 msgstr "Kod inicjalizacji widgetu"
 
-#: src/View/SettingsForm.php:551
+#: src/View/SettingsForm.php:558
 msgid ""
 "By enabling \"Saving shopping cart\", you agree and accept <a href=\"https://"
 "cdn.comfino.pl/regulamin/Regulamin-Ratowanie-Koszyka.pdf\">Regulations</a>"
@@ -460,7 +460,7 @@ msgstr ""
 "href=\"https://cdn.comfino.pl/regulamin/Regulamin-Ratowanie-Koszyka."
 "pdf\">Regulamin</a>"
 
-#: src/View/SettingsForm.php:553
+#: src/View/SettingsForm.php:560
 msgid ""
 "With the \"Cart Rescue\" feature, you will effectively minimize the problem "
 "of abandoned carts that all sellers face. When a customer adds products to "
@@ -476,17 +476,33 @@ msgstr ""
 "linkiem prowadzącym do płatności. Ta usługa pozwala skutecznie odzyskiwać "
 "potencjalne transakcje i zwiększać konwersję zamówień."
 
-#: src/View/SettingsForm.php:556
+#: src/View/SettingsForm.php:563
 msgid "View in payment list"
 msgstr "Wyświetlaj na liście płatności"
 
-#: src/View/SettingsForm.php:559
+#: src/View/SettingsForm.php:566
 msgid "Only Comfino"
 msgstr "Tylko Comfino"
 
-#: src/View/SettingsForm.php:560
+#: src/View/SettingsForm.php:567
 msgid "All payments"
 msgstr "Wszystkie płatności"
+
+#: src/View/SettingsForm.php:574
+msgid "Environment variables"
+msgstr "Zmienne środowiskowe"
+
+#: src/View/SettingsForm.php:576
+msgid "Use development environment variables"
+msgstr "Użyj zmiennych środowiska deweloperskiego"
+
+#: src/View/SettingsForm.php:578
+msgid ""
+"Use of development environment variables with custom hosts which overwrite "
+"hosts stored in the plugin."
+msgstr ""
+"Wykorzystanie zmiennych środowiska deweloperskiego z niestandardowymi "
+"hostami, które nadpisują hosty przechowywane we wtyczce."
 
 #: views/admin/configuration.php:57
 msgid "Payment settings"
@@ -512,11 +528,11 @@ msgstr "Ustawienia deweloperskie"
 msgid "Plugin diagnostics"
 msgstr "Diagnostyka wtyczki"
 
-#: views/admin/configuration.php:133
+#: views/admin/configuration.php:135
 msgid "Errors log"
 msgstr "Log błędów"
 
-#: views/admin/configuration.php:136
+#: views/admin/configuration.php:138
 msgid "Debug log"
 msgstr "Log trybu debugowania"
 

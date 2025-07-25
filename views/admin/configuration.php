@@ -84,8 +84,7 @@ function prepare_tab_url(string $subsection): string
                     <p><b>Shop domain:</b> <?php echo esc_html($shop_domain); ?></p>
                     <p><b>Widget key:</b> <?php echo esc_html($widget_key); ?></p>
                     <?php
-                    if (!empty(getenv('COMFINO_DEBUG')) || !empty(getenv('COMFINO_DEV'))) {
-                        $devEnvVariables = ['DEBUG', 'DEV', 'DEV_API_HOST', 'DEV_WIDGET_SCRIPT_URL' , 'DEV_USE_UNMINIFIED_SCRIPTS'];
+                    if (getenv('COMFINO_DEV_ENV') === 'TRUE') {
                         ?>
                         <p><b>Plugin dev-debug mode:</b> <?php echo esc_html($is_dev_env); ?></p>
                         <?php
@@ -97,7 +96,10 @@ function prepare_tab_url(string $subsection): string
                                         $varName = "COMFINO_$envVariable";
                                         return "<li><b>$varName</b> = \"" . getenv($varName) . '"</li>';
                                     },
-                                    $devEnvVariables
+                                    [
+                                        'DEV_ENV', 'DEV_API_HOST', 'DEV_STATIC_RESOURCES_BASE_URL',
+                                        'DEV_WIDGET_SCRIPT_URL', 'DEV_USE_UNMINIFIED_SCRIPTS',
+                                    ]
                                 ))
                             ),
                             ['hr' => [], 'h4' => [], 'ul' => [], 'li' => [], 'b' => []]
