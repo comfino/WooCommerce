@@ -59,6 +59,13 @@ final class SettingsForm
                     $apiKey = $sandboxMode
                         ? $configurationOptionsToSave['COMFINO_SANDBOX_API_KEY']
                         : ConfigManager::getConfigurationValue('COMFINO_API_KEY');
+
+                    if (isset($configurationOptionsToSave['COMFINO_DEV_ENV_VARS'])) {
+                        ConfigManager::updateConfigurationValue(
+                            'COMFINO_DEV_ENV_VARS',
+                            $configurationOptionsToSave['COMFINO_DEV_ENV_VARS']
+                        );
+                    }
                 }
 
                 $apiClient = ApiClient::getInstance($sandboxMode, $apiKey);
@@ -301,7 +308,7 @@ final class SettingsForm
             case 'developer_settings':
                 $formFields = array_intersect_key(
                     self::getFormFieldsDefinitions(),
-                    array_flip(['sandbox_mode', 'sandbox_key', 'debug_mode', 'service_mode'])
+                    array_flip(['sandbox_mode', 'sandbox_key', 'debug_mode', 'service_mode', 'dev_env_vars'])
                 );
                 break;
         }
@@ -366,7 +373,7 @@ final class SettingsForm
 
     private static function getFormFieldsDefinitions(): array
     {
-        return [
+        $fieldDefinitions = [
             'enabled' => [
                 'title' => __('Enable/Disable', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
@@ -561,5 +568,20 @@ final class SettingsForm
                 ],
             ],
         ];
+
+        if (getenv('COMFINO_DEV_ENV') === 'TRUE') {
+            $fieldDefinitions['dev_env_vars'] = [
+                'title' => __('Environment variables', 'comfino-payment-gateway'),
+                'type' => 'checkbox',
+                'label' => __('Use development environment variables', 'comfino-payment-gateway'),
+                'default' => ConfigManager::getDefaultValue('dev_env_vars') === true ? 'yes' : 'no',
+                'description' => __(
+                    'Use of development environment variables with custom hosts which overwrite hosts stored in the plugin.',
+                    'comfino-payment-gateway'
+                ),
+            ];
+        }
+
+        return $fieldDefinitions;
     }
 }

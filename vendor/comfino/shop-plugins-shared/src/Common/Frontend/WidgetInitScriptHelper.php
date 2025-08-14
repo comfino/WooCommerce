@@ -52,28 +52,34 @@ class WidgetInitScriptHelper
         }
 
         return str_replace(
-            array_map(
-                static function (string $widgetInitParamName) : string {
-                    return '{' . $widgetInitParamName . '}';
-                },
-                array_merge(self::WIDGET_INIT_PARAMS, array_keys($widgetInitVariables))
+            array_merge(
+                array_map(
+                    static function (string $widgetInitParamName) : string {
+                        return '{' . $widgetInitParamName . '}';
+                    },
+                    array_merge(self::WIDGET_INIT_PARAMS, array_keys($widgetInitVariables))
+                ),
+                ["'true'", "'false'", "'null'"]
             ),
-            array_map(
-                static function ($varValue): string {
-                    if (is_bool($varValue)) {
-                        return $varValue ? 'true' : 'false';
-                    }
+            array_merge(
+                array_map(
+                    static function ($varValue): string {
+                        if (is_bool($varValue)) {
+                            return $varValue ? 'true' : 'false';
+                        }
 
-                    if (is_array($varValue)) {
-                        return ($result = json_encode($varValue)) !== false ? $result : '[]';
-                    }
+                        if (is_array($varValue)) {
+                            return ($result = json_encode($varValue)) !== false ? $result : '[]';
+                        }
 
-                    return $varValue !== null ? (string) $varValue : 'null';
-                },
-                array_merge(
-                    array_merge($widgetInitParamsAssocKeys, $widgetInitParams),
-                    array_values($widgetInitVariables)
-                )
+                        return $varValue !== null ? (string) $varValue : 'null';
+                    },
+                    array_merge(
+                        array_merge($widgetInitParamsAssocKeys, $widgetInitParams),
+                        array_values($widgetInitVariables)
+                    )
+                ),
+                ['true', 'false', 'null']
             ),
             $widgetInitCode
         );

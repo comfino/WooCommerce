@@ -34,6 +34,7 @@ final class ConfigManager
         'COMFINO_IS_SANDBOX' => 'sandbox_mode',
         'COMFINO_DEBUG' => 'debug_mode',
         'COMFINO_SERVICE_MODE' => 'service_mode',
+        'COMFINO_DEV_ENV_VARS' => 'dev_env_vars',
         'COMFINO_SANDBOX_API_KEY' => 'sandbox_key',
         'COMFINO_PRODUCT_CATEGORY_FILTERS' => 'product_category_filters',
         'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => 'cat_filter_avail_prod_types',
@@ -102,6 +103,7 @@ final class ConfigManager
             'COMFINO_SANDBOX_API_KEY' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_DEBUG' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_SERVICE_MODE' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
+            'COMFINO_DEV_ENV_VARS' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
         ],
         'hidden_settings' => [
             'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
@@ -159,6 +161,7 @@ final class ConfigManager
         'COMFINO_API_TIMEOUT',
         'COMFINO_API_CONNECT_NUM_ATTEMPTS',
         'COMFINO_NEW_WIDGET_ACTIVE',
+        'COMFINO_DEV_ENV_VARS',
     ];
 
     private const CONFIG_MANAGER_OPTIONS = 0;
@@ -304,9 +307,9 @@ final class ConfigManager
         return self::getInstance()->getConfigurationValue('COMFINO_SERVICE_MODE') ?? false;
     }
 
-    public static function isDevEnv(): bool
+    public static function useDevEnvVars(): bool
     {
-        return ((string) getenv('COMFINO_DEV')) === ('WC_' . WC_VERSION . '_' . Main::getShopUrl(true));
+        return getenv('COMFINO_DEV_ENV') === 'TRUE' && self::getInstance()->getConfigurationValue('COMFINO_DEV_ENV_VARS') ?? false;
     }
 
     public static function useUnminifiedScripts(): bool
@@ -353,7 +356,7 @@ final class ConfigManager
 
     public static function getApiHost(?string $apiHost = null): ?string
     {
-        if (self::isDevEnv() && getenv('COMFINO_DEV_API_HOST')) {
+        if (self::useDevEnvVars() && getenv('COMFINO_DEV_API_HOST')) {
             return getenv('COMFINO_DEV_API_HOST');
         }
 
@@ -485,7 +488,7 @@ final class ConfigManager
 
     public static function getWidgetScriptUrl(): string
     {
-        if (self::isDevEnv() && getenv('COMFINO_DEV_WIDGET_SCRIPT_URL')) {
+        if (self::useDevEnvVars() && getenv('COMFINO_DEV_WIDGET_SCRIPT_URL')) {
             return sanitize_url(wp_unslash(getenv('COMFINO_DEV_WIDGET_SCRIPT_URL')));
         }
 
@@ -587,6 +590,7 @@ final class ConfigManager
             'COMFINO_API_TIMEOUT' => 3,
             'COMFINO_API_CONNECT_NUM_ATTEMPTS' => 3,
             'COMFINO_NEW_WIDGET_ACTIVE' => true,
+            'COMFINO_DEV_ENV_VARS' => false,
         ];
     }
 

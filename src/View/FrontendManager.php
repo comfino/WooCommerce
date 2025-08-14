@@ -200,7 +200,7 @@ final class FrontendManager
 
         $scriptDirectory = ($frontScript ? 'front' : 'admin');
 
-        if (ConfigManager::isDevEnv() && ConfigManager::useUnminifiedScripts()) {
+        if (ConfigManager::useDevEnvVars() && ConfigManager::useUnminifiedScripts()) {
             $scriptFileName = str_replace('.min.js', '.js', $scriptFileName);
 
             if (!file_exists($comfino_payment_gateway->plugin_abspath() . "/resources/js/$scriptDirectory/$scriptFileName")) {
@@ -215,7 +215,7 @@ final class FrontendManager
 
     public static function getExternalResourcesBaseUrl(): string
     {
-        if (ConfigManager::isDevEnv() && getenv('COMFINO_DEV_STATIC_RESOURCES_BASE_URL')) {
+        if (ConfigManager::useDevEnvVars() && getenv('COMFINO_DEV_STATIC_RESOURCES_BASE_URL')) {
             return sanitize_url(wp_unslash(getenv('COMFINO_DEV_STATIC_RESOURCES_BASE_URL')));
         }
 
@@ -228,7 +228,7 @@ final class FrontendManager
             return '';
         }
 
-        if (ConfigManager::isDevEnv() && ConfigManager::useUnminifiedScripts()) {
+        if (ConfigManager::useDevEnvVars() && ConfigManager::useUnminifiedScripts()) {
             $scriptFileName = str_replace('.min.js', '.js', $scriptFileName);
         } elseif (strpos($scriptFileName, '.min.') === false) {
             $scriptFileName = str_replace('.js', '.min.js', $scriptFileName);
