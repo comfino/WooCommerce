@@ -1,14 +1,14 @@
-<?php
+<?php /** @noinspection PhpExpressionResultUnusedInspection */
 /*
  * Plugin Name: Comfino Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
  * Description: Comfino Payment Gateway for WooCommerce.
- * Version: 4.2.3
+ * Version: 4.2.4
  * Author: Comfino
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
  * Text Domain: comfino-payment-gateway
- * WC tested up to: 9.9.5
+ * WC tested up to: 10.1.2
  * WC requires at least: 3.0
  * Tested up to: 6.8
  * Requires at least: 5.0
@@ -313,6 +313,16 @@ class Comfino_Payment_Gateway
             ConfigManager::updateConfigurationValue(
                 'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES',
                 ['INSTALLMENTS_ZERO_PERCENT', 'PAY_LATER', 'COMPANY_BNPL', 'COMPANY_INSTALLMENTS', 'LEASING']
+            );
+        }
+
+        /* 4.2.4 */
+        if (is_array($catFilterAvailProdTypes = ConfigManager::getConfigurationValue('COMFINO_CAT_FILTER_AVAIL_PROD_TYPES'))
+            && (!in_array('PAY_IN_PARTS', $catFilterAvailProdTypes, true))
+        ) {
+            ConfigManager::updateConfigurationValue(
+                'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES',
+                array_merge($catFilterAvailProdTypes, ['PAY_IN_PARTS'])
             );
         }
 

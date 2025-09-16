@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpExpressionResultUnusedInspection */
 
 namespace Comfino;
 
@@ -21,8 +21,8 @@ use Comfino\View\TemplateManager;
 class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
-    public const VERSION = '4.2.3';
-    public const BUILD_TS = 1755175038;
+    public const VERSION = '4.2.4';
+    public const BUILD_TS = 1758024769;
     public const WIDGET_INIT_SCRIPT_HASH = '0603f4e0904fd65e2aef1aded0c57c40';
     public const WIDGET_INIT_SCRIPT_LAST_HASH = '55e4306bb493ff6f99b2f8f617e18038';
 
@@ -320,6 +320,8 @@ class PaymentGateway extends \WC_Payment_Gateway
             'plugin_version' => self::VERSION,
             'comfino_logo_img' => FrontendManager::renderAdminLogo(),
             'comfino_logo_allowed_html' => FrontendManager::getImageAllowedHtml(),
+            'cache_root_path' => Main::getCacheRootPath(),
+            'cache_path' => Main::getCachePath(),
         ];
 
         if ($activeTab === 'plugin_diagnostics') {
@@ -339,7 +341,7 @@ class PaymentGateway extends \WC_Payment_Gateway
             $viewVariables['api_host'] = ApiClient::getInstance()->getApiHost();
             $viewVariables['shop_domain'] = Main::getShopDomain();
             $viewVariables['widget_key'] = ConfigManager::getWidgetKey();
-            $viewVariables['is_dev_env'] = ConfigManager::useDevEnvVars() ? 'Yes' : 'No';
+            $viewVariables['is_dev_env'] = ConfigManager::useDevEnvVars();
             $viewVariables['build_ts'] = \DateTime::createFromFormat('U', self::BUILD_TS)->format('Y-m-d H:i:s');
         } else {
             $viewVariables['settings_html'] = $this->generate_settings_html(SettingsForm::getFormFields($activeTab), false);

@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitda91cb319f0d473a3d4a60607a3e6ea6
+class ComposerStaticInita6c452cd406c5a3c9516196c4ba6049f
 {
     public static $files = array (
         'e90b514f516f456feec46b4f674e0f58' => __DIR__ . '/..' . '/sunrise/http-message/constants/REASON_PHRASES.php',
@@ -537,9 +537,9 @@ class ComposerStaticInitda91cb319f0d473a3d4a60607a3e6ea6
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitda91cb319f0d473a3d4a60607a3e6ea6::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitda91cb319f0d473a3d4a60607a3e6ea6::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInitda91cb319f0d473a3d4a60607a3e6ea6::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInita6c452cd406c5a3c9516196c4ba6049f::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInita6c452cd406c5a3c9516196c4ba6049f::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInita6c452cd406c5a3c9516196c4ba6049f::$classMap;
 
         }, null, ClassLoader::class);
     }

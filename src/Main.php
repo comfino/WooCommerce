@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpExpressionResultUnusedInspection */
 
 namespace Comfino;
 
@@ -145,10 +145,8 @@ final class Main
             return $statuses;
         });
 
-        load_plugin_textdomain('comfino-payment-gateway', false, basename(self::$pluginDirectory) . '/languages');
-
         // Initialize cache system.
-        CacheManager::init(dirname(__DIR__) . '/var');
+        CacheManager::init(self::getCacheRootPath());
 
         // Register module API endpoints.
         ApiService::registerEndpoints();
@@ -247,6 +245,16 @@ final class Main
         );
 
         return $paymentIsAvailable;
+    }
+
+    public static function getCacheRootPath(): string
+    {
+        return dirname(__DIR__) . '/var';
+    }
+
+    public static function getCachePath(): string
+    {
+        return CacheManager::getCacheFullPath();
     }
 
     public static function getPluginDirectory(): string
