@@ -90,11 +90,11 @@ function prepare_tab_url(string $subsection): string
                     <p><b>New widget API:</b> <?php echo esc_html($new_widget_status); ?></p>
                     <p>
                         <b>Cache root directory writable:</b> <?php if ($wp_filesystem->is_writable($cache_root_path)): ?><b style="color: green">YES</b><?php else: ?><b style="color: red">NO</b><?php endif; ?>
-                        <?php if ($is_dev_env): ?>(<i><?php echo esc_html($cache_root_path); ?></i>)<?php endif; ?>
+                        <?php if (getenv('COMFINO_DEV_ENV') === 'TRUE'): ?>(<i><?php echo esc_html($cache_root_path); ?></i>)<?php endif; ?>
                     </p>
                     <p>
                         <b>Cache directory writable:</b> <?php if ($wp_filesystem->is_writable($cache_path)): ?><b style="color: green">YES</b><?php else: ?><b style="color: red">NO</b><?php endif; ?>
-                        <?php if ($is_dev_env): ?>(<i><?php echo esc_html($cache_path); ?></i>)<?php endif; ?>
+                        <?php if (getenv('COMFINO_DEV_ENV') === 'TRUE'): ?>(<i><?php echo esc_html($cache_path); ?></i>)<?php endif; ?>
                     </p>
                     <?php
                     if (getenv('COMFINO_DEV_ENV') === 'TRUE') {
