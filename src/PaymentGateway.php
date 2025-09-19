@@ -341,6 +341,7 @@ class PaymentGateway extends \WC_Payment_Gateway
             $viewVariables['api_host'] = ApiClient::getInstance()->getApiHost();
             $viewVariables['shop_domain'] = Main::getShopDomain();
             $viewVariables['widget_key'] = ConfigManager::getWidgetKey();
+            $viewVariables['new_widget_status'] = ConfigManager::getConfigurationValue('COMFINO_NEW_WIDGET_ACTIVE', false) ? 'Active' : 'Inactive';
             $viewVariables['is_dev_env'] = ConfigManager::useDevEnvVars();
             $viewVariables['build_ts'] = \DateTime::createFromFormat('U', self::BUILD_TS)->format('Y-m-d H:i:s');
         } else {
