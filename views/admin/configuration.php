@@ -20,6 +20,10 @@ function prepare_tab_url(string $subsection): string
     return wp_nonce_url($urlParts['path'] . '?' . http_build_query(array_map('strip_tags', $queryArgs)), 'comfino_settings', 'comfino_nonce');
 }
 
+if (!isset($wp_filesystem)) {
+    WP_Filesystem();
+}
+
 /** @var WP $wp */
 /** @var WP_Filesystem_Base $wp_filesystem */
 /** @var string $title */
