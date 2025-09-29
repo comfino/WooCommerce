@@ -73,7 +73,7 @@ class FileUtils
      */
     public static function isWritable($filePath): bool
     {
-        return (new \SplFileObject($filePath))->isWritable();
+        return (new \SplFileInfo($filePath))->isWritable();
     }
 
     /**
@@ -81,6 +81,6 @@ class FileUtils
      */
     public static function isReadable($filePath): bool
     {
-        return (new \SplFileObject($filePath))->isReadable();
+        return (new \SplFileInfo($filePath))->isReadable();
     }
 }
