@@ -1,5 +1,6 @@
 <?php
 
+use Comfino\Common\Backend\FileUtils;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Main;
 
@@ -20,12 +21,7 @@ function prepare_tab_url(string $subsection): string
     return wp_nonce_url($urlParts['path'] . '?' . http_build_query(array_map('strip_tags', $queryArgs)), 'comfino_settings', 'comfino_nonce');
 }
 
-if (!isset($wp_filesystem)) {
-    WP_Filesystem();
-}
-
 /** @var WP $wp */
-/** @var WP_Filesystem_Base $wp_filesystem */
 /** @var string $title */
 /** @var string $description */
 /** @var string $plugin_version */
@@ -93,11 +89,11 @@ if (!isset($wp_filesystem)) {
                     <p><b>Widget key:</b> <?php echo esc_html($widget_key); ?></p>
                     <p><b>New widget API:</b> <?php echo esc_html($new_widget_status); ?></p>
                     <p>
-                        <b>Cache root directory writable:</b> <?php if ($wp_filesystem->is_writable($cache_root_path)): ?><b style="color: green">YES</b><?php else: ?><b style="color: red">NO</b><?php endif; ?>
+                        <b>Cache root directory writable:</b> <?php if (FileUtils::isWritable($cache_root_path)): ?><b style="color: green">YES</b><?php else: ?><b style="color: red">NO</b><?php endif; ?>
                         <?php if (getenv('COMFINO_DEV_ENV') === 'TRUE'): ?>(<i><?php echo esc_html($cache_root_path); ?></i>)<?php endif; ?>
                     </p>
                     <p>
-                        <b>Cache directory writable:</b> <?php if ($wp_filesystem->is_writable($cache_path)): ?><b style="color: green">YES</b><?php else: ?><b style="color: red">NO</b><?php endif; ?>
+                        <b>Cache directory writable:</b> <?php if (FileUtils::isWritable($cache_path)): ?><b style="color: green">YES</b><?php else: ?><b style="color: red">NO</b><?php endif; ?>
                         <?php if (getenv('COMFINO_DEV_ENV') === 'TRUE'): ?>(<i><?php echo esc_html($cache_path); ?></i>)<?php endif; ?>
                     </p>
                     <?php
