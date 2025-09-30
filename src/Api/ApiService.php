@@ -204,8 +204,10 @@ final class ApiService
 
     public static function processRequest(string $endpointName, \WP_REST_Request $request): \WP_REST_Response
     {
+        $endpointManager = self::getEndpointManager();
+
         DebugLogger::logEvent(
-            '[REST API]',
+            '[REST API request]',
             'processRequest',
             [
                 '$endpointName' => $endpointName,
@@ -220,13 +222,13 @@ final class ApiService
             return call_user_func(self::$requestCallbacks[$endpointName], $request);
         }
 
-        if (empty(self::getEndpointManager()->getRegisteredEndpoints())) {
+        if (empty($endpointManager->getRegisteredEndpoints())) {
             return new \WP_REST_Response('Endpoint manager not initialized.', 503);
         }
 
         $apiResponse = new \WP_REST_Response();
 
-        $response = self::getEndpointManager()->processRequest($endpointName, self::createServerRequest($request));
+        $response = $endpointManager->processRequest($endpointName, self::createServerRequest($request));
 
         foreach ($response->getHeaders() as $headerName => $headerValues) {
             foreach ($headerValues as $headerValue) {
@@ -238,6 +240,21 @@ final class ApiService
 
         $apiResponse->set_status($response->getStatusCode());
         $apiResponse->set_data(!empty($responseBody) ? $responseBody : $response->getReasonPhrase());
+
+        if (ConfigManager::isDebugMode() && $response->getStatusCode() !== 200) {
+            DebugLogger::logEvent(
+                '[REST API response]',
+                'processRequest',
+                [
+                    '$endpointName' => $endpointName,
+                    'RECEIVED-CR-SIGNATURE' => $endpointManager->getReceivedCrSignature(),
+                    'CALCULATED-CR-SIGNATURE' => $endpointManager->getCalculatedCrSignature(),
+                    'HEADERS' => $response->getHeaders(),
+                    'STATUS' => $response->getStatusCode(),
+                    'BODY' => $response->getBody()->getContents(),
+                ]
+            );
+        }
 
         return $apiResponse;
     }

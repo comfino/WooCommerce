@@ -39,8 +39,12 @@ class CacheInvalidate extends RestEndpoint
             throw new InvalidEndpoint('Endpoint path does not match request path.');
         }
 
-        if (!is_array($requestPayload = $this->getParsedRequestBody($serverRequest))) {
-            throw new InvalidRequest('Invalid request payload.');
+        try {
+            if (!is_array($requestPayload = $this->getParsedRequestBody($serverRequest))) {
+                throw new InvalidRequest('Invalid request payload.');
+            }
+        } catch (\JsonException $e) {
+            throw new InvalidRequest(sprintf('Invalid request payload: %s', $e->getMessage()), $e->getCode(), $e);
         }
 
         $this->cache->invalidateTags(array_intersect($requestPayload, ItemTypeEnum::values()));
