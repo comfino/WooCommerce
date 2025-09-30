@@ -70,6 +70,15 @@ final class RestEndpointManager
     private $registeredEndpoints = [];
 
     /**
+     * @var string|null
+     */
+    private $crSignature;
+    /**
+     * @var string|null
+     */
+    private $calculatedCrSignature;
+
+    /**
      * @param string[] $apiKeys
      */
     public static function getInstance(
@@ -125,6 +134,26 @@ final class RestEndpointManager
     public function getEndpointByName(string $name): ?RestEndpointInterface
     {
         return $this->registeredEndpoints[$name] ?? null;
+    }
+
+    /**
+     * Returns CR-Signature received in HTTP request header.
+     *
+     * @return string|null
+     */
+    public function getReceivedCrSignature(): ?string
+    {
+        return $this->crSignature;
+    }
+
+    /**
+     * Returns internally calculated CR-Signature.
+     *
+     * @return string|null
+     */
+    public function getCalculatedCrSignature(): ?string
+    {
+        return $this->calculatedCrSignature;
     }
 
     public function getRegisteredEndpoints(): array
@@ -259,13 +288,13 @@ final class RestEndpointManager
      */
     protected function verifyRequest(ServerRequestInterface $request): void
     {
-        $crSignature = $request->hasHeader('CR-Signature') ? $request->getHeader('CR-Signature')[0] : null;
+        $this->crSignature = $request->hasHeader('CR-Signature') ? $request->getHeader('CR-Signature')[0] : null;
 
-        if (empty($crSignature) && $request->hasHeader('X-CR-Signature')) {
-            $crSignature = $request->getHeader('X-CR-Signature')[0] ?? null;
+        if (empty($this->crSignature) && $request->hasHeader('X-CR-Signature')) {
+            $this->crSignature = $request->getHeader('X-CR-Signature')[0] ?? null;
         }
 
-        if (empty($crSignature)) {
+        if (empty($this->crSignature)) {
             throw new AuthorizationError('Unauthorized request.');
         }
 
@@ -279,7 +308,9 @@ final class RestEndpointManager
             $validationKey = $request->getQueryParams()['vkey'];
 
             foreach ($this->apiKeys as $apiKey) {
-                if (hash_equals(hash('sha3-256', $apiKey . $validationKey), $crSignature)) {
+                $this->calculatedCrSignature = hash('sha3-256', $apiKey . $validationKey);
+
+                if (hash_equals($this->calculatedCrSignature, $this->crSignature)) {
                     $requestAuthorized = true;
 
                     break;
@@ -291,7 +322,9 @@ final class RestEndpointManager
             $request->getBody()->rewind();
 
             foreach ($this->apiKeys as $apiKey) {
-                if (hash_equals(hash('sha3-256', $apiKey . $requestBody), $crSignature)) {
+                $this->calculatedCrSignature = hash('sha3-256', $apiKey . $requestBody);
+
+                if (hash_equals($this->calculatedCrSignature, $this->crSignature)) {
                     $requestAuthorized = true;
 
                     break;

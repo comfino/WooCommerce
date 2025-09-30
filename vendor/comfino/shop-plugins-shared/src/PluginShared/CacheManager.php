@@ -11,6 +11,8 @@ use ComfinoExternal\Psr\Cache\InvalidArgumentException;
 
 final class CacheManager
 {
+    private const CACHE_FOLDER = 'cache';
+
     /**
      * @var string
      */
@@ -62,12 +64,17 @@ final class CacheManager
             }
 
             try {
-                self::$cache = new FilesystemCachePool(new Filesystem(new Local(self::$cacheRootPath)));
+                self::$cache = new FilesystemCachePool(new Filesystem(new Local(self::$cacheRootPath)), self::CACHE_FOLDER);
             } catch (\Throwable $exception) {
                 self::$cache = new ArrayCachePool();
             }
         }
 
         return self::$cache;
+    }
+
+    public static function getCacheFullPath(): string
+    {
+        return self::$cacheRootPath . DIRECTORY_SEPARATOR . self::CACHE_FOLDER;
     }
 }

@@ -71,6 +71,7 @@ abstract class RestEndpoint implements RestEndpointInterface
     }
 
     /**
+     * @throws \JsonException
      * @param \ComfinoExternal\Psr\Http\Message\ServerRequestInterface $serverRequest
      * @return mixed[]|string|null
      */
@@ -86,7 +87,7 @@ abstract class RestEndpoint implements RestEndpointInterface
                 return $this->serializer->unserialize($requestPayload);
             }
 
-            return json_decode($requestPayload, true);
+            return json_decode($requestPayload, true, 512, 0);
         }
 
         if (strtoupper($serverRequest->getMethod()) === 'POST') {

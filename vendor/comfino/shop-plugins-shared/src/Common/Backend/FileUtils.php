@@ -67,4 +67,20 @@ class FileUtils
     {
         (new \SplFileObject($filePath, 'a'))->fwrite($content);
     }
+
+    /**
+     * @param string $filePath
+     */
+    public static function isWritable($filePath): bool
+    {
+        return (new \SplFileInfo($filePath))->isWritable();
+    }
+
+    /**
+     * @param string $filePath
+     */
+    public static function isReadable($filePath): bool
+    {
+        return (new \SplFileInfo($filePath))->isReadable();
+    }
 }

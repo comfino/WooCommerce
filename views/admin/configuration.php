@@ -1,5 +1,6 @@
 <?php
 
+use Comfino\Common\Backend\FileUtils;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Main;
 
@@ -38,10 +39,13 @@ function prepare_tab_url(string $subsection): string
 /** @var string $api_host */
 /** @var string $shop_domain */
 /** @var string $widget_key */
-/** @var string $is_dev_env */
+/** @var string $new_widget_status */
+/** @var bool $is_dev_env */
 /** @var string $build_ts */
 /** @var string $comfino_logo_img */
 /** @var array $comfino_logo_allowed_html */
+/** @var string $cache_root_path */
+/** @var string $cache_path */
 ?>
 <h2><?php echo esc_html($title); ?></h2>
 <p><?php echo esc_html($description); ?></p>
@@ -83,10 +87,19 @@ function prepare_tab_url(string $subsection): string
                     <p><b>Plugin build time:</b> <?php echo esc_html($build_ts); ?></p>
                     <p><b>Shop domain:</b> <?php echo esc_html($shop_domain); ?></p>
                     <p><b>Widget key:</b> <?php echo esc_html($widget_key); ?></p>
+                    <p><b>New widget API:</b> <?php echo esc_html($new_widget_status); ?></p>
+                    <p>
+                        <b>Cache root directory writable:</b> <?php if (FileUtils::isWritable($cache_root_path)): ?><b style="color: green">YES</b><?php else: ?><b style="color: red">NO</b><?php endif; ?>
+                        <?php if (getenv('COMFINO_DEV_ENV') === 'TRUE'): ?>(<i><?php echo esc_html($cache_root_path); ?></i>)<?php endif; ?>
+                    </p>
+                    <p>
+                        <b>Cache directory writable:</b> <?php if (FileUtils::isWritable($cache_path)): ?><b style="color: green">YES</b><?php else: ?><b style="color: red">NO</b><?php endif; ?>
+                        <?php if (getenv('COMFINO_DEV_ENV') === 'TRUE'): ?>(<i><?php echo esc_html($cache_path); ?></i>)<?php endif; ?>
+                    </p>
                     <?php
                     if (getenv('COMFINO_DEV_ENV') === 'TRUE') {
                         ?>
-                        <p><b>Plugin dev-debug mode:</b> <?php echo esc_html($is_dev_env); ?></p>
+                        <p><b>Plugin dev-debug mode:</b> <?php if ($is_dev_env): ?><b style="color: green">YES</b><?php else: ?><b style="color: red">NO</b><?php endif; ?></p>
                         <?php
                         echo wp_kses(
                             sprintf(

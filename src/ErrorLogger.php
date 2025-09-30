@@ -59,7 +59,7 @@ final class ErrorLogger
             return;
         }
 
-        self::$errorLogger->sendError(
+        self::getLoggerInstance()->sendError(
             $errorPrefix, $errorCode, $errorMessage, $apiRequestUrl, $apiRequest, $apiResponse, $stackTrace
         );
     }
