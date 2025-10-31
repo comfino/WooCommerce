@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Comfino\Common\Backend\RestEndpoint;
 
 use ComfinoExternal\Cache\TagInterop\TaggableCacheItemPoolInterface;

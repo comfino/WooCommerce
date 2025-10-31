@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Comfino\Common\Backend;
 
 use Comfino\Api\Exception\AccessDenied;

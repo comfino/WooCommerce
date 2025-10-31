@@ -190,6 +190,7 @@ final class ConfigManager
 
     /**
      * @param string[]|null $selectedEnvFields
+     *
      * @return string[]
      */
     public static function getEnvironmentInfo(?array $selectedEnvFields = null): array

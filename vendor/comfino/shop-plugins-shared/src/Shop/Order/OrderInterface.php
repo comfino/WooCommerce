@@ -1,8 +1,8 @@
 <?php
 
-namespace Comfino\Shop\Order;
+declare(strict_types=1);
 
-use Comfino\Shop\Order\LoanParametersInterface;
+namespace Comfino\Shop\Order;
 
 interface OrderInterface
 {

@@ -6,6 +6,8 @@ use Comfino\Common\Shop\Cart;
 use Comfino\Shop\Order\Cart\CartItem;
 use Comfino\Shop\Order\Cart\CartItemInterface;
 use Comfino\Shop\Order\Cart\Product;
+use Comfino\Shop\Order\Customer;
+use Comfino\Shop\Order\Customer\Address;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -13,6 +15,12 @@ if (!defined('ABSPATH')) {
 
 final class OrderManager
 {
+    /**
+     * @param \WC_Cart $cart
+     * @param int $priceModifier
+     *
+     * @return Cart Comfino cart structure.
+     */
     public static function getShopCart(\WC_Cart $cart, int $priceModifier = 0): Cart
     {
         $totalValue = (int) round($cart->get_total('edit') * 100);
@@ -132,6 +140,7 @@ final class OrderManager
 
     /**
      * @param \WC_Product $product WooCommerce product entity.
+     *
      * @return Cart Comfino cart structure.
      */
     public static function getShopCartFromProduct(\WC_Product $product): Cart
@@ -182,6 +191,100 @@ final class OrderManager
         );
     }
 
+    /**
+     * @param \WC_Order $order WooCommerce order entity.
+     *
+     * @return Customer Comfino customer structure.
+     */
+    public static function getShopCustomerFromOrder(\WC_Order $order): Customer
+    {
+        $phoneNumber = trim($order->get_billing_phone());
+
+        if (empty($phoneNumber)) {
+            // Try to find phone number in order metadata.
+            $orderMetadata = $order->get_meta_data();
+
+            foreach ($orderMetadata as $metaDataItem) {
+                /** @var \WC_Meta_Data $metaDataItem */
+                $metaData = $metaDataItem->get_data();
+
+                if (stripos($metaData['key'], 'tel') !== false || stripos($metaData['key'], 'phone') !== false) {
+                    $metaValue = str_replace(['-', ' ', '(', ')'], '', trim($metaData['value']));
+
+                    if (preg_match('/^(?:\+?\d{1,2})?\d{9}$|^(?:\d{2,3})?\d{7}$/', $metaValue)) {
+                        $phoneNumber = $metaValue;
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (empty($phoneNumber)) {
+            $phoneNumber = trim($order->get_shipping_phone());
+        }
+
+        if (!empty(trim($order->get_billing_first_name()))) {
+            // Use billing address to get customer names.
+            [$firstName, $lastName] = self::prepareCustomerNames($order->get_billing_first_name(), $order->get_billing_last_name());
+        } else {
+            // Use delivery address to get customer names.
+            [$firstName, $lastName] = self::prepareCustomerNames($order->get_shipping_first_name(), $order->get_shipping_last_name());
+        }
+
+        $billingAddressLines = $order->get_billing_address_1();
+
+        if (!empty($order->get_billing_address_2())) {
+            $billingAddressLines .= " {$order->get_billing_address_2()}";
+        }
+
+        if (empty($billingAddressLines)) {
+            $deliveryAddressLines = $order->get_shipping_address_1();
+
+            if (!empty($order->get_shipping_address_2())) {
+                $deliveryAddressLines .= " {$order->get_shipping_address_2()}";
+            }
+
+            $street = trim($deliveryAddressLines);
+        } else {
+            $street = trim($billingAddressLines);
+        }
+
+        $addressParts = explode(' ', $street);
+        $buildingNumber = '';
+
+        if (count($addressParts) > 1) {
+            foreach ($addressParts as $idx => $addressPart) {
+                if (preg_match('/^\d+[a-zA-Z]?$/', trim($addressPart))) {
+                    $street = implode(' ', array_slice($addressParts, 0, $idx));
+                    $buildingNumber = trim($addressPart);
+                }
+            }
+        }
+
+        /** @see https://woocommerce.com/document/eu-vat-number/ */
+        $customerTaxId = function_exists('wc_eu_vat_get_vat_from_order') ? trim(str_replace('-', '', wc_eu_vat_get_vat_from_order($order))) : '';
+
+        return new Customer(
+            $firstName,
+            $lastName,
+            $order->get_billing_email(),
+            $phoneNumber,
+            \WC_Geolocation::get_ip_address(),
+            preg_match('/^[A-Z]{0,3}\d{7,}$/', $customerTaxId) ? $customerTaxId : null,
+            $order->get_user() !== false,
+            is_user_logged_in(),
+            new Address(
+                $street,
+                $buildingNumber,
+                null,
+                $order->get_billing_postcode(),
+                $order->get_billing_city(),
+                $order->get_billing_country()
+            )
+        );
+    }
+
     public static function getOrderStatusNotes(int $orderId, array $statuses): array
     {
         $orderNotes = wc_get_order_notes(['order_id' => $orderId]);
@@ -216,5 +319,21 @@ final class OrderManager
         }
 
         return implode('→', $categories);
+    }
+
+    private static function prepareCustomerNames(string $firstName, string $lastName): array
+    {
+        $firstName = trim($firstName);
+        $lastName = trim($lastName);
+
+        if (empty($lastName)) {
+            $nameParts = explode(' ', $firstName);
+
+            if (count($nameParts) > 1) {
+                [$firstName, $lastName] = $nameParts;
+            }
+        }
+
+        return [$firstName, $lastName];
     }
 }

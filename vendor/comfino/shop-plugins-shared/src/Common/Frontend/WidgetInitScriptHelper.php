@@ -136,7 +136,7 @@ script.onload = function () {
         onWidgetCalculatorUpdated: function (activeOffer) { },
         onWidgetBannerCustomCssLoaded: function (cssUrl) { },
         onWidgetCalculatorCustomCssLoaded: function (cssUrl) { },
-        onGetPriceElement: function (priceSelector, priceObserverSelector) { return null; },
+        onGetPriceElement: function (priceSelector, priceObserverSelector) => null,
         debugMode: window.location.hash && window.location.hash.substring(1) === 'comfino_debug'
     });
 };

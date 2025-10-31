@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Comfino\Api\Dto\Payment;
 
 use Comfino\Enum;
@@ -15,6 +17,7 @@ class LoanTypeEnum extends Enum
     public const BLIK = 'BLIK';
     public const LEASING = 'LEASING';
     public const PAY_IN_PARTS = 'PAY_IN_PARTS';
+    public const INSTANT_PAYMENTS = 'INSTANT_PAYMENTS';
 
     /**
      * @param string $value
