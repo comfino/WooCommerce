@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Comfino\Api\Serializer;
 
 use Comfino\Api\Exception\RequestValidationError;
@@ -31,7 +33,7 @@ class Json implements SerializerInterface
         try {
             $deserializedResponseBody = json_decode($responseBody, true, 512, 0);
         } catch (\JsonException $e) {
-            throw new ResponseValidationError("Invalid response data: {$e->getMessage()}", 0, $e);
+            throw new ResponseValidationError("Invalid response data: {$e->getMessage()}", 0, $e, '', '', $responseBody);
         }
 
         return $deserializedResponseBody;

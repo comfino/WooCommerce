@@ -2,18 +2,18 @@
 # This file is distributed under the same license as the Comfino payment gateway plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Comfino payment gateway 4.1.0\n"
+"Project-Id-Version: Comfino payment gateway 4.2.5\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/comfino-payment-"
 "gateway\n"
-"POT-Creation-Date: 2025-07-25T12:29:22+00:00\n"
-"PO-Revision-Date: 2025-07-25 14:31+0200\n"
+"POT-Creation-Date: 2025-10-31T14:30:36+00:00\n"
+"PO-Revision-Date: 2025-10-31 15:45+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: pl_PL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.6\n"
+"X-Generator: Poedit 3.8\n"
 "X-Domain: comfino-payment-gateway\n"
 
 #. Plugin Name of the plugin
@@ -68,7 +68,7 @@ msgid "Settings"
 msgstr "Ustawienia"
 
 #. translators: 1: Minimum required PHP version 2: Current PHP version
-#: src/Main.php:325
+#: src/Main.php:333
 msgid ""
 "The plugin could not be activated. The minimum PHP version required for "
 "Comfino is %1$s. You are running %2$s."
@@ -77,7 +77,7 @@ msgstr ""
 "to %1$s. Używasz %2$s."
 
 #. translators: 1: Minimum required PHP version 2: Current PHP version
-#: src/Main.php:331
+#: src/Main.php:339
 msgid ""
 "The Comfino plugin has been deactivated. The minimum PHP version required "
 "for Comfino is %1$s. You are running %2$s."
@@ -85,17 +85,17 @@ msgstr ""
 "Wtyczka Comfino została wyłączona. Minimalna wersja PHP wymagana dla Comfino "
 "to %1$s. Używasz %2$s."
 
-#: src/Main.php:339
+#: src/Main.php:347
 msgid "The plugin could not be activated. WooCommerce needs to be activated."
 msgstr "Wtyczka nie mogła zostać włączona. WooCommerce musi zostać aktywowany."
 
-#: src/Main.php:340
+#: src/Main.php:348
 msgid ""
 "The Comfino plugin has been deactivated. WooCommerce needs to be activated."
 msgstr "Wtyczka Comfino została wyłączona. WooCommerce musi zostać aktywowany."
 
 #. translators: 1: Minimum required WooCommerce version 2: Current WooCommerce version
-#: src/Main.php:347
+#: src/Main.php:355
 msgid ""
 "The plugin could not be activated. The minimum WooCommerce version required "
 "for Comfino is %1$s. You are running %2$s."
@@ -104,7 +104,7 @@ msgstr ""
 "Comfino to %1$s. Używasz %2$s."
 
 #. translators: 1: Minimum required WooCommerce version 2: Current WooCommerce version
-#: src/Main.php:353
+#: src/Main.php:361
 msgid ""
 "The Comfino plugin has been deactivated. The minimum WooCommerce version "
 "required for Comfino is %1$s. You are running %2$s."
@@ -112,24 +112,24 @@ msgstr ""
 "Wtyczka Comfino została wyłączona. Minimalna wersja WooCommerce wymagana dla "
 "Comfino to %1$s. Używasz %2$s."
 
-#: src/Main.php:361
+#: src/Main.php:369
 msgid ""
 "The plugin could not be activated. It requires PHP cURL extension which is "
 "not installed. More details: https://www.php.net/manual/en/book.curl.php"
 msgstr ""
 "Wtyczka nie mogła zostać włączona. Wymaga rozszerzenia PHP cURL, które nie "
-"jest zainstalowane. Więcej szczegółów: https://www.php.net/manual/en/book."
-"curl.php"
+"jest zainstalowane. Więcej szczegółów: https://www.php.net/manual/en/"
+"book.curl.php"
 
-#: src/Main.php:362
+#: src/Main.php:370
 msgid ""
 "The Comfino plugin has been deactivated. It requires PHP cURL extension "
-"which is not installed. More details: https://www.php.net/manual/en/book."
-"curl.php"
+"which is not installed. More details: https://www.php.net/manual/en/"
+"book.curl.php"
 msgstr ""
 "Wtyczka Comfino została wyłączona. Wymaga rozszerzenia PHP cURL, które nie "
-"jest zainstalowane. Więcej szczegółów: https://www.php.net/manual/en/book."
-"curl.php"
+"jest zainstalowane. Więcej szczegółów: https://www.php.net/manual/en/"
+"book.curl.php"
 
 #: src/Order/ShopStatusManager.php:61
 msgid "Order cancellation sent to Comfino."
@@ -143,11 +143,11 @@ msgstr "Przypomnienie o zamówieniu"
 msgid "Comfino status"
 msgstr "Status Comfino"
 
-#: src/PaymentGateway.php:34 resources/js/front/paywall-block.js:4
+#: src/PaymentGateway.php:36 resources/js/front/paywall-block.js:4
 msgid "Comfino payments"
 msgstr "Płatności Comfino"
 
-#: src/PaymentGateway.php:35
+#: src/PaymentGateway.php:37
 msgid ""
 "Comfino is an innovative payment method for customers of e-commerce stores! "
 "These are installment payments, deferred (buy now, pay later) and corporate "
@@ -159,7 +159,7 @@ msgstr ""
 "firm dostępne na jednej platformie za pomocą szybkiej integracji. Rozwijaj "
 "swój biznes z Comfino!"
 
-#: src/PaymentGateway.php:39
+#: src/PaymentGateway.php:41
 msgid ""
 "The wide range of Comfino installment payments means fast and safe shopping "
 "without burdening your budget here and now. Unexpected expenses, larger "
@@ -174,27 +174,76 @@ msgstr ""
 "Niskie Raty oraz płatności odroczone \"Kup teraz, zapłać później\". Wszystko "
 "po to, abyś mógł cieszyć się zakupami bez obawy o finanse."
 
-#: src/PaymentGateway.php:247
+#: src/PaymentGateway.php:182
 msgid "Comfino create order"
 msgstr "Wniosek Comfino stworzony"
 
 #. translators: 1: WordPress version 2: WooCommerce version 3: Comfino plugin version
-#: src/PaymentGateway.php:302
+#: src/PaymentGateway.php:237
 msgid "WordPress %1$s WooCommerce %2$s Comfino %3$s - question"
 msgstr "WordPress %1$s WooCommerce %2$s Comfino %3$s - pytanie"
 
-#: src/PaymentGateway.php:314
+#: src/PaymentGateway.php:249
 msgid "Do you want to ask about something? Write to us at"
 msgstr "Chcesz o coś zapytać? Napisz do nas na adres"
 
 #. translators: s%: Comfino support telephone
-#: src/PaymentGateway.php:317
+#: src/PaymentGateway.php:252
 msgid ""
 "or contact us by phone. We are waiting on the number: %s. We will answer all "
 "your questions!"
 msgstr ""
 "lub skontaktuj się telefonicznie. Czekamy pod numerem: %s. Odpowiemy na "
 "każde Twoje pytanie!"
+
+#: src/PaymentGateway.php:473
+msgid ""
+"Invalid customer e-mail address. Please check your account contact data."
+msgstr "Nieprawidłowy adres e-mail klienta. Sprawdź dane kontaktowe konta."
+
+#: src/PaymentGateway.php:480
+msgid ""
+"Phone number is required. Please add a phone number to your billing or "
+"delivery address."
+msgstr ""
+"Numer telefonu jest wymagany. Dodaj numer telefonu do adresu rozliczeniowego "
+"lub dostawy."
+
+#: src/PaymentGateway.php:488
+msgid "First name is required."
+msgstr "Imię jest wymagane."
+
+#: src/PaymentGateway.php:492
+msgid "Last name is required."
+msgstr "Nazwisko jest wymagane."
+
+#: src/PaymentGateway.php:499
+msgid "Delivery address is required."
+msgstr "Adres dostawy jest wymagany."
+
+#: src/PaymentGateway.php:502
+msgid "City/Town is required."
+msgstr "Miejscowość jest wymagana."
+
+#: src/PaymentGateway.php:506
+msgid "Postal code is required."
+msgstr "Kod pocztowy jest wymagany."
+
+#: src/PaymentGateway.php:514
+msgid "Cart is empty. Please add products to your cart."
+msgstr "Koszyk jest pusty. Dodaj produkty do koszyka."
+
+#: src/PaymentGateway.php:519
+msgid "Cart total amount must be greater than zero."
+msgstr "Łączna kwota koszyka musi być większa niż zero."
+
+#: src/PaymentGateway.php:524
+msgid ""
+"Comfino payment is not available for this cart. Please check cart amount and "
+"product types."
+msgstr ""
+"Płatność Comfino nie jest dostępna dla tego koszyka. Sprawdź kwotę koszyka i "
+"typy produktów."
 
 #. translators: s%: Validated form field name
 #: src/View/SettingsForm.php:33
@@ -457,8 +506,8 @@ msgid ""
 "cdn.comfino.pl/regulamin/Regulamin-Ratowanie-Koszyka.pdf\">Regulations</a>"
 msgstr ""
 "Włączając \"Ratowanie koszyków\" zgadzasz się i akceptujesz <a "
-"href=\"https://cdn.comfino.pl/regulamin/Regulamin-Ratowanie-Koszyka."
-"pdf\">Regulamin</a>"
+"href=\"https://cdn.comfino.pl/regulamin/Regulamin-Ratowanie-"
+"Koszyka.pdf\">Regulamin</a>"
 
 #: src/View/SettingsForm.php:560
 msgid ""
@@ -504,35 +553,35 @@ msgstr ""
 "Wykorzystanie zmiennych środowiska deweloperskiego z niestandardowymi "
 "hostami, które nadpisują hosty przechowywane we wtyczce."
 
-#: views/admin/configuration.php:57
+#: views/admin/configuration.php:61
 msgid "Payment settings"
 msgstr "Ustawienia płatności"
 
-#: views/admin/configuration.php:58
+#: views/admin/configuration.php:62
 msgid "Sale settings"
 msgstr "Ustawienia sprzedaży"
 
-#: views/admin/configuration.php:59
+#: views/admin/configuration.php:63
 msgid "Widget settings"
 msgstr "Ustawienia widgetu"
 
-#: views/admin/configuration.php:60
+#: views/admin/configuration.php:64
 msgid "Abandoned cart settings"
 msgstr "Ustawienia ratowania koszyków"
 
-#: views/admin/configuration.php:61
+#: views/admin/configuration.php:65
 msgid "Developer settings"
 msgstr "Ustawienia deweloperskie"
 
-#: views/admin/configuration.php:62
+#: views/admin/configuration.php:66
 msgid "Plugin diagnostics"
 msgstr "Diagnostyka wtyczki"
 
-#: views/admin/configuration.php:135
+#: views/admin/configuration.php:148
 msgid "Errors log"
 msgstr "Log błędów"
 
-#: views/admin/configuration.php:138
+#: views/admin/configuration.php:151
 msgid "Debug log"
 msgstr "Log trybu debugowania"
 

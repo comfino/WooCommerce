@@ -1,9 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Comfino\Common\Api;
 
+use Comfino\Api\Exception\RequestValidationError;
 use Comfino\Api\Request;
+use Comfino\Api\Request\CreateOrder as CreateOrderRequest;
+use Comfino\Common\Api\Response\ValidateOrder as ValidateOrderResponse;
 use Comfino\Common\Exception\ConnectionTimeout;
+use Comfino\Shop\Order\OrderInterface;
 use ComfinoExternal\Psr\Http\Client\ClientExceptionInterface;
 use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 use ComfinoExternal\Sunrise\Http\Factory\RequestFactory;
@@ -60,12 +66,32 @@ class Client extends \Comfino\Extended\Api\Client
             $this->connectionMaxNumAttempts = 3;
         }
 
+        self::$responseFactory = new ResponseFactory();
+
         parent::__construct(
             new RequestFactory(),
             new StreamFactory(),
             $this->createClient($this->connectionTimeout, $this->transferTimeout, $this->options),
             $apiKey
         );
+    }
+
+    /** @inheritDoc
+     * @param \Comfino\Shop\Order\OrderInterface $order */
+    public function validateOrder($order): \Comfino\Api\Response\ValidateOrder
+    {
+        try {
+            $this->request = (new CreateOrderRequest($order, true))->setSerializer($this->serializer);
+
+            return new ValidateOrderResponse($this->request, $this->sendRequest($this->request), $this->serializer);
+        } catch (\Throwable $e) {
+            return new ValidateOrderResponse(
+                $this->request,
+                $e instanceof RequestValidationError ? $e->getResponse() : $this->response,
+                $this->serializer,
+                $e
+            );
+        }
     }
 
     /**
@@ -184,10 +210,6 @@ class Client extends \Comfino\Extended\Api\Client
      */
     protected function createClient($connectionTimeout, $transferTimeout, $options = []): \ComfinoExternal\Sunrise\Http\Client\Curl\Client
     {
-        if (self::$responseFactory === null) {
-            self::$responseFactory = new ResponseFactory();
-        }
-
         $clientOptions = [CURLOPT_CONNECTTIMEOUT => $connectionTimeout, CURLOPT_TIMEOUT => $transferTimeout];
 
         foreach ($options as $optionIdx => $valueValue) {
@@ -207,7 +229,7 @@ class Client extends \Comfino\Extended\Api\Client
      */
     protected function findFibonacciSequenceIndex($fibNum): int
     {
-        return round(2.078087 * log($fibNum) + 1.672276);
+        return (int) round(2.078087 * log($fibNum) + 1.672276);
     }
 
     /**
@@ -232,7 +254,7 @@ class Client extends \Comfino\Extended\Api\Client
         $fn = 5;
 
         while ($i++ < $n) {
-            $fn = round($fn * $phi);
+            $fn = (int) round($fn * $phi);
         }
 
         return $fn;

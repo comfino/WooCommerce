@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Comfino\Api\Exception;
 
 use Comfino\Api\HttpErrorExceptionInterface;

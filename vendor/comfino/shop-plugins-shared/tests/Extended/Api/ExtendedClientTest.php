@@ -1,8 +1,10 @@
 <?php
 
-namespace Comfino\Extended\Api;
+declare(strict_types=1);
 
-use Comfino\ExtendedClientTestTrait;
+namespace Comfino\Tests\Extended\Api;
+
+use Comfino\Tests\ExtendedClientTestTrait;
 use PHPUnit\Framework\TestCase;
 
 class ExtendedClientTest extends TestCase

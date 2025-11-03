@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Comfino\Api\Request;
 
 use Comfino\Api\Dto\Payment\LoanTypeEnum;

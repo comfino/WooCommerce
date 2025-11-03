@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Comfino\Extended\Api;
 
 use Comfino\Api\Response\Base as BaseApiResponse;

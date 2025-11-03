@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Comfino\Api\Response;
 
 use Comfino\Api\Exception\AccessDenied;
@@ -15,18 +17,25 @@ use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 class Base extends Response
 {
     /**
-     * @param Request $request
-     * @param ResponseInterface $response
-     * @param SerializerInterface $serializer
+     * @param Request $request Comfino API client request object associated with this response.
+     * @param ResponseInterface $response PSR-7 compatible HTTP response object.
+     * @param SerializerInterface $serializer Serializer/deserializer object for requests and responses body.
+     * @param \Throwable|null $exception Exception object in case of validation or communication error.
+     *
      * @throws RequestValidationError
      * @throws ResponseValidationError
      * @throws AuthorizationError
      * @throws AccessDenied
      * @throws ServiceUnavailable
      */
-    public function __construct(Request $request, ResponseInterface $response, SerializerInterface $serializer)
+    public function __construct(Request $request, ResponseInterface $response, SerializerInterface $serializer, ?\Throwable $exception = null)
     {
-        $this->initFromPsrResponse($request, $response, $serializer);
+        $this->request = $request;
+        $this->response = $response;
+        $this->serializer = $serializer;
+        $this->exception = $exception;
+
+        $this->initFromPsrResponse();
     }
 
     /**
@@ -71,7 +80,7 @@ class Base extends Response
      */
     protected function checkResponseStructure($deserializedResponseBody, $expectedKeys): void
     {
-        if (count($responseKeysDiff = array_diff($expectedKeys, array_keys($deserializedResponseBody))) > 0) {
+        if (count($responseKeysDiff = array_diff($expectedKeys, array_keys($deserializedResponseBody))) > 0) {var_dump($deserializedResponseBody);
             throw new ResponseValidationError('Invalid response data structure: missing fields: ' . implode(', ', $responseKeysDiff));
         }
     }

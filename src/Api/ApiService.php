@@ -343,7 +343,7 @@ final class ApiService
         }
 
         if ($request->has_param('priceModifier') && is_numeric($request->get_param('priceModifier'))) {
-            $priceModifier = (int) $request->get_param('priceModifier');
+            $priceModifier = (int) filter_var($request->get_param('priceModifier'), FILTER_VALIDATE_INT);
         } else {
             $priceModifier = 0;
         }
@@ -436,7 +436,7 @@ final class ApiService
         $loadProductCategories = ($request->get_param('reqProdCat') === 'yes');
 
         if ($request->has_param('priceModifier') && is_numeric($request->get_param('priceModifier'))) {
-            $priceModifier = (int) $request->get_param('priceModifier');
+            $priceModifier = (int) filter_var($request->get_param('priceModifier'), FILTER_VALIDATE_INT);
         } else {
             $priceModifier = 0;
         }

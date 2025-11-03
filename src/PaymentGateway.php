@@ -7,13 +7,15 @@ use Comfino\Api\ApiService;
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
 use Comfino\Common\Backend\ConfigurationManager;
 use Comfino\Common\Backend\Factory\OrderFactory;
+use Comfino\Common\Shop\Cart;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Order\OrderManager;
 use Comfino\Order\ShopStatusManager;
 use Comfino\Shop\Order\Customer;
-use Comfino\Shop\Order\Customer\Address;
+use Comfino\Shop\Order\Order;
+use Comfino\Shop\Order\OrderInterface;
 use Comfino\View\FrontendManager;
 use Comfino\View\SettingsForm;
 use Comfino\View\TemplateManager;
@@ -21,8 +23,8 @@ use Comfino\View\TemplateManager;
 class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
-    public const VERSION = '4.2.4';
-    public const BUILD_TS = 1759229400;
+    public const VERSION = '4.2.5';
+    public const BUILD_TS = 1762178408;
     public const WIDGET_INIT_SCRIPT_HASH = '0603f4e0904fd65e2aef1aded0c57c40';
     public const WIDGET_INIT_SCRIPT_LAST_HASH = '55e4306bb493ff6f99b2f8f617e18038';
 
@@ -114,118 +116,51 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function process_payment($order_id): array
     {
-        DebugLogger::logEvent('[PAYMENT GATEWAY]', 'process_payment', ['$order_id' => $order_id, '$_POST' => $_POST]);
+        $cart = WC()->cart;
+
+        DebugLogger::logEvent(
+            '[PAYMENT GATEWAY]',
+            'process_payment',
+            ['cart_id' => $cart->get_cart_hash(), '$order_id' => $order_id, '$_POST' => $_POST]
+        );
 
         $orderId = (string) $order_id;
-        $initLoanAmount = (int) sanitize_text_field(wp_unslash($_POST['comfino_loan_amount'] ?? '0'));
-        $priceModifier = (int) sanitize_text_field(wp_unslash($_POST['comfino_price_modifier'] ?? '0'));
-
-        $shopCart = OrderManager::getShopCart(WC()->cart, $priceModifier);
+        $initLoanAmount = (int) filter_var(sanitize_text_field(wp_unslash($_POST['comfino_loan_amount'] ?? '0')), FILTER_VALIDATE_INT);
+        $priceModifier = (int) filter_var(sanitize_text_field(wp_unslash($_POST['comfino_price_modifier'] ?? '0')), FILTER_VALIDATE_INT);
+        $loanType = sanitize_text_field(wp_unslash($_POST['comfino_loan_type'] ?? 'undefined'));
+        $loanTerm = (int) filter_var(sanitize_text_field(wp_unslash($_POST['comfino_loan_term'] ?? '0')), FILTER_VALIDATE_INT);
 
         $wcOrder = wc_get_order($order_id);
-        $phoneNumber = trim($wcOrder->get_billing_phone());
+        $shopCart = OrderManager::getShopCart($cart, $priceModifier);
+        $shopCustomer = OrderManager::getShopCustomerFromOrder($wcOrder);
+        $returnUrl = $this->get_return_url($wcOrder);
 
-        if (empty($phoneNumber)) {
-            // Try to find phone number in order metadata.
-            $orderMetadata = $wcOrder->get_meta_data();
+        $order = $this->createOrder($orderId, $loanType, $loanTerm, $returnUrl, $shopCart, $shopCustomer);
 
-            foreach ($orderMetadata as $metaDataItem) {
-                /** @var \WC_Meta_Data $metaDataItem */
-                $metaData = $metaDataItem->get_data();
+        // Perform comprehensive validation before sending credit application.
+        $validationErrors = $this->validatePaymentData($order, $cart);
 
-                if (stripos($metaData['key'], 'tel') !== false || stripos($metaData['key'], 'phone') !== false) {
-                    $metaValue = str_replace(['-', ' ', '(', ')'], '', trim($metaData['value']));
+        if (!empty($validationErrors)) {
+            DebugLogger::logEvent(
+                '[PAYMENT]',
+                'Validation failed',
+                ['errors' => $validationErrors, 'cart_id' => $cart->get_cart_hash(), '$order_id' => $order_id]
+            );
 
-                    if (preg_match('/^(?:\+?\d{1,2})?\d{9}$|^(?:\d{2,3})?\d{7}$/', $metaValue)) {
-                        $phoneNumber = $metaValue;
-
-                        break;
-                    }
+            if ($this->isBlocksCheckout()) {
+                wc_add_notice(implode("\n", $validationErrors), 'error');
+            } else {
+                foreach ($validationErrors as $error) {
+                    wc_add_notice($error, 'error');
                 }
             }
+
+            return ['result' => 'failure', 'redirect' => ''];
         }
-
-        if (empty($phoneNumber)) {
-            $phoneNumber = trim($wcOrder->get_shipping_phone());
-        }
-
-        if (!empty(trim($wcOrder->get_billing_first_name()))) {
-            // Use billing address to get customer names.
-            [$firstName, $lastName] = $this->prepareCustomerNames($wcOrder->get_billing_first_name(), $wcOrder->get_billing_last_name());
-        } else {
-            // Use delivery address to get customer names.
-            [$firstName, $lastName] = $this->prepareCustomerNames($wcOrder->get_shipping_first_name(), $wcOrder->get_shipping_last_name());
-        }
-
-        $billingAddressLines = $wcOrder->get_billing_address_1();
-
-        if (!empty($wcOrder->get_billing_address_2())) {
-            $billingAddressLines .= " {$wcOrder->get_billing_address_2()}";
-        }
-
-        if (empty($billingAddressLines)) {
-            $deliveryAddressLines = $wcOrder->get_shipping_address_1();
-
-            if (!empty($wcOrder->get_shipping_address_2())) {
-                $deliveryAddressLines .= " {$wcOrder->get_shipping_address_2()}";
-            }
-
-            $street = trim($deliveryAddressLines);
-        } else {
-            $street = trim($billingAddressLines);
-        }
-
-        $addressParts = explode(' ', $street);
-        $buildingNumber = '';
-
-        if (count($addressParts) > 1) {
-            foreach ($addressParts as $idx => $addressPart) {
-                if (preg_match('/^\d+[a-zA-Z]?$/', trim($addressPart))) {
-                    $street = implode(' ', array_slice($addressParts, 0, $idx));
-                    $buildingNumber = trim($addressPart);
-                }
-            }
-        }
-
-        /** @see https://woocommerce.com/document/eu-vat-number/ */
-        $customerTaxId = function_exists('wc_eu_vat_get_vat_from_order') ? trim(wc_eu_vat_get_vat_from_order($wcOrder)) : '';
-
-        $order = (new OrderFactory())->createOrder(
-            $orderId,
-            $shopCart->getTotalValue(),
-            $shopCart->getDeliveryCost(),
-            (int) sanitize_text_field(wp_unslash($_POST['comfino_loan_term'] ?? '0')),
-            new LoanTypeEnum(sanitize_text_field(wp_unslash($_POST['comfino_loan_type'] ?? 'undefined'))),
-            $shopCart->getCartItems(),
-            new Customer(
-                $firstName,
-                $lastName,
-                $wcOrder->get_billing_email(),
-                $phoneNumber,
-                \WC_Geolocation::get_ip_address(),
-                preg_match('/^[A-Z]{0,3}\d{7,}$/', str_replace('-', '', $customerTaxId)) ? $customerTaxId : null,
-                $wcOrder->get_user() !== false,
-                is_user_logged_in(),
-                new Address(
-                    $street,
-                    $buildingNumber,
-                    null,
-                    $wcOrder->get_billing_postcode(),
-                    $wcOrder->get_billing_city(),
-                    $wcOrder->get_billing_country()
-                )
-            ),
-            $this->get_return_url($wcOrder),
-            ApiService::getEndpointUrl('transactionStatus'),
-            SettingsManager::getAllowedProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL, $shopCart),
-            $shopCart->getDeliveryNetCost(),
-            $shopCart->getDeliveryTaxRate(),
-            $shopCart->getDeliveryTaxValue()
-        );
 
         DebugLogger::logEvent(
             '[PAYMENT]',
-            'process_payment',
+            'Validation passed - proceeding with order creation',
             [
                 '$initLoanAmount' => $initLoanAmount,
                 '$priceModifier' => $priceModifier,
@@ -248,7 +183,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 
             wc_reduce_stock_levels($wcOrder);
 
-            WC()->cart->empty_cart();
+            $cart->empty_cart();
 
             $result = ['result' => 'success', 'redirect' => $response->applicationUrl];
         } catch (\Throwable $e) {
@@ -499,19 +434,137 @@ class PaymentGateway extends \WC_Payment_Gateway
         return $active_tab;
     }
 
-    private function prepareCustomerNames(string $firstName, string $lastName): array
+    /**
+     * Detects if the current checkout is using WooCommerce Blocks.
+     */
+    private function isBlocksCheckout(): bool
     {
-        $firstName = trim($firstName);
-        $lastName = trim($lastName);
+        // Primary check: REST API request.
+        if (defined('REST_REQUEST') && REST_REQUEST) {
+            return true;
+        }
 
-        if (empty($lastName)) {
-            $nameParts = explode(' ', $firstName);
+        // Secondary check: WooCommerce Store API.
+        if (function_exists('wc_is_rest_api_request') && wc_is_rest_api_request()) {
+            return true;
+        }
 
-            if (count($nameParts) > 1) {
-                [$firstName, $lastName] = $nameParts;
+        // Tertiary check: Request URI contains Store API path.
+        if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/wp-json/wc/store/') !== false) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Validates payment data from Order object before processing.
+     *
+     * @return string[] Array of error messages, empty if validation passes.
+     */
+    private function validatePaymentData(OrderInterface $order, \WC_Cart $cart): array
+    {
+        $errors = [];
+
+        // 1. Validate customer e-mail.
+        $customerEmail = $order->getCustomer()->getEmail();
+
+        if (empty($customerEmail) || !is_email($customerEmail)) {
+            $errors[] = __('Invalid customer e-mail address. Please check your account contact data.', 'comfino-payment-gateway');
+        }
+
+        // 2. Validate phone number.
+        $phoneNumber = $order->getCustomer()->getPhoneNumber();
+
+        if (empty($phoneNumber)) {
+            $errors[] = __(
+                'Phone number is required. Please add a phone number to your billing or delivery address.',
+                'comfino-payment-gateway'
+            );
+        }
+
+        // 3. Validate customer names.
+        if (empty(trim($order->getCustomer()->getFirstName()))) {
+            $errors[] = __('First name is required.', 'comfino-payment-gateway');
+        }
+
+        if (empty(trim($order->getCustomer()->getLastName()))) {
+            $errors[] = __('Last name is required.', 'comfino-payment-gateway');
+        }
+
+        // 4. Validate customer address.
+        $address = $order->getCustomer()->getAddress();
+
+        if ($address === null) {
+            $errors[] = __('Delivery address is required.', 'comfino-payment-gateway');
+        } else {
+            if (empty(trim($address->getCity()))) {
+                $errors[] = __('City/Town is required.', 'comfino-payment-gateway');
+            }
+
+            if (empty(trim($address->getPostalCode()))) {
+                $errors[] = __('Postal code is required.', 'comfino-payment-gateway');
             }
         }
 
-        return [$firstName, $lastName];
+        // 5. Validate cart data.
+        $cartItems = $order->getCart()->getItems();
+
+        if (empty($cartItems)) {
+            $errors[] = __('Cart is empty. Please add products to your cart.', 'comfino-payment-gateway');
+        }
+
+        // 6. Validate order amount.
+        if ($order->getCart()->getTotalAmount() <= 0) {
+            $errors[] = __('Cart total amount must be greater than zero.', 'comfino-payment-gateway');
+        }
+
+        // 7. Validate payment availability.
+        if (!Main::paymentIsAvailable($cart)) {
+            $errors[] = __(
+                'Comfino payment is not available for this cart. Please check cart amount and product types.',
+                'comfino-payment-gateway'
+            );
+        }
+
+        if (!empty($errors)) {
+            // Do not call validation at Comfino API side if any errors detected locally.
+            return $errors;
+        }
+
+        // Call Comfino API validation as a second step of order validation if no errors detected locally.
+        $validationResult = ApiClient::getInstance()->validateOrder($order);
+
+        if (!$validationResult->success) {
+            $errors = array_values($validationResult->errors);
+        }
+
+        return $errors;
+    }
+
+    private function createOrder(
+        string $orderId,
+        string $loanType,
+        int $loanTerm,
+        string $returnUrl,
+        Cart $shopCart,
+        Customer $shopCustomer
+    ): Order
+    {
+        return (new OrderFactory())->createOrder(
+            $orderId,
+            $shopCart->getTotalValue(),
+            $shopCart->getDeliveryCost(),
+            $loanTerm,
+            new LoanTypeEnum($loanType, false),
+            $shopCart->getCartItems(),
+            $shopCustomer,
+            $returnUrl,
+            ApiService::getEndpointUrl('transactionStatus'),
+            SettingsManager::getAllowedProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL, $shopCart),
+            $shopCart->getDeliveryNetCost(),
+            $shopCart->getDeliveryTaxRate(),
+            $shopCart->getDeliveryTaxValue()
+        );
     }
 }

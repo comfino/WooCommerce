@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Comfino\Extended\Api\Dto\Plugin;
 
 final class ShopPluginError

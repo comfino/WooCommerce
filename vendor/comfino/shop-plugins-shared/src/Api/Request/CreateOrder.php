@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Comfino\Api\Request;
 
 use Comfino\Api\Request;
@@ -16,14 +18,21 @@ class CreateOrder extends Request
      * @readonly
      */
     private $order;
+    /**
+     * @var bool
+     * @readonly
+     */
+    private $validateOnly = false;
     use CartTrait;
 
     /**
-     * @param OrderInterface $order Full order data (cart, loan details)
+     * @param OrderInterface $order Full order data (cart, loan details).
+     * @param bool $validateOnly Flag used for order validation (if true, order is not created and only validation result is returned).
      */
-    public function __construct(OrderInterface $order)
+    public function __construct(OrderInterface $order, bool $validateOnly = false)
     {
         $this->order = $order;
+        $this->validateOnly = $validateOnly;
         $this->setRequestMethod('POST');
         $this->setApiEndpointPath('orders');
     }
@@ -105,6 +114,7 @@ class CreateOrder extends Request
                 // Extra data (optional)
                 'accountNumber' => $this->order->getAccountNumber(),
                 'transferTitle' => $this->order->getTransferTitle(),
+                'simulation' => $this->validateOnly ?: null,
             ],
             static function ($value) : bool {
                 return $value !== null;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Comfino\Common\Shop\Order;
 
 use Comfino\Common\Shop\OrderStatusAdapterInterface;

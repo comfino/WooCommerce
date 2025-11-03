@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Comfino\Api;
 
 use Comfino\Api\Dto\Payment\LoanQueryCriteria;
@@ -31,6 +33,7 @@ use Comfino\Api\Response\GetProductTypes as GetProductTypesResponse;
 use Comfino\Api\Response\GetWidgetKey as GetWidgetKeyResponse;
 use Comfino\Api\Response\GetWidgetTypes as GetWidgetTypesResponse;
 use Comfino\Api\Response\IsShopAccountActive as IsShopAccountActiveResponse;
+use Comfino\Api\Response\ValidateOrder as ValidateOrderResponse;
 use Comfino\Api\Serializer\Json as JsonSerializer;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Shop\Order\CartInterface;
@@ -44,7 +47,7 @@ use ComfinoExternal\Psr\Http\Message\StreamFactoryInterface;
 /**
  * Comfino API client.
  *
- * @version 1.0
+ * @version 1.1.0
  * @author Artur Kozubski <akozubski@comperia.pl>
  */
 class Client
@@ -75,12 +78,14 @@ class Client
      * @var SerializerInterface|null
      */
     protected $serializer;
-    protected const CLIENT_VERSION = '1.0';
-    protected const PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
-    protected const SANDBOX_HOST = 'https://api-ecommerce.craty.pl';
+    public const CLIENT_VERSION = '1.1.0';
+    public const PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
+    public const SANDBOX_HOST = 'https://api-ecommerce.craty.pl';
 
     /** @var string */
     protected $apiLanguage = 'pl';
+    /** @var string */
+    protected $apiCurrency = 'PLN';
     /** @var string|null */
     protected $customApiHost;
     /** @var string|null */
@@ -93,6 +98,8 @@ class Client
     protected $isSandboxMode = false;
     /** @var Request|null */
     protected $request;
+    /** @var ResponseInterface|null */
+    protected $response;
 
     /**
      * Comfino API client.
@@ -146,7 +153,7 @@ class Client
      */
     public function getApiKey(): string
     {
-        return $this->apiKey;
+        return $this->apiKey ?? '';
     }
 
     /**
@@ -181,6 +188,28 @@ class Client
     public function setApiLanguage($language): void
     {
         $this->apiLanguage = $language;
+    }
+
+    /**
+     * Returns current API currency.
+     *
+     * @return string Currency code (eg: PLN, USD, EUR, GBP).
+     */
+    public function getApiCurrency(): string
+    {
+        return $this->apiCurrency;
+    }
+
+    /**
+     * Selects current API currency.
+     *
+     * @param string $apiCurrency Currency code (eg: PLN, USD, EUR, GBP).
+     *
+     * @return void
+     */
+    public function setApiCurrency($apiCurrency): void
+    {
+        $this->apiCurrency = $apiCurrency;
     }
 
     /**
@@ -299,17 +328,9 @@ class Client
      */
     public function isShopAccountActive($cacheInvalidateUrl = null, $configurationUrl = null): bool
     {
-        try {
-            $this->request = (new IsShopAccountActiveRequest($cacheInvalidateUrl, $configurationUrl))->setSerializer($this->serializer);
+        $this->request = (new IsShopAccountActiveRequest($cacheInvalidateUrl, $configurationUrl))->setSerializer($this->serializer);
 
-            return (new IsShopAccountActiveResponse($this->request, $this->sendRequest($this->request), $this->serializer))->isActive;
-        } catch (HttpErrorExceptionInterface $e) {
-            if (isset($this->request)) {
-                $e->setRequestBody($this->request->getRequestBody() ?? '');
-            }
-
-            throw $e;
-        }
+        return (new IsShopAccountActiveResponse($this->request, $this->sendRequest($this->request), $this->serializer))->isActive;
     }
 
     /**
@@ -329,17 +350,9 @@ class Client
      */
     public function getFinancialProductDetails($queryCriteria, $cart): GetFinancialProductDetailsResponse
     {
-        try {
-            $this->request = (new GetFinancialProductDetailsRequest($queryCriteria, $cart))->setSerializer($this->serializer);
+        $this->request = (new GetFinancialProductDetailsRequest($queryCriteria, $cart))->setSerializer($this->serializer);
 
-            return new GetFinancialProductDetailsResponse($this->request, $this->sendRequest($this->request), $this->serializer);
-        } catch (HttpErrorExceptionInterface $e) {
-            if (isset($this->request)) {
-                $e->setRequestBody($this->request->getRequestBody() ?? '');
-            }
-
-            throw $e;
-        }
+        return new GetFinancialProductDetailsResponse($this->request, $this->sendRequest($this->request), $this->serializer);
     }
 
     /**
@@ -358,21 +371,13 @@ class Client
      */
     public function getFinancialProducts($queryCriteria): GetFinancialProductsResponse
     {
-        try {
-            $this->request = (new GetFinancialProductsRequest($queryCriteria))->setSerializer($this->serializer);
+        $this->request = (new GetFinancialProductsRequest($queryCriteria))->setSerializer($this->serializer);
 
-            return new GetFinancialProductsResponse($this->request, $this->sendRequest($this->request), $this->serializer);
-        } catch (HttpErrorExceptionInterface $e) {
-            if (isset($this->request)) {
-                $e->setRequestBody($this->request->getRequestBody() ?? '');
-            }
-
-            throw $e;
-        }
+        return new GetFinancialProductsResponse($this->request, $this->sendRequest($this->request), $this->serializer);
     }
 
     /**
-     * Submits a loan application.
+     * Submits a loan application request.
      *
      * @param OrderInterface $order Full order data (cart, loan details).
      *
@@ -387,16 +392,31 @@ class Client
      */
     public function createOrder($order): CreateOrderResponse
     {
+        $this->request = (new CreateOrderRequest($order))->setSerializer($this->serializer);
+
+        return new CreateOrderResponse($this->request, $this->sendRequest($this->request), $this->serializer);
+    }
+
+    /**
+     * Validates loan application request data.
+     *
+     * @param OrderInterface $order
+     *
+     * @return ValidateOrderResponse
+     */
+    public function validateOrder($order): ValidateOrderResponse
+    {
         try {
-            $this->request = (new CreateOrderRequest($order))->setSerializer($this->serializer);
+            $this->request = (new CreateOrderRequest($order, true))->setSerializer($this->serializer);
 
-            return new CreateOrderResponse($this->request, $this->sendRequest($this->request), $this->serializer);
-        } catch (HttpErrorExceptionInterface $e) {
-            if (isset($this->request)) {
-                $e->setRequestBody($this->request->getRequestBody() ?? '');
-            }
-
-            throw $e;
+            return new ValidateOrderResponse($this->request, $this->sendRequest($this->request), $this->serializer);
+        } catch (\Throwable $e) {
+            return new ValidateOrderResponse(
+                $this->request,
+                $e instanceof RequestValidationError ? $e->getResponse() : $this->response,
+                $this->serializer,
+                $e
+            );
         }
     }
 
@@ -416,17 +436,9 @@ class Client
      */
     public function getOrder($orderId): GetOrderResponse
     {
-        try {
-            $this->request = (new GetOrderRequest($orderId))->setSerializer($this->serializer);
+        $this->request = (new GetOrderRequest($orderId))->setSerializer($this->serializer);
 
-            return new GetOrderResponse($this->request, $this->sendRequest($this->request), $this->serializer);
-        } catch (HttpErrorExceptionInterface $e) {
-            if (isset($this->request)) {
-                $e->setRequestBody($this->request->getRequestBody() ?? '');
-            }
-
-            throw $e;
-        }
+        return new GetOrderResponse($this->request, $this->sendRequest($this->request), $this->serializer);
     }
 
     /**
@@ -442,17 +454,9 @@ class Client
      */
     public function cancelOrder($orderId): void
     {
-        try {
-            $this->request = (new CancelOrderRequest($orderId))->setSerializer($this->serializer);
+        $this->request = (new CancelOrderRequest($orderId))->setSerializer($this->serializer);
 
-            new BaseApiResponse($this->request, $this->sendRequest($this->request), $this->serializer);
-        } catch (HttpErrorExceptionInterface $e) {
-            if (isset($this->request)) {
-                $e->setRequestBody($this->request->getRequestBody() ?? '');
-            }
-
-            throw $e;
-        }
+        new BaseApiResponse($this->request, $this->sendRequest($this->request), $this->serializer);
     }
 
     /**
@@ -468,17 +472,9 @@ class Client
      */
     public function getProductTypes($listType): GetProductTypesResponse
     {
-        try {
-            $this->request = (new GetProductTypesRequest($listType))->setSerializer($this->serializer);
+        $this->request = (new GetProductTypesRequest($listType))->setSerializer($this->serializer);
 
-            return new GetProductTypesResponse($this->request, $this->sendRequest($this->request), $this->serializer);
-        } catch (HttpErrorExceptionInterface $e) {
-            if (isset($this->request)) {
-                $e->setRequestBody($this->request->getRequestBody() ?? '');
-            }
-
-            throw $e;
-        }
+        return new GetProductTypesResponse($this->request, $this->sendRequest($this->request), $this->serializer);
     }
 
     /**
@@ -493,17 +489,9 @@ class Client
      */
     public function getWidgetKey(): string
     {
-        try {
-            $this->request = (new GetWidgetKeyRequest())->setSerializer($this->serializer);
+        $this->request = (new GetWidgetKeyRequest())->setSerializer($this->serializer);
 
-            return (new GetWidgetKeyResponse($this->request, $this->sendRequest($this->request), $this->serializer))->widgetKey;
-        } catch (HttpErrorExceptionInterface $e) {
-            if (isset($this->request)) {
-                $e->setRequestBody($this->request->getRequestBody() ?? '');
-            }
-
-            throw $e;
-        }
+        return (new GetWidgetKeyResponse($this->request, $this->sendRequest($this->request), $this->serializer))->widgetKey;
     }
 
     /**
@@ -520,17 +508,9 @@ class Client
      */
     public function getWidgetTypes($useNewApi = true): GetWidgetTypesResponse
     {
-        try {
-            $this->request = (new GetWidgetTypesRequest($useNewApi))->setSerializer($this->serializer);
+        $this->request = (new GetWidgetTypesRequest($useNewApi))->setSerializer($this->serializer);
 
-            return new GetWidgetTypesResponse($this->request, $this->sendRequest($this->request), $this->serializer);
-        } catch (HttpErrorExceptionInterface $e) {
-            if (isset($this->request)) {
-                $e->setRequestBody($this->request->getRequestBody() ?? '');
-            }
-
-            throw $e;
-        }
+        return new GetWidgetTypesResponse($this->request, $this->sendRequest($this->request), $this->serializer);
     }
 
     /**
@@ -550,17 +530,9 @@ class Client
      */
     public function getPaywall($queryCriteria, $recalculationUrl = null): GetPaywallResponse
     {
-        try {
-            $this->request = (new GetPaywallRequest($queryCriteria, $recalculationUrl))->setSerializer($this->serializer);
+        $this->request = (new GetPaywallRequest($queryCriteria, $recalculationUrl))->setSerializer($this->serializer);
 
-            return new GetPaywallResponse($this->request, $this->sendRequest($this->request, 2), $this->serializer);
-        } catch (HttpErrorExceptionInterface $e) {
-            if (isset($this->request)) {
-                $e->setRequestBody($this->request->getRequestBody() ?? '');
-            }
-
-            throw $e;
-        }
+        return new GetPaywallResponse($this->request, $this->sendRequest($this->request, 2), $this->serializer);
     }
 
     /**
@@ -581,22 +553,13 @@ class Client
      */
     public function getPaywallItemDetails($loanAmount, $loanType, $cart): GetPaywallItemDetailsResponse
     {
-        try {
-            $this->request = (new GetPaywallItemDetailsRequest($loanAmount, $loanType, $cart))->setSerializer($this->serializer);
+        $this->request = (new GetPaywallItemDetailsRequest($loanAmount, $loanType, $cart))->setSerializer($this->serializer);
 
-            return new GetPaywallItemDetailsResponse($this->request, $this->sendRequest($this->request), $this->serializer);
-        } catch (HttpErrorExceptionInterface $e) {
-            if (isset($this->request)) {
-                $e->setRequestBody($this->request->getRequestBody() ?? '');
-            }
-
-            throw $e;
-        }
+        return new GetPaywallItemDetailsResponse($this->request, $this->sendRequest($this->request), $this->serializer);
     }
 
     /**
      * @throws RequestValidationError
-     * @throws ResponseValidationError
      * @throws ClientExceptionInterface
      * @param \Comfino\Api\Request $request
      * @param int|null $apiVersion
@@ -617,6 +580,7 @@ class Client
         )
         ->withHeader('Content-Type', 'application/json')
         ->withHeader('Api-Language', $this->apiLanguage)
+        ->withHeader('Api-Currency', $this->apiCurrency)
         ->withHeader('User-Agent', $this->getUserAgent())
         ->withHeader('Comfino-Track-Id', $trackId);
 
@@ -626,9 +590,11 @@ class Client
             }
         }
 
-        return $this->client->sendRequest(
+        $this->response = $this->client->sendRequest(
             !empty($this->apiKey) ? $apiRequest->withHeader('Api-Key', $this->apiKey) : $apiRequest
         );
+
+        return $this->response;
     }
 
     protected function getUserAgent(): string

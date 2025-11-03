@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Comfino\Api;
 
 use Comfino\Api\Exception\AccessDenied;
@@ -11,126 +13,16 @@ use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 
 abstract class Response
 {
-    /** @var string[] */
+    /** @var Request Comfino API client request object associated with this response. */
+    protected $request;
+    /** @var ResponseInterface PSR-7 compatible HTTP response object. */
+    protected $response;
+    /** @var SerializerInterface Serializer/deserializer object for requests and responses body. */
+    protected $serializer;
+    /** @var \Throwable|null Exception object in case of validation or communication error. */
+    protected $exception;
+    /** @var string[] Extracted HTTP response headers. */
     protected $headers = [];
-
-    /**
-     * Extracts API response data from input PSR-7 compatible HTTP response object.
-     *
-     * @param Request $request
-     * @param ResponseInterface $response
-     * @param SerializerInterface $serializer
-     *
-     * @return Response
-     *
-     * @throws RequestValidationError
-     * @throws ResponseValidationError
-     * @throws AuthorizationError
-     * @throws AccessDenied
-     * @throws ServiceUnavailable
-     */
-    final public function initFromPsrResponse($request, $response, $serializer): self
-    {
-        $response->getBody()->rewind();
-        $responseBody = $response->getBody()->getContents();
-
-        if ($response->hasHeader('Content-Type') && strpos($response->getHeader('Content-Type')[0], 'application/json') !== false) {
-            try {
-                $deserializedResponseBody = $this->deserializeResponseBody($responseBody, $serializer);
-            } catch (ResponseValidationError $e) {
-                $e->setUrl($request->getRequestUri());
-                $e->setResponseBody($responseBody);
-
-                throw $e;
-            }
-        } else {
-            $deserializedResponseBody = $responseBody;
-        }
-
-        $this->headers = [];
-
-        foreach ($response->getHeaders() as $headerName => $headerValues) {
-            $this->headers[$headerName] = end($headerValues);
-        }
-
-        if ($response->getStatusCode() >= 500) {
-            throw new ServiceUnavailable(
-                "Comfino API service is unavailable: {$response->getReasonPhrase()} [{$response->getStatusCode()}]",
-                0,
-                null,
-                $request->getRequestUri(),
-                '',
-                $responseBody
-            );
-        }
-
-        if ($response->getStatusCode() >= 400) {
-            switch ($response->getStatusCode()) {
-                case 400:
-                    throw new RequestValidationError(
-                        $this->getErrorMessage(
-                            $response->getStatusCode(),
-                            $deserializedResponseBody,
-                            "Invalid request data: {$response->getReasonPhrase()} [{$response->getStatusCode()}]"
-                        ),
-                        $response->getStatusCode(),
-                        null,
-                        $request->getRequestUri()
-                    );
-
-                case 401:
-                    throw new AuthorizationError(
-                        $this->getErrorMessage($response->getStatusCode(), $deserializedResponseBody, "Invalid credentials: {$response->getReasonPhrase()} [{$response->getStatusCode()}]"),
-                        $response->getStatusCode(),
-                        null,
-                        $request->getRequestUri()
-                    );
-
-                case 402:
-                case 403:
-                case 404:
-                case 405:
-                    throw new AccessDenied(
-                        $this->getErrorMessage(
-                            $response->getStatusCode(),
-                            $deserializedResponseBody,
-                            "Access denied: {$response->getReasonPhrase()} [{$response->getStatusCode()}]"
-                        ),
-                        $response->getStatusCode(),
-                        null,
-                        $request->getRequestUri()
-                    );
-
-                default:
-                    throw new RequestValidationError(
-                        "Invalid request data: {$response->getReasonPhrase()} [{$response->getStatusCode()}]",
-                        $response->getStatusCode(),
-                        null,
-                        $request->getRequestUri()
-                    );
-            }
-        }
-
-        if (($errorMessage = $this->getErrorMessage($response->getStatusCode(), $deserializedResponseBody)) !== null) {
-            throw new RequestValidationError(
-                $errorMessage,
-                $response->getStatusCode(),
-                null,
-                $request->getRequestUri()
-            );
-        }
-
-        try {
-            $this->processResponseBody($deserializedResponseBody);
-        } catch (ResponseValidationError $e) {
-            $e->setUrl($request->getRequestUri());
-            $e->setResponseBody($responseBody);
-
-            throw $e;
-        }
-
-        return $this;
-    }
 
     /**
      * Returns response HTTP headers as associative array ['headerName' => 'headerValue'].
@@ -185,6 +77,143 @@ abstract class Response
         }
 
         return $defaultValue;
+    }
+
+    /**
+     * Extracts API response data from input PSR-7 compatible HTTP response object.
+     *
+     * @return Response Comfino API client response object.
+     *
+     * @throws RequestValidationError
+     * @throws ResponseValidationError
+     * @throws AuthorizationError
+     * @throws AccessDenied
+     * @throws ServiceUnavailable
+     */
+    final protected function initFromPsrResponse(): self
+    {
+        $requestBody = ($this->request->getRequestBody() ?? '');
+
+        $this->response->getBody()->rewind();
+        $responseBody = $this->response->getBody()->getContents();
+
+        $this->headers = [];
+
+        foreach ($this->response->getHeaders() as $headerName => $headerValues) {
+            $this->headers[$headerName] = end($headerValues);
+        }
+
+        if ($this->exception !== null) {
+            // Exception already thrown - return without errors processing and exceptions throwing.
+            return $this;
+        }
+
+        if ($this->response->hasHeader('Content-Type') && strpos($this->response->getHeader('Content-Type')[0], 'application/json') !== false) {
+            try {
+                $deserializedResponseBody = $this->deserializeResponseBody($responseBody, $this->serializer);
+            } catch (ResponseValidationError $e) {
+                $e->setUrl($this->request->getRequestUri());
+                $e->setRequestBody($requestBody);
+                $e->setResponseBody($responseBody);
+
+                throw $e;
+            }
+        } else {
+            $deserializedResponseBody = $responseBody;
+        }
+
+        if ($this->exception === null && $this->response->getStatusCode() >= 500) {
+            throw new ServiceUnavailable(
+                "Comfino API service is unavailable: {$this->response->getReasonPhrase()} [{$this->response->getStatusCode()}]",
+                0,
+                null,
+                $this->request->getRequestUri(),
+                $requestBody,
+                $responseBody
+            );
+        }
+
+        if ($this->exception === null && $this->response->getStatusCode() >= 400) {
+            switch ($this->response->getStatusCode()) {
+                case 400:
+                    throw new RequestValidationError(
+                        $this->getErrorMessage(
+                            $this->response->getStatusCode(),
+                            $deserializedResponseBody,
+                            "Invalid request data: {$this->response->getReasonPhrase()} [{$this->response->getStatusCode()}]"
+                        ),
+                        $this->response->getStatusCode(),
+                        null,
+                        $this->request->getRequestUri(),
+                        $requestBody,
+                        $responseBody,
+                        $deserializedResponseBody,
+                        $this->response
+                    );
+
+                case 401:
+                    throw new AuthorizationError(
+                        $this->getErrorMessage($this->response->getStatusCode(), $deserializedResponseBody, "Invalid credentials: {$this->response->getReasonPhrase()} [{$this->response->getStatusCode()}]"),
+                        $this->response->getStatusCode(),
+                        null,
+                        $this->request->getRequestUri(),
+                        $requestBody
+                    );
+
+                case 402:
+                case 403:
+                case 404:
+                case 405:
+                    throw new AccessDenied(
+                        $this->getErrorMessage(
+                            $this->response->getStatusCode(),
+                            $deserializedResponseBody,
+                            "Access denied: {$this->response->getReasonPhrase()} [{$this->response->getStatusCode()}]"
+                        ),
+                        $this->response->getStatusCode(),
+                        null,
+                        $this->request->getRequestUri(),
+                        $requestBody
+                    );
+
+                default:
+                    throw new RequestValidationError(
+                        "Invalid request data: {$this->response->getReasonPhrase()} [{$this->response->getStatusCode()}]",
+                        $this->response->getStatusCode(),
+                        null,
+                        $this->request->getRequestUri(),
+                        $requestBody,
+                        $responseBody,
+                        $deserializedResponseBody,
+                        $this->response
+                    );
+            }
+        }
+
+        if (($errorMessage = $this->getErrorMessage($this->response->getStatusCode(), $deserializedResponseBody)) !== null) {
+            throw new RequestValidationError(
+                $errorMessage,
+                $this->response->getStatusCode(),
+                null,
+                $this->request->getRequestUri(),
+                $requestBody,
+                $responseBody,
+                $deserializedResponseBody,
+                $this->response
+            );
+        }
+
+        try {
+            $this->processResponseBody($deserializedResponseBody);
+        } catch (ResponseValidationError $e) {
+            $e->setUrl($this->request->getRequestUri());
+            $e->setRequestBody($requestBody);
+            $e->setResponseBody($responseBody);
+
+            throw $e;
+        }
+
+        return $this;
     }
 
     /**

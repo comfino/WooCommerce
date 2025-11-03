@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Comfino\Extended\Api\Request;
 
 use Comfino\Api\Exception\RequestValidationError;
