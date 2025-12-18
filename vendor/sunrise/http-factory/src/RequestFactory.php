@@ -11,13 +11,8 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Http\Factory;
 
-/**
- * Import classes
- */
 use ComfinoExternal\Sunrise\Http\Message\RequestFactory as BaseRequestFactory;
-/**
- * RequestFactory
- */
+
 class RequestFactory extends BaseRequestFactory
 {
 }

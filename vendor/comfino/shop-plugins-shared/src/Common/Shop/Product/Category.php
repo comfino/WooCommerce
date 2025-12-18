@@ -7,26 +7,25 @@ namespace Comfino\Common\Shop\Product;
 final class Category
 {
     /**
-     * @readonly
      * @var int
      */
     public $id;
     /**
-     * @readonly
      * @var string
      */
     public $name;
     /**
-     * @readonly
      * @var int
      */
     public $position;
     /**
      * @var Category[]
-     * @readonly
      */
     public $children;
     /**
+     * @param int $id
+     * @param string $name
+     * @param int $position
      * @param Category[] $children
      */
     public function __construct(int $id, string $name, int $position, array $children)

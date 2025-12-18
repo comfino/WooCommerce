@@ -6,20 +6,14 @@ namespace Comfino\Api\Dto\Payment;
 
 class LoanQueryCriteria
 {
-    /** @var int
-     * @readonly */
     public $loanAmount;
-    /** @var int|null
-     * @readonly */
+
     public $loanTerm;
-    /** @var LoanTypeEnum|null
-     * @readonly */
+
     public $loanType;
-    /** @var LoanTypeEnum[]|null
-     * @readonly */
+
     public $productTypes;
-    /** @var string|null
-     * @readonly */
+
     public $taxId;
 
     /**

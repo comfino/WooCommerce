@@ -322,9 +322,8 @@ namespace {
     }
 
     if (!function_exists('wp_enqueue_script')) {
-        function wp_enqueue_script($handle, $src = '', $deps = [], $ver = false, $in_footer = false): bool
+        function wp_enqueue_script($handle, $src = '', $deps = [], $ver = false, $in_footer = false): void
         {
-            return true;
         }
     }
 

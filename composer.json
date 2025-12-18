@@ -16,7 +16,7 @@
         "preferred-install": "dist",
         "platform-check": false,
         "platform": {
-            "php": "7.1"
+            "php": "7.1.3"
         },
         "classmap-authoritative": true,
         "optimize-autoloader": true,
@@ -28,29 +28,34 @@
     "autoload": {
         "psr-4": {
             "Comfino\\": "src/",
-            "ComfinoExternal\\Sunrise\\Http\\Client\\Curl\\": "vendor/sunrise/http-client-curl/src/",
-            "ComfinoExternal\\Sunrise\\Http\\ServerRequest\\": "vendor/sunrise/http-server-request/src/",
-            "ComfinoExternal\\Sunrise\\Http\\Header\\": "vendor/sunrise/http-header/src/",
-            "ComfinoExternal\\Sunrise\\Http\\Factory\\": "vendor/sunrise/http-factory/src/",
-            "ComfinoExternal\\Sunrise\\Stream\\": "vendor/sunrise/stream/src/",
-            "ComfinoExternal\\Sunrise\\Uri\\": "vendor/sunrise/uri/src/",
-            "ComfinoExternal\\Sunrise\\Http\\Message\\": "vendor/sunrise/http-message/src/",
+            "ComfinoExternal\\Cache\\Adapter\\Common\\": "vendor/cache/adapter-common/",
+            "ComfinoExternal\\Cache\\Adapter\\Filesystem\\": "vendor/cache/filesystem-adapter/",
+            "ComfinoExternal\\Cache\\Adapter\\PHPArray\\": "vendor/cache/array-adapter/",
+            "ComfinoExternal\\Cache\\Hierarchy\\": "vendor/cache/hierarchical-cache/",
+            "ComfinoExternal\\Cache\\TagInterop\\": "vendor/cache/tag-interop/",
+            "ComfinoExternal\\Fig\\Http\\Message\\": "vendor/fig/http-message-util/src/",
+            "ComfinoExternal\\League\\Flysystem\\": "vendor/league/flysystem/src/",
+            "ComfinoExternal\\Monolog\\": "vendor/monolog/monolog/src/Monolog/",
             "ComfinoExternal\\Psr\\Cache\\": "vendor/psr/cache/src/",
+            "ComfinoExternal\\Psr\\Http\\Client\\": "vendor/psr/http-client/src/",
             "ComfinoExternal\\Psr\\Http\\Message\\": [
                 "vendor/psr/http-factory/src/",
                 "vendor/psr/http-message/src/"
             ],
-            "ComfinoExternal\\Psr\\Http\\Client\\": "vendor/psr/http-client/src/",
-            "ComfinoExternal\\Psr\\SimpleCache\\": "vendor/psr/simple-cache/src/",
             "ComfinoExternal\\Psr\\Log\\": "vendor/psr/log/Psr/Log/",
-            "ComfinoExternal\\Cache\\TagInterop\\": "vendor/cache/tag-interop/",
-            "ComfinoExternal\\Cache\\Hierarchy\\": "vendor/cache/hierarchical-cache/",
-            "ComfinoExternal\\Cache\\Adapter\\PHPArray\\": "vendor/cache/array-adapter/",
-            "ComfinoExternal\\Cache\\Adapter\\Common\\": "vendor/cache/adapter-common/",
-            "ComfinoExternal\\Cache\\Adapter\\Filesystem\\": "vendor/cache/filesystem-adapter/",
-            "ComfinoExternal\\Fig\\Http\\Message\\": "vendor/fig/http-message-util/src/",
-            "ComfinoExternal\\League\\Flysystem\\": "vendor/league/flysystem/src/",
-            "ComfinoExternal\\League\\MimeTypeDetection\\": "vendor/league/mime-type-detection/src/"
+            "ComfinoExternal\\Psr\\SimpleCache\\": "vendor/psr/simple-cache/src/",
+            "ComfinoExternal\\Sunrise\\Http\\Client\\Curl\\": "vendor/sunrise/http-client-curl/src/",
+            "ComfinoExternal\\Sunrise\\Http\\Factory\\": "vendor/sunrise/http-factory/src/",
+            "ComfinoExternal\\Sunrise\\Http\\Header\\": "vendor/sunrise/http-header/src/",
+            "ComfinoExternal\\Sunrise\\Http\\Message\\": "vendor/sunrise/http-message/src/",
+            "ComfinoExternal\\Sunrise\\Http\\ServerRequest\\": "vendor/sunrise/http-server-request/src/",
+            "ComfinoExternal\\Sunrise\\Stream\\": "vendor/sunrise/stream/src/",
+            "ComfinoExternal\\Sunrise\\Uri\\": "vendor/sunrise/uri/src/",
+            "ComfinoExternal\\Symfony\\Component\\OptionsResolver\\": "vendor/symfony/options-resolver/",
+            "ComfinoExternal\\Symfony\\Component\\Yaml\\": "vendor/symfony/yaml/",
+            "ComfinoExternal\\Symfony\\Polyfill\\Ctype\\": "vendor/symfony/polyfill-ctype/",
+            "ComfinoExternal\\Symfony\\Polyfill\\Php73\\": "vendor/symfony/polyfill-php73/",
+            "ComfinoExternal\\Symfony\\Polyfill\\Php80\\": "vendor/symfony/polyfill-php80/"
         },
         "classmap": []
     },
@@ -65,14 +70,28 @@
         "ext-curl": "*",
         "ext-json": "*",
         "ext-zlib": "*",
+        "comfino/shop-plugins-shared": "dev-master",
+        "cache/adapter-common": "~1.2.0",
+        "cache/hierarchical-cache": "~1.1.0",
+        "league/flysystem": "~1.0.70",
+        "monolog/monolog": "^1.27",
         "psr/log": "^1.1",
-        "comfino/shop-plugins-shared": "dev-master"
+        "symfony/deprecation-contracts": "<3.0",
+        "symfony/options-resolver": "~4.4.0",
+        "symfony/polyfill-ctype": "<1.31",
+        "symfony/polyfill-php73": "^1.0 <1.31",
+        "symfony/polyfill-php80": "^1.0 <1.31",
+        "symfony/yaml": "~4.4.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^5.7",
-        "phpspec/prophecy-phpunit": "^1.1",
+        "nyholm/psr7": "^1.6",
         "php-http/mock-client": "^1.6",
-        "nyholm/psr7": "^1.6"
+        "phpdocumentor/reflection-common": "~2.1.0",
+        "phpdocumentor/reflection-docblock": "~4.3.4",
+        "phpdocumentor/type-resolver": "~1.0.1",
+        "phpspec/prophecy-phpunit": "^1.1",
+        "phpunit/phpunit": "^5.7",
+        "webmozart/assert": "<1.10"
     },
     "repositories": [
         {

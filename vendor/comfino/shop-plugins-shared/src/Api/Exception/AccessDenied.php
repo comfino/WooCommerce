@@ -8,9 +8,8 @@ use Comfino\Api\HttpErrorExceptionInterface;
 
 class AccessDenied extends \RuntimeException implements HttpErrorExceptionInterface
 {
-    /** @var string */
     private $url;
-    /** @var string */
+
     private $requestBody;
 
     public function __construct(string $message = '', int $code = 0, ?\Throwable $previous = null, string $url = '', string $requestBody = '')

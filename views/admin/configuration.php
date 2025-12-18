@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-function prepare_tab_url(string $subsection): string
+function comfino_prepare_tab_url(string $subsection): string
 {
     $urlParts = wp_parse_url(Main::getCurrentUrl());
     $queryArgs = [];
@@ -42,6 +42,9 @@ function prepare_tab_url(string $subsection): string
 /** @var string $new_widget_status */
 /** @var bool $is_dev_env */
 /** @var string $build_ts */
+/** @var string|null $github_version */
+/** @var int|null $github_version_checked_at */
+/** @var bool $auto_updates_enabled */
 /** @var string $comfino_logo_img */
 /** @var array $comfino_logo_allowed_html */
 /** @var string $cache_root_path */
@@ -58,12 +61,12 @@ function prepare_tab_url(string $subsection): string
     <?php echo esc_html($contact_msg2); ?>
 </p>
 <nav class="nav-tab-wrapper woo-nav-tab-wrapper">
-    <a href="<?php echo esc_attr(prepare_tab_url('payment_settings')); ?>" class="nav-tab<?php echo $active_tab === 'payment_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Payment settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo esc_attr(prepare_tab_url('sale_settings')); ?>" class="nav-tab<?php echo $active_tab === 'sale_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Sale settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo esc_attr(prepare_tab_url('widget_settings')); ?>" class="nav-tab<?php echo $active_tab === 'widget_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Widget settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo esc_attr(prepare_tab_url('abandoned_cart_settings')); ?>" class="nav-tab<?php echo $active_tab === 'abandoned_cart_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Abandoned cart settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo esc_attr(prepare_tab_url('developer_settings')); ?>" class="nav-tab<?php echo $active_tab === 'developer_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Developer settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo esc_attr(prepare_tab_url('plugin_diagnostics')); ?>" class="nav-tab<?php echo $active_tab === 'plugin_diagnostics' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Plugin diagnostics', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo esc_attr(comfino_prepare_tab_url('payment_settings')); ?>" class="nav-tab<?php echo $active_tab === 'payment_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Payment settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo esc_attr(comfino_prepare_tab_url('sale_settings')); ?>" class="nav-tab<?php echo $active_tab === 'sale_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Sale settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo esc_attr(comfino_prepare_tab_url('widget_settings')); ?>" class="nav-tab<?php echo $active_tab === 'widget_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Widget settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo esc_attr(comfino_prepare_tab_url('abandoned_cart_settings')); ?>" class="nav-tab<?php echo $active_tab === 'abandoned_cart_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Abandoned cart settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo esc_attr(comfino_prepare_tab_url('developer_settings')); ?>" class="nav-tab<?php echo $active_tab === 'developer_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Developer settings', 'comfino-payment-gateway'); ?></a>
+    <a href="<?php echo esc_attr(comfino_prepare_tab_url('plugin_diagnostics')); ?>" class="nav-tab<?php echo $active_tab === 'plugin_diagnostics' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Plugin diagnostics', 'comfino-payment-gateway'); ?></a>
 </nav>
 <table class="form-table">
     <?php
@@ -84,10 +87,33 @@ function prepare_tab_url(string $subsection): string
                 <td>
                     <hr>
                     <p><b>Comfino API host:</b> <?php echo esc_html($api_host); ?></p>
-                    <p><b>Plugin build time:</b> <?php echo esc_html($build_ts); ?></p>
+                    <p><b>Plugin build time:</b> <?php echo esc_html($build_ts); ?> UTC</p>
                     <p><b>Shop domain:</b> <?php echo esc_html($shop_domain); ?></p>
                     <p><b>Widget key:</b> <?php echo esc_html($widget_key); ?></p>
                     <p><b>New widget API:</b> <?php echo esc_html($new_widget_status); ?></p>
+                    <p>
+                        <b><?php echo esc_html__('Latest available version:', 'comfino-payment-gateway'); ?></b>
+                        <?php if ($auto_updates_enabled): ?>
+                            <span style="color: #888;"><?php echo esc_html__('Managed by WordPress auto-updates', 'comfino-payment-gateway'); ?></span>
+                        <?php elseif ($github_version !== null): ?>
+                            <b style="<?php echo version_compare($github_version, $plugin_version, '>') ? 'color: orange;' : 'color: green;'; ?>"><?php echo esc_html($github_version); ?></b>
+                            <?php if (version_compare($github_version, $plugin_version, '>')): ?>
+                                (<a href="https://github.com/comfino/WooCommerce/releases" target="_blank"><?php echo esc_html__('Download from GitHub', 'comfino-payment-gateway'); ?></a>)
+                            <?php else: ?>
+                                (<?php echo esc_html__('up to date', 'comfino-payment-gateway'); ?>)
+                            <?php endif; ?>
+                            <?php if ($github_version_checked_at): ?>
+                                <small style="color: #666;">
+                                <?php
+                                    /* translators: %s: Date and time (UTC) of last GitHub version check in Y-m-d H:i:s format */
+                                    echo esc_html(sprintf(__('Last checked: %s UTC', 'comfino-payment-gateway'), gmdate('Y-m-d H:i:s', $github_version_checked_at)));
+                                ?>
+                                </small>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <span style="color: #888;"><?php echo esc_html__('Checking...', 'comfino-payment-gateway'); ?></span>
+                        <?php endif; ?>
+                    </p>
                     <p>
                         <b>Cache root directory writable:</b> <?php if (FileUtils::isWritable($cache_root_path)): ?><b style="color: green">YES</b><?php else: ?><b style="color: red">NO</b><?php endif; ?>
                         <?php if (getenv('COMFINO_DEV_ENV') === 'TRUE'): ?>(<i><?php echo esc_html($cache_root_path); ?></i>)<?php endif; ?>
@@ -105,9 +131,9 @@ function prepare_tab_url(string $subsection): string
                             sprintf(
                                 '<hr><h4>Development environment variables:</h4><ul>%s</ul>',
                                 implode('', array_map(
-                                    static function (string $envVariable): string {
-                                        $varName = "COMFINO_$envVariable";
-                                        return "<li><b>$varName</b> = \"" . getenv($varName) . '"</li>';
+                                    static function (string $env_variable): string {
+                                        $var_name = "COMFINO_$env_variable";
+                                        return "<li><b>$var_name</b> = \"" . getenv($var_name) . '"</li>';
                                     },
                                     [
                                         'DEV_ENV', 'DEV_API_HOST', 'DEV_STATIC_RESOURCES_BASE_URL',
@@ -118,27 +144,27 @@ function prepare_tab_url(string $subsection): string
                             ['hr' => [], 'h4' => [], 'ul' => [], 'li' => [], 'b' => []]
                         );
 
-                        $internalOptions = '';
+                        $comfino_internal_options = '';
 
-                        foreach (ConfigManager::getConfigurationValues('hidden_settings') as $optionName => $optionValue) {
-                            if (is_array($optionValue) || is_bool($optionValue)) {
-                                $optionValue = wp_json_encode($optionValue);
+                        foreach (ConfigManager::getConfigurationValues('hidden_settings') as $comfino_option_name => $comfino_option_value) {
+                            if (is_array($comfino_option_value) || is_bool($comfino_option_value)) {
+                                $comfino_option_value = wp_json_encode($comfino_option_value);
                             }
 
-                            $internalOptions .= "<li><b>$optionName</b> = \"$optionValue\"</li>";
+                            $comfino_internal_options .= "<li><b>$comfino_option_name</b> = \"$comfino_option_value\"</li>";
                         }
 
                         echo wp_kses(
-                            "<hr><h4>Internal configuration options:</h4><ul>$internalOptions</ul>",
+                            "<hr><h4>Internal configuration options:</h4><ul>$comfino_internal_options</ul>",
                             ['hr' => [], 'h4' => [], 'ul' => [], 'li' => [], 'b' => []]
                         );
 
-                        $internalFlags = '<li><b>comfino_plugin_updated</b>: ' . get_transient('comfino_plugin_updated') . '</li>';
-                        $internalFlags .= '<li><b>comfino_plugin_prev_version</b>: ' . get_transient('comfino_plugin_prev_version') . '</li>';
-                        $internalFlags .= '<li><b>comfino_plugin_updated_at</b>: ' . gmdate('Y-m-d H:i:s', get_transient('comfino_plugin_updated_at')) . '</li>';
+                        $comfino_internal_flags = '<li><b>comfino_plugin_updated</b>: ' . get_transient('comfino_plugin_updated') . '</li>';
+                        $comfino_internal_flags .= '<li><b>comfino_plugin_prev_version</b>: ' . get_transient('comfino_plugin_prev_version') . '</li>';
+                        $comfino_internal_flags .= '<li><b>comfino_plugin_updated_at</b>: ' . gmdate('Y-m-d H:i:s', get_transient('comfino_plugin_updated_at')) . ' UTC</li>';
 
                         echo wp_kses(
-                            "<hr><h4>Internal flags:</h4><ul>$internalFlags</ul>",
+                            "<hr><h4>Internal flags:</h4><ul>$comfino_internal_flags</ul>",
                             ['hr' => [], 'h4' => [], 'ul' => [], 'li' => [], 'b' => []]
                         );
                     }

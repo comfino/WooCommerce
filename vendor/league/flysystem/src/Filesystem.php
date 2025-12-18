@@ -7,14 +7,13 @@ use ComfinoExternal\League\Flysystem\Adapter\CanOverwriteFiles;
 use ComfinoExternal\League\Flysystem\Plugin\PluggableTrait;
 use ComfinoExternal\League\Flysystem\Util\ContentListingFormatter;
 /**
- * @method void        emptyDir(string $dirname)
- * @method array|false getWithMetadata(string $path, string[] $metadata)
- * @method bool        forceCopy(string $path, string $newpath)
- * @method bool        forceRename(string $path, string $newpath)
- * @method array       listFiles(string $path = '', boolean $recursive = false)
- * @method string[]    listPaths(string $path = '', boolean $recursive = false)
- * @method array       listWith(string[] $keys = [], $directory = '', $recursive = false)
- */
+     * @method array getWithMetadata(string $path, array $metadata)
+     * @method bool forceCopy(string $path, string $newpath)
+     * @method bool forceRename(string $path, string $newpath)
+     * @method array listFiles(string $path = '', boolean $recursive = false)
+     * @method array listPaths(string $path = '', boolean $recursive = false)
+     * @method array listWith(array $keys = [], $directory = '', $recursive = false)
+     */
 class Filesystem implements FilesystemInterface
 {
     use PluggableTrait;
@@ -24,10 +23,8 @@ class Filesystem implements FilesystemInterface
      */
     protected $adapter;
     /**
-     * Constructor.
-     *
      * @param AdapterInterface $adapter
-     * @param Config|array     $config
+     * @param Config|array $config
      */
     public function __construct(AdapterInterface $adapter, $config = null)
     {
@@ -35,25 +32,19 @@ class Filesystem implements FilesystemInterface
         $this->setConfig($config);
     }
     /**
-     * Get the Adapter.
-     *
-     * @return AdapterInterface adapter
+     * @return AdapterInterface
      */
     public function getAdapter()
     {
         return $this->adapter;
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function has($path)
     {
         $path = Util::normalizePath($path);
         return strlen($path) === 0 ? \false : (bool) $this->getAdapter()->has($path);
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function write($path, $contents, array $config = [])
     {
         $path = Util::normalizePath($path);
@@ -61,12 +52,10 @@ class Filesystem implements FilesystemInterface
         $config = $this->prepareConfig($config);
         return (bool) $this->getAdapter()->write($path, $contents, $config);
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function writeStream($path, $resource, array $config = [])
     {
-        if (!is_resource($resource) || get_resource_type($resource) !== 'stream') {
+        if (!is_resource($resource)) {
             throw new InvalidArgumentException(__METHOD__ . ' expects argument #2 to be a valid resource.');
         }
         $path = Util::normalizePath($path);
@@ -75,9 +64,7 @@ class Filesystem implements FilesystemInterface
         Util::rewindStream($resource);
         return (bool) $this->getAdapter()->writeStream($path, $resource, $config);
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function put($path, $contents, array $config = [])
     {
         $path = Util::normalizePath($path);
@@ -87,12 +74,10 @@ class Filesystem implements FilesystemInterface
         }
         return (bool) $this->getAdapter()->write($path, $contents, $config);
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function putStream($path, $resource, array $config = [])
     {
-        if (!is_resource($resource) || get_resource_type($resource) !== 'stream') {
+        if (!is_resource($resource)) {
             throw new InvalidArgumentException(__METHOD__ . ' expects argument #2 to be a valid resource.');
         }
         $path = Util::normalizePath($path);
@@ -103,9 +88,7 @@ class Filesystem implements FilesystemInterface
         }
         return (bool) $this->getAdapter()->writeStream($path, $resource, $config);
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function readAndDelete($path)
     {
         $path = Util::normalizePath($path);
@@ -117,9 +100,7 @@ class Filesystem implements FilesystemInterface
         $this->delete($path);
         return $contents;
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function update($path, $contents, array $config = [])
     {
         $path = Util::normalizePath($path);
@@ -127,12 +108,10 @@ class Filesystem implements FilesystemInterface
         $this->assertPresent($path);
         return (bool) $this->getAdapter()->update($path, $contents, $config);
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function updateStream($path, $resource, array $config = [])
     {
-        if (!is_resource($resource) || get_resource_type($resource) !== 'stream') {
+        if (!is_resource($resource)) {
             throw new InvalidArgumentException(__METHOD__ . ' expects argument #2 to be a valid resource.');
         }
         $path = Util::normalizePath($path);
@@ -141,9 +120,7 @@ class Filesystem implements FilesystemInterface
         Util::rewindStream($resource);
         return (bool) $this->getAdapter()->updateStream($path, $resource, $config);
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function read($path)
     {
         $path = Util::normalizePath($path);
@@ -153,9 +130,7 @@ class Filesystem implements FilesystemInterface
         }
         return $object['contents'];
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function readStream($path)
     {
         $path = Util::normalizePath($path);
@@ -165,9 +140,7 @@ class Filesystem implements FilesystemInterface
         }
         return $object['stream'];
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function rename($path, $newpath)
     {
         $path = Util::normalizePath($path);
@@ -176,9 +149,7 @@ class Filesystem implements FilesystemInterface
         $this->assertAbsent($newpath);
         return (bool) $this->getAdapter()->rename($path, $newpath);
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function copy($path, $newpath)
     {
         $path = Util::normalizePath($path);
@@ -187,18 +158,14 @@ class Filesystem implements FilesystemInterface
         $this->assertAbsent($newpath);
         return $this->getAdapter()->copy($path, $newpath);
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function delete($path)
     {
         $path = Util::normalizePath($path);
         $this->assertPresent($path);
         return $this->getAdapter()->delete($path);
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function deleteDir($dirname)
     {
         $dirname = Util::normalizePath($dirname);
@@ -207,27 +174,21 @@ class Filesystem implements FilesystemInterface
         }
         return (bool) $this->getAdapter()->deleteDir($dirname);
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function createDir($dirname, array $config = [])
     {
         $dirname = Util::normalizePath($dirname);
         $config = $this->prepareConfig($config);
         return (bool) $this->getAdapter()->createDir($dirname, $config);
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function listContents($directory = '', $recursive = \false)
     {
         $directory = Util::normalizePath($directory);
         $contents = $this->getAdapter()->listContents($directory, $recursive);
         return (new ContentListingFormatter($directory, $recursive, $this->config->get('case_sensitive', \true)))->formatListing($contents);
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function getMimetype($path)
     {
         $path = Util::normalizePath($path);
@@ -237,9 +198,7 @@ class Filesystem implements FilesystemInterface
         }
         return $object['mimetype'];
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function getTimestamp($path)
     {
         $path = Util::normalizePath($path);
@@ -249,9 +208,7 @@ class Filesystem implements FilesystemInterface
         }
         return (int) $object['timestamp'];
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function getVisibility($path)
     {
         $path = Util::normalizePath($path);
@@ -261,9 +218,7 @@ class Filesystem implements FilesystemInterface
         }
         return $object['visibility'];
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function getSize($path)
     {
         $path = Util::normalizePath($path);
@@ -273,27 +228,21 @@ class Filesystem implements FilesystemInterface
         }
         return (int) $object['size'];
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function setVisibility($path, $visibility)
     {
         $path = Util::normalizePath($path);
         $this->assertPresent($path);
         return (bool) $this->getAdapter()->setVisibility($path, $visibility);
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function getMetadata($path)
     {
         $path = Util::normalizePath($path);
         $this->assertPresent($path);
         return $this->getAdapter()->getMetadata($path);
     }
-    /**
-     * @inheritdoc
-     */
+    
     public function get($path, Handler $handler = null)
     {
         $path = Util::normalizePath($path);
@@ -306,12 +255,8 @@ class Filesystem implements FilesystemInterface
         return $handler;
     }
     /**
-     * Assert a file is present.
-     *
-     * @param string $path path to file
-     *
+     * @param string $path
      * @throws FileNotFoundException
-     *
      * @return void
      */
     public function assertPresent($path)
@@ -321,12 +266,8 @@ class Filesystem implements FilesystemInterface
         }
     }
     /**
-     * Assert a file is absent.
-     *
-     * @param string $path path to file
-     *
+     * @param string $path
      * @throws FileExistsException
-     *
      * @return void
      */
     public function assertAbsent($path)

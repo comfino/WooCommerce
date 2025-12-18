@@ -14,9 +14,6 @@ class GetWidgetKey extends Request
         $this->setApiEndpointPath('widget-key');
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function prepareRequestBody(): ?array
     {
         return null;

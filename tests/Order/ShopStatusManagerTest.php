@@ -86,7 +86,7 @@ class ShopStatusManagerTest extends \PHPUnit_Framework_TestCase
             $this->assertTrue(true);
         } catch (\Throwable $e) {
             // Expected in test environment due to missing dependencies.
-            $this->assertInstanceOf(\Throwable::class, $e);
+            $this->assertTrue(true);
         }
     }
 
@@ -199,7 +199,7 @@ class ShopStatusManagerTest extends \PHPUnit_Framework_TestCase
             $this->assertTrue(true);
         } catch (\Throwable $e) {
             // Expected in test environment due to WordPress dependencies.
-            $this->assertInstanceOf(\Throwable::class, $e);
+            $this->assertTrue(true);
         }
     }
 }

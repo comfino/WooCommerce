@@ -3,9 +3,7 @@
 namespace ComfinoExternal\League\Flysystem\Util;
 
 use ComfinoExternal\League\Flysystem\Util;
-/**
- * @internal
- */
+
 class ContentListingFormatter
 {
     /**
@@ -22,7 +20,7 @@ class ContentListingFormatter
     private $caseSensitive;
     /**
      * @param string $directory
-     * @param bool   $recursive
+     * @param bool $recursive
      */
     public function __construct($directory, $recursive, $caseSensitive = \true)
     {
@@ -31,10 +29,7 @@ class ContentListingFormatter
         $this->caseSensitive = $caseSensitive;
     }
     /**
-     * Format contents listing.
-     *
      * @param array $listing
-     *
      * @return array
      */
     public function formatListing(array $listing)
@@ -47,10 +42,7 @@ class ContentListingFormatter
         return $entry + Util::pathinfo($entry['path']);
     }
     /**
-     * Determine if the entry is out of scope.
-     *
      * @param array $entry
-     *
      * @return bool
      */
     private function isEntryOutOfScope(array $entry)
@@ -64,10 +56,7 @@ class ContentListingFormatter
         return $this->isDirectChild($entry);
     }
     /**
-     * Check if the entry resides within the parent directory.
-     *
      * @param array $entry
-     *
      * @return bool
      */
     private function residesInDirectory(array $entry)
@@ -78,10 +67,7 @@ class ContentListingFormatter
         return $this->caseSensitive ? strpos($entry['path'], $this->directory . '/') === 0 : stripos($entry['path'], $this->directory . '/') === 0;
     }
     /**
-     * Check if the entry is a direct child of the directory.
-     *
      * @param array $entry
-     *
      * @return bool
      */
     private function isDirectChild(array $entry)
@@ -90,7 +76,6 @@ class ContentListingFormatter
     }
     /**
      * @param array $listing
-     *
      * @return array
      */
     private function sortListing(array $listing)

@@ -11,36 +11,25 @@ use Comfino\Api\Dto\Payment\LoanTypeEnum;
 
 class GetOrder extends Base
 {
-    /** @var string
-     * @readonly */
     public $orderId;
-    /** @var string
-     * @readonly */
+
     public $status;
-    /** @var \DateTime|null
-     * @readonly */
+
     public $createdAt;
-    /** @var string
-     * @readonly */
+
     public $applicationUrl;
-    /** @var string
-     * @readonly */
+
     public $notifyUrl;
-    /** @var string
-     * @readonly */
+
     public $returnUrl;
-    /** @var LoanParameters
-     * @readonly */
+
     public $loanParameters;
-    /** @var Cart
-     * @readonly */
+
     public $cart;
-    /** @var Customer
-     * @readonly */
+
     public $customer;
 
     /**
-     * @inheritDoc
      * @param mixed[]|string|bool|null|float|int $deserializedResponseBody
      */
     protected function processResponseBody($deserializedResponseBody): void
@@ -56,7 +45,7 @@ class GetOrder extends Base
 
         try {
             $createdAt = new \DateTime($deserializedResponseBody['createdAt']);
-        } catch (\Exception $exception)  {
+        } catch (\Exception $exception) {
             $createdAt = null;
         }
 
@@ -78,7 +67,7 @@ class GetOrder extends Base
             $deserializedResponseBody['loanParameters']['term'],
             LoanTypeEnum::from($deserializedResponseBody['loanParameters']['type']),
             $deserializedResponseBody['loanParameters']['allowedProductTypes'] !== null ? array_map(
-                static function (string $productType) : LoanTypeEnum {
+                static function (string $productType): LoanTypeEnum {
                     return LoanTypeEnum::from($productType);
                 },
                 $deserializedResponseBody['loanParameters']['allowedProductTypes']

@@ -11,20 +11,14 @@
 namespace ComfinoExternal\Cache\Adapter\Common;
 
 use ComfinoExternal\Cache\TagInterop\TaggableCacheItemPoolInterface;
-/**
- * @author Tobias Nyholm <tobias.nyholm@gmail.com>
- */
+
 interface PhpCachePool extends TaggableCacheItemPoolInterface
 {
     /**
-     * {@inheritdoc}
-     *
      * @return PhpCacheItem
      */
     public function getItem($key);
     /**
-     * {@inheritdoc}
-     *
      * @return array|\Traversable|PhpCacheItem[]
      */
     public function getItems(array $keys = []);

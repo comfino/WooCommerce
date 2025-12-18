@@ -12,8 +12,6 @@ class UriTest extends TestCase
 {
     public const TEST_URI = 'scheme://user:pass@host:3000/path?query#fragment';
 
-    // Constructor...
-
     public function testConstructor()
     {
         $uri = new Uri(self::TEST_URI);
@@ -42,8 +40,6 @@ class UriTest extends TestCase
 
         new Uri(':');
     }
-
-    // Getters...
 
     public function testGetScheme()
     {
@@ -105,8 +101,6 @@ class UriTest extends TestCase
         $uri = new Uri('ftp://host:3000');
         $this->assertSame(21, $uri->getStandardPort());
     }
-
-    // Withers...
 
     public function testWithScheme()
     {
@@ -204,8 +198,6 @@ class UriTest extends TestCase
         $this->assertSame('new-fragment', $copy->getFragment());
     }
 
-    // Withers with empty data...
-
     public function testWithEmptyScheme()
     {
         $uri = (new Uri(self::TEST_URI))->withScheme('');
@@ -255,8 +247,6 @@ class UriTest extends TestCase
         $this->assertSame('', $uri->getFragment());
     }
 
-    // Withers with invalid data...
-
     public function testWithInvalidScheme()
     {
         $this->expectException(InvalidUriComponentException::class);
@@ -276,7 +266,6 @@ class UriTest extends TestCase
     {
         $uri = (new Uri(self::TEST_URI))->withHost('host:80');
 
-        // %3A or %3a
         $expected = \strtolower('host%3A80');
 
         $this->assertSame($expected, $uri->getHost(), '', 0.0, 10, false, true);
@@ -327,11 +316,6 @@ class UriTest extends TestCase
         $this->assertSame('fragment%23fragment', $uri->getFragment(), '', 0.0, 10, false, true);
     }
 
-    // Withers with invalid data types...
-
-    /**
-     * @dataProvider invalidDataTypeProviderForScheme
-     */
     public function testWithInvalidDataTypeForScheme($value)
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -356,9 +340,6 @@ class UriTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider invalidDataTypeProviderForUser
-     */
     public function testWithInvalidDataTypeForUser($value)
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -383,9 +364,6 @@ class UriTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider invalidDataTypeProviderForPass
-     */
     public function testWithInvalidDataTypeForPass($value)
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -409,9 +387,6 @@ class UriTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider invalidDataTypeProviderForHost
-     */
     public function testWithInvalidDataTypeForHost($value)
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -436,9 +411,6 @@ class UriTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider invalidDataTypeProviderForPort
-     */
     public function testWithInvalidDataTypeForPort($value)
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -462,9 +434,6 @@ class UriTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider invalidDataTypeProviderForPath
-     */
     public function testWithInvalidDataTypeForPath($value)
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -489,9 +458,6 @@ class UriTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider invalidDataTypeProviderForQuery
-     */
     public function testWithInvalidDataTypeForQuery($value)
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -516,9 +482,6 @@ class UriTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider invalidDataTypeProviderForFragment
-     */
     public function testWithInvalidDataTypeForFragment($value)
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -542,8 +505,6 @@ class UriTest extends TestCase
             }],
         ];
     }
-
-    // Builders...
 
     public function testGetAuthority()
     {
@@ -582,8 +543,6 @@ class UriTest extends TestCase
         $this->assertSame('scheme:/pathname', $uri->__toString());
     }
 
-    // Normalizes...
-
     public function testNormalizeScheme()
     {
         $uri = new Uri(self::TEST_URI);
@@ -602,15 +561,11 @@ class UriTest extends TestCase
         $this->assertSame('uppercased-host', $uri->getHost());
     }
 
-    // Exceptions...
-
     public function testExceptions()
     {
         $this->assertInstanceOf(\InvalidArgumentException::class, new InvalidUriComponentException(''));
         $this->assertInstanceOf(\InvalidArgumentException::class, new InvalidUriException(''));
     }
-
-    // Ignoring the standard ports
 
     public function testIgnoringStandardPorts()
     {
@@ -634,8 +589,6 @@ class UriTest extends TestCase
         $this->assertSame('example.com:80', $uri->getAuthority());
         $this->assertSame('https://example.com:80/', (string) $uri);
     }
-
-    // Another schemes...
 
     public function testMailtoScheme()
     {

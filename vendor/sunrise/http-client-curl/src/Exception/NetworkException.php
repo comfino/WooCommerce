@@ -11,15 +11,10 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Http\Client\Curl\Exception;
 
-/**
- * Import classes
- */
 use ComfinoExternal\Psr\Http\Client\NetworkExceptionInterface;
 use ComfinoExternal\Psr\Http\Message\RequestInterface;
 use Throwable;
-/**
- * NetworkException
- */
+
 class NetworkException extends ClientException implements NetworkExceptionInterface
 {
     /**
@@ -27,8 +22,6 @@ class NetworkException extends ClientException implements NetworkExceptionInterf
      */
     protected $request;
     /**
-     * Constructor of the class
-     *
      * @param RequestInterface $request
      * @param string $message
      * @param int $code
@@ -39,9 +32,7 @@ class NetworkException extends ClientException implements NetworkExceptionInterf
         $this->request = $request;
         parent::__construct($message, $code, $previous);
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getRequest(): RequestInterface
     {
         return $this->request;

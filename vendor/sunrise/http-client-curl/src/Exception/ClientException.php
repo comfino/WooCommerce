@@ -11,14 +11,9 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Http\Client\Curl\Exception;
 
-/**
- * Import classes
- */
 use ComfinoExternal\Psr\Http\Client\ClientExceptionInterface;
 use RuntimeException;
-/**
- * ClientException
- */
+
 class ClientException extends RuntimeException implements ClientExceptionInterface
 {
 }

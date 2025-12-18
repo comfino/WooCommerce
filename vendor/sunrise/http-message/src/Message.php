@@ -11,53 +11,34 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Http\Message;
 
-/**
- * Import classes
- */
 use InvalidArgumentException;
 use ComfinoExternal\Psr\Http\Message\MessageInterface;
 use ComfinoExternal\Psr\Http\Message\StreamInterface;
 use ComfinoExternal\Sunrise\Http\Header\HeaderInterface;
 use ComfinoExternal\Sunrise\Stream\StreamFactory;
-/**
- * Import functions
- */
+
 use function implode;
 use function is_string;
 use function preg_match;
 use function sprintf;
 use function strtolower;
 use function ucwords;
-/**
- * Hypertext Transfer Protocol Message
- *
- * @link https://tools.ietf.org/html/rfc7230
- * @link https://www.php-fig.org/psr/psr-7/
- */
+
 class Message implements MessageInterface
 {
     /**
-     * HTTP version
-     *
      * @var string
      */
     protected $protocolVersion = '1.1';
     /**
-     * The message headers
-     *
-     * @var array<string, string[]>
+     * @var array<string,
      */
     protected $headers = [];
     /**
-     * The message body
-     *
      * @var StreamInterface|null
      */
     protected $body = null;
     /**
-     * Constructor of the class
-     *
-     * @param array<string, string|string[]>|null $headers
      * @param StreamInterface|null $body
      * @param string|null $protocolVersion
      */
@@ -75,40 +56,30 @@ class Message implements MessageInterface
             $this->body = $body;
         }
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getProtocolVersion(): string
     {
         return $this->protocolVersion;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function withProtocolVersion($version): MessageInterface
     {
         $clone = clone $this;
         $clone->setProtocolVersion($version);
         return $clone;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getHeaders(): array
     {
         return $this->headers;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function hasHeader($name): bool
     {
         $name = $this->normalizeHeaderName($name);
         return !empty($this->headers[$name]);
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getHeader($name): array
     {
         $name = $this->normalizeHeaderName($name);
@@ -117,9 +88,7 @@ class Message implements MessageInterface
         }
         return $this->headers[$name];
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getHeaderLine($name): string
     {
         $name = $this->normalizeHeaderName($name);
@@ -128,27 +97,21 @@ class Message implements MessageInterface
         }
         return implode(', ', $this->headers[$name]);
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function withHeader($name, $value): MessageInterface
     {
         $clone = clone $this;
         $clone->addHeader($name, $value);
         return $clone;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function withAddedHeader($name, $value): MessageInterface
     {
         $clone = clone $this;
         $clone->addHeader($name, $value, \false);
         return $clone;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function withoutHeader($name): MessageInterface
     {
         $name = $this->normalizeHeaderName($name);
@@ -156,9 +119,7 @@ class Message implements MessageInterface
         unset($clone->headers[$name]);
         return $clone;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getBody(): StreamInterface
     {
         if (null === $this->body) {
@@ -166,9 +127,7 @@ class Message implements MessageInterface
         }
         return $this->body;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function withBody(StreamInterface $body): MessageInterface
     {
         $clone = clone $this;
@@ -176,10 +135,7 @@ class Message implements MessageInterface
         return $clone;
     }
     /**
-     * Sets the given HTTP version to the message
-     *
      * @param string $version
-     *
      * @return void
      */
     protected function setProtocolVersion($version): void
@@ -188,12 +144,9 @@ class Message implements MessageInterface
         $this->protocolVersion = $version;
     }
     /**
-     * Adds the given header field to the message
-     *
      * @param string $name
      * @param string|string[] $value
      * @param bool $replace
-     *
      * @return void
      */
     protected function addHeader($name, $value, bool $replace = \true): void
@@ -211,17 +164,9 @@ class Message implements MessageInterface
         }
     }
     /**
-     * Validates the given HTTP version
-     *
      * @param mixed $version
-     *
      * @return void
-     *
      * @throws InvalidArgumentException
-     *
-     * @link https://tools.ietf.org/html/rfc2145
-     * @link https://tools.ietf.org/html/rfc7230#section-2.6
-     * @link https://tools.ietf.org/html/rfc7540
      */
     protected function validateProtocolVersion($version): void
     {
@@ -234,15 +179,9 @@ class Message implements MessageInterface
         }
     }
     /**
-     * Validates the given header name
-     *
      * @param mixed $name
-     *
      * @return void
-     *
      * @throws InvalidArgumentException
-     *
-     * @link https://tools.ietf.org/html/rfc7230#section-3.2
      */
     protected function validateHeaderName($name): void
     {
@@ -254,16 +193,10 @@ class Message implements MessageInterface
         }
     }
     /**
-     * Validates the given header value
-     *
      * @param mixed $value
      * @param string $name
-     *
      * @return void
-     *
      * @throws InvalidArgumentException
-     *
-     * @link https://tools.ietf.org/html/rfc7230#section-3.2
      */
     protected function validateHeaderValue($value, string $name): void
     {
@@ -281,13 +214,8 @@ class Message implements MessageInterface
         }
     }
     /**
-     * Normalizes the given header name
-     *
      * @param string $name
-     *
      * @return string
-     *
-     * @link https://tools.ietf.org/html/rfc7230#section-3.2
      */
     protected function normalizeHeaderName($name): string
     {

@@ -1,8 +1,0 @@
-.idea
-
-# Managed by Composer
-/vendor/
-
-# PHPUnit
-/phpunit.xml
-/.phpunit.result.cache

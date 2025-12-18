@@ -1,0 +1,14 @@
+# Git attributes for archive generation
+
+# Exclude development files from distribution
+/.github export-ignore
+/tests export-ignore
+/docs export-ignore
+/bin export-ignore
+/config export-ignore
+.gitattributes export-ignore
+.gitignore export-ignore
+CLAUDE.md export-ignore
+investigation.txt export-ignore
+docker-compose.yml export-ignore
+phpunit.xml export-ignore

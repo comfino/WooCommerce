@@ -13,8 +13,6 @@ class Config
      */
     protected $fallback;
     /**
-     * Constructor.
-     *
      * @param array $settings
      */
     public function __construct(array $settings = [])
@@ -22,12 +20,9 @@ class Config
         $this->settings = $settings;
     }
     /**
-     * Get a setting.
-     *
      * @param string $key
-     * @param mixed  $default
-     *
-     * @return mixed config setting or default when not found
+     * @param mixed $default
+     * @return mixed
      */
     public function get($key, $default = null)
     {
@@ -37,10 +32,7 @@ class Config
         return $this->settings[$key];
     }
     /**
-     * Check if an item exists by key.
-     *
      * @param string $key
-     *
      * @return bool
      */
     public function has($key)
@@ -51,12 +43,9 @@ class Config
         return $this->fallback instanceof Config ? $this->fallback->has($key) : \false;
     }
     /**
-     * Try to retrieve a default setting from a config fallback.
-     *
      * @param string $key
-     * @param mixed  $default
-     *
-     * @return mixed config setting or default when not found
+     * @param mixed $default
+     * @return mixed
      */
     protected function getDefault($key, $default)
     {
@@ -66,11 +55,8 @@ class Config
         return $this->fallback->get($key, $default);
     }
     /**
-     * Set a setting.
-     *
      * @param string $key
-     * @param mixed  $value
-     *
+     * @param mixed $value
      * @return $this
      */
     public function set($key, $value)
@@ -79,10 +65,7 @@ class Config
         return $this;
     }
     /**
-     * Set the fallback.
-     *
      * @param Config $fallback
-     *
      * @return $this
      */
     public function setFallback(Config $fallback)

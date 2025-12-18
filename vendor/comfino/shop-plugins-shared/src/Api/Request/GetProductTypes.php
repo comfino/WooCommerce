@@ -19,9 +19,6 @@ class GetProductTypes extends Request
         $this->setRequestParams(['listType' => (string) $listType]);
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function prepareRequestBody(): ?array
     {
         return null;

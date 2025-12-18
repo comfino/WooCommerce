@@ -8,32 +8,22 @@ use Comfino\Api\Dto\Order\Customer\Address;
 
 class Customer
 {
-    /** @var string
-     * @readonly */
     public $firstName;
-    /** @var string
-     * @readonly */
+
     public $lastName;
-    /** @var string
-     * @readonly */
+
     public $email;
-    /** @var string
-     * @readonly */
+
     public $phoneNumber;
-    /** @var string
-     * @readonly */
+
     public $ip;
-    /** @var string|null
-     * @readonly */
+
     public $taxId;
-    /** @var bool|null
-     * @readonly */
+
     public $regular;
-    /** @var bool|null
-     * @readonly */
+
     public $logged;
-    /** @var Address|null
-     * @readonly */
+
     public $address;
 
     /**

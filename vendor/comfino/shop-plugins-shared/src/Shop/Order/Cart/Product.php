@@ -8,52 +8,42 @@ class Product implements ProductInterface
 {
     /**
      * @var string
-     * @readonly
      */
     private $name;
     /**
      * @var int
-     * @readonly
      */
     private $price;
     /**
      * @var string|null
-     * @readonly
      */
     private $id;
     /**
      * @var string|null
-     * @readonly
      */
     private $category;
     /**
      * @var string|null
-     * @readonly
      */
     private $ean;
     /**
      * @var string|null
-     * @readonly
      */
     private $photoUrl;
     /**
      * @var int[]|null
-     * @readonly
      */
     private $categoryIds;
     /**
      * @var int|null
-     * @readonly
      */
     private $netPrice;
     /**
      * @var int|null
-     * @readonly
      */
     private $taxRate;
     /**
      * @var int|null
-     * @readonly
      */
     private $taxValue;
     /**
@@ -82,81 +72,51 @@ class Product implements ProductInterface
         $this->taxValue = $taxValue;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getName(): string
     {
         return trim(html_entity_decode(strip_tags($this->name)));
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getPrice(): int
     {
         return $this->price;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getNetPrice(): ?int
     {
         return $this->netPrice;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getTaxRate(): ?int
     {
         return $this->taxRate;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getTaxValue(): ?int
     {
         return $this->taxValue;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getId(): ?string
     {
         return $this->id !== null ? trim(strip_tags($this->id)) : null;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCategory(): ?string
     {
         return $this->category !== null ? trim(strip_tags($this->category)) : null;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getEan(): ?string
     {
         return $this->ean !== null ? trim(strip_tags($this->ean)) : null;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getPhotoUrl(): ?string
     {
         return $this->photoUrl !== null ? trim(strip_tags($this->photoUrl)) : null;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCategoryIds(): ?array
     {
         return $this->categoryIds;

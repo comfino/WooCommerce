@@ -4,25 +4,15 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\ServerRequest\Tests;
 
-/**
- * Import classes
- */
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Sunrise\Http\ServerRequest\UploadedFile;
 use Sunrise\Stream\StreamFactory;
 
-/**
- * Import constants
- */
 use const Sunrise\Http\ServerRequest\UPLOAD_ERRORS;
 
-/**
- * UploadedFileTest
- */
 class UploadedFileTest extends AbstractTestCase
 {
-
     /**
      * @return void
      */
@@ -93,8 +83,6 @@ class UploadedFileTest extends AbstractTestCase
     }
 
     /**
-     * @dataProvider errorCodeProvider
-     *
      * @return void
      */
     public function testMoveWithError($error) : void
@@ -160,8 +148,6 @@ class UploadedFileTest extends AbstractTestCase
     }
 
     /**
-     * @dataProvider errorCodeProvider
-     *
      * @return void
      */
     public function testGetStreamWithError($error) : void

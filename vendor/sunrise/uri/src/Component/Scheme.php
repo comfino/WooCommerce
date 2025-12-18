@@ -11,40 +11,24 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Uri\Component;
 
-/**
- * Import classes
- */
 use ComfinoExternal\Sunrise\Uri\Exception\InvalidUriComponentException;
-/**
- * Import functions
- */
+
 use function is_string;
 use function preg_match;
 use function strtolower;
-/**
- * URI component "scheme"
- *
- * @link https://tools.ietf.org/html/rfc3986#section-3.1
- */
+
 class Scheme implements ComponentInterface
 {
     /**
-     * Regular expression to validate the component value
-     *
      * @var string
      */
     private const VALIDATE_REGEX = '/^(?:[A-Za-z][0-9A-Za-z\+\-\.]*)?$/';
     /**
-     * The component value
-     *
      * @var string
      */
     protected $value = '';
     /**
-     * Constructor of the class
-     *
      * @param mixed $value
-     *
      * @throws InvalidUriComponentException
      */
     public function __construct($value)

@@ -13,12 +13,8 @@ trait PluggableTrait
      */
     protected $plugins = [];
     /**
-     * Register a plugin.
-     *
      * @param PluginInterface $plugin
-     *
      * @throws LogicException
-     *
      * @return $this
      */
     public function addPlugin(PluginInterface $plugin)
@@ -30,12 +26,8 @@ trait PluggableTrait
         return $this;
     }
     /**
-     * Find a specific plugin.
-     *
      * @param string $method
-     *
      * @throws PluginNotFoundException
-     *
      * @return PluginInterface
      */
     protected function findPlugin($method)
@@ -46,14 +38,10 @@ trait PluggableTrait
         return $this->plugins[$method];
     }
     /**
-     * Invoke a plugin by method name.
-     *
-     * @param string              $method
-     * @param array               $arguments
+     * @param string $method
+     * @param array $arguments
      * @param FilesystemInterface $filesystem
-     *
      * @throws PluginNotFoundException
-     *
      * @return mixed
      */
     protected function invokePlugin($method, array $arguments, FilesystemInterface $filesystem)
@@ -64,13 +52,9 @@ trait PluggableTrait
         return call_user_func_array($callback, $arguments);
     }
     /**
-     * Plugins pass-through.
-     *
      * @param string $method
-     * @param array  $arguments
-     *
+     * @param array $arguments
      * @throws BadMethodCallException
-     *
      * @return mixed
      */
     public function __call($method, array $arguments)

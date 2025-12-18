@@ -5,8 +5,6 @@ namespace ComfinoExternal\League\Flysystem\Plugin;
 class ListPaths extends AbstractPlugin
 {
     /**
-     * Get the method name.
-     *
      * @return string
      */
     public function getMethod()
@@ -14,12 +12,9 @@ class ListPaths extends AbstractPlugin
         return 'listPaths';
     }
     /**
-     * List all paths.
-     *
      * @param string $directory
-     * @param bool   $recursive
-     *
-     * @return string[] paths
+     * @param bool $recursive
+     * @return array
      */
     public function handle($directory = '', $recursive = \false)
     {

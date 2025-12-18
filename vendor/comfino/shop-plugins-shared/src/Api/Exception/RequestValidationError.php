@@ -9,13 +9,12 @@ use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 
 class RequestValidationError extends \LogicException implements HttpErrorExceptionInterface
 {
-    /** @var string */
     private $url;
-    /** @var string */
+
     private $requestBody;
-    /** @var string */
+
     private $responseBody;
-    /** @var array|string|bool|float|int|null  */
+
     private $deserializedResponseBody;
     /**
      * @var \ComfinoExternal\Psr\Http\Message\ResponseInterface

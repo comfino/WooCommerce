@@ -8,17 +8,16 @@ use Comfino\Api\HttpErrorExceptionInterface;
 
 class ConnectionTimeout extends \RuntimeException implements HttpErrorExceptionInterface
 {
-    /** @var int */
     private $connectAttemptIdx;
-    /** @var int */
+
     private $connectionTimeout;
-    /** @var int */
+
     private $transferTimeout;
-    /** @var string */
+
     private $url;
-    /** @var string */
+
     private $requestBody;
-    /** @var string */
+
     private $responseBody;
 
     public function __construct(

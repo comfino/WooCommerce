@@ -234,6 +234,9 @@ final class SettingsForm
         // Clear configuration and front cache.
         CacheManager::getCachePool()->clear();
 
+        // Enable debug mode admin notice.
+        update_user_meta(get_current_user_id(), 'comfino_debug_notice_dismissed', false);
+
         return ['success' => $success, 'errorMessages' => $errorMessages];
     }
 

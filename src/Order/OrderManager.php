@@ -20,12 +20,18 @@ final class OrderManager
      * @param int $priceModifier
      *
      * @return Cart Comfino cart structure.
+     *
+     * @throws \Exception|\InvalidArgumentException
      */
     public static function getShopCart(\WC_Cart $cart, int $priceModifier = 0): Cart
     {
         $totalValue = (int) round($cart->get_total('edit') * 100);
 
-        if ($priceModifier > 0) {
+        if ($totalValue < 0) {
+            throw new \InvalidArgumentException('Total value must be greater than 0.');
+        }
+
+        if ($priceModifier > 0 && $priceModifier < $totalValue) {
             // Add price modifier (e.g. custom commission).
             $totalValue += $priceModifier;
         }
@@ -89,6 +95,14 @@ final class OrderManager
             if ($cartItem->getProduct()->getTaxValue() !== null) {
                 $totalTaxValue += ($cartItem->getProduct()->getTaxValue() * $cartItem->getQuantity());
             }
+        }
+
+        if (is_float($totalNetValue) || $totalNetValue > PHP_INT_MAX) {
+            throw new \InvalidArgumentException('Total net value must be integer not greater than PHP_INT_MAX.');
+        }
+
+        if (is_float($totalTaxValue) || $totalTaxValue > PHP_INT_MAX) {
+            throw new \InvalidArgumentException('Total tax value must be integer not greater than PHP_INT_MAX.');
         }
 
         if ($totalNetValue === 0) {

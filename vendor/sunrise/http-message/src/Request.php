@@ -11,9 +11,6 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Http\Message;
 
-/**
- * Import classes
- */
 use ComfinoExternal\Fig\Http\Message\RequestMethodInterface;
 use InvalidArgumentException;
 use ComfinoExternal\Psr\Http\Message\RequestInterface;
@@ -21,46 +18,30 @@ use ComfinoExternal\Psr\Http\Message\StreamInterface;
 use ComfinoExternal\Psr\Http\Message\UriInterface;
 use ComfinoExternal\Sunrise\Http\Header\HeaderInterface;
 use ComfinoExternal\Sunrise\Uri\UriFactory;
-/**
- * Import functions
- */
+
 use function is_string;
 use function preg_match;
 use function sprintf;
 use function strncmp;
 use function strtoupper;
-/**
- * HTTP Request Message
- *
- * @link https://tools.ietf.org/html/rfc7230
- * @link https://www.php-fig.org/psr/psr-7/
- */
+
 class Request extends Message implements RequestInterface, RequestMethodInterface
 {
     /**
-     * The request method (aka verb)
-     *
      * @var string
      */
     protected $method = self::METHOD_GET;
     /**
-     * The request target
-     *
      * @var string|null
      */
     protected $requestTarget = null;
     /**
-     * The request URI
-     *
      * @var UriInterface|null
      */
     protected $uri = null;
     /**
-     * Constructor of the class
-     *
      * @param string|null $method
      * @param string|UriInterface|null $uri
-     * @param array<string, string|string[]>|null $headers
      * @param StreamInterface|null $body
      * @param string|null $requestTarget
      * @param string|null $protocolVersion
@@ -78,25 +59,19 @@ class Request extends Message implements RequestInterface, RequestMethodInterfac
             $this->setUri($uri);
         }
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getMethod(): string
     {
         return $this->method;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function withMethod($method): RequestInterface
     {
         $clone = clone $this;
         $clone->setMethod($method);
         return $clone;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getRequestTarget(): string
     {
         if (isset($this->requestTarget)) {
@@ -104,11 +79,7 @@ class Request extends Message implements RequestInterface, RequestMethodInterfac
         }
         $uri = $this->getUri();
         $path = $uri->getPath();
-        // https://tools.ietf.org/html/rfc7230#section-5.3.1
-        // https://tools.ietf.org/html/rfc7230#section-2.7
-        //
-        // origin-form = absolute-path [ "?" query ]
-        // absolute-path = 1*( "/" segment )
+
         if (0 !== strncmp($path, '/', 1)) {
             return '/';
         }
@@ -119,18 +90,14 @@ class Request extends Message implements RequestInterface, RequestMethodInterfac
         }
         return $requestTarget;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function withRequestTarget($requestTarget): RequestInterface
     {
         $clone = clone $this;
         $clone->setRequestTarget($requestTarget);
         return $clone;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getUri(): UriInterface
     {
         if (null === $this->uri) {
@@ -138,9 +105,7 @@ class Request extends Message implements RequestInterface, RequestMethodInterfac
         }
         return $this->uri;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function withUri(UriInterface $uri, $preserveHost = \false): RequestInterface
     {
         $clone = clone $this;
@@ -148,10 +113,7 @@ class Request extends Message implements RequestInterface, RequestMethodInterfac
         return $clone;
     }
     /**
-     * Sets the given method to the request
-     *
      * @param string $method
-     *
      * @return void
      */
     protected function setMethod($method): void
@@ -160,26 +122,20 @@ class Request extends Message implements RequestInterface, RequestMethodInterfac
         $this->method = strtoupper($method);
     }
     /**
-     * Sets the given request-target to the request
-     *
      * @param mixed $requestTarget
-     *
      * @return void
      */
     protected function setRequestTarget($requestTarget): void
     {
         $this->validateRequestTarget($requestTarget);
         /**
-         * @var string $requestTarget
-         */
+     * @var string $requestTarget
+     */
         $this->requestTarget = $requestTarget;
     }
     /**
-     * Sets the given URI to the request
-     *
      * @param string|UriInterface $uri
      * @param bool $preserveHost
-     *
      * @return void
      */
     protected function setUri($uri, $preserveHost = \false): void
@@ -199,15 +155,9 @@ class Request extends Message implements RequestInterface, RequestMethodInterfac
         $this->addHeader('Host', $newHost);
     }
     /**
-     * Validates the given method
-     *
      * @param mixed $method
-     *
      * @return void
-     *
      * @throws InvalidArgumentException
-     *
-     * @link https://tools.ietf.org/html/rfc7230#section-3.1.1
      */
     protected function validateMethod($method): void
     {
@@ -219,15 +169,9 @@ class Request extends Message implements RequestInterface, RequestMethodInterfac
         }
     }
     /**
-     * Validates the given request-target
-     *
      * @param mixed $requestTarget
-     *
      * @return void
-     *
      * @throws InvalidArgumentException
-     *
-     * @link https://tools.ietf.org/html/rfc7230#section-5.3
      */
     protected function validateRequestTarget($requestTarget): void
     {

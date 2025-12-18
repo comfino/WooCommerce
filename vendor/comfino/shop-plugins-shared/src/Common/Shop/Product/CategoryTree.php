@@ -11,23 +11,30 @@ use Comfino\Common\Shop\Product\CategoryTree\NodeIterator;
 final class CategoryTree
 {
     /**
-     * @readonly
-     * @var \Comfino\Common\Shop\Product\CategoryTree\BuildStrategyInterface
+     * @var BuildStrategyInterface
      */
     private $buildStrategy;
     /**
-     * @var \Comfino\Common\Shop\Product\CategoryTree\NodeIterator|null
+     * @var NodeIterator|null
      */
     private $nodes;
 
-    /** @var Node[]|null */
+    /**
+     * @var Node[]|null
+     */
     private $index;
 
+    /**
+     * @param BuildStrategyInterface $buildStrategy
+     */
     public function __construct(BuildStrategyInterface $buildStrategy)
     {
         $this->buildStrategy = $buildStrategy;
     }
 
+    /**
+     * @return NodeIterator
+     */
     public function getNodes(): NodeIterator
     {
         if ($this->nodes === null) {
@@ -41,6 +48,7 @@ final class CategoryTree
     }
 
     /**
+     * @param Node|null $rootNode
      * @return int[]
      */
     public function getNodeIds(?Node $rootNode = null): array
@@ -49,19 +57,21 @@ final class CategoryTree
             return [];
         }
 
-        if ($this->index !== null) {
+        if ($rootNode === null && $this->index !== null) {
             return array_keys($this->index);
         }
 
         if ($rootNode === null) {
-            $nodeIds = array_map(static function (Node $node) : int {
+            $nodeIds = array_map(static function (Node $node): int {
                 return $node->getId();
             }, iterator_to_array($this->nodes));
             $subNodeIds = [];
 
             foreach ($this->nodes as $node) {
                 if ($node->hasChildren()) {
-                    $subNodeIds[] = $this->getNodeIds($node);
+                    foreach ($node->getChildren() as $childNode) {
+                        $subNodeIds[] = $this->getNodeIds($childNode);
+                    }
                 }
             }
 
@@ -84,15 +94,21 @@ final class CategoryTree
     }
 
     /**
+     * @param NodeIterator $nodes
      * @return int[]
      */
     public function getPathNodeIds(NodeIterator $nodes): array
     {
-        return array_map(static function (Node $node) : int {
+        return array_map(static function (Node $node): int {
             return $node->getId();
         }, iterator_to_array($nodes));
     }
 
+    /**
+     * @param int $id
+     * @param Node|null $rootNode
+     * @return Node|null
+     */
     public function getNodeById(int $id, ?Node $rootNode = null): ?Node
     {
         if ($this->index !== null && array_key_exists($id, $this->index)) {

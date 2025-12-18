@@ -2,23 +2,6 @@
 
 namespace ComfinoExternal\Fig\Http\Message;
 
-/**
- * Defines constants for common HTTP request methods.
- *
- * Usage:
- *
- * <code>
- * class RequestFactory implements RequestMethodInterface
- * {
- *     public static function factory(
- *         $uri = '/',
- *         $method = self::METHOD_GET,
- *         $data = []
- *     ) {
- *     }
- * }
- * </code>
- */
 interface RequestMethodInterface
 {
     const METHOD_HEAD = 'HEAD';

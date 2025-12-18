@@ -11,11 +11,7 @@
 namespace ComfinoExternal\Cache\Adapter\Common\Exception;
 
 use ComfinoExternal\Psr\Cache\CacheException as CacheExceptionInterface;
-/**
- * A base exception. All exceptions in this organization will extend this exception.
- *
- * @author Tobias Nyholm <tobias.nyholm@gmail.com>
- */
+
 abstract class CacheException extends \RuntimeException implements CacheExceptionInterface
 {
 }

@@ -11,18 +11,13 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Http\Client\Curl;
 
-/**
- * Import classes
- */
 use ComfinoExternal\Psr\Http\Client\ClientInterface;
 use ComfinoExternal\Psr\Http\Message\RequestInterface;
 use ComfinoExternal\Psr\Http\Message\ResponseFactoryInterface;
 use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 use ComfinoExternal\Sunrise\Http\Client\Curl\Exception\ClientException;
 use ComfinoExternal\Sunrise\Http\Client\Curl\Exception\NetworkException;
-/**
- * Import functions
- */
+
 use function curl_close;
 use function curl_errno;
 use function curl_error;
@@ -41,9 +36,7 @@ use function ltrim;
 use function sprintf;
 use function strpos;
 use function substr;
-/**
- * Import constants
- */
+
 use const CURLINFO_HEADER_SIZE;
 use const CURLINFO_RESPONSE_CODE;
 use const CURLINFO_TOTAL_TIME;
@@ -53,16 +46,7 @@ use const CURLOPT_HTTPHEADER;
 use const CURLOPT_POSTFIELDS;
 use const CURLOPT_RETURNTRANSFER;
 use const CURLOPT_URL;
-/**
- * HTTP client based on cURL
- *
- * @link http://php.net/manual/en/intro.curl.php
- * @link https://curl.haxx.se/libcurl/c/libcurl-errors.html
- * @link https://www.php-fig.org/psr/psr-2/
- * @link https://www.php-fig.org/psr/psr-7/
- * @link https://www.php-fig.org/psr/psr-17/
- * @link https://www.php-fig.org/psr/psr-18/
- */
+
 class Client implements ClientInterface
 {
     /**
@@ -74,8 +58,6 @@ class Client implements ClientInterface
      */
     protected $curlOptions;
     /**
-     * Constructor of the class
-     *
      * @param ResponseFactoryInterface $responseFactory
      * @param array $curlOptions
      */
@@ -84,9 +66,7 @@ class Client implements ClientInterface
         $this->responseFactory = $responseFactory;
         $this->curlOptions = $curlOptions;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function sendRequest(RequestInterface $request): ResponseInterface
     {
         $curlHandle = $this->createCurlHandleFromRequest($request);
@@ -99,12 +79,7 @@ class Client implements ClientInterface
         return $response;
     }
     /**
-     * Sends the given requests and returns responses in the same order
-     *
-     * @param RequestInterface ...$requests
-     *
      * @return ResponseInterface[]
-     *
      * @throws ClientException
      * @throws NetworkException
      */
@@ -132,12 +107,8 @@ class Client implements ClientInterface
         return $responses;
     }
     /**
-     * Creates a CurlHandle from the given request
-     *
      * @param RequestInterface $request
-     *
      * @return resource
-     *
      * @throws ClientException
      */
     private function createCurlHandleFromRequest(RequestInterface $request)
@@ -167,26 +138,22 @@ class Client implements ClientInterface
         return $curlHandle;
     }
     /**
-     * Creates a response from the given CurlHandle
-     *
      * @param resource $curlHandle
-     *
      * @return ResponseInterface
      */
     private function createResponseFromCurlHandle($curlHandle): ResponseInterface
     {
-        /** @var int */
         $statusCode = curl_getinfo($curlHandle, CURLINFO_RESPONSE_CODE);
         $response = $this->responseFactory->createResponse($statusCode);
-        /** @var float */
+        
         $requestTime = curl_getinfo($curlHandle, CURLINFO_TOTAL_TIME);
         $response = $response->withAddedHeader('X-Request-Time', sprintf('%.3f ms', $requestTime * 1000));
-        /** @var ?string */
+        
         $message = curl_multi_getcontent($curlHandle);
         if ($message === null) {
             return $response;
         }
-        /** @var int */
+        
         $headerSize = curl_getinfo($curlHandle, CURLINFO_HEADER_SIZE);
         $header = substr($message, 0, $headerSize);
         $response = $this->populateResponseWithHeaderFields($response, $header);
@@ -195,28 +162,22 @@ class Client implements ClientInterface
         return $response;
     }
     /**
-     * Populates the given response with the given header's fields
-     *
      * @param ResponseInterface $response
      * @param string $header
-     *
      * @return ResponseInterface
-     *
-     * @link https://datatracker.ietf.org/doc/html/rfc2616#section-4.2
      */
     private function populateResponseWithHeaderFields(ResponseInterface $response, string $header): ResponseInterface
     {
         $fields = explode("\r\n", $header);
         foreach ($fields as $field) {
-            // status line
             if (0 === strpos($field, 'HTTP/')) {
                 continue;
             }
-            // HTTP/2 field
+            
             if (0 === strpos($field, ':')) {
                 continue;
             }
-            // end...
+            
             if ('' === $field) {
                 continue;
             }

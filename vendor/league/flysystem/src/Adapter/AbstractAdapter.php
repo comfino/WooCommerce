@@ -6,7 +6,7 @@ use ComfinoExternal\League\Flysystem\AdapterInterface;
 abstract class AbstractAdapter implements AdapterInterface
 {
     /**
-     * @var string|null path prefix
+     * @var string|null
      */
     protected $pathPrefix;
     /**
@@ -14,10 +14,7 @@ abstract class AbstractAdapter implements AdapterInterface
      */
     protected $pathSeparator = '/';
     /**
-     * Set the path prefix.
-     *
      * @param string $prefix
-     *
      * @return void
      */
     public function setPathPrefix($prefix)
@@ -30,34 +27,26 @@ abstract class AbstractAdapter implements AdapterInterface
         $this->pathPrefix = rtrim($prefix, '\/') . $this->pathSeparator;
     }
     /**
-     * Get the path prefix.
-     *
-     * @return string|null path prefix or null if pathPrefix is empty
+     * @return string|null
      */
     public function getPathPrefix()
     {
         return $this->pathPrefix;
     }
     /**
-     * Prefix a path.
-     *
      * @param string $path
-     *
-     * @return string prefixed path
+     * @return string
      */
     public function applyPathPrefix($path)
     {
         return $this->getPathPrefix() . ltrim($path, '\/');
     }
     /**
-     * Remove a path prefix.
-     *
      * @param string $path
-     *
-     * @return string path without the prefix
+     * @return string
      */
     public function removePathPrefix($path)
     {
-        return substr($path, strlen((string) $this->getPathPrefix()));
+        return substr($path, strlen($this->getPathPrefix()));
     }
 }

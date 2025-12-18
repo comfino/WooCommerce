@@ -12,28 +12,16 @@ namespace ComfinoExternal\Cache\TagInterop;
 
 use ComfinoExternal\Psr\Cache\CacheItemInterface;
 use ComfinoExternal\Psr\Cache\InvalidArgumentException;
-/**
- * An item that supports tags. This interface is a soon-to-be-PSR.
- *
- * @author Tobias Nyholm <tobias.nyholm@gmail.com>
- * @author Nicolas Grekas <p@tchwork.com>
- */
+
 interface TaggableCacheItemInterface extends CacheItemInterface
 {
     /**
-     * Get all existing tags. These are the tags the item has when the item is
-     * returned from the pool.
-     *
      * @return array
      */
     public function getPreviousTags();
     /**
-     * Overwrite all tags with a new set of tags.
-     *
-     * @param string[] $tags An array of tags
-     *
-     * @throws InvalidArgumentException When a tag is not valid.
-     *
+     * @param string[] $tags
+     * @throws InvalidArgumentException
      * @return TaggableCacheItemInterface
      */
     public function setTags(array $tags);

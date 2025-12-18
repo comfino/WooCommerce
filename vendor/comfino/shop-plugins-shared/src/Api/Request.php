@@ -9,24 +9,20 @@ use ComfinoExternal\Psr\Http\Message\RequestFactoryInterface;
 use ComfinoExternal\Psr\Http\Message\RequestInterface;
 use ComfinoExternal\Psr\Http\Message\StreamFactoryInterface;
 
-/**
- * API request abstraction.
- */
 abstract class Request
 {
-    /** @var SerializerInterface */
     protected $serializer;
-    /** @var string */
+
     protected $method;
-    /** @var string */
+
     protected $apiEndpointPath;
-    /** @var string[]|null */
+
     protected $requestHeaders;
-    /** @var string[]|null */
+
     protected $requestParams;
-    /** @var string|null */
+
     protected $requestUri;
-    /** @var string|null */
+
     protected $requestBody;
 
     /**
@@ -40,15 +36,11 @@ abstract class Request
     }
 
     /**
-     * Returns PSR-7 compatible HTTP request object.
-     *
      * @param RequestFactoryInterface $requestFactory
      * @param StreamFactoryInterface $streamFactory
      * @param string $apiHost
      * @param int $apiVersion
-     *
      * @return RequestInterface
-     *
      * @throws RequestValidationError
      */
     final public function getPsrRequest(
@@ -103,7 +95,6 @@ abstract class Request
 
     /**
      * @return string
-     *
      * @throws RequestValidationError
      */
     public function __toString(): string
@@ -113,7 +104,6 @@ abstract class Request
 
     /**
      * @param string $method
-     *
      * @return void
      */
     final protected function setRequestMethod($method): void
@@ -123,7 +113,6 @@ abstract class Request
 
     /**
      * @param string $apiEndpointPath
-     *
      * @return void
      */
     final protected function setApiEndpointPath($apiEndpointPath): void
@@ -133,7 +122,6 @@ abstract class Request
 
     /**
      * @param string[] $requestHeaders
-     *
      * @return void
      */
     final protected function setRequestHeaders($requestHeaders): void
@@ -143,7 +131,6 @@ abstract class Request
 
     /**
      * @param string[] $requestParams
-     *
      * @return void
      */
     final protected function setRequestParams($requestParams): void
@@ -166,7 +153,6 @@ abstract class Request
 
     /**
      * @return string|null
-     *
      * @throws RequestValidationError
      */
     protected function serializeRequestBody(): ?string
@@ -177,7 +163,6 @@ abstract class Request
     /**
      * @param string $apiHost
      * @param int $apiVersion
-     *
      * @return string
      */
     protected function getApiEndpointUri($apiHost, $apiVersion): string
@@ -197,8 +182,6 @@ abstract class Request
     }
 
     /**
-     * Converts API request object to the array which is ready for serialization.
-     *
      * @return array|null
      */
     abstract protected function prepareRequestBody(): ?array;

@@ -10,12 +10,9 @@ use Comfino\Api\Dto\Payment\LoanTypeEnum;
 
 class GetFinancialProducts extends Base
 {
-    /** @var FinancialProduct[]
-     * @readonly */
     public $financialProducts;
 
     /**
-     * @inheritDoc
      * @param mixed[]|string|bool|null|float|int $deserializedResponseBody
      */
     protected function processResponseBody($deserializedResponseBody): void

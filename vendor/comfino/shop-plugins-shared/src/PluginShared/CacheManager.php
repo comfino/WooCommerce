@@ -40,19 +40,33 @@ final class CacheManager
 
     public static function set(string $key, $value, int $ttl = 0, ?array $tags = null): void
     {
-        try {
-            $item = self::getCachePool()->getItem($key)->set($value);
+        $maxRetries = 3;
+        $retryDelay = 10000;
 
-            if ($ttl > 0) {
-                $item->expiresAfter($ttl);
+        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+            try {
+                $item = self::getCachePool()->getItem($key)->set($value);
+
+                if ($ttl > 0) {
+                    $item->expiresAfter($ttl);
+                }
+
+                if (!empty($tags)) {
+                    $item->setTags($tags);
+                }
+
+                self::getCachePool()->save($item);
+
+                return;
+            } catch (InvalidArgumentException $exception) {
+                return;
+            } catch (\Throwable $exception) {
+                if ($attempt >= $maxRetries) {
+                    return;
+                }
+
+                usleep($retryDelay * $attempt);
             }
-
-            if (!empty($tags)) {
-                $item->setTags($tags);
-            }
-
-            self::getCachePool()->save($item);
-        } catch (InvalidArgumentException $exception) {
         }
     }
 

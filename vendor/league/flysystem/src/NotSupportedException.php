@@ -7,10 +7,7 @@ use SplFileInfo;
 class NotSupportedException extends RuntimeException implements FilesystemException
 {
     /**
-     * Create a new exception for a link.
-     *
      * @param SplFileInfo $file
-     *
      * @return static
      */
     public static function forLink(SplFileInfo $file)
@@ -19,10 +16,7 @@ class NotSupportedException extends RuntimeException implements FilesystemExcept
         return new static($message . $file->getPathname());
     }
     /**
-     * Create a new exception for a link.
-     *
      * @param string $systemType
-     *
      * @return static
      */
     public static function forFtpSystemType($systemType)

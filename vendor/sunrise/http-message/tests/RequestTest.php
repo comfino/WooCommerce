@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Message\Tests;
 
-/**
- * Import classes
- */
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use Sunrise\Http\Message\Message;
@@ -14,12 +11,8 @@ use Sunrise\Http\Message\Request;
 use Sunrise\Stream\StreamFactory;
 use Sunrise\Uri\UriFactory;
 
-/**
- * RequestTest
- */
 class RequestTest extends TestCase
 {
-
     /**
      * @return void
      */
@@ -73,9 +66,8 @@ class RequestTest extends TestCase
         $this->assertInstanceOf(RequestInterface::class, $copy);
         $this->assertNotEquals($mess, $copy);
 
-        // default value
         $this->assertSame('GET', $mess->getMethod());
-        // assigned value
+        
         $this->assertSame('POST', $copy->getMethod());
     }
 
@@ -90,8 +82,6 @@ class RequestTest extends TestCase
     }
 
     /**
-     * @dataProvider figMethodProvider
-     *
      * @return void
      */
     public function testFigMethod($method) : void
@@ -102,8 +92,6 @@ class RequestTest extends TestCase
     }
 
     /**
-     * @dataProvider invalidMethodProvider
-     *
      * @return void
      */
     public function testInvalidMethod($method) : void
@@ -125,15 +113,12 @@ class RequestTest extends TestCase
         $this->assertInstanceOf(RequestInterface::class, $copy);
         $this->assertNotEquals($mess, $copy);
 
-        // default value
         $this->assertSame('/', $mess->getRequestTarget());
-        // assigned value
+        
         $this->assertSame('/path?query', $copy->getRequestTarget());
     }
 
     /**
-     * @dataProvider uriFormProvider
-     *
      * @return void
      */
     public function testRequestTargetWithDifferentUriForms($requestTarget) : void
@@ -144,8 +129,6 @@ class RequestTest extends TestCase
     }
 
     /**
-     * @dataProvider invalidRequestTargetProvider
-     *
      * @return void
      */
     public function testInvalidRequestTarget($requestTarget) : void
@@ -163,7 +146,6 @@ class RequestTest extends TestCase
         $uri = (new UriFactory)->createUri('http://localhost');
         $mess = (new Request)->withUri($uri);
 
-        // returns "/" as default path
         $this->assertSame('/', $mess->getRequestTarget());
     }
 
@@ -175,7 +157,6 @@ class RequestTest extends TestCase
         $uri = (new UriFactory)->createUri('not/absolute/path?query');
         $mess = (new Request)->withUri($uri);
 
-        // returns "/" as default path
         $this->assertSame('/', $mess->getRequestTarget());
     }
 
@@ -225,9 +206,8 @@ class RequestTest extends TestCase
         $this->assertInstanceOf(RequestInterface::class, $copy);
         $this->assertNotEquals($mess, $copy);
 
-        // default value
         $this->assertNotSame($uri, $mess->getUri());
-        // assigned value
+        
         $this->assertSame($uri, $copy->getUri());
     }
 
@@ -286,8 +266,6 @@ class RequestTest extends TestCase
         $this->assertSame($uri->getHost(), $mess->getHeaderLine('host'));
     }
 
-    // Providers...
-
     /**
      * @return array
      */
@@ -321,7 +299,6 @@ class RequestTest extends TestCase
             ["BAR BAZ"],
             ["BAR,BAZ"],
 
-            // other types
             [true],
             [false],
             [1],
@@ -348,7 +325,6 @@ class RequestTest extends TestCase
             ["/path\r/"],
             ["/path /"],
 
-            // other types
             [true],
             [false],
             [1],
@@ -368,16 +344,13 @@ class RequestTest extends TestCase
     public function uriFormProvider() : array
     {
         return [
-            // https://tools.ietf.org/html/rfc7230#section-5.3.1
+            
             ['/path?query'],
 
-            // https://tools.ietf.org/html/rfc7230#section-5.3.2
             ['http://localhost/path?query'],
 
-            // https://tools.ietf.org/html/rfc7230#section-5.3.3
             ['localhost:3000'],
 
-            // https://tools.ietf.org/html/rfc7230#section-5.3.4
             ['*'],
         ];
     }

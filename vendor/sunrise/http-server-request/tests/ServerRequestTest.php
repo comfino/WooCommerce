@@ -4,20 +4,13 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\ServerRequest\Tests;
 
-/**
- * Import classes
- */
 use Psr\Http\Message\ServerRequestInterface;
 use Sunrise\Http\Message\Request;
 use Sunrise\Http\ServerRequest\ServerRequest;
 use Sunrise\Http\ServerRequest\UploadedFile;
 
-/**
- * ServerRequestTest
- */
 class ServerRequestTest extends AbstractTestCase
 {
-
     /**
      * @return void
      */
@@ -38,29 +31,29 @@ class ServerRequestTest extends AbstractTestCase
         $uploadedFile = new UploadedFile($stream);
 
         $dataset = [
-            // method
+            
             'POST',
-            // URI
+            
             'http://localhost:8000/foo?bar',
-            // headers
+            
             ['X-Foo' => 'bar'],
-            // body
+            
             $stream,
-            // request target
+            
             '/bar?baz',
-            // protocol version
+            
             '2.0',
-            // server params
+            
             ['foo' => 'bar'],
-            // query params
+            
             ['bar' => 'baz'],
-            // cookie params
+            
             ['baz' => 'bat'],
-            // uploaded files
+            
             ['bat' => $uploadedFile],
-            // parsed body
+            
             ['qux' => 'quux'],
-            // attributes
+            
             ['quux' => 'quuux'],
         ];
 

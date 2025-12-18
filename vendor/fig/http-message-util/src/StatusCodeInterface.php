@@ -2,46 +2,13 @@
 
 namespace ComfinoExternal\Fig\Http\Message;
 
-/**
- * Defines constants for common HTTP status code.
- *
- * @see https://tools.ietf.org/html/rfc2295#section-8.1
- * @see https://tools.ietf.org/html/rfc2324#section-2.3
- * @see https://tools.ietf.org/html/rfc2518#section-9.7
- * @see https://tools.ietf.org/html/rfc2774#section-7
- * @see https://tools.ietf.org/html/rfc3229#section-10.4
- * @see https://tools.ietf.org/html/rfc4918#section-11
- * @see https://tools.ietf.org/html/rfc5842#section-7.1
- * @see https://tools.ietf.org/html/rfc5842#section-7.2
- * @see https://tools.ietf.org/html/rfc6585#section-3
- * @see https://tools.ietf.org/html/rfc6585#section-4
- * @see https://tools.ietf.org/html/rfc6585#section-5
- * @see https://tools.ietf.org/html/rfc6585#section-6
- * @see https://tools.ietf.org/html/rfc7231#section-6
- * @see https://tools.ietf.org/html/rfc7238#section-3
- * @see https://tools.ietf.org/html/rfc7725#section-3
- * @see https://tools.ietf.org/html/rfc7540#section-9.1.2
- * @see https://tools.ietf.org/html/rfc8297#section-2
- * @see https://tools.ietf.org/html/rfc8470#section-7
- * Usage:
- *
- * <code>
- * class ResponseFactory implements StatusCodeInterface
- * {
- *     public function createResponse($code = self::STATUS_OK)
- *     {
- *     }
- * }
- * </code>
- */
 interface StatusCodeInterface
 {
-    // Informational 1xx
     const STATUS_CONTINUE = 100;
     const STATUS_SWITCHING_PROTOCOLS = 101;
     const STATUS_PROCESSING = 102;
     const STATUS_EARLY_HINTS = 103;
-    // Successful 2xx
+    
     const STATUS_OK = 200;
     const STATUS_CREATED = 201;
     const STATUS_ACCEPTED = 202;
@@ -52,7 +19,7 @@ interface StatusCodeInterface
     const STATUS_MULTI_STATUS = 207;
     const STATUS_ALREADY_REPORTED = 208;
     const STATUS_IM_USED = 226;
-    // Redirection 3xx
+    
     const STATUS_MULTIPLE_CHOICES = 300;
     const STATUS_MOVED_PERMANENTLY = 301;
     const STATUS_FOUND = 302;
@@ -62,7 +29,7 @@ interface StatusCodeInterface
     const STATUS_RESERVED = 306;
     const STATUS_TEMPORARY_REDIRECT = 307;
     const STATUS_PERMANENT_REDIRECT = 308;
-    // Client Errors 4xx
+    
     const STATUS_BAD_REQUEST = 400;
     const STATUS_UNAUTHORIZED = 401;
     const STATUS_PAYMENT_REQUIRED = 402;
@@ -92,7 +59,7 @@ interface StatusCodeInterface
     const STATUS_TOO_MANY_REQUESTS = 429;
     const STATUS_REQUEST_HEADER_FIELDS_TOO_LARGE = 431;
     const STATUS_UNAVAILABLE_FOR_LEGAL_REASONS = 451;
-    // Server Errors 5xx
+    
     const STATUS_INTERNAL_SERVER_ERROR = 500;
     const STATUS_NOT_IMPLEMENTED = 501;
     const STATUS_BAD_GATEWAY = 502;

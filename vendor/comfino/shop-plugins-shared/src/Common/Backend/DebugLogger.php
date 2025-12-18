@@ -4,17 +4,12 @@ declare(strict_types=1);
 
 namespace Comfino\Common\Backend;
 
-use Comfino\Api\SerializerInterface;
+use Comfino\Common\Backend\Log\LoggerFactory;
+use ComfinoExternal\Monolog\Logger as MonologLogger;
 
-class DebugLogger
+class DebugLogger extends Logger
 {
     /**
-     * @readonly
-     * @var \Comfino\Api\SerializerInterface
-     */
-    private $serializer;
-    /**
-     * @readonly
      * @var string
      */
     private $logFilePath;
@@ -22,57 +17,79 @@ class DebugLogger
      * @var $this|null
      */
     private static $instance;
+    /**
+     * @var MonologLogger|null
+     */
+    private static $logger;
 
     /**
-     * @param \Comfino\Api\SerializerInterface $serializer
      * @param string $logFilePath
+     * @return self
      */
-    public static function getInstance($serializer, $logFilePath): self
+    public static function getInstance($logFilePath): self
     {
         if (self::$instance === null) {
-            self::$instance = new self($serializer, $logFilePath);
+            self::$instance = new self($logFilePath);
         }
 
         return self::$instance;
     }
 
-    private function __construct(SerializerInterface $serializer, string $logFilePath)
+    private function __construct(string $logFilePath)
     {
-        $this->serializer = $serializer;
         $this->logFilePath = $logFilePath;
+    }
+
+    /**
+     * @return MonologLogger
+     */
+    public function getLogger(): MonologLogger
+    {
+        if (self::$logger === null) {
+            self::$logger = LoggerFactory::createDebugLogger($this->logFilePath);
+        }
+
+        return self::$logger;
     }
 
     /**
      * @param string $eventPrefix
      * @param string $eventMessage
-     * @param mixed[]|null $parameters
+     * @param array|null $parameters
      */
     public function logEvent($eventPrefix, $eventMessage, $parameters = null): void
     {
-        if (!empty($parameters)) {
-            $preparedParameters = [];
-
-            foreach ($parameters as $name => $value) {
-                if (is_array($value)) {
-                    $value = $this->serializer->serialize($value);
-                } elseif (is_bool($value)) {
-                    $value = ($value ? 'true' : 'false');
-                }
-
-                $preparedParameters[] = "$name=$value";
-            }
-
-            $eventMessage .= (($eventMessage !== '' ? ': ' : '') . implode(', ', $preparedParameters));
-        }
-
-        FileUtils::append($this->logFilePath, '[' . date('Y-m-d H:i:s') . "] $eventPrefix: $eventMessage\n");
+        $this->getLogger()->debug($eventPrefix . ': ' . $eventMessage, $parameters ?? []);
     }
 
     /**
      * @param int $numLines
+     * @return string
      */
     public function getDebugLog($numLines): string
     {
-        return implode('', FileUtils::readLastLines($this->logFilePath, $numLines));
+        if (empty($this->logFilePath)) {
+            return '';
+        }
+
+        $actualLogPath = $this->findActualLogFile($this->logFilePath);
+
+        if ($actualLogPath === null || !file_exists($actualLogPath)) {
+            return '';
+        }
+
+        return implode('', FileUtils::readLastLines($actualLogPath, $numLines));
+    }
+
+    /**
+     * @return int
+     */
+    public function clearLogs(): int
+    {
+        if ($this->logFilePath === null) {
+            return 0;
+        }
+
+        return $this->clearLogFiles($this->logFilePath);
     }
 }

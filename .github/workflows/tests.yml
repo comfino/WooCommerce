@@ -1,0 +1,81 @@
+name: Tests
+
+on:
+  push:
+    branches: [ master, main, develop ]
+  pull_request:
+    branches: [ master, main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4']
+        dependency-version: [prefer-lowest, prefer-stable]
+
+    name: PHP ${{ matrix.php }} - ${{ matrix.dependency-version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl, json, zlib
+          coverage: none
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ matrix.dependency-version }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-${{ matrix.dependency-version }}-
+
+      - name: Install dependencies
+        run: composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction --no-progress
+
+      - name: Run tests
+        run: composer test
+
+  coverage:
+    runs-on: ubuntu-latest
+
+    name: Code Coverage
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.4
+          extensions: curl, json, zlib
+          coverage: xdebug
+
+      - name: Install dependencies
+        run: composer update --prefer-stable --prefer-dist --no-interaction --no-progress
+
+      - name: Run tests with coverage
+        run: XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-clover coverage.xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+          verbose: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

@@ -18,6 +18,9 @@ class NodeIterator implements \Iterator, \Countable
         $this->nodes = $nodes;
     }
 
+    /**
+     * @return Node
+     */
     public function current(): Node
     {
         return current($this->nodes);
@@ -28,11 +31,17 @@ class NodeIterator implements \Iterator, \Countable
         next($this->nodes);
     }
 
+    /**
+     * @return int
+     */
     public function key(): int
     {
         return key($this->nodes);
     }
 
+    /**
+     * @return bool
+     */
     public function valid(): bool
     {
         return key($this->nodes) !== null;
@@ -43,6 +52,9 @@ class NodeIterator implements \Iterator, \Countable
         reset($this->nodes);
     }
 
+    /**
+     * @return int
+     */
     public function count(): int
     {
         return count($this->nodes);

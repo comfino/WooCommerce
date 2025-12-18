@@ -12,43 +12,26 @@ namespace ComfinoExternal\Cache\TagInterop;
 
 use ComfinoExternal\Psr\Cache\CacheItemPoolInterface;
 use ComfinoExternal\Psr\Cache\InvalidArgumentException;
-/**
- * Interface for invalidating cached items using tags. This interface is a soon-to-be-PSR.
- *
- * @author Tobias Nyholm <tobias.nyholm@gmail.com>
- * @author Nicolas Grekas <p@tchwork.com>
- */
+
 interface TaggableCacheItemPoolInterface extends CacheItemPoolInterface
 {
     /**
-     * Invalidates cached items using a tag.
-     *
-     * @param string $tag The tag to invalidate
-     *
-     * @throws InvalidArgumentException When $tags is not valid
-     *
-     * @return bool True on success
+     * @param string $tag
+     * @throws InvalidArgumentException
+     * @return bool
      */
     public function invalidateTag($tag);
     /**
-     * Invalidates cached items using tags.
-     *
-     * @param string[] $tags An array of tags to invalidate
-     *
-     * @throws InvalidArgumentException When $tags is not valid
-     *
-     * @return bool True on success
+     * @param string[] $tags
+     * @throws InvalidArgumentException
+     * @return bool
      */
     public function invalidateTags(array $tags);
     /**
-     * {@inheritdoc}
-     *
      * @return TaggableCacheItemInterface
      */
     public function getItem($key);
     /**
-     * {@inheritdoc}
-     *
      * @return array|\Traversable|TaggableCacheItemInterface[]
      */
     public function getItems(array $keys = []);

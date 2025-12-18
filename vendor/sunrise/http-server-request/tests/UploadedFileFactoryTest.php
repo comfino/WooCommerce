@@ -4,19 +4,12 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\ServerRequest\Tests;
 
-/**
- * Import classes
- */
 use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Sunrise\Http\ServerRequest\UploadedFileFactory;
 
-/**
- * UploadedFileFactoryTest
- */
 class UploadedFileFactoryTest extends AbstractTestCase
 {
-
     /**
      * @return void
      */

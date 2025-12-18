@@ -11,9 +11,6 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Uri;
 
-/**
- * Import classes
- */
 use ComfinoExternal\Psr\Http\Message\UriInterface;
 use ComfinoExternal\Sunrise\Uri\Component\Scheme;
 use ComfinoExternal\Sunrise\Uri\Component\UserInfo;
@@ -22,65 +19,42 @@ use ComfinoExternal\Sunrise\Uri\Component\Port;
 use ComfinoExternal\Sunrise\Uri\Component\Path;
 use ComfinoExternal\Sunrise\Uri\Component\Query;
 use ComfinoExternal\Sunrise\Uri\Component\Fragment;
-/**
- * Import functions
- */
+
 use function getservbyname;
 use function ltrim;
 use function strncmp;
-/**
- * Uniform Resource Identifier
- *
- * @link https://tools.ietf.org/html/rfc3986
- * @link https://www.php-fig.org/psr/psr-7/
- */
+
 class Uri implements UriInterface
 {
     /**
-     * The URI component "scheme"
-     *
      * @var string
      */
     protected $scheme = '';
     /**
-     * The URI component "userinfo"
-     *
      * @var string
      */
     protected $userinfo = '';
     /**
-     * The URI component "host"
-     *
      * @var string
      */
     protected $host = '';
     /**
-     * The URI component "port"
-     *
      * @var int|null
      */
     protected $port;
     /**
-     * The URI component "path"
-     *
      * @var string
      */
     protected $path = '';
     /**
-     * The URI component "query"
-     *
      * @var string
      */
     protected $query = '';
     /**
-     * The URI component "fragment"
-     *
      * @var string
      */
     protected $fragment = '';
     /**
-     * Constructor of the class
-     *
      * @param mixed $uri
      */
     public function __construct($uri = '')
@@ -118,9 +92,7 @@ class Uri implements UriInterface
             $this->fragment = $fragment->present();
         }
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function withScheme($scheme): UriInterface
     {
         $clone = clone $this;
@@ -129,8 +101,6 @@ class Uri implements UriInterface
         return $clone;
     }
     /**
-     * {@inheritdoc}
-     *
      * @psalm-suppress ParamNameMismatch
      */
     public function withUserInfo($user, $pass = null): UriInterface
@@ -140,9 +110,7 @@ class Uri implements UriInterface
         $clone->userinfo = $component->present();
         return $clone;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function withHost($host): UriInterface
     {
         $clone = clone $this;
@@ -150,9 +118,7 @@ class Uri implements UriInterface
         $clone->host = $component->present();
         return $clone;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function withPort($port): UriInterface
     {
         $clone = clone $this;
@@ -160,9 +126,7 @@ class Uri implements UriInterface
         $clone->port = $component->present();
         return $clone;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function withPath($path): UriInterface
     {
         $clone = clone $this;
@@ -170,9 +134,7 @@ class Uri implements UriInterface
         $clone->path = $component->present();
         return $clone;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function withQuery($query): UriInterface
     {
         $clone = clone $this;
@@ -180,9 +142,7 @@ class Uri implements UriInterface
         $clone->query = $component->present();
         return $clone;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function withFragment($fragment): UriInterface
     {
         $clone = clone $this;
@@ -190,48 +150,35 @@ class Uri implements UriInterface
         $clone->fragment = $component->present();
         return $clone;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getScheme(): string
     {
         return $this->scheme;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getUserInfo(): string
     {
         return $this->userinfo;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getHost(): string
     {
         return $this->host;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getPort(): ?int
     {
-        // The 80 is the default port number for the HTTP protocol.
         if ($this->port === 80 && $this->scheme === 'http') {
             return null;
         }
-        // The 443 is the default port number for the HTTPS protocol.
+        
         if ($this->port === 443 && $this->scheme === 'https') {
             return null;
         }
         return $this->port;
     }
     /**
-     * Gets the standard port number associated with the URI scheme
-     *
      * @return int|null
-     *
-     * @codeCoverageIgnore
      */
     public function getStandardPort(): ?int
     {
@@ -245,33 +192,24 @@ class Uri implements UriInterface
         }
         return null;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getPath(): string
     {
         return $this->path;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getQuery(): string
     {
         return $this->query;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getFragment(): string
     {
         return $this->fragment;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getAuthority(): string
     {
-        // Host is the basic subcomponent.
         if ($this->host === '') {
             return '';
         }
@@ -285,9 +223,7 @@ class Uri implements UriInterface
         }
         return $authority;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function __toString()
     {
         $uri = '';
@@ -301,20 +237,10 @@ class Uri implements UriInterface
         }
         $path = $this->getPath();
         if ($path !== '') {
-            // https://github.com/sunrise-php/uri/issues/31
-            // https://datatracker.ietf.org/doc/html/rfc3986#section-3.3
-            //
-            // If a URI contains an authority component,
-            // then the path component must either be empty
-            // or begin with a slash ("/") character.
             if ($authority !== '' && strncmp($path, '/', 1) !== 0) {
                 $path = '/' . $path;
             }
-            // https://github.com/sunrise-php/uri/issues/31
-            // https://datatracker.ietf.org/doc/html/rfc3986#section-3.3
-            //
-            // If a URI does not contain an authority component,
-            // then the path cannot begin with two slash characters ("//").
+
             if ($authority === '' && strncmp($path, '//', 2) === 0) {
                 $path = '/' . ltrim($path, '/');
             }

@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Message\Tests;
 
-/**
- * Import classes
- */
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
@@ -15,12 +12,8 @@ use Psr\Http\Message\UriInterface;
 use Sunrise\Http\Message\RequestFactory;
 use Sunrise\Uri\UriFactory;
 
-/**
- * RequestFactoryTest
- */
 class RequestFactoryTest extends TestCase
 {
-
     /**
      * @return void
      */
@@ -44,7 +37,6 @@ class RequestFactoryTest extends TestCase
         $this->assertSame($method, $request->getMethod());
         $this->assertSame($uri, $request->getUri());
 
-        // default body of the request...
         $this->assertInstanceOf(StreamInterface::class, $request->getBody());
         $this->assertTrue($request->getBody()->isSeekable());
         $this->assertTrue($request->getBody()->isWritable());

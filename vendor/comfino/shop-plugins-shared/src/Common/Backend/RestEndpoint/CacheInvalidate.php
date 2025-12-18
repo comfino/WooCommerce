@@ -4,18 +4,16 @@ declare(strict_types=1);
 
 namespace Comfino\Common\Backend\RestEndpoint;
 
-use ComfinoExternal\Cache\TagInterop\TaggableCacheItemPoolInterface;
 use Comfino\Common\Backend\Cache\ItemTypeEnum;
 use Comfino\Common\Backend\RestEndpoint;
 use Comfino\Common\Exception\InvalidEndpoint;
 use Comfino\Common\Exception\InvalidRequest;
+use ComfinoExternal\Cache\TagInterop\TaggableCacheItemPoolInterface;
 use ComfinoExternal\Psr\Cache\InvalidArgumentException;
-use ComfinoExternal\Psr\Http\Message\ServerRequestInterface;
 
 class CacheInvalidate extends RestEndpoint
 {
     /**
-     * @readonly
      * @var \ComfinoExternal\Cache\TagInterop\TaggableCacheItemPoolInterface
      */
     private $cache;

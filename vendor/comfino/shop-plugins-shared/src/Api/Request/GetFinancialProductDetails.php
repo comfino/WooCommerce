@@ -9,17 +9,13 @@ use Comfino\Api\Request;
 use Comfino\Shop\Order\CartInterface;
 use Comfino\Shop\Order\CartTrait;
 
-/**
- * Financial product details request.
- */
 class GetFinancialProductDetails extends Request
 {
+    use CartTrait;
     /**
      * @var CartInterface
-     * @readonly
      */
     private $cart;
-    use CartTrait;
 
     /**
      * @param LoanQueryCriteria $queryCriteria
@@ -39,16 +35,13 @@ class GetFinancialProductDetails extends Request
                     'productTypes' => ($queryCriteria->productTypes !== null ? implode(',', $queryCriteria->productTypes) : null),
                     'taxId' => $queryCriteria->taxId,
                 ],
-                static function ($value) : bool {
+                static function ($value): bool {
                     return $value !== null;
                 }
             )
         );
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function prepareRequestBody(): ?array
     {
         return $this->getCartAsArray($this->cart);

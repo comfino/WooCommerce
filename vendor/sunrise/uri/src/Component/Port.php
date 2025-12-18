@@ -11,32 +11,18 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Uri\Component;
 
-/**
- * Import classes
- */
 use ComfinoExternal\Sunrise\Uri\Exception\InvalidUriComponentException;
-/**
- * Import functions
- */
+
 use function is_int;
-/**
- * URI component "port"
- *
- * @link https://tools.ietf.org/html/rfc3986#section-3.2.3
- */
+
 class Port implements ComponentInterface
 {
     /**
-     * The component value
-     *
      * @var int|null
      */
     protected $value;
     /**
-     * Constructor of the class
-     *
      * @param mixed $value
-     *
      * @throws InvalidUriComponentException
      */
     public function __construct($value)

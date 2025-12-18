@@ -11,11 +11,7 @@
 namespace ComfinoExternal\Cache\Hierarchy;
 
 use ComfinoExternal\Psr\Cache\CacheItemPoolInterface;
-/**
- * Let you use hierarchy if you start your tag key with the HIERARCHY_SEPARATOR.
- *
- * @author Tobias Nyholm <tobias.nyholm@gmail.com>
- */
+
 interface HierarchicalPoolInterface extends CacheItemPoolInterface
 {
     const HIERARCHY_SEPARATOR = '|';

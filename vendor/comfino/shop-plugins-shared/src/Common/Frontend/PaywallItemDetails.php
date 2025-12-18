@@ -6,12 +6,10 @@ final class PaywallItemDetails
 {
     /**
      * @var string
-     * @readonly
      */
     public $productDetails;
     /**
      * @var string
-     * @readonly
      */
     public $listItemData;
     /**

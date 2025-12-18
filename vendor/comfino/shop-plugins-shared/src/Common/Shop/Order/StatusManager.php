@@ -6,10 +6,9 @@ namespace Comfino\Common\Shop\Order;
 
 use Comfino\Common\Shop\OrderStatusAdapterInterface;
 
-final class StatusManager
+class StatusManager
 {
     /**
-     * @readonly
      * @var \Comfino\Common\Shop\OrderStatusAdapterInterface
      */
     private $orderStatusAdapter;
@@ -51,7 +50,10 @@ final class StatusManager
      */
     private static $instance;
 
-    public static function getInstance(OrderStatusAdapterInterface $orderStatusAdapter): self
+    /**
+     * @param \Comfino\Common\Shop\OrderStatusAdapterInterface $orderStatusAdapter
+     */
+    public static function getInstance($orderStatusAdapter): self
     {
         if (self::$instance === null) {
             self::$instance = new self($orderStatusAdapter);
@@ -65,7 +67,11 @@ final class StatusManager
         $this->orderStatusAdapter = $orderStatusAdapter;
     }
 
-    public function setOrderStatus(string $externalId, string $status): void
+    /**
+     * @param string $externalId
+     * @param string $status
+     */
+    public function setOrderStatus($externalId, $status): void
     {
         $this->orderStatusAdapter->setStatus($externalId, $status);
     }

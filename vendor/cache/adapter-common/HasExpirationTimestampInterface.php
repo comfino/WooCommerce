@@ -10,15 +10,9 @@
  */
 namespace ComfinoExternal\Cache\Adapter\Common;
 
-/**
- * @author Aaron Scherer <aequasi@gmail.com>
- * @author Tobias Nyholm <tobias.nyholm@gmail.com>
- */
 interface HasExpirationTimestampInterface
 {
     /**
-     * The timestamp when the object expires.
-     *
      * @return int|null
      */
     public function getExpirationTimestamp();

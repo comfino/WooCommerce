@@ -411,13 +411,22 @@ final class ConfigManager
         return $statusMap ?? ShopStatusManager::DEFAULT_STATUS_MAP;
     }
 
+    public static function initConfigurationValues(array $configurationOptions): void
+    {
+        foreach ($configurationOptions as $optionName => $optionValue) {
+            if (self::getConfigurationValue($optionName) === null) {
+                self::updateConfigurationValue($optionName, $optionValue);
+            }
+        }
+    }
+
     public static function updateConfigurationValue(string $optionName, $optionValue): void
     {
         self::getInstance()->setConfigurationValue($optionName, $optionValue);
         self::getInstance()->persist();
     }
 
-    public static function updateConfiguration($configurationOptions, $onlyAccessibleOptions = true): void
+    public static function updateConfiguration(array $configurationOptions, $onlyAccessibleOptions = true): void
     {
         if ($onlyAccessibleOptions) {
             self::getInstance()->updateConfigurationOptions($configurationOptions);

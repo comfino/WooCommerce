@@ -2,7 +2,7 @@
 # This file is distributed under the GPLv3.
 msgid ""
 msgstr ""
-"Project-Id-Version: Comfino Payment Gateway 4.2.5\n"
+"Project-Id-Version: Comfino Payment Gateway 4.2.6\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/comfino-payment-gateway\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -40,8 +40,34 @@ msgid "https://github.com/comfino"
 msgstr ""
 
 #. translators: 1: Previous plugin version 2: Current plugin version
-#: comfino-payment-gateway.php:252
+#: comfino-payment-gateway.php:314
 msgid "Comfino plugin updated from version %1$s to %2$s."
+msgstr ""
+
+#. translators: 1: Current version 2: Available version 3: GitHub releases URL
+#: comfino-payment-gateway.php:364
+msgid "<strong>Comfino Payment Gateway:</strong> A new version (%2$s) is available on GitHub. You are currently using version %1$s. Visit <a href=\"%3$s\" target=\"_blank\">GitHub Releases</a> for more information."
+msgstr ""
+
+#: comfino-payment-gateway.php:628
+msgid "Invalid nonce."
+msgstr ""
+
+#: comfino-payment-gateway.php:635
+msgid "Insufficient permissions."
+msgstr ""
+
+#: comfino-payment-gateway.php:643
+msgid "Notice dismissed."
+msgstr ""
+
+#. translators: 1: Plugin version 2: Required PHP version 3: Current PHP version 4: Link to compatible version
+#: views/admin/php-compatibility-notice.php:23
+msgid "<strong>Comfino Payment Gateway:</strong> Plugin version %1$s requires PHP %2$s or higher. You are running PHP %3$s. Please upgrade your PHP version or downgrade to %4$s (compatible with PHP 7.0+)."
+msgstr ""
+
+#: views/admin/php-compatibility-notice.php:35
+msgid "<strong>Comfino Payment Gateway:</strong> The plugin has been automatically deactivated to prevent fatal errors. Please resolve the PHP version issue before reactivating."
 msgstr ""
 
 #: src/Api/ApiClient.php:79
@@ -481,4 +507,17 @@ msgstr ""
 
 #: views/front/paywall.php:18
 msgid "Comfino - installment and deferred on-line payments"
+msgstr ""
+
+#: views/admin/debug-mode-notice.php:18
+msgid "Comfino Debug Mode Active"
+msgstr ""
+
+#: views/admin/debug-mode-notice.php:19
+msgid "Detailed logging is enabled. This may impact performance and should not be used in production environments."
+msgstr ""
+
+#. translators: %s: Link to plugin settings
+#: views/admin/debug-mode-notice.php:24
+msgid "You can disable debug mode in the <a href=\"%s\">plugin settings</a>."
 msgstr ""

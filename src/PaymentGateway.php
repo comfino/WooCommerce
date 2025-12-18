@@ -23,8 +23,8 @@ use Comfino\View\TemplateManager;
 class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
-    public const VERSION = '4.2.5';
-    public const BUILD_TS = 1762178408;
+    public const VERSION = '4.2.6';
+    public const BUILD_TS = 1765965552;
     public const WIDGET_INIT_SCRIPT_HASH = '0603f4e0904fd65e2aef1aded0c57c40';
     public const WIDGET_INIT_SCRIPT_LAST_HASH = '55e4306bb493ff6f99b2f8f617e18038';
 
@@ -130,8 +130,15 @@ class PaymentGateway extends \WC_Payment_Gateway
         $loanType = sanitize_text_field(wp_unslash($_POST['comfino_loan_type'] ?? 'undefined'));
         $loanTerm = (int) filter_var(sanitize_text_field(wp_unslash($_POST['comfino_loan_term'] ?? '0')), FILTER_VALIDATE_INT);
 
+        try {
+            $shopCart = OrderManager::getShopCart($cart, $priceModifier);
+        } catch (\Exception $e) {
+            wc_add_notice(FrontendManager::processError('Shop cart creation error', $e)['title'], 'error');
+
+            return ['result' => 'failure', 'redirect' => ''];
+        }
+
         $wcOrder = wc_get_order($order_id);
-        $shopCart = OrderManager::getShopCart($cart, $priceModifier);
         $shopCustomer = OrderManager::getShopCustomerFromOrder($wcOrder);
         $returnUrl = $this->get_return_url($wcOrder);
 
@@ -182,6 +189,9 @@ class PaymentGateway extends \WC_Payment_Gateway
             $wcOrder->add_order_note(__("Comfino create order", 'comfino-payment-gateway'));
 
             wc_reduce_stock_levels($wcOrder);
+
+            // Mark order stock as reduced to enable stock restoration on cancellation.
+            $wcOrder->get_data_store()->set_stock_reduced($wcOrder->get_id(), true);
 
             $cart->empty_cart();
 
@@ -276,9 +286,15 @@ class PaymentGateway extends \WC_Payment_Gateway
             $viewVariables['api_host'] = ApiClient::getInstance()->getApiHost();
             $viewVariables['shop_domain'] = Main::getShopDomain();
             $viewVariables['widget_key'] = ConfigManager::getWidgetKey();
-            $viewVariables['new_widget_status'] = ConfigManager::getConfigurationValue('COMFINO_NEW_WIDGET_ACTIVE', false) ? 'Active' : 'Inactive';
+            $viewVariables['new_widget_status'] = ConfigManager::getConfigurationValue('COMFINO_NEW_WIDGET_ACTIVE') ? 'Active' : 'Inactive';
             $viewVariables['is_dev_env'] = ConfigManager::useDevEnvVars();
             $viewVariables['build_ts'] = \DateTime::createFromFormat('U', self::BUILD_TS)->format('Y-m-d H:i:s');
+
+            // Get GitHub version information.
+            $githubVersionData = get_transient('comfino_github_version_check');
+            $viewVariables['github_version'] = !empty($githubVersionData['github_version']) ? $githubVersionData['github_version'] : null;
+            $viewVariables['github_version_checked_at'] = !empty($githubVersionData['checked_at']) ? $githubVersionData['checked_at'] : null;
+            $viewVariables['auto_updates_enabled'] = in_array(plugin_basename(Main::getPluginFile()), (array) get_site_option(implode('_', ['auto', 'update', 'plugins']), []), true);
         } else {
             $viewVariables['settings_html'] = $this->generate_settings_html(SettingsForm::getFormFields($activeTab), false);
         }
@@ -450,7 +466,7 @@ class PaymentGateway extends \WC_Payment_Gateway
         }
 
         // Tertiary check: Request URI contains Store API path.
-        if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/wp-json/wc/store/') !== false) {
+        if (isset($_SERVER['REQUEST_URI']) && strpos(sanitize_text_field(wp_unslash($_SERVER['REQUEST_URI'])), '/wp-json/wc/store/') !== false) {
             return true;
         }
 

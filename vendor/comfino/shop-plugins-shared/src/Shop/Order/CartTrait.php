@@ -28,7 +28,7 @@ trait CartTrait
                     'vatRate' => $cartItem->getProduct()->getTaxRate(),
                     'vatAmount' => $cartItem->getProduct()->getTaxValue(),
                 ],
-                static function ($value) : bool {
+                static function ($value): bool {
                     return $value !== null;
                 }
             );
@@ -40,7 +40,6 @@ trait CartTrait
         $cartTotalItemsSumDifference = (int) ($cart->getTotalAmount() - $cartTotalWithDelivery);
 
         if ($cartTotalWithDelivery > $cart->getTotalAmount()) {
-            // Add discount item to the list - problems with cart items value and order total value inconsistency.
             $products[] = [
                 'name' => 'Rabat',
                 'quantity' => 1,
@@ -51,7 +50,6 @@ trait CartTrait
                 'category' => 'DISCOUNT',
             ];
         } elseif ($cartTotalWithDelivery < $cart->getTotalAmount()) {
-            // Add correction item to the list - problems with cart items value and order total value inconsistency.
             $products[] = [
                 'name' => 'Korekta',
                 'quantity' => 1,
@@ -73,7 +71,7 @@ trait CartTrait
                 'deliveryCostVatAmount' => $cart->getDeliveryCostTaxValue(),
                 'category' => $cart->getCategory(),
             ],
-            static function ($value) : bool {
+            static function ($value): bool {
                 return $value !== null;
             }
         );

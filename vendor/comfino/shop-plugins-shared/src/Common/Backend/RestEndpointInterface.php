@@ -11,22 +11,32 @@ use ComfinoExternal\Psr\Http\Message\ServerRequestInterface;
 
 interface RestEndpointInterface
 {
+    /**
+     * @return string
+     */
     public function getName(): string;
 
+    /**
+     * @return string[]
+     */
     public function getMethods(): array;
 
+    /**
+     * @return string
+     */
     public function getEndpointUrl(): string;
 
     /**
-     * @param \Comfino\Api\SerializerInterface $serializer
+     * @param SerializerInterface $serializer
      */
     public function setSerializer($serializer): void;
 
     /**
+     * @param ServerRequestInterface $serverRequest
+     * @param string|null $endpointName
+     * @return array|null
      * @throws InvalidEndpoint
      * @throws InvalidRequest
-     * @param \ComfinoExternal\Psr\Http\Message\ServerRequestInterface $serverRequest
-     * @param string|null $endpointName
      */
     public function processRequest($serverRequest, $endpointName = null): ?array;
 }

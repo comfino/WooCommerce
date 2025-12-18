@@ -7,14 +7,11 @@ use ComfinoExternal\League\Flysystem\Util;
 trait StreamedWritingTrait
 {
     /**
-     * Stream fallback delegator.
-     *
-     * @param string   $path
+     * @param string $path
      * @param resource $resource
-     * @param Config   $config
-     * @param string   $fallback
-     *
-     * @return mixed fallback result
+     * @param Config $config
+     * @param string $fallback
+     * @return mixed
      */
     protected function stream($path, $resource, Config $config, $fallback)
     {
@@ -24,32 +21,26 @@ trait StreamedWritingTrait
         return call_user_func($fallbackCall, $path, $contents, $config);
     }
     /**
-     * Write using a stream.
-     *
-     * @param string   $path
+     * @param string $path
      * @param resource $resource
-     * @param Config   $config
-     *
-     * @return mixed false or file metadata
+     * @param Config $config
+     * @return mixed
      */
     public function writeStream($path, $resource, Config $config)
     {
         return $this->stream($path, $resource, $config, 'write');
     }
     /**
-     * Update a file using a stream.
-     *
-     * @param string   $path
+     * @param string $path
      * @param resource $resource
-     * @param Config   $config   Config object or visibility setting
-     *
-     * @return mixed false of file metadata
+     * @param Config $config
+     * @return mixed
      */
     public function updateStream($path, $resource, Config $config)
     {
         return $this->stream($path, $resource, $config, 'update');
     }
-    // Required abstract methods
+    
     abstract public function write($pash, $contents, Config $config);
     abstract public function update($pash, $contents, Config $config);
 }

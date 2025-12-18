@@ -6,18 +6,13 @@ namespace Comfino\Api\Response;
 
 class CreateOrder extends Base
 {
-    /** @var string
-     * @readonly */
     public $status;
-    /** @var string
-     * @readonly */
+
     public $externalId;
-    /** @var string
-     * @readonly */
+
     public $applicationUrl;
 
     /**
-     * @inheritDoc
      * @param mixed[]|string|bool|null|float|int $deserializedResponseBody
      */
     protected function processResponseBody($deserializedResponseBody): void

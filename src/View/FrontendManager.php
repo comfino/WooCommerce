@@ -9,8 +9,10 @@ use Comfino\Common\Frontend\PaywallIframeRenderer;
 use Comfino\Common\Frontend\PaywallRenderer;
 use Comfino\Common\Frontend\WidgetInitScriptHelper;
 use Comfino\Configuration\ConfigManager;
+use Comfino\DebugLogger;
 use Comfino\ErrorLogger;
 use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
+use Comfino\Main;
 use Comfino\PaymentGateway;
 
 if (!defined('ABSPATH')) {
@@ -511,6 +513,46 @@ final class FrontendManager
         }
 
         return '';
+    }
+
+    public static function processError(string $errorPrefix, \Throwable $exception, ?int $httpStatus = null, ?string $userErrorMessage = null): array
+    {
+        DebugLogger::logEvent(
+            '[ERROR]',
+            $errorPrefix,
+            [
+                'exception' => get_class($exception),
+                'error_message' => $exception->getMessage(),
+                'error_code' => $exception->getCode(),
+                'error_file' => $exception->getFile(),
+                'error_line' => $exception->getLine(),
+                'error_trace' => $exception->getTraceAsString(),
+            ]
+        );
+
+        ErrorLogger::sendError(
+            $exception,
+            $errorPrefix,
+            $exception->getCode(),
+            $exception->getMessage(),
+            null,
+            null,
+            null,
+            $exception->getTraceAsString()
+        );
+
+        if (empty($userErrorMessage)) {
+            $userErrorMessage = __(
+                'There was a technical problem. Please try again in a moment and it should work!',
+                'comfino-payment-gateway'
+            );
+        }
+
+        if ($httpStatus !== null) {
+            http_response_code($httpStatus);
+        }
+
+        return ['title' => $userErrorMessage, 'language' => Main::getShopLanguage()];
     }
 
     public static function getImageAllowedHtml(): array

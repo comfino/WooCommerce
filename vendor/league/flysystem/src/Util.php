@@ -4,15 +4,11 @@ namespace ComfinoExternal\League\Flysystem;
 
 use ComfinoExternal\League\Flysystem\Util\MimeType;
 use LogicException;
-use function strcmp;
 class Util
 {
     /**
-     * Get normalized pathinfo.
-     *
      * @param string $path
-     *
-     * @return array pathinfo
+     * @return array
      */
     public static function pathinfo($path)
     {
@@ -25,34 +21,25 @@ class Util
         return $pathinfo + ['dirname' => ''];
     }
     /**
-     * Normalize a dirname return value.
-     *
      * @param string $dirname
-     *
-     * @return string normalized dirname
+     * @return string
      */
     public static function normalizeDirname($dirname)
     {
         return $dirname === '.' ? '' : $dirname;
     }
     /**
-     * Get a normalized dirname from a path.
-     *
      * @param string $path
-     *
-     * @return string dirname
+     * @return string
      */
     public static function dirname($path)
     {
         return static::normalizeDirname(dirname($path));
     }
     /**
-     * Map result arrays.
-     *
      * @param array $object
      * @param array $map
-     *
-     * @return array mapped result
+     * @return array
      */
     public static function map(array $object, array $map)
     {
@@ -66,12 +53,8 @@ class Util
         return $result;
     }
     /**
-     * Normalize path.
-     *
      * @param string $path
-     *
      * @throws LogicException
-     *
      * @return string
      */
     public static function normalizePath($path)
@@ -79,12 +62,8 @@ class Util
         return static::normalizeRelativePath($path);
     }
     /**
-     * Normalize relative directories in a path.
-     *
      * @param string $path
-     *
      * @throws LogicException
-     *
      * @return string
      */
     public static function normalizeRelativePath($path)
@@ -108,53 +87,40 @@ class Util
                     break;
             }
         }
-        $path = implode('/', $parts);
-        return $path;
+        return implode('/', $parts);
     }
     /**
-     * Rejects unprintable characters and invalid unicode characters.
-     *
      * @param string $path
-     *
-     * @return string $path
+     * @return string
      */
     protected static function removeFunkyWhiteSpace($path)
     {
-        if (preg_match('#\p{C}+#u', $path)) {
-            throw CorruptedPathDetected::forPath($path);
+        while (preg_match('#\p{C}+|^\./#u', $path)) {
+            $path = preg_replace('#\p{C}+|^\./#u', '', $path);
         }
         return $path;
     }
     /**
-     * Normalize prefix.
-     *
      * @param string $prefix
      * @param string $separator
-     *
-     * @return string normalized path
+     * @return string
      */
     public static function normalizePrefix($prefix, $separator)
     {
         return rtrim($prefix, $separator) . $separator;
     }
     /**
-     * Get content size.
-     *
      * @param string $contents
-     *
-     * @return int content size
+     * @return int
      */
     public static function contentSize($contents)
     {
         return defined('MB_OVERLOAD_STRING') ? mb_strlen($contents, '8bit') : strlen($contents);
     }
     /**
-     * Guess MIME Type based on the path of the file and it's content.
-     *
-     * @param string          $path
+     * @param string $path
      * @param string|resource $content
-     *
-     * @return string|null MIME Type or NULL if no extension detected
+     * @return string|null
      */
     public static function guessMimeType($path, $content)
     {
@@ -165,18 +131,15 @@ class Util
         return MimeType::detectByFilename($path);
     }
     /**
-     * Emulate directories.
-     *
      * @param array $listing
-     *
-     * @return array listing with emulated directories
+     * @return array
      */
     public static function emulateDirectories(array $listing)
     {
         $directories = [];
         $listedDirectories = [];
         foreach ($listing as $object) {
-            [$directories, $listedDirectories] = static::emulateObjectDirectories($object, $directories, $listedDirectories);
+            list($directories, $listedDirectories) = static::emulateObjectDirectories($object, $directories, $listedDirectories);
         }
         $directories = array_diff(array_unique($directories), array_unique($listedDirectories));
         foreach ($directories as $directory) {
@@ -185,13 +148,8 @@ class Util
         return $listing;
     }
     /**
-     * Ensure a Config instance.
-     *
      * @param null|array|Config $config
-     *
-     * @return Config config instance
-     *
-     * @throw  LogicException
+     * @return Config
      */
     public static function ensureConfig($config)
     {
@@ -207,8 +165,6 @@ class Util
         throw new LogicException('A config should either be an array or a Flysystem\Config object.');
     }
     /**
-     * Rewind a stream.
-     *
      * @param resource $resource
      */
     public static function rewindStream($resource)
@@ -223,11 +179,8 @@ class Util
         return $metadata['seekable'];
     }
     /**
-     * Get the size of a stream.
-     *
      * @param resource $resource
-     *
-     * @return int|null stream size
+     * @return int|null
      */
     public static function getStreamSize($resource)
     {
@@ -238,12 +191,9 @@ class Util
         return $stat['size'];
     }
     /**
-     * Emulate the directories of a single object.
-     *
      * @param array $object
      * @param array $directories
      * @param array $listedDirectories
-     *
      * @return array
      */
     protected static function emulateObjectDirectories(array $object, array $directories, array $listedDirectories)
@@ -266,10 +216,7 @@ class Util
         return [$directories, $listedDirectories];
     }
     /**
-     * Returns the trailing name component of the path.
-     *
      * @param string $path
-     *
      * @return string
      */
     private static function basename($path)
@@ -280,18 +227,15 @@ class Util
         if (\DIRECTORY_SEPARATOR === '/') {
             return $basename;
         }
-        // @codeCoverageIgnoreStart
-        // Extra Windows path munging. This is tested via AppVeyor, but code
-        // coverage is not reported.
-        // Handle relative paths with drive letters. c:file.txt.
+
         while (preg_match('#^[a-zA-Z]{1}:[^\\\\/]#', $basename)) {
             $basename = substr($basename, 2);
         }
-        // Remove colon for standalone drive letter names.
+        
         if (preg_match('#^[a-zA-Z]{1}:$#', $basename)) {
             $basename = rtrim($basename, ':');
         }
         return $basename;
-        // @codeCoverageIgnoreEnd
+        
     }
 }

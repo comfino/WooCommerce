@@ -8,7 +8,6 @@ class Seller implements SellerInterface
 {
     /**
      * @var string|null
-     * @readonly
      */
     private $taxId;
     /**
@@ -19,9 +18,6 @@ class Seller implements SellerInterface
         $this->taxId = $taxId;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getTaxId(): ?string
     {
         return $this->taxId !== null ? trim(strip_tags($this->taxId)) : null;

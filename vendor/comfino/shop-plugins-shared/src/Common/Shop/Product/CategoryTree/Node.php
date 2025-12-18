@@ -7,23 +7,27 @@ namespace Comfino\Common\Shop\Product\CategoryTree;
 final class Node
 {
     /**
-     * @readonly
      * @var int
      */
     private $id;
     /**
-     * @readonly
      * @var string
      */
     private $name;
     /**
-     * @var \Comfino\Common\Shop\Product\CategoryTree\Node|null
+     * @var Node|null
      */
     private $parent;
     /**
-     * @var \Comfino\Common\Shop\Product\CategoryTree\NodeIterator|null
+     * @var NodeIterator|null
      */
     private $children;
+    /**
+     * @param int $id
+     * @param string $name
+     * @param Node|null $parent
+     * @param NodeIterator|null $children
+     */
     public function __construct(int $id, string $name, ?Node $parent = null, ?NodeIterator $children = null)
     {
         $this->id = $id;
@@ -32,56 +36,92 @@ final class Node
         $this->children = $children;
     }
 
+    /**
+     * @return int
+     */
     public function getId(): int
     {
         return $this->id;
     }
 
+    /**
+     * @return string
+     */
     public function getName(): string
     {
         return $this->name;
     }
 
+    /**
+     * @return Node|null
+     */
     public function getParent(): ?Node
     {
         return $this->parent;
     }
 
+    /**
+     * @param Node|null $parent
+     */
     public function setParent(?Node $parent): void
     {
         $this->parent = $parent;
     }
 
+    /**
+     * @return NodeIterator|null
+     */
     public function getChildren(): ?NodeIterator
     {
         return $this->children;
     }
 
+    /**
+     * @param NodeIterator $children
+     */
     public function setChildren(NodeIterator $children): void
     {
         $this->children = $children;
     }
 
+    /**
+     * @return bool
+     */
     public function isRoot(): bool
     {
         return $this->parent === null;
     }
 
+    /**
+     * @return bool
+     */
     public function isLeaf(): bool
     {
         return !$this->hasChildren();
     }
 
+    /**
+     * @param Node $node
+     * @return bool
+     */
     public function isParentOf(Node $node): bool
     {
         return $this === $node->getParent();
     }
 
+    /**
+     * @param Node $node
+     * @return bool
+     */
     public function isChildOf(Node $node): bool
     {
         return $node === $this->parent;
     }
 
+    /**
+     * @param Node $node
+     * @return bool
+     */
     public function isAncestorOf(Node $node): bool
     {
         if ($this->isParentOf($node)) {
@@ -101,6 +141,10 @@ final class Node
         return false;
     }
 
+    /**
+     * @param Node $node
+     * @return bool
+     */
     public function isDescendantOf(Node $node): bool
     {
         if ($this->isChildOf($node)) {
@@ -124,11 +168,17 @@ final class Node
         return false;
     }
 
+    /**
+     * @return bool
+     */
     public function hasChildren(): bool
     {
         return $this->children !== null && $this->children->count() !== 0;
     }
 
+    /**
+     * @return NodeIterator
+     */
     public function getPathToRoot(): NodeIterator
     {
         $nodes = [];

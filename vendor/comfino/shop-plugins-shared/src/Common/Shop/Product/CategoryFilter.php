@@ -9,18 +9,21 @@ use Comfino\Common\Shop\Cart;
 class CategoryFilter
 {
     /**
-     * @readonly
-     * @var \Comfino\Common\Shop\Product\CategoryTree
+     * @var CategoryTree
      */
     private $categoryTree;
+    /**
+     * @param CategoryTree $categoryTree
+     */
     public function __construct(CategoryTree $categoryTree)
     {
         $this->categoryTree = $categoryTree;
     }
 
     /**
-     * @param int[] $excludedCategoryIds
      * @param int $categoryId
+     * @param int[] $excludedCategoryIds
+     * @return bool
      */
     public function isCategoryAvailable($categoryId, $excludedCategoryIds): bool
     {
@@ -46,8 +49,9 @@ class CategoryFilter
     }
 
     /**
+     * @param Cart $cart
      * @param int[] $excludedCategoryIds
-     * @param \Comfino\Common\Shop\Cart $cart
+     * @return bool
      */
     public function isCartValid($cart, $excludedCategoryIds): bool
     {

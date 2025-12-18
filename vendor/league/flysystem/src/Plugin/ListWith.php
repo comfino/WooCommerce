@@ -5,8 +5,6 @@ namespace ComfinoExternal\League\Flysystem\Plugin;
 class ListWith extends AbstractPlugin
 {
     /**
-     * Get the method name.
-     *
      * @return string
      */
     public function getMethod()
@@ -14,13 +12,10 @@ class ListWith extends AbstractPlugin
         return 'listWith';
     }
     /**
-     * List contents with metadata.
-     *
-     * @param string[] $keys
-     * @param string   $directory
-     * @param bool     $recursive
-     *
-     * @return array listing with metadata
+     * @param array $keys
+     * @param string $directory
+     * @param bool $recursive
+     * @return array
      */
     public function handle(array $keys = [], $directory = '', $recursive = \false)
     {
@@ -34,11 +29,8 @@ class ListWith extends AbstractPlugin
         return $contents;
     }
     /**
-     * Get a meta-data value by key name.
-     *
-     * @param array  $object
+     * @param array $object
      * @param string $key
-     *
      * @return array
      */
     protected function getMetadataByName(array $object, $key)

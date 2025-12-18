@@ -62,55 +62,82 @@ final class ApiService
             4
         );
 
-        self::registerWordPressApiEndpoint('availableOfferTypes', [
-            [
-                'methods' => \WP_REST_Server::READABLE,
-                'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
-                    return self::processRequest('availableOfferTypes', $request);
-                },
-                'args' => ['product_id' => ['sanitize_callback' => 'absint']],
-            ],
-        ]);
+        /* Public frontend endpoints - accessible to everyone without authentication.
+           These are called from frontend JavaScript for product widgets and checkout paywall. */
 
-        self::registerWordPressApiEndpoint('paywall', [
+        self::registerWordPressApiEndpoint(
+            'availableOfferTypes',
             [
-                'methods' => \WP_REST_Server::READABLE,
-                'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
-                    return self::processRequest('paywall', $request);
-                },
-            ],
-        ]);
+                [
+                    'methods' => \WP_REST_Server::READABLE,
+                    'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
+                        return self::processRequest('availableOfferTypes', $request);
+                    },
+                    'args' => ['product_id' => ['sanitize_callback' => 'absint']],
+                    'permission_callback' => '__return_true',
+                ],
+            ]
+        );
 
-        self::registerWordPressApiEndpoint('paywallItemDetails', [
+        self::registerWordPressApiEndpoint(
+            'paywall',
             [
-                'methods' => \WP_REST_Server::READABLE,
-                'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
-                    return self::processRequest('paywallItemDetails', $request);
-                },
-            ],
-        ]);
+                [
+                    'methods' => \WP_REST_Server::READABLE,
+                    'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
+                        return self::processRequest('paywall', $request);
+                    },
+                    'permission_callback' => '__return_true',
+                ],
+            ]
+        );
 
-        self::registerWordPressApiEndpoint('productDetails', [
+        self::registerWordPressApiEndpoint(
+            'paywallItemDetails',
             [
-                'methods' => \WP_REST_Server::READABLE,
-                'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
-                    return self::processRequest('productDetails', $request);
-                },
-                'args' => ['loanTypeSelected' => ['sanitize_callback' => 'sanitize_text_field']],
-            ],
-        ]);
+                [
+                    'methods' => \WP_REST_Server::READABLE,
+                    'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
+                        return self::processRequest('paywallItemDetails', $request);
+                    },
+                    'permission_callback' => '__return_true',
+                ],
+            ]
+        );
+
+        self::registerWordPressApiEndpoint(
+            'productDetails',
+            [
+                [
+                    'methods' => \WP_REST_Server::READABLE,
+                    'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
+                        return self::processRequest('productDetails', $request);
+                    },
+                    'args' => ['loanTypeSelected' => ['sanitize_callback' => 'sanitize_text_field']],
+                    'permission_callback' => '__return_true',
+                ],
+            ]
+        );
+
+        /* Comfino API callback endpoints - require CR-Signature authentication.
+           These are server-to-server requests from Comfino API (no WordPress user context).
+           Authentication is performed by RestEndpointManager::verifyRequest() using SHA3-256 HMAC signature verification. */
 
         self::getEndpointManager()->registerEndpoint(
             new StatusNotification(
                 'transactionStatus',
-                self::registerWordPressApiEndpoint('transactionStatus', [
+                self::registerWordPressApiEndpoint(
+                    'transactionStatus',
                     [
-                        'methods' => \WP_REST_Server::EDITABLE,
-                        'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
-                            return self::processRequest('transactionStatus', $request);
-                        },
-                    ],
-                ]),
+                        [
+                            'methods' => \WP_REST_Server::EDITABLE,
+                            'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
+                                return self::processRequest('transactionStatus', $request);
+                            },
+                            'permission_callback' => '__return_true',
+                        ],
+                    ]
+                ),
                 StatusManager::getInstance(new StatusAdapter()),
                 ConfigManager::getForbiddenStatuses(),
                 ConfigManager::getIgnoredStatuses()
@@ -120,21 +147,26 @@ final class ApiService
         self::getEndpointManager()->registerEndpoint(
             new Configuration(
                 'configuration',
-                self::registerWordPressApiEndpoint('configuration', [
+                self::registerWordPressApiEndpoint(
+                    'configuration',
                     [
-                        'methods' => \WP_REST_Server::READABLE,
-                        'callback' =>  function (\WP_REST_Request $request): \WP_REST_Response {
-                            return self::processRequest('configuration', $request);
-                        },
-                        'args' => ['vkey' => ['sanitize_callback' => 'sanitize_key']],
-                    ],
-                    [
-                        'methods' => \WP_REST_Server::EDITABLE,
-                        'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
-                            return self::processRequest('configuration', $request);
-                        },
-                    ],
-                ]),
+                        [
+                            'methods' => \WP_REST_Server::READABLE,
+                            'callback' =>  function (\WP_REST_Request $request): \WP_REST_Response {
+                                return self::processRequest('configuration', $request);
+                            },
+                            'args' => ['vkey' => ['sanitize_callback' => 'sanitize_key']],
+                            'permission_callback' => '__return_true',
+                        ],
+                        [
+                            'methods' => \WP_REST_Server::EDITABLE,
+                            'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
+                                return self::processRequest('configuration', $request);
+                            },
+                            'permission_callback' => '__return_true',
+                        ],
+                    ]
+                ),
                 ConfigManager::getInstance(),
                 DebugLogger::getLoggerInstance(),
                 'WooCommerce',
@@ -156,14 +188,18 @@ final class ApiService
         self::getEndpointManager()->registerEndpoint(
             new CacheInvalidate(
                 'cacheInvalidate',
-                self::registerWordPressApiEndpoint('cacheInvalidate', [
+                self::registerWordPressApiEndpoint(
+                    'cacheInvalidate',
                     [
-                        'methods' => \WP_REST_Server::EDITABLE,
-                        'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
-                            return self::processRequest('cacheInvalidate', $request);
-                        },
-                    ],
-                ]),
+                        [
+                            'methods' => \WP_REST_Server::EDITABLE,
+                            'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
+                                return self::processRequest('cacheInvalidate', $request);
+                            },
+                            'permission_callback' => '__return_true',
+                        ],
+                    ]
+                ),
                 CacheManager::getCachePool()
             )
         );
@@ -259,6 +295,21 @@ final class ApiService
         return $apiResponse;
     }
 
+    /**
+     * Permission callback for admin-only endpoints (future use).
+     * Requires WordPress admin capabilities.
+     *
+     * Note: This is NOT used for webhook/callback endpoints which authenticate via CR-Signature.
+     * Use this only for admin panel features that modify plugin settings or trigger diagnostic actions.
+     *
+     * @return bool True if user has WooCommerce management capabilities.
+     */
+    private static function permissionAdminOnly(): bool
+    {
+        // For future admin-only endpoints (e.g., plugin diagnostics, manual actions).
+        return current_user_can('manage_woocommerce');
+    }
+
     private static function getRestUrl(string $endpointPath): string
     {
         if (empty($endpointPath)) {
@@ -304,7 +355,7 @@ final class ApiService
                     $endpointParams = [
                         'methods' => $endpointCallback['methods'],
                         'callback' => $endpointCallback['callback'],
-                        'permission_callback' => '__return_true',
+                        'permission_callback' => $endpointCallback['permission_callback'] ?? '__return_true',
                     ];
 
                     if (isset($endpointCallback['args'])) {
@@ -350,7 +401,18 @@ final class ApiService
 
         $loanAmount = (int) round(WC()->cart->get_total('edit') * 100);
 
-        $shopCart = OrderManager::getShopCart(WC()->cart, $priceModifier);
+        try {
+            $shopCart = OrderManager::getShopCart(WC()->cart, $priceModifier);
+        } catch (\Exception $e) {
+            TemplateManager::renderView(
+                'paywall-disabled',
+                'front',
+                array_merge(FrontendManager::processError('Shop cart creation error', $e, 400), ['styles' => []])
+            );
+
+            exit;
+        }
+
         $allowedProductTypes = SettingsManager::getAllowedProductTypes(
             ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
             $shopCart
@@ -441,7 +503,13 @@ final class ApiService
             $priceModifier = 0;
         }
 
-        $shopCart = OrderManager::getShopCart(WC()->cart, $priceModifier);
+        try {
+            $shopCart = OrderManager::getShopCart(WC()->cart, $priceModifier);
+        } catch (\Exception $e) {
+            FrontendManager::processError('Shop cart creation error', $e);
+
+            return new \WP_REST_Response(['listItemData' => '', 'productDetails' => ''], 400);
+        }
 
         DebugLogger::logEvent(
             '[PAYWALL_ITEM_DETAILS]',

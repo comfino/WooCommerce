@@ -11,51 +11,32 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Http\Message;
 
-/**
- * Import classes
- */
 use ComfinoExternal\Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
 use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 use ComfinoExternal\Psr\Http\Message\StreamInterface;
 use ComfinoExternal\Sunrise\Http\Header\HeaderInterface;
-/**
- * Import functions
- */
+
 use function is_int;
 use function is_string;
 use function preg_match;
 use function sprintf;
-/**
- * Import constants
- */
+
 use const ComfinoExternal\Sunrise\Http\Message\REASON_PHRASES;
-/**
- * HTTP Response Message
- *
- * @link https://tools.ietf.org/html/rfc7230
- * @link https://www.php-fig.org/psr/psr-7/
- */
+
 class Response extends Message implements ResponseInterface, StatusCodeInterface
 {
     /**
-     * The response's status code
-     *
      * @var int
      */
     protected $statusCode = self::STATUS_OK;
     /**
-     * The response's reason phrase
-     *
      * @var string
      */
     protected $reasonPhrase = REASON_PHRASES[self::STATUS_OK];
     /**
-     * Constrictor of the class
-     *
      * @param int|null $statusCode
      * @param string|null $reasonPhrase
-     * @param array<string, string|string[]>|null $headers
      * @param StreamInterface|null $body
      * @param string|null $protocolVersion
      */
@@ -66,23 +47,17 @@ class Response extends Message implements ResponseInterface, StatusCodeInterface
             $this->setStatus($statusCode, $reasonPhrase ?? '');
         }
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getStatusCode(): int
     {
         return $this->statusCode;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getReasonPhrase(): string
     {
         return $this->reasonPhrase;
     }
     /**
-     * {@inheritdoc}
-     *
      * @psalm-suppress ParamNameMismatch
      */
     public function withStatus($statusCode, $reasonPhrase = ''): ResponseInterface
@@ -92,11 +67,8 @@ class Response extends Message implements ResponseInterface, StatusCodeInterface
         return $clone;
     }
     /**
-     * Sets the given status to the response
-     *
      * @param int $statusCode
      * @param string $reasonPhrase
-     *
      * @return void
      */
     protected function setStatus($statusCode, $reasonPhrase): void
@@ -110,15 +82,9 @@ class Response extends Message implements ResponseInterface, StatusCodeInterface
         $this->reasonPhrase = $reasonPhrase;
     }
     /**
-     * Validates the given status-code
-     *
      * @param mixed $statusCode
-     *
      * @return void
-     *
      * @throws InvalidArgumentException
-     *
-     * @link https://tools.ietf.org/html/rfc7230#section-3.1.2
      */
     protected function validateStatusCode($statusCode): void
     {
@@ -130,15 +96,9 @@ class Response extends Message implements ResponseInterface, StatusCodeInterface
         }
     }
     /**
-     * Validates the given reason-phrase
-     *
      * @param mixed $reasonPhrase
-     *
      * @return void
-     *
      * @throws InvalidArgumentException
-     *
-     * @link https://tools.ietf.org/html/rfc7230#section-3.1.2
      */
     protected function validateReasonPhrase($reasonPhrase): void
     {

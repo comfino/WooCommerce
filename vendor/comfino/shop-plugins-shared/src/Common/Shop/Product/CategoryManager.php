@@ -12,6 +12,7 @@ class CategoryManager
 {
     /**
      * @param Category[] $nestedCategories
+     * @return Descriptor
      */
     public static function buildCategoryTree($nestedCategories): Descriptor
     {
@@ -38,6 +39,11 @@ class CategoryManager
         return new Descriptor(new NodeIterator($nodes), $index);
     }
 
+    /**
+     * @param Node $parentNode
+     * @param Category $category
+     * @return Node
+     */
     private static function processCategory(Node $parentNode, Category $category, array &$index): Node
     {
         $node = new Node($category->id, $category->name, $parentNode);

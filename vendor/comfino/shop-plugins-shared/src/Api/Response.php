@@ -9,24 +9,20 @@ use Comfino\Api\Exception\AuthorizationError;
 use Comfino\Api\Exception\RequestValidationError;
 use Comfino\Api\Exception\ResponseValidationError;
 use Comfino\Api\Exception\ServiceUnavailable;
-use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 
 abstract class Response
 {
-    /** @var Request Comfino API client request object associated with this response. */
     protected $request;
-    /** @var ResponseInterface PSR-7 compatible HTTP response object. */
+
     protected $response;
-    /** @var SerializerInterface Serializer/deserializer object for requests and responses body. */
+
     protected $serializer;
-    /** @var \Throwable|null Exception object in case of validation or communication error. */
+
     protected $exception;
-    /** @var string[] Extracted HTTP response headers. */
+
     protected $headers = [];
 
     /**
-     * Returns response HTTP headers as associative array ['headerName' => 'headerValue'].
-     *
      * @return string[]
      */
     final public function getHeaders(): array
@@ -35,10 +31,7 @@ abstract class Response
     }
 
     /**
-     * Checks if specified response HTTP header exists (case-insensitive).
-     *
      * @param string $headerName
-     *
      * @return bool
      */
     final public function hasHeader($headerName): bool
@@ -57,11 +50,8 @@ abstract class Response
     }
 
     /**
-     * Returns specified response HTTP header (case-insensitive) or default value if it does not exist.
-     *
      * @param string $headerName
      * @param string|null $defaultValue
-     *
      * @return string|null
      */
     final public function getHeader($headerName, $defaultValue = null): ?string
@@ -80,10 +70,7 @@ abstract class Response
     }
 
     /**
-     * Extracts API response data from input PSR-7 compatible HTTP response object.
-     *
-     * @return Response Comfino API client response object.
-     *
+     * @return Response
      * @throws RequestValidationError
      * @throws ResponseValidationError
      * @throws AuthorizationError
@@ -92,6 +79,10 @@ abstract class Response
      */
     final protected function initFromPsrResponse(): self
     {
+        if ($this->response === null) {
+            return $this;
+        }
+
         $requestBody = ($this->request->getRequestBody() ?? '');
 
         $this->response->getBody()->rewind();
@@ -104,7 +95,6 @@ abstract class Response
         }
 
         if ($this->exception !== null) {
-            // Exception already thrown - return without errors processing and exceptions throwing.
             return $this;
         }
 
@@ -217,8 +207,6 @@ abstract class Response
     }
 
     /**
-     * Fills response object properties with data from deserialized API response array.
-     *
      * @throws ResponseValidationError
      * @param mixed[]|string|bool|null $deserializedResponseBody
      */

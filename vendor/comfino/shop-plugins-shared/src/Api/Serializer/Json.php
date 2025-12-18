@@ -16,7 +16,7 @@ class Json implements SerializerInterface
     public function serialize($requestData): string
     {
         try {
-            $serializedRequestBody = json_encode($requestData, 0);
+            $serializedRequestBody = json_encode($requestData, JSON_PRESERVE_ZERO_FRACTION);
         } catch (\JsonException $e) {
             throw new RequestValidationError("Invalid request data: {$e->getMessage()}", 0, $e);
         }
