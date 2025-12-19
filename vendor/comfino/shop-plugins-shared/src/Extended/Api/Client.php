@@ -15,9 +15,6 @@ use ComfinoExternal\Psr\Http\Client\ClientInterface;
 use ComfinoExternal\Psr\Http\Message\RequestFactoryInterface;
 use ComfinoExternal\Psr\Http\Message\StreamFactoryInterface;
 
-/**
- * Extended Comfino API client PHP 7.1+ compatible.
- */
 class Client extends \Comfino\Api\Client
 {
     public function __construct(
@@ -32,8 +29,6 @@ class Client extends \Comfino\Api\Client
     }
 
     /**
-     * Sends a plugin error report to the Comfino API.
-     *
      * @param ShopPluginError $shopPluginError
      * @return bool
      */
@@ -55,8 +50,6 @@ class Client extends \Comfino\Api\Client
     }
 
     /**
-     * Sends notification about plugin uninstallation.
-     *
      * @return bool
      */
     public function notifyPluginRemoval(): bool
@@ -71,8 +64,6 @@ class Client extends \Comfino\Api\Client
     }
 
     /**
-     * Sends notification about abandoned cart.
-     *
      * @param string $type
      * @return bool
      */

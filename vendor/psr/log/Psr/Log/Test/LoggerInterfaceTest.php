@@ -5,12 +5,7 @@ namespace ComfinoExternal\Psr\Log\Test;
 use ComfinoExternal\Psr\Log\LoggerInterface;
 use ComfinoExternal\Psr\Log\LogLevel;
 use ComfinoExternal\PHPUnit\Framework\TestCase;
-/**
- * Provides a base test class for ensuring compliance with the LoggerInterface.
- *
- * Implementors can extend the class and implement abstract methods to run this
- * as part of their test suite.
- */
+
 abstract class LoggerInterfaceTest extends TestCase
 {
     /**
@@ -18,12 +13,6 @@ abstract class LoggerInterfaceTest extends TestCase
      */
     abstract public function getLogger();
     /**
-     * This must return the log messages in order.
-     *
-     * The simple formatting of the messages is: "<LOG LEVEL> <MESSAGE>".
-     *
-     * Example ->error('Foo') would yield "error Foo".
-     *
      * @return string[]
      */
     abstract public function getLogs();
@@ -31,9 +20,7 @@ abstract class LoggerInterfaceTest extends TestCase
     {
         $this->assertInstanceOf('ComfinoExternal\Psr\Log\LoggerInterface', $this->getLogger());
     }
-    /**
-     * @dataProvider provideLevelsAndMessages
-     */
+    
     public function testLogsAtAllLevels($level, $message)
     {
         $logger = $this->getLogger();
@@ -46,9 +33,7 @@ abstract class LoggerInterfaceTest extends TestCase
     {
         return array(LogLevel::EMERGENCY => array(LogLevel::EMERGENCY, 'message of level emergency with context: {user}'), LogLevel::ALERT => array(LogLevel::ALERT, 'message of level alert with context: {user}'), LogLevel::CRITICAL => array(LogLevel::CRITICAL, 'message of level critical with context: {user}'), LogLevel::ERROR => array(LogLevel::ERROR, 'message of level error with context: {user}'), LogLevel::WARNING => array(LogLevel::WARNING, 'message of level warning with context: {user}'), LogLevel::NOTICE => array(LogLevel::NOTICE, 'message of level notice with context: {user}'), LogLevel::INFO => array(LogLevel::INFO, 'message of level info with context: {user}'), LogLevel::DEBUG => array(LogLevel::DEBUG, 'message of level debug with context: {user}'));
     }
-    /**
-     * @expectedException \Psr\Log\InvalidArgumentException
-     */
+    
     public function testThrowsOnInvalidLevel()
     {
         $logger = $this->getLogger();

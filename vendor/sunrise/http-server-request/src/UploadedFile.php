@@ -11,80 +11,51 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Http\ServerRequest;
 
-/**
- * Import classes
- */
 use ComfinoExternal\Psr\Http\Message\StreamInterface;
 use ComfinoExternal\Psr\Http\Message\UploadedFileInterface;
 use ComfinoExternal\Sunrise\Stream\StreamFactory;
 use InvalidArgumentException;
 use RuntimeException;
-/**
- * Import functions
- */
+
 use function dirname;
 use function is_dir;
 use function is_writeable;
 use function sprintf;
-/**
- * Import constants
- */
+
 use const ComfinoExternal\Sunrise\Http\ServerRequest\UPLOAD_ERRORS;
 use const UPLOAD_ERR_OK;
-/**
- * UploadedFile
- *
- * @link https://www.php-fig.org/psr/psr-7/
- */
+
 class UploadedFile implements UploadedFileInterface
 {
     /**
-     * List of upload errors
-     *
-     * @var array<int, string>
-     *
-     * @link https://www.php.net/manual/en/features.file-upload.errors.php
+     * @var array<int,
      */
     public const UPLOAD_ERRORS = UPLOAD_ERRORS;
     /**
-     * The file stream
-     *
      * @var StreamInterface|null
      */
     protected $stream = null;
     /**
-     * The file size
-     *
      * @var int|null
      */
     protected $size;
     /**
-     * The file error
-     *
      * @var int
      */
     protected $error;
     /**
-     * The file's error message
-     *
      * @var string
      */
     protected $errorMessage;
     /**
-     * The file name
-     *
      * @var string|null
      */
     protected $clientFilename;
     /**
-     * The file type
-     *
      * @var string|null
      */
     protected $clientMediaType;
     /**
-     * Constructor of the class
-     *
      * @param StreamInterface|string $file
      * @param int|null $size
      * @param int $error
@@ -98,15 +69,13 @@ class UploadedFile implements UploadedFileInterface
         }
         $this->size = $size;
         $this->error = $error;
-        /** @var string */
+        
         $errorMessage = static::UPLOAD_ERRORS[$error] ?? 'Unknown error';
         $this->errorMessage = $errorMessage;
         $this->clientFilename = $clientFilename;
         $this->clientMediaType = $clientMediaType;
     }
     /**
-     * {@inheritdoc}
-     *
      * @throws RuntimeException
      */
     public function getStream(): StreamInterface
@@ -120,8 +89,6 @@ class UploadedFile implements UploadedFileInterface
         return $this->stream;
     }
     /**
-     * {@inheritdoc}
-     *
      * @throws InvalidArgumentException
      * @throws RuntimeException
      */
@@ -147,41 +114,29 @@ class UploadedFile implements UploadedFileInterface
         $this->stream = null;
         $target->close();
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getSize(): ?int
     {
         return $this->size;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getError(): int
     {
         return $this->error;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getClientFilename(): ?string
     {
         return $this->clientFilename;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function getClientMediaType(): ?string
     {
         return $this->clientMediaType;
     }
     /**
-     * Creates a stream from the given file
-     *
      * @param mixed $file
-     *
      * @return StreamInterface
-     *
      * @throws InvalidArgumentException
      */
     protected function createStream($file): StreamInterface

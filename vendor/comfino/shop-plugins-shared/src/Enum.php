@@ -1,14 +1,12 @@
-<?php /** @noinspection ALL */
+<?php
 
 declare(strict_types=1);
 
 namespace Comfino;
 
-/** Replacement of enum type to maintain source code compatibility with PHP 7.1 (workaround for Rector transpilation bug). */
 abstract class Enum implements \JsonSerializable
 {
     /**
-     * @readonly
      * @var string
      */
     private $value;

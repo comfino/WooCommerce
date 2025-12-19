@@ -7,8 +7,6 @@ use ComfinoExternal\League\Flysystem\FileNotFoundException;
 class GetWithMetadata extends AbstractPlugin
 {
     /**
-     * Get the method name.
-     *
      * @return string
      */
     public function getMethod()
@@ -16,15 +14,11 @@ class GetWithMetadata extends AbstractPlugin
         return 'getWithMetadata';
     }
     /**
-     * Get metadata for an object with required metadata.
-     *
-     * @param string   $path     path to file
-     * @param string[] $metadata metadata keys
-     *
+     * @param string $path
+     * @param array $metadata
      * @throws InvalidArgumentException
      * @throws FileNotFoundException
-     *
-     * @return array|false metadata
+     * @return array|false
      */
     public function handle($path, array $metadata)
     {

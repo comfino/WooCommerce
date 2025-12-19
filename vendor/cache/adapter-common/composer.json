@@ -1,13 +1,14 @@
 {
     "name": "cache/adapter-common",
-    "description": "Common classes for PSR-6 adapters",
-    "license": "MIT",
     "type": "library",
+    "description": "Common classes for PSR-6 adapters",
     "keywords": [
         "cache",
         "psr-6",
         "tag"
     ],
+    "homepage": "http://www.php-cache.com/en/latest/",
+    "license": "MIT",
     "authors": [
         {
             "name": "Aaron Scherer",
@@ -20,20 +21,22 @@
             "homepage": "https://github.com/nyholm"
         }
     ],
-    "homepage": "http://www.php-cache.com/en/latest/",
     "require": {
-        "php": ">=7.4",
+        "php": "^5.6 || ^7.0 || ^8.0",
         "cache/tag-interop": "^1.0",
-        "psr/cache": "^1.0 || ^2.0",
-        "psr/log": "^1.0 || ^2.0 || ^3.0",
+        "psr/cache": "^1.0",
+        "psr/log": "^1.0",
         "psr/simple-cache": "^1.0"
     },
     "require-dev": {
-        "cache/integration-tests": "^0.17",
-        "phpunit/phpunit": "^7.5.20 || ^9.5.10"
+        "cache/integration-tests": "^0.16",
+        "phpunit/phpunit": "^5.7.21"
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.1-dev"
+        }
+    },
     "autoload": {
         "psr-4": {
             "Cache\\Adapter\\Common\\": ""
@@ -47,9 +50,6 @@
             "/Tests/"
         ]
     },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "1.1-dev"
-        }
-    }
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

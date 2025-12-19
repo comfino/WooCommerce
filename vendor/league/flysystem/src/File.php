@@ -2,14 +2,9 @@
 
 namespace ComfinoExternal\League\Flysystem;
 
-/**
- * @deprecated
- */
 class File extends Handler
 {
     /**
-     * Check whether the file exists.
-     *
      * @return bool
      */
     public function exists()
@@ -17,95 +12,70 @@ class File extends Handler
         return $this->filesystem->has($this->path);
     }
     /**
-     * Read the file.
-     *
-     * @return string|false file contents
+     * @return string|false
      */
     public function read()
     {
         return $this->filesystem->read($this->path);
     }
     /**
-     * Read the file as a stream.
-     *
-     * @return resource|false file stream
+     * @return resource|false
      */
     public function readStream()
     {
         return $this->filesystem->readStream($this->path);
     }
     /**
-     * Write the new file.
-     *
      * @param string $content
-     *
-     * @return bool success boolean
+     * @return bool
      */
     public function write($content)
     {
         return $this->filesystem->write($this->path, $content);
     }
     /**
-     * Write the new file using a stream.
-     *
      * @param resource $resource
-     *
-     * @return bool success boolean
+     * @return bool
      */
     public function writeStream($resource)
     {
         return $this->filesystem->writeStream($this->path, $resource);
     }
     /**
-     * Update the file contents.
-     *
      * @param string $content
-     *
-     * @return bool success boolean
+     * @return bool
      */
     public function update($content)
     {
         return $this->filesystem->update($this->path, $content);
     }
     /**
-     * Update the file contents with a stream.
-     *
      * @param resource $resource
-     *
-     * @return bool success boolean
+     * @return bool
      */
     public function updateStream($resource)
     {
         return $this->filesystem->updateStream($this->path, $resource);
     }
     /**
-     * Create the file or update if exists.
-     *
      * @param string $content
-     *
-     * @return bool success boolean
+     * @return bool
      */
     public function put($content)
     {
         return $this->filesystem->put($this->path, $content);
     }
     /**
-     * Create the file or update if exists using a stream.
-     *
      * @param resource $resource
-     *
-     * @return bool success boolean
+     * @return bool
      */
     public function putStream($resource)
     {
         return $this->filesystem->putStream($this->path, $resource);
     }
     /**
-     * Rename the file.
-     *
      * @param string $newpath
-     *
-     * @return bool success boolean
+     * @return bool
      */
     public function rename($newpath)
     {
@@ -116,11 +86,8 @@ class File extends Handler
         return \false;
     }
     /**
-     * Copy the file.
-     *
      * @param string $newpath
-     *
-     * @return File|false new file or false
+     * @return File|false
      */
     public function copy($newpath)
     {
@@ -130,54 +97,42 @@ class File extends Handler
         return \false;
     }
     /**
-     * Get the file's timestamp.
-     *
-     * @return string|false The timestamp or false on failure.
+     * @return string|false
      */
     public function getTimestamp()
     {
         return $this->filesystem->getTimestamp($this->path);
     }
     /**
-     * Get the file's mimetype.
-     *
-     * @return string|false The file mime-type or false on failure.
+     * @return string|false
      */
     public function getMimetype()
     {
         return $this->filesystem->getMimetype($this->path);
     }
     /**
-     * Get the file's visibility.
-     *
-     * @return string|false The visibility (public|private) or false on failure.
+     * @return string|false
      */
     public function getVisibility()
     {
         return $this->filesystem->getVisibility($this->path);
     }
     /**
-     * Get the file's metadata.
-     *
-     * @return array|false The file metadata or false on failure.
+     * @return array|false
      */
     public function getMetadata()
     {
         return $this->filesystem->getMetadata($this->path);
     }
     /**
-     * Get the file size.
-     *
-     * @return int|false The file size or false on failure.
+     * @return int|false
      */
     public function getSize()
     {
         return $this->filesystem->getSize($this->path);
     }
     /**
-     * Delete the file.
-     *
-     * @return bool success boolean
+     * @return bool
      */
     public function delete()
     {

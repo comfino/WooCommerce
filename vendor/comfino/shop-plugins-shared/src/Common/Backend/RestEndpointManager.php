@@ -19,47 +19,38 @@ use ComfinoExternal\Psr\Http\Message\UriFactoryInterface;
 final class RestEndpointManager
 {
     /**
-     * @readonly
      * @var string
      */
     protected $platformName;
     /**
-     * @readonly
      * @var string
      */
     protected $platformVersion;
     /**
-     * @readonly
      * @var string
      */
     protected $pluginVersion;
     /**
      * @var string[]
-     * @readonly
      */
     protected $apiKeys;
     /**
-     * @readonly
      * @var \ComfinoExternal\Psr\Http\Message\ServerRequestFactoryInterface
      */
     protected $serverRequestFactory;
     /**
-     * @readonly
      * @var \ComfinoExternal\Psr\Http\Message\StreamFactoryInterface
      */
     protected $streamFactory;
     /**
-     * @readonly
      * @var \ComfinoExternal\Psr\Http\Message\UriFactoryInterface
      */
     protected $uriFactory;
     /**
-     * @readonly
      * @var \ComfinoExternal\Psr\Http\Message\ResponseFactoryInterface
      */
     protected $responseFactory;
     /**
-     * @readonly
      * @var \Comfino\Api\SerializerInterface
      */
     protected $serializer;
@@ -68,7 +59,6 @@ final class RestEndpointManager
      */
     private static $instance;
 
-    /** @var RestEndpointInterface[] */
     private $registeredEndpoints = [];
 
     /**
@@ -81,7 +71,16 @@ final class RestEndpointManager
     private $calculatedCrSignature;
 
     /**
+     * @param string $platformName
+     * @param string $platformVersion
+     * @param string $pluginVersion
      * @param string[] $apiKeys
+     * @param ServerRequestFactoryInterface $serverRequestFactory
+     * @param StreamFactoryInterface $streamFactory
+     * @param UriFactoryInterface $uriFactory
+     * @param ResponseFactoryInterface $responseFactory
+     * @param SerializerInterface $serializer
+     * @return self
      */
     public static function getInstance(
         string $platformName,
@@ -127,20 +126,25 @@ final class RestEndpointManager
         $this->serializer = $serializer;
     }
 
+    /**
+     * @param RestEndpointInterface $endpoint
+     */
     public function registerEndpoint(RestEndpointInterface $endpoint): void
     {
         $this->registeredEndpoints[$endpoint->getName()] = $endpoint;
         $this->registeredEndpoints[$endpoint->getName()]->setSerializer($this->serializer);
     }
 
+    /**
+     * @param string $name
+     * @return RestEndpointInterface|null
+     */
     public function getEndpointByName(string $name): ?RestEndpointInterface
     {
         return $this->registeredEndpoints[$name] ?? null;
     }
 
     /**
-     * Returns CR-Signature received in HTTP request header.
-     *
      * @return string|null
      */
     public function getReceivedCrSignature(): ?string
@@ -149,8 +153,6 @@ final class RestEndpointManager
     }
 
     /**
-     * Returns internally calculated CR-Signature.
-     *
      * @return string|null
      */
     public function getCalculatedCrSignature(): ?string
@@ -158,6 +160,9 @@ final class RestEndpointManager
         return $this->calculatedCrSignature;
     }
 
+    /**
+     * @return array<string,
+     */
     public function getRegisteredEndpoints(): array
     {
         $endpoints = [];
@@ -172,6 +177,11 @@ final class RestEndpointManager
         return $endpoints;
     }
 
+    /**
+     * @param string|null $endpointName
+     * @param ServerRequestInterface|null $serverRequest
+     * @return ResponseInterface
+     */
     public function processRequest(?string $endpointName = null, ?ServerRequestInterface $serverRequest = null): ResponseInterface
     {
         if ($serverRequest === null) {
@@ -213,6 +223,9 @@ final class RestEndpointManager
         return $this->getPreparedResponse($this->responseFactory->createResponse(404, 'Endpoint not found.'));
     }
 
+    /**
+     * @return ServerRequestInterface
+     */
     public function getServerRequest(): ServerRequestInterface
     {
         $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';

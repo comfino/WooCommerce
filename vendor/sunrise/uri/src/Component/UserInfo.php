@@ -11,28 +11,17 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Uri\Component;
 
-/**
- * URI component "userinfo"
- *
- * @link https://tools.ietf.org/html/rfc3986#section-3.2.1
- */
 class UserInfo implements ComponentInterface
 {
     /**
-     * URI component "user"
-     *
      * @var User
      */
     protected $user;
     /**
-     * URI component "pass"
-     *
      * @var Pass|null
      */
     protected $pass;
     /**
-     * Constructor of the class
-     *
      * @param mixed $user
      * @param mixed $pass
      */

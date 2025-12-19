@@ -11,24 +11,14 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Http\ServerRequest;
 
-/**
- * Import classes
- */
 use ComfinoExternal\Psr\Http\Message\UriInterface;
 use ComfinoExternal\Sunrise\Uri\UriFactory;
-/**
- * Import functions
- */
+
 use function array_key_exists;
 /**
- * Gets the request URI from the given server parameters
- *
- * @param array $server
- *
- * @return UriInterface
- *
- * @link http://php.net/manual/en/reserved.variables.server.php
- */
+     * @param array $server
+     * @return UriInterface
+     */
 function request_uri(array $server): UriInterface
 {
     if (array_key_exists('HTTPS', $server)) {

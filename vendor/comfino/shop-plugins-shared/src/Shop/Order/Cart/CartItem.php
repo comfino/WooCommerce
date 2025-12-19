@@ -8,12 +8,10 @@ class CartItem implements CartItemInterface
 {
     /**
      * @var ProductInterface
-     * @readonly
      */
     private $product;
     /**
      * @var int
-     * @readonly
      */
     private $quantity;
     /**
@@ -26,17 +24,11 @@ class CartItem implements CartItemInterface
         $this->quantity = $quantity;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getProduct(): ProductInterface
     {
         return $this->product;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getQuantity(): int
     {
         return $this->quantity;

@@ -11,24 +11,15 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Http\ServerRequest;
 
-/**
- * Import classes
- */
 use ComfinoExternal\Psr\Http\Message\StreamInterface;
 use ComfinoExternal\Sunrise\Stream\StreamFactory;
-/**
- * Import functions
- */
+
 use function fopen;
 use function rewind;
 use function stream_copy_to_stream;
 /**
- * Gets the request body
- *
- * @return StreamInterface
- *
- * @link http://php.net/manual/en/wrappers.php.php
- */
+     * @return StreamInterface
+     */
 function request_body(): StreamInterface
 {
     $input = fopen('php://input', 'rb');

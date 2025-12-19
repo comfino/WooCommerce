@@ -8,50 +8,61 @@ use Comfino\Api\Request;
 use Comfino\Shop\Order\CartTrait;
 use Comfino\Shop\Order\OrderInterface;
 
-/**
- * Loan application creation request.
- */
 class CreateOrder extends Request
 {
+    use CartTrait;
     /**
      * @var OrderInterface
-     * @readonly
      */
     private $order;
     /**
      * @var bool
-     * @readonly
      */
     private $validateOnly = false;
-    use CartTrait;
 
     /**
-     * @param OrderInterface $order Full order data (cart, loan details).
-     * @param bool $validateOnly Flag used for order validation (if true, order is not created and only validation result is returned).
+     * @var mixed[]|null
      */
-    public function __construct(OrderInterface $order, bool $validateOnly = false)
+    private $preparedRequestBody;
+
+    /**
+     * @param OrderInterface $order
+     * @param string $apiKey
+     * @param bool $validateOnly
+     */
+    public function __construct(OrderInterface $order, string $apiKey, bool $validateOnly = false)
     {
         $this->order = $order;
         $this->validateOnly = $validateOnly;
         $this->setRequestMethod('POST');
         $this->setApiEndpointPath('orders');
+
+        $preparedRequestBody = $this->prepareRequestBody();
+        $cartHash = $this->generateHash($preparedRequestBody['cart']);
+        $customerHash = $this->generateHash($preparedRequestBody['customer']);
+
+        $this->setRequestHeaders([
+            'Comfino-Cart-Hash' => $cartHash,
+            'Comfino-Customer-Hash' => $customerHash,
+            'Comfino-Order-Signature' => hash('sha3-256', $cartHash . $customerHash . $apiKey),
+        ]);
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function prepareRequestBody(): array
     {
+        if ($this->preparedRequestBody !== null) {
+            return $this->preparedRequestBody;
+        }
+
         $customer = $this->order->getCustomer();
 
-        return array_filter(
+        $this->preparedRequestBody = array_filter(
             [
-                // Basic order data
+
                 'notifyUrl' => $this->order->getNotifyUrl(),
                 'returnUrl' => $this->order->getReturnUrl(),
                 'orderId' => $this->order->getId(),
 
-                // Payment data
                 'loanParameters' => array_filter(
                     [
                         'amount' => $this->order->getLoanParameters()->getAmount(),
@@ -59,15 +70,13 @@ class CreateOrder extends Request
                         'type' => $this->order->getLoanParameters()->getType(),
                         'allowedProductTypes' => $this->order->getLoanParameters()->getAllowedProductTypes(),
                     ],
-                    static function ($value) : bool {
+                    static function ($value): bool {
                         return $value !== null;
                     }
                 ),
 
-                // Cart with list of products
                 'cart' => $this->getCartAsArray($this->order->getCart()),
 
-                // Customer data (mandatory)
                 'customer' => array_filter(
                     [
                         'firstName' => $customer->getFirstName(),
@@ -79,7 +88,6 @@ class CreateOrder extends Request
                         'regular' => $customer->isRegular(),
                         'logged' => $customer->isLogged(),
 
-                        // Customer address (optional)
                         'address' => count(
                             $address = array_filter(
                                 [
@@ -90,35 +98,44 @@ class CreateOrder extends Request
                                     'city' => ($nullsafeVariable5 = $customer->getAddress()) ? $nullsafeVariable5->getCity() : null,
                                     'countryCode' => ($nullsafeVariable6 = $customer->getAddress()) ? $nullsafeVariable6->getCountryCode() : null,
                                 ],
-                                static function ($value) : bool {
+                                static function ($value): bool {
                                     return $value !== null;
                                 }
                             )
                         ) ? $address : null,
                     ],
-                    static function ($value) : bool {
+                    static function ($value): bool {
                         return $value !== null;
                     }
                 ),
 
-                // Seller data (optional)
                 'seller' => count(
                     $seller = array_filter(
                         ['taxId' => ($nullsafeVariable7 = $this->order->getSeller()) ? $nullsafeVariable7->getTaxId() : null],
-                        static function ($value) : bool {
+                        static function ($value): bool {
                             return $value !== null;
                         }
                     )
                 ) ? $seller : null,
 
-                // Extra data (optional)
                 'accountNumber' => $this->order->getAccountNumber(),
                 'transferTitle' => $this->order->getTransferTitle(),
                 'simulation' => $this->validateOnly ?: null,
             ],
-            static function ($value) : bool {
+            static function ($value): bool {
                 return $value !== null;
             }
         );
+
+        return $this->preparedRequestBody;
+    }
+
+    private function generateHash(array $data): string
+    {
+        try {
+            return hash('sha3-256', json_encode($data, JSON_PRESERVE_ZERO_FRACTION));
+        } catch (\JsonException $exception) {
+            return '';
+        }
     }
 }

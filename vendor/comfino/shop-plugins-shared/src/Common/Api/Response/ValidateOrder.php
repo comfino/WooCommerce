@@ -11,24 +11,19 @@ use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 
 class ValidateOrder extends \Comfino\Api\Response\ValidateOrder
 {
-    /** @var bool Connection timeout error.
-     * @readonly */
     public $isTimeout;
-    /** @var int Connection trial counter.
-     * @readonly */
+
     public $connectAttemptIdx;
-    /** @var int Last connection timeout in seconds.
-     * @readonly */
+
     public $connectionTimeout;
-    /** @var int Last transfer timeout in seconds.
-     * @readonly */
+
     public $transferTimeout;
 
     /**
      * @param Request $request
      * @param ResponseInterface $response
      * @param SerializerInterface $serializer
-     * @param \Throwable|null $exception Exception object in case of validation or communication error.
+     * @param \Throwable|null $exception
      */
     public function __construct(Request $request, ResponseInterface $response, SerializerInterface $serializer, ?\Throwable $exception = null)
     {
@@ -40,7 +35,6 @@ class ValidateOrder extends \Comfino\Api\Response\ValidateOrder
         $transferTimeout = 0;
 
         if ($exception instanceof ConnectionTimeout) {
-            // We have a timeout error.
             $isTimeout = true;
             $connectAttemptIdx = $exception->getConnectAttemptIdx();
             $connectionTimeout = $exception->getConnectionTimeout();

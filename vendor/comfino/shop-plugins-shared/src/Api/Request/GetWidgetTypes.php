@@ -9,7 +9,6 @@ use Comfino\Api\Request;
 class GetWidgetTypes extends Request
 {
     /**
-     * @readonly
      * @var bool
      */
     private $useNewApi;
@@ -39,9 +38,6 @@ class GetWidgetTypes extends Request
         return $uri;
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function prepareRequestBody(): ?array
     {
         return null;

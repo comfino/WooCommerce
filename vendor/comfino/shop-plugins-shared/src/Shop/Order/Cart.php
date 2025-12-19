@@ -10,37 +10,30 @@ class Cart implements CartInterface
 {
     /**
      * @var CartItemInterface[]
-     * @readonly
      */
     private $items;
     /**
      * @var int
-     * @readonly
      */
     private $totalAmount;
     /**
      * @var int|null
-     * @readonly
      */
     private $deliveryCost;
     /**
      * @var int|null
-     * @readonly
      */
     private $deliveryNetCost;
     /**
      * @var int|null
-     * @readonly
      */
     private $deliveryCostTaxRate;
     /**
      * @var int|null
-     * @readonly
      */
     private $deliveryCostTaxValue;
     /**
      * @var string|null
-     * @readonly
      */
     private $category;
     /**
@@ -63,25 +56,16 @@ class Cart implements CartInterface
         $this->category = $category;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getItems(): array
     {
         return $this->items;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getTotalAmount(): int
     {
         return $this->totalAmount;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getDeliveryCost(): ?int
     {
         return $this->deliveryCost;
@@ -102,9 +86,6 @@ class Cart implements CartInterface
         return $this->deliveryCostTaxValue;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCategory(): ?string
     {
         return $this->category;

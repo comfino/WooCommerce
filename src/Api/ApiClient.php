@@ -150,16 +150,18 @@ final class ApiClient
             ]
         );
 
-        ErrorLogger::sendError(
-            $exception,
-            $errorPrefix,
-            $exception->getCode(),
-            $exception->getMessage(),
-            $url !== '' ? $url : null,
-            $requestBody !== '' ? $requestBody : null,
-            $responseBody !== '' ? $responseBody : null,
-            $exception->getTraceAsString()
-        );
+        if ($statusCode !== 404) {
+            ErrorLogger::sendError(
+                $exception,
+                $errorPrefix,
+                $exception->getCode(),
+                $exception->getMessage(),
+                $url !== '' ? $url : null,
+                $requestBody !== '' ? $requestBody : null,
+                $responseBody !== '' ? $responseBody : null,
+                $exception->getTraceAsString()
+            );
+        }
 
         return [
             'title' => $userErrorMessage,

@@ -63,4 +63,9 @@ final class ErrorLogger
             $errorPrefix, $errorCode, $errorMessage, $apiRequestUrl, $apiRequest, $apiResponse, $stackTrace
         );
     }
+
+    public static function clearLogs(): void
+    {
+        self::getLoggerInstance()->clearLogs();
+    }
 }

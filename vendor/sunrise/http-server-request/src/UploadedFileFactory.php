@@ -11,26 +11,14 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Http\ServerRequest;
 
-/**
- * Import classes
- */
 use ComfinoExternal\Psr\Http\Message\StreamInterface;
 use ComfinoExternal\Psr\Http\Message\UploadedFileFactoryInterface;
 use ComfinoExternal\Psr\Http\Message\UploadedFileInterface;
-/**
- * Import constants
- */
+
 use const UPLOAD_ERR_OK;
-/**
- * UploadedFileFactory
- *
- * @link https://www.php-fig.org/psr/psr-17/
- */
+
 class UploadedFileFactory implements UploadedFileFactoryInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function createUploadedFile(StreamInterface $stream, ?int $size = null, int $error = UPLOAD_ERR_OK, ?string $clientFilename = null, ?string $clientMediaType = null): UploadedFileInterface
     {
         return new UploadedFile($stream, $size, $error, $clientFilename, $clientMediaType);

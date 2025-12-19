@@ -32,9 +32,6 @@ class IsShopAccountActive extends Request
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function prepareRequestBody(): ?array
     {
         return null;

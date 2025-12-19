@@ -8,12 +8,12 @@ use Comfino\Api\Client;
 use Comfino\Extended\Api\Client as ExtendedClient;
 use Comfino\Extended\Api\Dto\Plugin\ShopPluginError;
 use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
-use Http\Message\RequestMatcher\RequestMatcher;
 use ComfinoExternal\Psr\Http\Message\RequestInterface;
 use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 use ComfinoExternal\Sunrise\Http\Factory\RequestFactory;
 use ComfinoExternal\Sunrise\Http\Factory\ResponseFactory;
 use ComfinoExternal\Sunrise\Http\Factory\StreamFactory;
+use Http\Message\RequestMatcher\RequestMatcher;
 
 trait ExtendedClientTestTrait
 {

@@ -11,12 +11,11 @@ use Comfino\Shop\Order\CartTrait;
 
 class GetPaywallItemDetails extends Request
 {
+    use CartTrait;
     /**
      * @var CartInterface
-     * @readonly
      */
     private $cart;
-    use CartTrait;
 
     /**
      * @param int $loanAmount
@@ -31,9 +30,6 @@ class GetPaywallItemDetails extends Request
         $this->setRequestParams(['loanAmount' => $loanAmount, 'loanTypeSelected' => (string) $loanType]);
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function prepareRequestBody(): ?array
     {
         return $this->getCartAsArray($this->cart);

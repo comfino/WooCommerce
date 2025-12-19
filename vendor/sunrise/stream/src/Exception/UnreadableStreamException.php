@@ -11,13 +11,8 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Stream\Exception;
 
-/**
- * Import classes
- */
 use RuntimeException;
-/**
- * UnreadableStreamException
- */
+
 class UnreadableStreamException extends RuntimeException
 {
 }

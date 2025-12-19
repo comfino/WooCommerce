@@ -3,7 +3,6 @@
 namespace Comfino;
 
 use Comfino\Configuration\ConfigManager;
-use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -18,7 +17,6 @@ final class DebugLogger
     {
         if (self::$debugLogger === null) {
             self::$debugLogger = Common\Backend\DebugLogger::getInstance(
-                new JsonSerializer(),
                 Main::getPluginDirectory() . '/var/log/debug.log'
             );
         }
@@ -37,5 +35,10 @@ final class DebugLogger
         if (ConfigManager::isDebugMode()) {
             self::getLoggerInstance()->logEvent($eventPrefix, $eventMessage, $parameters);
         }
+    }
+
+    public static function clearLogs(): void
+    {
+        self::getLoggerInstance()->clearLogs();
     }
 }

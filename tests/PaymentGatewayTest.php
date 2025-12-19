@@ -56,25 +56,6 @@ class PaymentGatewayTest extends \PHPUnit_Framework_TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testPrepareCustomerNames(): void
-    {
-        $reflection = new \ReflectionClass($this->gateway);
-        $method = $reflection->getMethod('prepareCustomerNames');
-        $method->setAccessible(true);
-
-        // Test normal case.
-        $this->assertEquals(['John', 'Doe'], $method->invoke($this->gateway, 'John', 'Doe'));
-
-        // Test when last name is empty and first name has multiple parts.
-        $this->assertEquals(['John', 'Doe'], $method->invoke($this->gateway, 'John Doe', ''));
-
-        // Test when both names are provided with extra spaces.
-        $this->assertEquals(['John', 'Doe'], $method->invoke($this->gateway, '  John  ', '  Doe  '));
-    }
-
-    /**
-     * @throws \ReflectionException
-     */
     public function testGetSubsection(): void
     {
         $reflection = new \ReflectionClass($this->gateway);

@@ -11,8 +11,6 @@ abstract class AbstractPlugin implements PluginInterface
      */
     protected $filesystem;
     /**
-     * Set the Filesystem object.
-     *
      * @param FilesystemInterface $filesystem
      */
     public function setFilesystem(FilesystemInterface $filesystem)

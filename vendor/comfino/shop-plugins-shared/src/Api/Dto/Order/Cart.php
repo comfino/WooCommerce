@@ -8,17 +8,12 @@ use Comfino\Api\Dto\Order\Cart\CartItem;
 
 class Cart
 {
-    /** @var int
-     * @readonly */
     public $totalAmount;
-    /** @var int
-     * @readonly */
+
     public $deliveryCost;
-    /** @var string|null
-     * @readonly */
+
     public $category;
-    /** @var CartItem[]
-     * @readonly */
+
     public $products;
 
     /**

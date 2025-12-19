@@ -6,9 +6,6 @@ namespace Comfino\Api\Request;
 
 use Comfino\Api\Request;
 
-/**
- * Loan application cancellation request.
- */
 class CancelOrder extends Request
 {
     /**
@@ -20,9 +17,6 @@ class CancelOrder extends Request
         $this->setApiEndpointPath(sprintf('orders/%s/cancel', $orderId));
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function prepareRequestBody(): ?array
     {
         return null;

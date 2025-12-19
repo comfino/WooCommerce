@@ -8,18 +8,13 @@ use Comfino\Api\Exception\RequestValidationError;
 use Comfino\Api\Request;
 use Comfino\Extended\Api\Dto\Plugin\ShopPluginError;
 
-/**
- * Shop plugin error reporting request.
- */
 class ReportShopPluginError extends Request
 {
     /**
-     * @readonly
      * @var \Comfino\Extended\Api\Dto\Plugin\ShopPluginError
      */
     private $shopPluginError;
     /**
-     * @readonly
      * @var string
      */
     private $hashKey;

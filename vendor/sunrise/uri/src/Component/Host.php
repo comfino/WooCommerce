@@ -11,41 +11,25 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Uri\Component;
 
-/**
- * Import classes
- */
 use ComfinoExternal\Sunrise\Uri\Exception\InvalidUriComponentException;
-/**
- * Import functions
- */
+
 use function is_string;
 use function preg_replace_callback;
 use function rawurlencode;
 use function strtolower;
-/**
- * URI component "host"
- *
- * @link https://tools.ietf.org/html/rfc3986#section-3.2.2
- */
+
 class Host implements ComponentInterface
 {
     /**
-     * Regular expression to normalize the component value
-     *
      * @var string
      */
     private const NORMALIZE_REGEX = '/(?:(?:%[0-9A-Fa-f]{2}|[0-9A-Za-z\-\._~\!\$&\'\(\)\*\+,;\=]+)|(.?))/u';
     /**
-     * The component value
-     *
      * @var string
      */
     protected $value = '';
     /**
-     * Constructor of the class
-     *
      * @param mixed $value
-     *
      * @throws InvalidUriComponentException
      */
     public function __construct($value)
@@ -57,10 +41,9 @@ class Host implements ComponentInterface
             throw new InvalidUriComponentException('URI component "host" must be a string');
         }
         $this->value = preg_replace_callback(self::NORMALIZE_REGEX, function (array $match): string {
-            /** @var array{0: string, 1?: string} $match */
             return isset($match[1]) ? rawurlencode($match[1]) : $match[0];
         }, $value);
-        // the host subcomponent is case-insensitive...
+        
         $this->value = strtolower($this->value);
     }
     /**

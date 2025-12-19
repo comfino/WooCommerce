@@ -2,9 +2,6 @@
 
 namespace ComfinoExternal\League\Flysystem;
 
-/**
- * @internal
- */
 trait ConfigAwareTrait
 {
     /**
@@ -12,8 +9,6 @@ trait ConfigAwareTrait
      */
     protected $config;
     /**
-     * Set the config.
-     *
      * @param Config|array|null $config
      */
     protected function setConfig($config)
@@ -21,19 +16,14 @@ trait ConfigAwareTrait
         $this->config = $config ? Util::ensureConfig($config) : new Config();
     }
     /**
-     * Get the Config.
-     *
-     * @return Config config object
+     * @return Config
      */
     public function getConfig()
     {
         return $this->config;
     }
     /**
-     * Convert a config array to a Config object with the correct fallback.
-     *
      * @param array $config
-     *
      * @return Config
      */
     protected function prepareConfig(array $config)

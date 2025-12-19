@@ -7,16 +7,15 @@ namespace Comfino\Common\Shop\Product\CategoryTree;
 final class Descriptor
 {
     /**
-     * @readonly
-     * @var \Comfino\Common\Shop\Product\CategoryTree\NodeIterator
+     * @var NodeIterator
      */
     public $nodes;
     /**
      * @var Node[]|null
-     * @readonly
      */
     public $index;
     /**
+     * @param NodeIterator $nodes
      * @param Node[]|null $index
      */
     public function __construct(NodeIterator $nodes, ?array $index)

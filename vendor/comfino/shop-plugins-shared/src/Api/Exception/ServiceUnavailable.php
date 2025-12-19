@@ -8,11 +8,10 @@ use Comfino\Api\HttpErrorExceptionInterface;
 
 class ServiceUnavailable extends \RuntimeException implements HttpErrorExceptionInterface
 {
-    /** @var string */
     private $url;
-    /** @var string */
+
     private $requestBody;
-    /** @var string */
+
     private $responseBody;
 
     public function __construct(string $message = '', int $code = 0, ?\Throwable $previous = null, string $url = '', string $requestBody = '', string $responseBody = '')

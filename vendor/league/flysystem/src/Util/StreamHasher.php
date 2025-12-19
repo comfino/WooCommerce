@@ -9,8 +9,6 @@ class StreamHasher
      */
     private $algo;
     /**
-     * StreamHasher constructor.
-     *
      * @param string $algo
      */
     public function __construct($algo)
@@ -19,7 +17,6 @@ class StreamHasher
     }
     /**
      * @param resource $resource
-     *
      * @return string
      */
     public function hash($resource)

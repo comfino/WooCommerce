@@ -11,13 +11,8 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Http\Factory;
 
-/**
- * Import classes
- */
 use ComfinoExternal\Sunrise\Http\ServerRequest\UploadedFileFactory as BaseUploadedFileFactory;
-/**
- * UploadedFileFactory
- */
+
 class UploadedFileFactory extends BaseUploadedFileFactory
 {
 }

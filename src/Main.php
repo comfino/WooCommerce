@@ -105,12 +105,14 @@ final class Main
             if (is_single() && is_product() && ConfigManager::isWidgetEnabled() && ConfigManager::getWidgetKey() !== '') {
                 // Widget initialization script
                 if (!($product instanceof \WC_Product)) {
-                    $product = wc_get_product(get_the_ID());
+                    $wcProduct = wc_get_product(get_the_ID());
+                } else {
+                    $wcProduct = $product;
                 }
 
                 $allowedProductTypes = SettingsManager::getAllowedProductTypes(
                    ProductTypesListTypeEnum::LIST_TYPE_WIDGET,
-                   OrderManager::getShopCartFromProduct($product)
+                   OrderManager::getShopCartFromProduct($wcProduct)
                 );
 
                 if ($allowedProductTypes === []) {
@@ -120,7 +122,7 @@ final class Main
                     return;
                 }
 
-                FrontendManager::embedInlineScript('comfino-widget-init-script', FrontendManager::renderWidgetInitCode($product->get_id()));
+                FrontendManager::embedInlineScript('comfino-widget-init-script', FrontendManager::renderWidgetInitCode($wcProduct->get_id()));
             }
         });
 
@@ -227,7 +229,14 @@ final class Main
             return true;
         }
 
-        $shopCart = OrderManager::getShopCart($cart);
+        try {
+            $shopCart = OrderManager::getShopCart($cart);
+        } catch (\Exception $e) {
+            FrontendManager::processError('Shop cart creation error', $e);
+
+            return false;
+        }
+
         $allowedProductTypes = SettingsManager::getAllowedProductTypes(
             ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
             $shopCart

@@ -10,20 +10,17 @@ use Comfino\Common\Exception\InvalidRequest;
 use Comfino\Common\Shop\Order\StatusManager;
 use ComfinoExternal\Psr\Http\Message\ServerRequestInterface;
 
-final class StatusNotification extends RestEndpoint
+class StatusNotification extends RestEndpoint
 {
     /**
-     * @readonly
      * @var \Comfino\Common\Shop\Order\StatusManager
      */
     private $statusManager;
     /**
-     * @readonly
      * @var mixed[]
      */
     private $forbiddenStatuses;
     /**
-     * @readonly
      * @var mixed[]
      */
     private $ignoredStatuses;
@@ -45,7 +42,6 @@ final class StatusNotification extends RestEndpoint
     /**
      * @param ServerRequestInterface $serverRequest
      * @param string|null $endpointName
-     * @inheritDoc
      */
     public function processRequest($serverRequest, $endpointName = null): ?array
     {

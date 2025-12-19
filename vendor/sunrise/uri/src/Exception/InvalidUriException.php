@@ -11,13 +11,8 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Uri\Exception;
 
-/**
- * Import classes
- */
 use InvalidArgumentException;
-/**
- * InvalidUriException
- */
+
 class InvalidUriException extends InvalidArgumentException
 {
 }

@@ -29,7 +29,7 @@ final class FrontendHelper
         $packedPluginVersion = pack('c*', ...array_map('intval', explode('.', $pluginVersion)));
         $platformVersionLength = pack('c', strlen($packedPlatformVersion));
         $pluginVersionLength = pack('c', strlen($packedPluginVersion));
-        $packedBuildTimestamp = pack('J', $buildTimestamp); // unsigned 64-bit, big endian byte order
+        $packedBuildTimestamp = pack('J', $buildTimestamp);
 
         $authKeyParts = [
             $platformCode,
@@ -130,7 +130,7 @@ final class FrontendHelper
             'connectionTimeout' => $connectionTimeout,
             'transferTimeout' => $transferTimeout,
             'isTimeout' => $isTimeout,
-            'isDebugMode' => false
+            'isDebugMode' => false,
         ];
     }
 

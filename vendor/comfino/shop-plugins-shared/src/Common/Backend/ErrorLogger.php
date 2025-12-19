@@ -4,38 +4,34 @@ declare(strict_types=1);
 
 namespace Comfino\Common\Backend;
 
+use Comfino\Common\Backend\Log\LoggerFactory;
 use Comfino\Extended\Api\Client;
 use Comfino\Extended\Api\Dto\Plugin\ShopPluginError;
+use ComfinoExternal\Monolog\Logger as MonologLogger;
 
-final class ErrorLogger
+final class ErrorLogger extends Logger
 {
     /**
-     * @readonly
      * @var \Comfino\Extended\Api\Client
      */
     private $apiClient;
     /**
-     * @readonly
      * @var string
      */
     private $logFilePath;
     /**
-     * @readonly
      * @var string
      */
     private $host;
     /**
-     * @readonly
      * @var string
      */
     private $platform;
     /**
-     * @readonly
      * @var string
      */
     private $modulePath;
     /**
-     * @readonly
      * @var mixed[]
      */
     private $environment;
@@ -60,8 +56,21 @@ final class ErrorLogger
      * @var $this|null
      */
     private static $instance;
+    /**
+     * @var MonologLogger|null
+     */
+    private static $logger;
 
-    public static function getInstance(Client $apiClient, string $logFilePath, string $host, string $platform, string $modulePath, array $environment): self
+    /**
+     * @param string $logFilePath
+     * @return self
+     * @param \Comfino\Extended\Api\Client $apiClient
+     * @param string $host
+     * @param string $platform
+     * @param string $modulePath
+     * @param mixed[] $environment
+     */
+    public static function getInstance($apiClient, $logFilePath, $host, $platform, $modulePath, $environment): self
     {
         if (self::$instance === null) {
             self::$instance = new self($apiClient, $logFilePath, $host, $platform, $modulePath, $environment);
@@ -80,22 +89,42 @@ final class ErrorLogger
         $this->environment = $environment;
     }
 
+    /**
+     * @return MonologLogger
+     */
+    public function getLogger(): MonologLogger
+    {
+        if (self::$logger === null) {
+            self::$logger = LoggerFactory::createErrorLogger($this->logFilePath);
+        }
+
+        return self::$logger;
+    }
+
+    /**
+     * @param string $errorPrefix
+     * @param string $errorCode
+     * @param string $errorMessage
+     * @param string|null $apiRequestUrl
+     * @param string|null $apiRequest
+     * @param string|null $apiResponse
+     * @param string|null $stackTrace
+     * @return void
+     */
     public function sendError(
-        string $errorPrefix,
-        string $errorCode,
-        string $errorMessage,
-        ?string $apiRequestUrl = null,
-        ?string $apiRequest = null,
-        ?string $apiResponse = null,
-        ?string $stackTrace = null
+        $errorPrefix,
+        $errorCode,
+        $errorMessage,
+        $apiRequestUrl = null,
+        $apiRequest = null,
+        $apiResponse = null,
+        $stackTrace = null
     ): void {
         if (preg_match('/Error .*in |Exception .*in /', $errorMessage) && strpos($errorMessage, $this->modulePath) === false) {
-            // Ignore all errors and exceptions outside the plugin code.
             return;
         }
 
         if (getenv('COMFINO_DEBUG') === 'TRUE') {
-            // Disable sending errors to the Comfino API if plugin is in debug mode.
             $errorsSendingDisabled = true;
         } else {
             $errorsSendingDisabled = false;
@@ -140,17 +169,42 @@ final class ErrorLogger
         }
     }
 
-    public function logError(string $errorPrefix, string $errorMessage): void
+    /**
+     * @param string $errorPrefix
+     * @param string $errorMessage
+     */
+    public function logError($errorPrefix, $errorMessage): void
     {
-        FileUtils::append($this->logFilePath, '[' . date('Y-m-d H:i:s') . "] $errorPrefix: $errorMessage\n");
+        $this->getLogger()->error($errorPrefix . ': ' . $errorMessage);
     }
 
-    public function getErrorLog(int $numLines): string
+    /**
+     * @param int $numLines
+     * @return string
+     */
+    public function getErrorLog($numLines): string
     {
-        return implode('', FileUtils::readLastLines($this->logFilePath, $numLines));
+        $actualLogPath = $this->findActualLogFile($this->logFilePath);
+
+        if ($actualLogPath === null || !file_exists($actualLogPath)) {
+            return '';
+        }
+
+        return implode('', FileUtils::readLastLines($actualLogPath, $numLines));
     }
 
-    public function errorHandler($errNo, $errMsg, $file, $line)
+    /**
+     * @return int
+     */
+    public function clearLogs(): int
+    {
+        return $this->clearLogFiles($this->logFilePath);
+    }
+
+    /**
+     * @return false
+     */
+    public function errorHandler($errNo, $errMsg, $file, $line): bool
     {
         $errorType = $this->getErrorTypeName($errNo);
 
@@ -161,19 +215,25 @@ final class ErrorLogger
         return false;
     }
 
-    public function exceptionHandler(\Throwable $exception): void
+    /**
+     * @param \Throwable $exception
+     */
+    public function exceptionHandler($exception): void
     {
         $this->sendError(
             'Exception ' . get_class($exception) . " in {$exception->getFile()}:{$exception->getLine()}",
-            (string) $exception->getCode(), $exception->getMessage(),
-            null, null, null, $exception->getTraceAsString()
+            (string) $exception->getCode(),
+            $exception->getMessage(),
+            null,
+            null,
+            null,
+            $exception->getTraceAsString()
         );
     }
 
     public function init(): void
     {
         if (getenv('COMFINO_DEBUG') === 'TRUE') {
-            // Disable custom errors handling if plugin is in debug mode.
             return;
         }
 

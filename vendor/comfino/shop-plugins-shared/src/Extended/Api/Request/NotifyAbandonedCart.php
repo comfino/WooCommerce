@@ -6,13 +6,9 @@ namespace Comfino\Extended\Api\Request;
 
 use Comfino\Api\Request;
 
-/**
- * Cart abandonment notifying request.
- */
 class NotifyAbandonedCart extends Request
 {
     /**
-     * @readonly
      * @var string
      */
     private $type;
@@ -23,9 +19,6 @@ class NotifyAbandonedCart extends Request
         $this->setApiEndpointPath('abandoned_cart');
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function prepareRequestBody(): ?array
     {
         return ['type' => $this->type];

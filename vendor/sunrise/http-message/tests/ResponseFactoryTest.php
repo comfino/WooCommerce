@@ -4,21 +4,14 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Message\Tests;
 
-/**
- * Import classes
- */
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Sunrise\Http\Message\ResponseFactory;
 
-/**
- * ResponseFactoryTest
- */
 class ResponseFactoryTest extends TestCase
 {
-
     /**
      * @return void
      */
@@ -44,7 +37,6 @@ class ResponseFactoryTest extends TestCase
         $this->assertSame($statusCode, $response->getStatusCode());
         $this->assertSame($reasonPhrase, $response->getReasonPhrase());
 
-        // default body of the response...
         $this->assertInstanceOf(StreamInterface::class, $response->getBody());
         $this->assertTrue($response->getBody()->isSeekable());
         $this->assertTrue($response->getBody()->isWritable());

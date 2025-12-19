@@ -8,20 +8,14 @@ use Comfino\Api\Dto\Payment\LoanTypeEnum;
 
 class LoanParameters
 {
-    /** @var int
-     * @readonly */
     public $amount;
-    /** @var int|null
-     * @readonly */
+
     public $maxAmount;
-    /** @var int
-     * @readonly */
+
     public $term;
-    /** @var LoanTypeEnum
-     * @readonly */
+
     public $type;
-    /** @var LoanTypeEnum[]|null
-     * @readonly */
+
     public $allowedProductTypes;
 
     /**

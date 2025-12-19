@@ -11,9 +11,6 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Uri;
 
-/**
- * Import classes
- */
 use ComfinoExternal\Sunrise\Uri\Component\ComponentInterface;
 use ComfinoExternal\Sunrise\Uri\Component\Scheme;
 use ComfinoExternal\Sunrise\Uri\Component\User;
@@ -25,72 +22,47 @@ use ComfinoExternal\Sunrise\Uri\Component\Query;
 use ComfinoExternal\Sunrise\Uri\Component\Fragment;
 use ComfinoExternal\Sunrise\Uri\Component\UserInfo;
 use ComfinoExternal\Sunrise\Uri\Exception\InvalidUriException;
-/**
- * Import functions
- */
+
 use function is_string;
 use function parse_url;
-/**
- * UriParser
- */
+
 class UriParser
 {
     /**
-     * URI component "scheme"
-     *
      * @var Scheme|null
      */
     protected $scheme;
     /**
-     * URI component "user"
-     *
      * @var User|null
      */
     protected $user;
     /**
-     * URI component "pass"
-     *
      * @var Pass|null
      */
     protected $pass;
     /**
-     * URI component "host"
-     *
      * @var Host|null
      */
     protected $host;
     /**
-     * URI component "port"
-     *
      * @var Port|null
      */
     protected $port;
     /**
-     * URI component "path"
-     *
      * @var Path|null
      */
     protected $path;
     /**
-     * URI component "query"
-     *
      * @var Query|null
      */
     protected $query;
     /**
-     * URI component "fragment"
-     *
      * @var Fragment|null
      */
     protected $fragment;
     /**
-     * Constructor of the class
-     *
      * @param mixed $uri
-     *
      * @throws InvalidUriException
-     *
-     * @link http://php.net/manual/en/function.parse-url.php
      */
     public function __construct($uri)
     {
@@ -130,8 +102,6 @@ class UriParser
         }
     }
     /**
-     * Gets URI component "scheme"
-     *
      * @return Scheme|null
      */
     public function getScheme(): ?Scheme
@@ -139,8 +109,6 @@ class UriParser
         return $this->scheme;
     }
     /**
-     * Gets URI component "user"
-     *
      * @return User|null
      */
     public function getUser(): ?User
@@ -148,8 +116,6 @@ class UriParser
         return $this->user;
     }
     /**
-     * Gets URI component "pass"
-     *
      * @return Pass|null
      */
     public function getPass(): ?Pass
@@ -157,8 +123,6 @@ class UriParser
         return $this->pass;
     }
     /**
-     * Gets URI component "host"
-     *
      * @return Host|null
      */
     public function getHost(): ?Host
@@ -166,8 +130,6 @@ class UriParser
         return $this->host;
     }
     /**
-     * Gets URI component "port"
-     *
      * @return Port|null
      */
     public function getPort(): ?Port
@@ -175,8 +137,6 @@ class UriParser
         return $this->port;
     }
     /**
-     * Gets URI component "path"
-     *
      * @return Path|null
      */
     public function getPath(): ?Path
@@ -184,8 +144,6 @@ class UriParser
         return $this->path;
     }
     /**
-     * Gets URI component "query"
-     *
      * @return Query|null
      */
     public function getQuery(): ?Query
@@ -193,8 +151,6 @@ class UriParser
         return $this->query;
     }
     /**
-     * Gets URI component "fragment"
-     *
      * @return Fragment|null
      */
     public function getFragment(): ?Fragment
@@ -202,8 +158,6 @@ class UriParser
         return $this->fragment;
     }
     /**
-     * Gets URI component "userinfo"
-     *
      * @return UserInfo|null
      */
     public function getUserInfo(): ?UserInfo

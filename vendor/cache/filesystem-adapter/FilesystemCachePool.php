@@ -16,9 +16,7 @@ use ComfinoExternal\Cache\Adapter\Common\PhpCacheItem;
 use ComfinoExternal\League\Flysystem\FileExistsException;
 use ComfinoExternal\League\Flysystem\FileNotFoundException;
 use ComfinoExternal\League\Flysystem\FilesystemInterface;
-/**
- * @author Tobias Nyholm <tobias.nyholm@gmail.com>
- */
+
 class FilesystemCachePool extends AbstractCachePool
 {
     /**
@@ -26,14 +24,12 @@ class FilesystemCachePool extends AbstractCachePool
      */
     private $filesystem;
     /**
-     * The folder should not begin nor end with a slash. Example: path/to/cache.
-     *
      * @type string
      */
     private $folder;
     /**
      * @param FilesystemInterface $filesystem
-     * @param string              $folder
+     * @param string $folder
      */
     public function __construct(FilesystemInterface $filesystem, $folder = 'cache')
     {
@@ -48,9 +44,7 @@ class FilesystemCachePool extends AbstractCachePool
     {
         $this->folder = $folder;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     protected function fetchObjectFromCache($key)
     {
         $empty = [\false, null, [], null];
@@ -63,7 +57,7 @@ class FilesystemCachePool extends AbstractCachePool
         } catch (FileNotFoundException $e) {
             return $empty;
         }
-        // Determine expirationTimestamp from data, remove items if expired
+        
         $expirationTimestamp = $data[2] ?: null;
         if ($expirationTimestamp !== null && time() > $expirationTimestamp) {
             foreach ($data[1] as $tag) {
@@ -74,45 +68,35 @@ class FilesystemCachePool extends AbstractCachePool
         }
         return [\true, $data[0], $data[1], $expirationTimestamp];
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     protected function clearAllObjectsFromCache()
     {
         $this->filesystem->deleteDir($this->folder);
         $this->filesystem->createDir($this->folder);
         return \true;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     protected function clearOneObjectFromCache($key)
     {
         return $this->forceClear($key);
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
         $data = serialize([$item->get(), $item->getTags(), $item->getExpirationTimestamp()]);
         $file = $this->getFilePath($item->getKey());
         if ($this->filesystem->has($file)) {
-            // Update file if it exists
             return $this->filesystem->update($file, $data);
         }
         try {
             return $this->filesystem->write($file, $data);
         } catch (FileExistsException $e) {
-            // To handle issues when/if race conditions occurs, we try to update here.
             return $this->filesystem->update($file, $data);
         }
     }
     /**
      * @param string $key
-     *
      * @throws InvalidArgumentException
-     *
      * @return string
      */
     private function getFilePath($key)
@@ -122,9 +106,7 @@ class FilesystemCachePool extends AbstractCachePool
         }
         return sprintf('%s/%s', $this->folder, $key);
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     protected function getList($name)
     {
         $file = $this->getFilePath($name);
@@ -133,26 +115,20 @@ class FilesystemCachePool extends AbstractCachePool
         }
         return unserialize($this->filesystem->read($file));
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     protected function removeList($name)
     {
         $file = $this->getFilePath($name);
         $this->filesystem->delete($file);
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     protected function appendListItem($name, $key)
     {
         $list = $this->getList($name);
         $list[] = $key;
         return $this->filesystem->update($this->getFilePath($name), serialize($list));
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     protected function removeListItem($name, $key)
     {
         $list = $this->getList($name);
@@ -164,8 +140,6 @@ class FilesystemCachePool extends AbstractCachePool
         return $this->filesystem->update($this->getFilePath($name), serialize($list));
     }
     /**
-     * @param $key
-     *
      * @return bool
      */
     private function forceClear($key)

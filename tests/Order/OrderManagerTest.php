@@ -15,6 +15,9 @@ class OrderManagerTest extends \PHPUnit_Framework_TestCase
         // Mock functions are handled in bootstrap.php
     }
 
+    /**
+     * @throws \Exception
+     */
     public function testGetShopCartFromWCCart(): void
     {
         $wcCart = new \WC_Cart();
@@ -39,6 +42,9 @@ class OrderManagerTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     public function testGetShopCartFromWCCartWithoutPriceModifier(): void
     {
         $wcCart = new \WC_Cart();
@@ -122,6 +128,9 @@ class OrderManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(method_exists(OrderManager::class, 'getOrderStatusNotes'));
     }
 
+    /**
+     * @throws \Exception
+     */
     public function testCartItemsHaveRequiredProperties(): void
     {
         $wcCart = new \WC_Cart();
@@ -136,6 +145,9 @@ class OrderManagerTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     public function testShopCartHasDeliveryCost(): void
     {
         $wcCart = new \WC_Cart();

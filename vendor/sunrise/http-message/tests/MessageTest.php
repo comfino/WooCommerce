@@ -4,20 +4,13 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Message\Tests;
 
-/**
- * Import classes
- */
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\MessageInterface;
 use Sunrise\Http\Message\Message;
 use Sunrise\Stream\StreamFactory;
 
-/**
- * MessageTest
- */
 class MessageTest extends TestCase
 {
-
     /**
      * @return void
      */
@@ -55,15 +48,12 @@ class MessageTest extends TestCase
         $this->assertInstanceOf(MessageInterface::class, $copy);
         $this->assertNotEquals($mess, $copy);
 
-        // default value
         $this->assertSame('1.1', $mess->getProtocolVersion());
-        // assigned value
+        
         $this->assertSame('2.0', $copy->getProtocolVersion());
     }
 
     /**
-     * @dataProvider invalidProtocolVersionProvider
-     *
      * @return void
      */
     public function testInvalidProtocolVersion($protocolVersion) : void
@@ -123,8 +113,6 @@ class MessageTest extends TestCase
     }
 
     /**
-     * @dataProvider invalidHeaderNameProvider
-     *
      * @return void
      */
     public function testSetInvalidHeaderName($headerName) : void
@@ -135,8 +123,6 @@ class MessageTest extends TestCase
     }
 
     /**
-     * @dataProvider invalidHeaderValueProvider
-     *
      * @return void
      */
     public function testSetInvalidHeaderValue($headerValue) : void
@@ -147,8 +133,6 @@ class MessageTest extends TestCase
     }
 
     /**
-     * @dataProvider invalidHeaderValueProvider
-     *
      * @return void
      */
     public function testSetInvalidHeaderValueItem($headerValue) : void
@@ -214,8 +198,6 @@ class MessageTest extends TestCase
     }
 
     /**
-     * @dataProvider invalidHeaderNameProvider
-     *
      * @return void
      */
     public function testAddInvalidHeaderName($headerName) : void
@@ -226,8 +208,6 @@ class MessageTest extends TestCase
     }
 
     /**
-     * @dataProvider invalidHeaderValueProvider
-     *
      * @return void
      */
     public function testAddInvalidHeaderValue($headerValue) : void
@@ -238,8 +218,6 @@ class MessageTest extends TestCase
     }
 
     /**
-     * @dataProvider invalidHeaderValueProvider
-     *
      * @return void
      */
     public function testAddInvalidHeaderValueItem($headerValue) : void
@@ -400,13 +378,10 @@ class MessageTest extends TestCase
         $this->assertInstanceOf(MessageInterface::class, $copy);
         $this->assertNotEquals($mess, $copy);
 
-        // default value
         $this->assertNotSame($body, $mess->getBody());
-        // assigned value
+        
         $this->assertSame($body, $copy->getBody());
     }
-
-    // Providers...
 
     /**
      * @return array
@@ -427,7 +402,6 @@ class MessageTest extends TestCase
             ['a.a'],
             ['HTTP/1.1'],
 
-            // other types
             [true],
             [false],
             [1],
@@ -455,7 +429,6 @@ class MessageTest extends TestCase
             ["x\rfoo"],
             ["x\nfoo"],
 
-            // other types
             [true],
             [false],
             [1],
@@ -482,7 +455,6 @@ class MessageTest extends TestCase
             [["field \r value"]],
             [["field \n value"]],
 
-            // other types
             [true],
             [false],
             [1],

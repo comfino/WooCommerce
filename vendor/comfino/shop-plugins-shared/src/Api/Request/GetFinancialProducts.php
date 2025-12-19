@@ -7,9 +7,6 @@ namespace Comfino\Api\Request;
 use Comfino\Api\Dto\Payment\LoanQueryCriteria;
 use Comfino\Api\Request;
 
-/**
- * Financial products listing request.
- */
 class GetFinancialProducts extends Request
 {
     /**
@@ -28,16 +25,13 @@ class GetFinancialProducts extends Request
                     'productTypes' => ($queryCriteria->productTypes !== null ? implode(',', $queryCriteria->productTypes) : null),
                     'taxId' => $queryCriteria->taxId,
                 ],
-                static function ($value) : bool {
+                static function ($value): bool {
                     return $value !== null;
                 }
             )
         );
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function prepareRequestBody(): ?array
     {
         return null;

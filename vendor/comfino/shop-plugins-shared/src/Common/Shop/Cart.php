@@ -9,46 +9,38 @@ use Comfino\Shop\Order\Cart\CartItemInterface;
 class Cart
 {
     /**
-     * @readonly
      * @var int
      */
     private $totalValue;
     /**
-     * @readonly
      * @var int|null
      */
     private $totalNetValue;
     /**
-     * @readonly
      * @var int|null
      */
     private $totalTaxValue;
     /**
-     * @readonly
      * @var int
      */
     private $deliveryCost;
     /**
-     * @readonly
      * @var int|null
      */
     private $deliveryNetCost;
     /**
-     * @readonly
      * @var int|null
      */
     private $deliveryTaxRate;
     /**
-     * @readonly
      * @var int|null
      */
     private $deliveryTaxValue;
     /**
      * @var CartItemInterface[]
-     * @readonly
      */
     private $cartItems;
-    /** @var int[]|null  */
+
     private $cartCategoryIds;
 
     /**
@@ -156,7 +148,7 @@ class Cart
                         'categoryIds' => $cartItem->getProduct()->getCategoryIds(),
                     ];
 
-                    return $withNulls ? $product : array_filter($product, static function ($productFieldValue) : bool {
+                    return $withNulls ? $product : array_filter($product, static function ($productFieldValue): bool {
                         return $productFieldValue !== null;
                     });
                 },
@@ -164,7 +156,7 @@ class Cart
             ),
         ];
 
-        return $withNulls ? $cart : array_filter($cart, static function ($cartFieldValue) : bool {
+        return $withNulls ? $cart : array_filter($cart, static function ($cartFieldValue): bool {
             return $cartFieldValue !== null;
         });
     }

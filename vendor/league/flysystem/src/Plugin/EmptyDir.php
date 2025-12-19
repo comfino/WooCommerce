@@ -5,8 +5,6 @@ namespace ComfinoExternal\League\Flysystem\Plugin;
 class EmptyDir extends AbstractPlugin
 {
     /**
-     * Get the method name.
-     *
      * @return string
      */
     public function getMethod()
@@ -14,8 +12,6 @@ class EmptyDir extends AbstractPlugin
         return 'emptyDir';
     }
     /**
-     * Empty a directory's contents.
-     *
      * @param string $dirname
      */
     public function handle($dirname)

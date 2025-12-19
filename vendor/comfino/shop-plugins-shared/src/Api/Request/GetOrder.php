@@ -6,9 +6,6 @@ namespace Comfino\Api\Request;
 
 use Comfino\Api\Request;
 
-/**
- * Loan application details request.
- */
 class GetOrder extends Request
 {
     /**
@@ -20,9 +17,6 @@ class GetOrder extends Request
         $this->setApiEndpointPath(sprintf('orders/%s', $orderId));
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function prepareRequestBody(): ?array
     {
         return null;

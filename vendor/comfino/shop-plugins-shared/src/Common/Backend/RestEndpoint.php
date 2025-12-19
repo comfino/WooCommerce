@@ -10,47 +10,59 @@ use ComfinoExternal\Psr\Http\Message\ServerRequestInterface;
 abstract class RestEndpoint implements RestEndpointInterface
 {
     /**
-     * @readonly
      * @var string
      */
     private $name;
     /**
-     * @readonly
      * @var string
      */
     private $endpointUrl;
     /**
-     * @var mixed[]
+     * @var string[]
      */
     protected $methods;
+
     /**
-     * @var \Comfino\Api\SerializerInterface|null
+     * @var SerializerInterface|null
      */
     protected $serializer;
 
+    /**
+     * @param string $name
+     * @param string $endpointUrl
+     */
     public function __construct(string $name, string $endpointUrl)
     {
         $this->name = $name;
         $this->endpointUrl = $endpointUrl;
     }
 
+    /**
+     * @return string
+     */
     public function getName(): string
     {
         return $this->name;
     }
 
+    /**
+     * @return string[]
+     */
     public function getMethods(): array
     {
         return $this->methods;
     }
 
+    /**
+     * @return string
+     */
     public function getEndpointUrl(): string
     {
         return $this->endpointUrl;
     }
 
     /**
-     * @param \Comfino\Api\SerializerInterface $serializer
+     * @param SerializerInterface $serializer
      */
     public function setSerializer($serializer): void
     {
@@ -58,8 +70,9 @@ abstract class RestEndpoint implements RestEndpointInterface
     }
 
     /**
-     * @param \ComfinoExternal\Psr\Http\Message\ServerRequestInterface $serverRequest
+     * @param ServerRequestInterface $serverRequest
      * @param string|null $endpointName
+     * @return bool
      */
     protected function endpointPathMatch($serverRequest, $endpointName = null): bool
     {
@@ -73,9 +86,9 @@ abstract class RestEndpoint implements RestEndpointInterface
     }
 
     /**
+     * @param ServerRequestInterface $serverRequest
+     * @return array|string|null
      * @throws \JsonException
-     * @param \ComfinoExternal\Psr\Http\Message\ServerRequestInterface $serverRequest
-     * @return mixed[]|string|null
      */
     protected function getParsedRequestBody($serverRequest)
     {

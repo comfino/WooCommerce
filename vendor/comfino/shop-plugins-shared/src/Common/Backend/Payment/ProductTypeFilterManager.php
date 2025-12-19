@@ -14,7 +14,6 @@ final class ProductTypeFilterManager
      */
     private static $instance;
 
-    /** @var ProductTypeFilterInterface[] */
     private $filters = [];
 
     public static function getInstance(): self

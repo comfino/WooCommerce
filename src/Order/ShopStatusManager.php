@@ -19,6 +19,7 @@ final class ShopStatusManager
         StatusManager::STATUS_ACCEPTED => 'completed',
         StatusManager::STATUS_CANCELLED => 'cancelled',
         StatusManager::STATUS_REJECTED => 'cancelled',
+        StatusManager::STATUS_CANCELLED_BY_SHOP => 'cancelled',
     ];
 
     public static function orderStatusUpdateEventHandler(\WC_Order $order, string $oldStatus, string $newStatus): void

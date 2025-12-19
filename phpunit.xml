@@ -3,10 +3,15 @@
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/5.7/phpunit.xsd"
          bootstrap="tests/bootstrap.php"
          colors="true"
-         verbose="true">
+         verbose="true"
+         failOnRisky="true"
+         failOnWarning="true"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutTestsThatDoNotTestAnything="true">
     <php>
         <ini name="error_reporting" value="-1"/>
         <ini name="display_errors" value="true"/>
+        <env name="XDEBUG_MODE" value="coverage"/>
     </php>
 
     <testsuites>
@@ -18,11 +23,15 @@
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
             <directory suffix=".php">src</directory>
+            <exclude>
+                <directory>vendor</directory>
+            </exclude>
         </whitelist>
     </filter>
 
     <logging>
         <log type="coverage-html" target="coverage"/>
+        <log type="coverage-clover" target="coverage.xml"/>
         <log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>
     </logging>
 </phpunit>

@@ -4,25 +4,15 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Message\Tests;
 
-/**
- * Import classes
- */
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Sunrise\Http\Message\Message;
 use Sunrise\Http\Message\Response;
 
-/**
- * Import constants
- */
 use const Sunrise\Http\Message\REASON_PHRASES;
 
-/**
- * ResponseTest
- */
 class ResponseTest extends TestCase
 {
-
     /**
      * @return void
      */
@@ -46,18 +36,14 @@ class ResponseTest extends TestCase
         $this->assertInstanceOf(ResponseInterface::class, $copy);
         $this->assertNotEquals($mess, $copy);
 
-        // default values
         $this->assertSame(200, $mess->getStatusCode());
         $this->assertSame(REASON_PHRASES[200], $mess->getReasonPhrase());
 
-        // assigned values
         $this->assertSame(204, $copy->getStatusCode());
         $this->assertSame(REASON_PHRASES[204], $copy->getReasonPhrase());
     }
 
     /**
-     * @dataProvider figStatusProvider
-     *
      * @return void
      */
     public function testFigStatus($statusCode, $reasonPhrase) : void
@@ -69,8 +55,6 @@ class ResponseTest extends TestCase
     }
 
     /**
-     * @dataProvider invalidStatusCodeProvider
-     *
      * @return void
      */
     public function testInvalidStatusCode($statusCode) : void
@@ -91,8 +75,6 @@ class ResponseTest extends TestCase
     }
 
     /**
-     * @dataProvider invalidReasonPhraseProvider
-     *
      * @return void
      */
     public function testInvalidReasonPhrase($reasonPhrase) : void
@@ -111,8 +93,6 @@ class ResponseTest extends TestCase
 
         $this->assertSame('test', $mess->getReasonPhrase());
     }
-
-    // Providers...
 
     /**
      * @return array
@@ -134,7 +114,6 @@ class ResponseTest extends TestCase
             [99],
             [600],
 
-            // other types
             [true],
             [false],
             ['100'],
@@ -158,7 +137,6 @@ class ResponseTest extends TestCase
             ["bar\nbaz"],
             ["bar\rbaz"],
 
-            // other types
             [true],
             [false],
             [1],

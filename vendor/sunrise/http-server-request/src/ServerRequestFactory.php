@@ -11,31 +11,18 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Http\ServerRequest;
 
-/**
- * Import classes
- */
 use ComfinoExternal\Psr\Http\Message\ServerRequestFactoryInterface;
 use ComfinoExternal\Psr\Http\Message\ServerRequestInterface;
-/**
- * ServerRequestFactory
- *
- * @link https://www.php-fig.org/psr/psr-17/
- */
+
 class ServerRequestFactory implements ServerRequestFactoryInterface
 {
     /**
-     * Creates a new request from superglobals variables
-     *
      * @param array|null $serverParams
      * @param array|null $queryParams
      * @param array|null $cookieParams
      * @param array|null $uploadedFiles
      * @param array|null $parsedBody
-     *
      * @return ServerRequestInterface
-     *
-     * @link http://php.net/manual/en/language.variables.superglobals.php
-     * @link https://www.php-fig.org/psr/psr-15/meta/
      */
     public static function fromGlobals(?array $serverParams = null, ?array $queryParams = null, ?array $cookieParams = null, ?array $uploadedFiles = null, ?array $parsedBody = null): ServerRequestInterface
     {
@@ -50,7 +37,7 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
             request_headers($serverParams),
             request_body(),
             null,
-            // request target
+            
             request_protocol($serverParams),
             $serverParams,
             $queryParams,
@@ -59,9 +46,7 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
             $parsedBody
         );
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function createServerRequest(string $method, $uri, array $serverParams = []): ServerRequestInterface
     {
         return new ServerRequest(
@@ -69,9 +54,9 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
             $uri,
             request_headers($serverParams),
             null,
-            // body
+            
             null,
-            // request target
+            
             request_protocol($serverParams),
             $serverParams
         );

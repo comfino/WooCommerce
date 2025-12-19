@@ -11,14 +11,9 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Uri\Component;
 
-/**
- * ComponentInterface
- */
 interface ComponentInterface
 {
     /**
-     * Presents the component value
-     *
      * @return mixed
      */
     public function present();

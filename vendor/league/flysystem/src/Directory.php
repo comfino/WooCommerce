@@ -2,14 +2,9 @@
 
 namespace ComfinoExternal\League\Flysystem;
 
-/**
- * @deprecated
- */
 class Directory extends Handler
 {
     /**
-     * Delete the directory.
-     *
      * @return bool
      */
     public function delete()
@@ -17,11 +12,8 @@ class Directory extends Handler
         return $this->filesystem->deleteDir($this->path);
     }
     /**
-     * List the directory contents.
-     *
      * @param bool $recursive
-     *
-     * @return array|bool directory contents or false
+     * @return array|bool
      */
     public function getContents($recursive = \false)
     {

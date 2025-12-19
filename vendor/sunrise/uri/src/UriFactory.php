@@ -11,21 +11,11 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Uri;
 
-/**
- * Import classes
- */
 use ComfinoExternal\Psr\Http\Message\UriFactoryInterface;
 use ComfinoExternal\Psr\Http\Message\UriInterface;
-/**
- * UriFactory
- *
- * @link https://www.php-fig.org/psr/psr-17/
- */
+
 class UriFactory implements UriFactoryInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function createUri(string $uri = ''): UriInterface
     {
         return new Uri($uri);

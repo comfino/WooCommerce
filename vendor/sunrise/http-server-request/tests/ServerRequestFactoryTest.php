@@ -4,21 +4,14 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\ServerRequest\Tests;
 
-/**
- * Import classes
- */
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
 
-/**
- * ServerRequestFactoryTest
- */
 class ServerRequestFactoryTest extends AbstractTestCase
 {
-
     /**
      * @return void
      */
@@ -60,8 +53,6 @@ class ServerRequestFactoryTest extends AbstractTestCase
     }
 
     /**
-     * @runInSeparateProcess
-     *
      * @return void
      */
     public function testCreateServerRequestFromGlobals() : void
@@ -175,12 +166,8 @@ class ServerRequestFactoryTest extends AbstractTestCase
     }
 
     /**
-     * @dataProvider headersFromGlobalsProvider
-     *
-     * @param array<string, string> $serverParams
      * @param mixed $expectedValue
      * @param string|null $key
-     *
      * @return void
      */
     public function testHeadersFromGlobals($serverParams, $expectedValue, $key = null) : void
@@ -190,11 +177,7 @@ class ServerRequestFactoryTest extends AbstractTestCase
     }
 
     /**
-     * @dataProvider protocolVersionFromGlobalsProvider
-     *
-     * @param array<string, string> $serverParams
      * @param mixed $expectedValue
-     *
      * @return void
      */
     public function testProtocolVersionFromGlobals($serverParams, $expectedValue) : void
@@ -204,11 +187,7 @@ class ServerRequestFactoryTest extends AbstractTestCase
     }
 
     /**
-     * @dataProvider methodFromGlobalsProvider
-     *
-     * @param array<string, string> $serverParams
      * @param mixed $expectedValue
-     *
      * @return void
      */
     public function testMethodFromGlobals($serverParams, $expectedValue) : void
@@ -218,11 +197,7 @@ class ServerRequestFactoryTest extends AbstractTestCase
     }
 
     /**
-     * @dataProvider uriFromGlobalsProvider
-     *
-     * @param array<string, string> $serverParams
      * @param mixed $expectedValue
-     *
      * @return void
      */
     public function testUriFromGlobals($serverParams, $expectedValue) : void

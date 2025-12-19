@@ -11,31 +11,21 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Http\ServerRequest;
 
-/**
- * Import functions
- */
 use function strncmp;
 use function strtolower;
 use function strtr;
 use function substr;
 use function ucwords;
 /**
- * Gets the request headers from the given server parameters
- *
- * @param array $server
- *
- * @return array<string, string>
- *
- * @link http://php.net/manual/en/reserved.variables.server.php
- * @link https://datatracker.ietf.org/doc/html/rfc3875#section-4.1.18
- */
+     * @param array $server
+     * @return array<string,
+     */
 function request_headers(array $server): array
 {
-    // https://datatracker.ietf.org/doc/html/rfc3875#section-4.1.2
     if (!isset($server['HTTP_CONTENT_LENGTH']) && isset($server['CONTENT_LENGTH'])) {
         $server['HTTP_CONTENT_LENGTH'] = $server['CONTENT_LENGTH'];
     }
-    // https://datatracker.ietf.org/doc/html/rfc3875#section-4.1.3
+    
     if (!isset($server['HTTP_CONTENT_TYPE']) && isset($server['CONTENT_TYPE'])) {
         $server['HTTP_CONTENT_TYPE'] = $server['CONTENT_TYPE'];
     }

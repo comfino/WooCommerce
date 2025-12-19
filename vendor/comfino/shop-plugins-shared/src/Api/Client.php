@@ -35,7 +35,6 @@ use Comfino\Api\Response\GetWidgetTypes as GetWidgetTypesResponse;
 use Comfino\Api\Response\IsShopAccountActive as IsShopAccountActiveResponse;
 use Comfino\Api\Response\ValidateOrder as ValidateOrderResponse;
 use Comfino\Api\Serializer\Json as JsonSerializer;
-use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Shop\Order\CartInterface;
 use Comfino\Shop\Order\OrderInterface;
 use ComfinoExternal\Psr\Http\Client\ClientExceptionInterface;
@@ -54,12 +53,10 @@ class Client
 {
     /**
      * @var RequestFactoryInterface
-     * @readonly
      */
     protected $requestFactory;
     /**
      * @var StreamFactoryInterface
-     * @readonly
      */
     protected $streamFactory;
     /**
@@ -82,34 +79,31 @@ class Client
     public const PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
     public const SANDBOX_HOST = 'https://api-ecommerce.craty.pl';
 
-    /** @var string */
     protected $apiLanguage = 'pl';
-    /** @var string */
+
     protected $apiCurrency = 'PLN';
-    /** @var string|null */
+
     protected $customApiHost;
-    /** @var string|null */
+
     protected $customUserAgent;
-    /** @var string[] */
+
     protected $customHeaders = [];
-    /** @var string */
+
     protected $clientHostName = '';
-    /** @var bool */
+
     protected $isSandboxMode = false;
-    /** @var Request|null */
+
     protected $request;
-    /** @var ResponseInterface|null */
+
     protected $response;
 
     /**
-     * Comfino API client.
-     *
-     * @param RequestFactoryInterface $requestFactory External PSR-18 compatible HTTP request factory.
-     * @param StreamFactoryInterface $streamFactory External PSR-18 compatible stream factory.
-     * @param ClientInterface $client External PSR-18 compatible HTTP client which will be used to communicate with the API.
-     * @param string|null $apiKey Unique authentication key required for access to the Comfino API.
-     * @param int $apiVersion Selected default API version (default: v1).
-     * @param SerializerInterface|null $serializer JSON serializer.
+     * @param RequestFactoryInterface $requestFactory
+     * @param StreamFactoryInterface $streamFactory
+     * @param ClientInterface $client
+     * @param string|null $apiKey
+     * @param int $apiVersion
+     * @param SerializerInterface|null $serializer
      */
     public function __construct(RequestFactoryInterface $requestFactory, StreamFactoryInterface $streamFactory, ClientInterface $client, ?string $apiKey, int $apiVersion = 1, ?SerializerInterface $serializer = null)
     {
@@ -123,10 +117,7 @@ class Client
     }
 
     /**
-     * Sets custom request/response serializer.
-     *
      * @param SerializerInterface $serializer
-     *
      * @return void
      */
     public function setSerializer($serializer): void
@@ -135,10 +126,7 @@ class Client
     }
 
     /**
-     * Selects current API version.
-     *
-     * @param int $version Desired API version.
-     *
+     * @param int $version
      * @return void
      */
     public function setApiVersion($version): void
@@ -147,8 +135,6 @@ class Client
     }
 
     /**
-     * Returns current API key.
-     *
      * @return string
      */
     public function getApiKey(): string
@@ -157,10 +143,7 @@ class Client
     }
 
     /**
-     * Sets current API key.
-     *
-     * @param string $apiKey API key.
-     *
+     * @param string $apiKey
      * @return void
      */
     public function setApiKey($apiKey): void
@@ -169,9 +152,7 @@ class Client
     }
 
     /**
-     * Returns current API language.
-     *
-     * @return string Language code (eg: pl, en)
+     * @return string
      */
     public function getApiLanguage(): string
     {
@@ -179,10 +160,7 @@ class Client
     }
 
     /**
-     * Selects current API language.
-     *
-     * @param string $language Language code (eg: pl, en).
-     *
+     * @param string $language
      * @return void
      */
     public function setApiLanguage($language): void
@@ -191,9 +169,7 @@ class Client
     }
 
     /**
-     * Returns current API currency.
-     *
-     * @return string Currency code (eg: PLN, USD, EUR, GBP).
+     * @return string
      */
     public function getApiCurrency(): string
     {
@@ -201,10 +177,7 @@ class Client
     }
 
     /**
-     * Selects current API currency.
-     *
-     * @param string $apiCurrency Currency code (eg: PLN, USD, EUR, GBP).
-     *
+     * @param string $apiCurrency
      * @return void
      */
     public function setApiCurrency($apiCurrency): void
@@ -213,8 +186,6 @@ class Client
     }
 
     /**
-     * Returns current API host.
-     *
      * @return string
      */
     public function getApiHost(): string
@@ -223,10 +194,7 @@ class Client
     }
 
     /**
-     * Sets custom API host.
-     *
-     * @param string|null $host Custom API host.
-     *
+     * @param string|null $host
      * @return void
      */
     public function setCustomApiHost($host): void
@@ -235,10 +203,7 @@ class Client
     }
 
     /**
-     * Sets custom User-Agent header.
-     *
      * @param string|null $userAgent
-     *
      * @return void
      */
     public function setCustomUserAgent($userAgent): void
@@ -247,11 +212,8 @@ class Client
     }
 
     /**
-     * Adds a custom HTTP header to the API request call.
-     *
      * @param string $headerName
      * @param string $headerValue
-     *
      * @return void
      */
     public function addCustomHeader($headerName, $headerValue): void
@@ -260,15 +222,12 @@ class Client
     }
 
     /**
-     * Sets client host name.
-     *
      * @param string $host
-     *
      * @return void
      */
     public function setClientHostName($host): void
     {
-        if (($filteredHost = filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) === false)) {
+        if (($filteredHost = filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) === false) {
             $filteredHost = gethostname();
         }
 
@@ -302,8 +261,6 @@ class Client
     }
 
     /**
-     * Returns last API request.
-     *
      * @return Request|null
      */
     public function getRequest(): ?Request
@@ -312,13 +269,9 @@ class Client
     }
 
     /**
-     * Checks if registered user shop account is active.
-     *
-     * @param string|null $cacheInvalidateUrl Integrated platform API endpoint for local cache invalidation.
-     * @param string|null $configurationUrl Integrated platform API endpoint for local configuration management.
-     *
+     * @param string|null $cacheInvalidateUrl
+     * @param string|null $configurationUrl
      * @return bool
-     *
      * @throws RequestValidationError
      * @throws ResponseValidationError
      * @throws AuthorizationError
@@ -334,13 +287,9 @@ class Client
     }
 
     /**
-     * Returns a list of financial products according to the specified criteria and calculations result based on passed cart contents.
-     *
      * @param LoanQueryCriteria $queryCriteria
      * @param CartInterface $cart
-     *
      * @return GetFinancialProductDetailsResponse
-     *
      * @throws RequestValidationError
      * @throws ResponseValidationError
      * @throws AuthorizationError
@@ -356,12 +305,8 @@ class Client
     }
 
     /**
-     * Returns a list of financial products according to the specified criteria.
-     *
      * @param LoanQueryCriteria $queryCriteria
-     *
      * @return GetFinancialProductsResponse
-     *
      * @throws RequestValidationError
      * @throws ResponseValidationError
      * @throws AuthorizationError
@@ -377,12 +322,8 @@ class Client
     }
 
     /**
-     * Submits a loan application request.
-     *
-     * @param OrderInterface $order Full order data (cart, loan details).
-     *
+     * @param OrderInterface $order
      * @return CreateOrderResponse
-     *
      * @throws RequestValidationError
      * @throws ResponseValidationError
      * @throws AuthorizationError
@@ -392,22 +333,19 @@ class Client
      */
     public function createOrder($order): CreateOrderResponse
     {
-        $this->request = (new CreateOrderRequest($order))->setSerializer($this->serializer);
+        $this->request = (new CreateOrderRequest($order, $this->apiKey ?? ''))->setSerializer($this->serializer);
 
         return new CreateOrderResponse($this->request, $this->sendRequest($this->request), $this->serializer);
     }
 
     /**
-     * Validates loan application request data.
-     *
      * @param OrderInterface $order
-     *
      * @return ValidateOrderResponse
      */
     public function validateOrder($order): ValidateOrderResponse
     {
         try {
-            $this->request = (new CreateOrderRequest($order, true))->setSerializer($this->serializer);
+            $this->request = (new CreateOrderRequest($order, $this->apiKey ?? '', true))->setSerializer($this->serializer);
 
             return new ValidateOrderResponse($this->request, $this->sendRequest($this->request), $this->serializer);
         } catch (\Throwable $e) {
@@ -421,12 +359,8 @@ class Client
     }
 
     /**
-     * Returns a details of specified loan application.
-     *
-     * @param string $orderId Loan application ID returned by createOrder action.
-     *
+     * @param string $orderId
      * @return GetOrderResponse
-     *
      * @throws RequestValidationError
      * @throws ResponseValidationError
      * @throws AuthorizationError
@@ -442,9 +376,7 @@ class Client
     }
 
     /**
-     * Cancels a loan application.
-     *
-     * @param string $orderId Loan application ID returned by createOrder action.
+     * @param string $orderId
      * @throws RequestValidationError
      * @throws ResponseValidationError
      * @throws AuthorizationError
@@ -460,8 +392,6 @@ class Client
     }
 
     /**
-     * Returns a list of available financial product types associated with an authorized shop account.
-     *
      * @throws RequestValidationError
      * @throws ResponseValidationError
      * @throws AuthorizationError
@@ -478,8 +408,6 @@ class Client
     }
 
     /**
-     * Returns a widget key associated with an authorized shop account.
-     *
      * @throws RequestValidationError
      * @throws ResponseValidationError
      * @throws AuthorizationError
@@ -495,10 +423,7 @@ class Client
     }
 
     /**
-     * Returns a list of available widget types associated with an authorized shop account.
-     *
-     * @param bool $useNewApi Whether to use a new widget type and new API endpoint.
-     *
+     * @param bool $useNewApi
      * @throws RequestValidationError
      * @throws ResponseValidationError
      * @throws AuthorizationError
@@ -514,13 +439,9 @@ class Client
     }
 
     /**
-     * Returns a complete paywall page with list of financial products according to the specified criteria.
-     *
-     * @param LoanQueryCriteria $queryCriteria List filtering criteria.
-     * @param string|null $recalculationUrl Paywall form action URL used for offer recalculations initialized by shop cart frontends.
-     *
+     * @param LoanQueryCriteria $queryCriteria
+     * @param string|null $recalculationUrl
      * @return GetPaywallResponse
-     *
      * @throws RequestValidationError
      * @throws ResponseValidationError
      * @throws AuthorizationError
@@ -536,14 +457,10 @@ class Client
     }
 
     /**
-     * Returns a details of paywall item for specified financial product type (loan type) and shopping cart contents.
-     *
-     * @param int $loanAmount Requested loan amount.
-     * @param LoanTypeEnum $loanType Financial product type (loan type).
-     * @param CartInterface $cart Shopping cart.
-     *
+     * @param int $loanAmount
+     * @param LoanTypeEnum $loanType
+     * @param CartInterface $cart
      * @return GetPaywallItemDetailsResponse
-     *
      * @throws RequestValidationError
      * @throws ResponseValidationError
      * @throws AuthorizationError

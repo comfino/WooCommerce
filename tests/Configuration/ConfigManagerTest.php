@@ -233,7 +233,7 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
             $this->assertTrue(true); // If no exception is thrown, the method works.
         } catch (\Throwable $e) {
             // Expected in test environment due to missing WordPress functions.
-            $this->assertInstanceOf(\Throwable::class, $e);
+            $this->assertTrue(true);
         }
     }
 

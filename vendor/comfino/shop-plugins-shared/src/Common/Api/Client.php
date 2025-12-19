@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Comfino\Common\Api;
 
 use Comfino\Api\Exception\RequestValidationError;
-use Comfino\Api\Request;
 use Comfino\Api\Request\CreateOrder as CreateOrderRequest;
 use Comfino\Common\Api\Response\ValidateOrder as ValidateOrderResponse;
 use Comfino\Common\Exception\ConnectionTimeout;
-use Comfino\Shop\Order\OrderInterface;
 use ComfinoExternal\Psr\Http\Client\ClientExceptionInterface;
 use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 use ComfinoExternal\Sunrise\Http\Factory\RequestFactory;
@@ -41,11 +39,11 @@ class Client extends \Comfino\Extended\Api\Client
     protected static $responseFactory;
 
     /**
-     * @param string|null $apiKey Unique authentication key required for access to the Comfino API.
-     * @param int $connectionTimeout API connection timeout in seconds.
-     * @param int $transferTimeout Data transfer from API timeout in seconds. Must be greater than connection timeout.
-     * @param int $connectionMaxNumAttempts Maximum number of connection attempts in case of timeout.
-     * @param array $options cURL client extra options.
+     * @param string|null $apiKey
+     * @param int $connectionTimeout
+     * @param int $transferTimeout
+     * @param int $connectionMaxNumAttempts
+     * @param array $options
      */
     public function __construct(
         ?string $apiKey,
@@ -76,12 +74,13 @@ class Client extends \Comfino\Extended\Api\Client
         );
     }
 
-    /** @inheritDoc
-     * @param \Comfino\Shop\Order\OrderInterface $order */
+    /**
+     * @param \Comfino\Shop\Order\OrderInterface $order
+     */
     public function validateOrder($order): \Comfino\Api\Response\ValidateOrder
     {
         try {
-            $this->request = (new CreateOrderRequest($order, true))->setSerializer($this->serializer);
+            $this->request = (new CreateOrderRequest($order, $this->apiKey ?? '', true))->setSerializer($this->serializer);
 
             return new ValidateOrderResponse($this->request, $this->sendRequest($this->request), $this->serializer);
         } catch (\Throwable $e) {
@@ -95,11 +94,9 @@ class Client extends \Comfino\Extended\Api\Client
     }
 
     /**
-     * Resets internal cURL client object and updates connection options.
-     *
-     * @param int $connectionTimeout API connection timeout in seconds.
-     * @param int $transferTimeout Data transfer from API timeout in seconds. Must be greater than connection timeout.
-     * @param int $connectionMaxNumAttempts Maximum number of connection attempts in case of timeout.
+     * @param int $connectionTimeout
+     * @param int $transferTimeout
+     * @param int $connectionMaxNumAttempts
      * @param array $options
      * @return void
      */
@@ -177,7 +174,6 @@ class Client extends \Comfino\Extended\Api\Client
             } catch (ClientExceptionInterface $e) {
                 if ($e->getCode() === CURLE_OPERATION_TIMEDOUT) {
                     if ($connectAttemptIdx < $this->connectionMaxNumAttempts) {
-                        // Connection or transfer timeout - try again with higher timeout limits.
                         $connectionTimeout = $this->calculateConnectionTimeout($connectAttemptIdx);
                         $transferTimeout = $this->calculateTransferTimeout($connectAttemptIdx);
 
@@ -220,12 +216,8 @@ class Client extends \Comfino\Extended\Api\Client
     }
 
     /**
-     * Returns sequence index of given Fibonacci number.
-     *
-     * @see https://en.wikipedia.org/wiki/Fibonacci_sequence
-     *
-     * @param int $fibNum Fibonacci number to check.
-     * @return int Zero based sequence index of given Fibonacci number.
+     * @param int $fibNum
+     * @return int
      */
     protected function findFibonacciSequenceIndex($fibNum): int
     {
@@ -233,17 +225,12 @@ class Client extends \Comfino\Extended\Api\Client
     }
 
     /**
-     * Calculates a value of the n-th element from Fibonacci sequence.
-     *
-     * @see https://en.wikipedia.org/wiki/Fibonacci_sequence
-     * @see https://en.wikipedia.org/wiki/Golden_ratio
-     *
-     * @param int $n Fibonacci sequence position counted from zero.
-     * @return int N-th Fibonacci number.
+     * @param int $n
+     * @return int
      */
     protected function calcFibonacciNumber($n): int
     {
-        static $phi = 1.6180339; // Golden ratio approximation.
+        static $phi = 1.6180339;
         static $fibSequence = [0, 1, 1, 2, 3, 5];
 
         if ($n < 6) {

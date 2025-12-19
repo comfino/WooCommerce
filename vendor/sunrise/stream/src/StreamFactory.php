@@ -11,37 +11,22 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Stream;
 
-/**
- * Import classes
- */
 use ComfinoExternal\Psr\Http\Message\StreamFactoryInterface;
 use ComfinoExternal\Psr\Http\Message\StreamInterface;
 use ComfinoExternal\Sunrise\Stream\Exception\UnopenableStreamException;
-/**
- * Import functions
- */
+
 use function fopen;
 use function sprintf;
 use function tmpfile;
-/**
- * StreamFactory
- *
- * @link https://www.php-fig.org/psr/psr-17/
- */
+
 class StreamFactory implements StreamFactoryInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function createStreamFromResource($resource): StreamInterface
     {
         return new Stream($resource);
     }
     /**
-     * {@inheritdoc}
-     *
      * @throws UnopenableStreamException
-     *         If the file cannot be open.
      */
     public function createStreamFromFile(string $filename, string $mode = 'r'): StreamInterface
     {
@@ -52,18 +37,9 @@ class StreamFactory implements StreamFactoryInterface
         return $this->createStreamFromResource($resource);
     }
     /**
-     * Creates a temporary file
-     *
-     * The temporary file is automatically removed when the stream is closed or the script ends.
-     *
      * @param string|null $content
-     *
      * @return StreamInterface
-     *
      * @throws UnopenableStreamException
-     *         If a temporary file cannot be created.
-     *
-     * @link https://www.php.net/manual/en/function.tmpfile.php
      */
     public function createStreamFromTemporaryFile(?string $content = null): StreamInterface
     {
@@ -79,9 +55,7 @@ class StreamFactory implements StreamFactoryInterface
         $stream->rewind();
         return $stream;
     }
-    /**
-     * {@inheritdoc}
-     */
+    
     public function createStream(string $content = ''): StreamInterface
     {
         $stream = $this->createStreamFromFile('php://temp', 'r+b');

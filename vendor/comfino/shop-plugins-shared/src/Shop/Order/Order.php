@@ -8,47 +8,38 @@ class Order implements OrderInterface
 {
     /**
      * @var string
-     * @readonly
      */
     private $id;
     /**
      * @var string
-     * @readonly
      */
     private $returnUrl;
     /**
      * @var LoanParametersInterface
-     * @readonly
      */
     private $loanParameters;
     /**
      * @var CartInterface
-     * @readonly
      */
     private $cart;
     /**
      * @var CustomerInterface
-     * @readonly
      */
     private $customer;
     /**
      * @var string|null
-     * @readonly
      */
     private $notifyUrl;
     /**
      * @var SellerInterface|null
-     * @readonly
      */
     private $seller;
     /**
      * @var string|null
-     * @readonly
      */
     private $accountNumber;
     /**
      * @var string|null
-     * @readonly
      */
     private $transferTitle;
     /**
@@ -75,73 +66,46 @@ class Order implements OrderInterface
         $this->transferTitle = $transferTitle;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getId(): string
     {
         return $this->id;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getNotifyUrl(): ?string
     {
         return $this->notifyUrl !== null ? trim(strip_tags($this->notifyUrl)) : null;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getReturnUrl(): string
     {
         return trim(strip_tags($this->returnUrl));
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getLoanParameters(): LoanParametersInterface
     {
         return $this->loanParameters;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCart(): CartInterface
     {
         return $this->cart;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getCustomer(): CustomerInterface
     {
         return $this->customer;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getSeller(): ?SellerInterface
     {
         return $this->seller;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getAccountNumber(): ?string
     {
         return $this->accountNumber !== null ? trim(html_entity_decode(strip_tags($this->accountNumber))) : null;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getTransferTitle(): ?string
     {
         return $this->transferTitle !== null ? trim(html_entity_decode(strip_tags($this->transferTitle))) : null;

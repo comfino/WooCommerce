@@ -3,9 +3,7 @@
 namespace ComfinoExternal\League\Flysystem;
 
 use BadMethodCallException;
-/**
- * @deprecated
- */
+
 abstract class Handler
 {
     /**
@@ -17,10 +15,8 @@ abstract class Handler
      */
     protected $filesystem;
     /**
-     * Constructor.
-     *
      * @param FilesystemInterface $filesystem
-     * @param string              $path
+     * @param string $path
      */
     public function __construct(FilesystemInterface $filesystem = null, $path = null)
     {
@@ -28,8 +24,6 @@ abstract class Handler
         $this->filesystem = $filesystem;
     }
     /**
-     * Check whether the entree is a directory.
-     *
      * @return bool
      */
     public function isDir()
@@ -37,8 +31,6 @@ abstract class Handler
         return $this->getType() === 'dir';
     }
     /**
-     * Check whether the entree is a file.
-     *
      * @return bool
      */
     public function isFile()
@@ -46,9 +38,7 @@ abstract class Handler
         return $this->getType() === 'file';
     }
     /**
-     * Retrieve the entree type (file|dir).
-     *
-     * @return string file or dir
+     * @return string
      */
     public function getType()
     {
@@ -56,10 +46,7 @@ abstract class Handler
         return $metadata ? $metadata['type'] : 'dir';
     }
     /**
-     * Set the Filesystem object.
-     *
      * @param FilesystemInterface $filesystem
-     *
      * @return $this
      */
     public function setFilesystem(FilesystemInterface $filesystem)
@@ -68,8 +55,6 @@ abstract class Handler
         return $this;
     }
     /**
-     * Retrieve the Filesystem object.
-     *
      * @return FilesystemInterface
      */
     public function getFilesystem()
@@ -77,10 +62,7 @@ abstract class Handler
         return $this->filesystem;
     }
     /**
-     * Set the entree path.
-     *
      * @param string $path
-     *
      * @return $this
      */
     public function setPath($path)
@@ -89,20 +71,15 @@ abstract class Handler
         return $this;
     }
     /**
-     * Retrieve the entree path.
-     *
-     * @return string path
+     * @return string
      */
     public function getPath()
     {
         return $this->path;
     }
     /**
-     * Plugins pass-through.
-     *
      * @param string $method
-     * @param array  $arguments
-     *
+     * @param array $arguments
      * @return mixed
      */
     public function __call($method, array $arguments)

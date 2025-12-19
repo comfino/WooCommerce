@@ -11,34 +11,21 @@ declare (strict_types=1);
  */
 namespace ComfinoExternal\Sunrise\Http\Message;
 
-/**
- * Import classes
- */
 use InvalidArgumentException;
 use ComfinoExternal\Psr\Http\Message\ResponseFactoryInterface;
 use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 use ComfinoExternal\Psr\Http\Message\StreamInterface;
 use Stringable;
-/**
- * Import functions
- */
+
 use function json_encode;
 use function json_last_error;
 use function json_last_error_msg;
-/**
- * Import constants
- */
+
 use const JSON_ERROR_NONE;
-/**
- * HTTP Response Message Factory
- *
- * @link https://www.php-fig.org/psr/psr-17/
- */
+
 class ResponseFactory implements ResponseFactoryInterface
 {
     /**
-     * {@inheritdoc}
-     *
      * @psalm-suppress ParamNameMismatch
      */
     public function createResponse(int $statusCode = 200, string $reasonPhrase = ''): ResponseInterface
@@ -46,11 +33,8 @@ class ResponseFactory implements ResponseFactoryInterface
         return new Response($statusCode, $reasonPhrase);
     }
     /**
-     * Creates a HTML response
-     *
      * @param int $statusCode
      * @param string|StreamInterface|Stringable $html
-     *
      * @return ResponseInterface
      */
     public function createHtmlResponse(int $statusCode, $html): ResponseInterface
@@ -61,23 +45,18 @@ class ResponseFactory implements ResponseFactoryInterface
         return $response;
     }
     /**
-     * Creates a JSON response
-     *
      * @param int $statusCode
      * @param mixed $data
      * @param int $flags
      * @param int $depth
-     *
      * @return ResponseInterface
-     *
      * @throws InvalidArgumentException
-     *         If the data cannot be encoded.
      */
     public function createJsonResponse(int $statusCode, $data, int $flags = 0, int $depth = 512): ResponseInterface
     {
         /**
-         * @psalm-suppress UnusedFunctionCall
-         */
+     * @psalm-suppress UnusedFunctionCall
+     */
         json_encode('');
         $json = json_encode($data, $flags, $depth);
         if (JSON_ERROR_NONE != json_last_error()) {
