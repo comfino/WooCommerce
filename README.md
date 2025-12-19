@@ -27,8 +27,8 @@ WooCommerce payment module for Comfino deferred payments gateway - installment p
 
 ### Requirements
 
-- PHP 7.1 or higher.
-- WooCommerce 3.0.0 or higher.
+- PHP 7.1 or higher
+- WooCommerce 3.0.0 or higher
 - PHP extensions: curl, json, zlib
 - Docker and Docker Compose (for local development)
 
