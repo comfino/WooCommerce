@@ -13,7 +13,7 @@ window.Comfino = {
         if (comfinoSettings.icon) {
             return wp.element.RawHTML({
                 children: Comfino.label + '<img id="comfino-gateway-logo" src="' + comfinoSettings.icon + '" alt="' +
-                    Comfino.label + '" style="margin-left: 10px; vertical-align: bottom">'
+                    Comfino.label + '" style="margin-left: 10px; vertical-align: baseline">'
             });
         }
 
