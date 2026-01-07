@@ -1,3 +1,6 @@
+4.2.7
+ * Minor fixes and improvements.
+
 4.2.6
  * Improved compatibility with WooCommerce blocks, fixed some bugs with iframe rendering in the new WC UI (blocks) and other minor bugs, added security improvements, README.md and external dependencies updated.
 

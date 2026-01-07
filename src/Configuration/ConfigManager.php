@@ -460,7 +460,7 @@ final class ConfigManager
             ErrorLogger::sendError(
                 $e,
                 'Widget code update',
-                $e->getCode(),
+                (string) $e->getCode(),
                 $e->getMessage(),
                 null,
                 null,

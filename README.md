@@ -21,7 +21,7 @@ WooCommerce payment module for Comfino deferred payments gateway - installment p
 - **WooCommerce**: 3.0.0 or higher
 - **WordPress**: 4.7 or higher
 - **PHP**: 7.1 or higher
-- **PHP Extensions**: curl, json, zlib
+- **PHP extensions**: curl, json, zlib
 
 ## Development
 

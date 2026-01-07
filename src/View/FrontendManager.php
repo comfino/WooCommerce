@@ -500,10 +500,11 @@ final class FrontendManager
                 )
             );
         } catch (\Throwable $e) {
+            self::processError('Widget script endpoint', $e);
             ErrorLogger::sendError(
                 $e,
                 'Widget script endpoint',
-                $e->getCode(),
+                (string) $e->getCode(),
                 $e->getMessage(),
                 $e instanceof HttpErrorExceptionInterface ? $e->getUrl() : null,
                 $e instanceof HttpErrorExceptionInterface ? $e->getRequestBody() : null,
@@ -515,29 +516,49 @@ final class FrontendManager
         return '';
     }
 
-    public static function processError(string $errorPrefix, \Throwable $exception, ?int $httpStatus = null, ?string $userErrorMessage = null): array
+    /**
+     * Unified error processing method for handling exceptions consistently across the module.
+     *
+     * @param string $errorPrefix Short description of error context.
+     * @param \Throwable $exception Exception to process.
+     * @param int|null $httpStatus Optional HTTP status code to set in response.
+     * @param string|null $userErrorMessage Optional custom user-friendly error message.
+     *
+     * @return array Array with 'title' (user error message) and 'language' (shop language code).
+     */
+    public static function processError(
+        string $errorPrefix,
+        \Throwable $exception,
+        ?int $httpStatus = null,
+        ?string $userErrorMessage = null,
+        ?array $parameters = null,
+        string $eventPrefix = '[ERROR]'
+    ): array
     {
         DebugLogger::logEvent(
-            '[ERROR]',
+            $eventPrefix,
             $errorPrefix,
-            [
-                'exception' => get_class($exception),
-                'error_message' => $exception->getMessage(),
-                'error_code' => $exception->getCode(),
-                'error_file' => $exception->getFile(),
-                'error_line' => $exception->getLine(),
-                'error_trace' => $exception->getTraceAsString(),
-            ]
+            array_merge(
+                [
+                    'exception' => get_class($exception),
+                    'error_message' => $exception->getMessage(),
+                    'error_code' => $exception->getCode(),
+                    'error_file' => $exception->getFile(),
+                    'error_line' => $exception->getLine(),
+                    'error_trace' => $exception->getTraceAsString(),
+                ],
+                $parameters ?? []
+            )
         );
 
         ErrorLogger::sendError(
             $exception,
             $errorPrefix,
-            $exception->getCode(),
+            (string) $exception->getCode(),
             $exception->getMessage(),
-            null,
-            null,
-            null,
+            $exception instanceof HttpErrorExceptionInterface ? $exception->getUrl() : null,
+            $exception instanceof HttpErrorExceptionInterface ? $exception->getRequestBody() : null,
+            $exception instanceof HttpErrorExceptionInterface ? $exception->getResponseBody() : null,
             $exception->getTraceAsString()
         );
 
