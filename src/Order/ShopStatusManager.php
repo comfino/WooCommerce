@@ -7,6 +7,7 @@ use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Configuration\ConfigManager;
 use Comfino\DebugLogger;
 use Comfino\Main;
+use Comfino\PaymentGateway;
 use Comfino\View\TemplateManager;
 
 if (!defined('ABSPATH')) {
@@ -36,7 +37,9 @@ final class ShopStatusManager
 
         switch ($newStatus) {
             case 'failed':
-                if (ConfigManager::isAbandonedCartEnabled() && $order->get_payment_method() !== 'comfino' && in_array($oldStatus, ['on-hold', 'pending'], true)) {
+                if (ConfigManager::isAbandonedCartEnabled() && $order->get_payment_method() !== PaymentGateway::GATEWAY_ID
+                    && in_array($oldStatus, ['on-hold', 'pending'], true)
+                ) {
                     // Send e-mail and API notifications about abandoned cart not paid by Comfino.
                     self::sendEmail($order);
                     ApiClient::getInstance()->notifyAbandonedCart('send-mail');
@@ -45,16 +48,23 @@ final class ShopStatusManager
                 break;
 
             case 'cancelled':
-                if ($order->get_payment_method() === 'comfino') {
+                if ($order->get_payment_method() === PaymentGateway::GATEWAY_ID) {
                     // Process orders paid by Comfino only.
 
                     if (count(OrderManager::getOrderStatusNotes($order->get_id(), [StatusManager::STATUS_CANCELLED_BY_SHOP, StatusManager::STATUS_RESIGN])) > 0) {
                         break;
                     }
 
+                    // Get order ID or reference based on configuration.
+                    if (ConfigManager::getConfigurationValue('COMFINO_USE_ORDER_REFERENCE', false)) {
+                        $orderId = $order->get_order_number();
+                    } else {
+                        $orderId = (string) $order->get_id();
+                    }
+
                     try {
-                        // Send notification about cancelled order paid by Comfino.
-                        ApiClient::getInstance()->cancelOrder((string) $order->get_id());
+                        // Send notification about canceled order paid by Comfino.
+                        ApiClient::getInstance()->cancelOrder($orderId);
                     } catch (\Throwable $e) {
                         ApiClient::processApiError('Order cancellation error on page "' . Main::getCurrentUrl() . '" (Comfino API)', $e);
                     }

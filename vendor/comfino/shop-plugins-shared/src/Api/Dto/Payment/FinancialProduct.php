@@ -7,37 +7,37 @@ namespace Comfino\Api\Dto\Payment;
 class FinancialProduct
 {
     public $name;
-
+    
     public $type;
-
+    
     public $creditorName;
-
+    
     public $description;
-
+    
     public $icon;
-
+    
     public $instalmentAmount;
-
+    
     public $toPay;
-
+    
     public $loanTerm;
-
+    
     public $rrso;
-
+    
     public $representativeExample;
-
+    
     public $remarks;
-
+    
     public $loanParameters;
-
+    
     public $initialPaymentValue;
-
+    
     public $initialPaymentRate;
-
+    
     public $redemptionPaymentValue;
-
+    
     public $redemptionPaymentRate;
-
+    
     public $offerRate;
 
     /**

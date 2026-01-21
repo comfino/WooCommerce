@@ -8,7 +8,7 @@ use Comfino\Common\Backend\ConfigurationManager;
 use Comfino\Common\Backend\DebugLogger;
 use Comfino\Common\Backend\RestEndpoint;
 use Comfino\Common\Exception\InvalidEndpoint;
-use Comfino\Common\Exception\InvalidRequest;
+use ComfinoExternal\Psr\Http\Message\ServerRequestInterface;
 
 class Configuration extends RestEndpoint
 {
@@ -122,15 +122,7 @@ class Configuration extends RestEndpoint
             ];
         }
 
-        try {
-            if (!is_array($requestPayload = $this->getParsedRequestBody($serverRequest))) {
-                throw new InvalidRequest('Invalid request payload.');
-            }
-        } catch (\JsonException $e) {
-            throw new InvalidRequest(sprintf('Invalid request payload: %s', $e->getMessage()), $e->getCode(), $e);
-        }
-
-        $this->configurationManager->updateConfigurationOptions($requestPayload);
+        $this->configurationManager->updateConfigurationOptions(parent::processRequest($serverRequest, $endpointName));
         $this->configurationManager->persist();
 
         return null;

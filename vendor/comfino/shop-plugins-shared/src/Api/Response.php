@@ -6,20 +6,25 @@ namespace Comfino\Api;
 
 use Comfino\Api\Exception\AccessDenied;
 use Comfino\Api\Exception\AuthorizationError;
+use Comfino\Api\Exception\Conflict;
+use Comfino\Api\Exception\Forbidden;
+use Comfino\Api\Exception\MethodNotAllowed;
+use Comfino\Api\Exception\NotFound;
 use Comfino\Api\Exception\RequestValidationError;
 use Comfino\Api\Exception\ResponseValidationError;
 use Comfino\Api\Exception\ServiceUnavailable;
+use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 
 abstract class Response
 {
     protected $request;
-
+    
     protected $response;
-
+    
     protected $serializer;
-
+    
     protected $exception;
-
+    
     protected $headers = [];
 
     /**
@@ -115,7 +120,7 @@ abstract class Response
         if ($this->exception === null && $this->response->getStatusCode() >= 500) {
             throw new ServiceUnavailable(
                 "Comfino API service is unavailable: {$this->response->getReasonPhrase()} [{$this->response->getStatusCode()}]",
-                0,
+                $this->response->getStatusCode(),
                 null,
                 $this->request->getRequestUri(),
                 $requestBody,
@@ -150,11 +155,8 @@ abstract class Response
                         $requestBody
                     );
 
-                case 402:
                 case 403:
-                case 404:
-                case 405:
-                    throw new AccessDenied(
+                    throw new Forbidden(
                         $this->getErrorMessage(
                             $this->response->getStatusCode(),
                             $deserializedResponseBody,
@@ -163,7 +165,50 @@ abstract class Response
                         $this->response->getStatusCode(),
                         null,
                         $this->request->getRequestUri(),
-                        $requestBody
+                        $requestBody,
+                        $responseBody
+                    );
+
+                case 404:
+                    throw new NotFound(
+                        $this->getErrorMessage(
+                            $this->response->getStatusCode(),
+                            $deserializedResponseBody,
+                            "Entity not found: {$this->response->getReasonPhrase()} [{$this->response->getStatusCode()}]"
+                        ),
+                        $this->response->getStatusCode(),
+                        null,
+                        $this->request->getRequestUri(),
+                        $requestBody,
+                        $responseBody
+                    );
+
+                case 405:
+                    throw new MethodNotAllowed(
+                        $this->getErrorMessage(
+                            $this->response->getStatusCode(),
+                            $deserializedResponseBody,
+                            "Method not allowed: {$this->response->getReasonPhrase()} [{$this->response->getStatusCode()}]"
+                        ),
+                        $this->response->getStatusCode(),
+                        null,
+                        $this->request->getRequestUri(),
+                        $requestBody,
+                        $responseBody
+                    );
+
+                case 409:
+                    throw new Conflict(
+                        $this->getErrorMessage(
+                            $this->response->getStatusCode(),
+                            $deserializedResponseBody,
+                            "Entity already exists: {$this->response->getReasonPhrase()} [{$this->response->getStatusCode()}]"
+                        ),
+                        $this->response->getStatusCode(),
+                        null,
+                        $this->request->getRequestUri(),
+                        $requestBody,
+                        $responseBody
                     );
 
                 default:

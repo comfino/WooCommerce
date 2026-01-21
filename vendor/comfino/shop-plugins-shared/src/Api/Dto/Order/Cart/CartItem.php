@@ -7,23 +7,23 @@ namespace Comfino\Api\Dto\Order\Cart;
 class CartItem
 {
     public $name;
-
+    
     public $price;
-
+    
     public $netPrice;
-
+    
     public $vatRate;
-
+    
     public $vatAmount;
-
+    
     public $quantity;
-
+    
     public $externalId;
-
+    
     public $photoUrl;
-
+    
     public $ean;
-
+    
     public $category;
 
     /**

@@ -62,7 +62,7 @@ final class CategoryTree
         }
 
         if ($rootNode === null) {
-            $nodeIds = array_map(static function (Node $node): int {
+            $nodeIds = array_map(static function (Node $node) : int {
                 return $node->getId();
             }, iterator_to_array($this->nodes));
             $subNodeIds = [];
@@ -99,7 +99,7 @@ final class CategoryTree
      */
     public function getPathNodeIds(NodeIterator $nodes): array
     {
-        return array_map(static function (Node $node): int {
+        return array_map(static function (Node $node) : int {
             return $node->getId();
         }, iterator_to_array($nodes));
     }

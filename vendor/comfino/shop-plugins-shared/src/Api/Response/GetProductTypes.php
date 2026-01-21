@@ -9,7 +9,7 @@ use Comfino\Api\Dto\Payment\LoanTypeEnum;
 class GetProductTypes extends Base
 {
     public $productTypes;
-
+    
     public $productTypesWithNames;
 
     /**
@@ -21,7 +21,7 @@ class GetProductTypes extends Base
 
         $this->productTypesWithNames = $deserializedResponseBody;
         $this->productTypes = array_map(
-            static function (string $productType): LoanTypeEnum {
+            static function (string $productType) : LoanTypeEnum {
                 return LoanTypeEnum::from($productType, false);
             },
             array_keys($deserializedResponseBody)

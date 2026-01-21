@@ -12,11 +12,11 @@ use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 class ValidateOrder extends \Comfino\Api\Response\ValidateOrder
 {
     public $isTimeout;
-
+    
     public $connectAttemptIdx;
-
+    
     public $connectionTimeout;
-
+    
     public $transferTimeout;
 
     /**

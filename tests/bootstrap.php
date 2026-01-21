@@ -191,6 +191,54 @@ namespace {
         }
     }
 
+    if (!function_exists('wc_get_order')) {
+        function wc_get_order($order_id = false)
+        {
+            global $wpdb;
+
+            if ($order_id === false) {
+                return false;
+            }
+
+            // Simulate order not found for specific IDs and non-standard order numbers.
+            if ($order_id === 999 || $order_id === '999' || $order_id === 'NON_EXISTENT_ORDER' || $order_id === 'ORD-00123') {
+                return false;
+            }
+
+            /* Check for database error simulation AFTER clearing.
+               This special marker is set by tests after loadOrder() clears last_error. */
+            if (isset($wpdb->simulate_error) && $wpdb->simulate_error === true) {
+                $wpdb->last_error = 'Simulated database error';
+                return false;
+            }
+
+            // Check for database error simulation.
+            if (!empty($wpdb->last_error)) {
+                return false;
+            }
+
+            // Return mock order for valid IDs.
+            $order = new WC_Order();
+
+            // Use reflection to set the private id property for testing.
+            $reflection = new ReflectionClass($order);
+            $property = $reflection->getProperty('id');
+            $property->setAccessible(true);
+            $property->setValue($order, is_numeric($order_id) ? (int) $order_id : 123);
+
+            return $order;
+        }
+    }
+
+    if (!function_exists('wc_get_orders')) {
+        function wc_get_orders($args = []): array
+        {
+            // Mock implementation - returns empty array for now.
+            // Tests can override this behavior if needed.
+            return [];
+        }
+    }
+
     if (!function_exists('wc_price')) {
         function wc_price($price, $args = []): string
         {
@@ -558,6 +606,9 @@ namespace {
     if (!class_exists('wpdb_mock')) {
         class wpdb_mock
         {
+            public $last_error = '';
+            public $postmeta = 'wp_postmeta';
+
             public function db_version(): string
             {
                 return '5.7.0';
@@ -576,6 +627,11 @@ namespace {
             public function get_var($query): string
             {
                 return '';
+            }
+
+            public function suppress_errors($suppress = true): bool
+            {
+                return !$suppress;
             }
         }
     }
@@ -704,6 +760,17 @@ namespace {
                         'label' => 'VAT',
                     ]
                 ];
+            }
+        }
+    }
+
+    // Mock WC_Geolocation.
+    if (!class_exists('WC_Geolocation')) {
+        class WC_Geolocation
+        {
+            public static function get_ip_address(): string
+            {
+                return '127.0.0.1';
             }
         }
     }

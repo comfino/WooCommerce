@@ -7,21 +7,21 @@ namespace Comfino\Api\Dto\Payment;
 class LoanParameters
 {
     public $instalmentAmount;
-
+    
     public $toPay;
-
+    
     public $loanTerm;
-
+    
     public $rrso;
-
+    
     public $initialPaymentValue;
-
+    
     public $initialPaymentRate;
-
+    
     public $redemptionPaymentValue;
-
+    
     public $redemptionPaymentRate;
-
+    
     public $interest;
 
     /**
@@ -45,7 +45,8 @@ class LoanParameters
         ?int $redemptionPaymentValue = null,
         ?float $redemptionPaymentRate = null,
         ?float $interest = null
-    ) {
+    )
+    {
         $this->instalmentAmount = $instalmentAmount;
         $this->toPay = $toPay;
         $this->loanTerm = $loanTerm;

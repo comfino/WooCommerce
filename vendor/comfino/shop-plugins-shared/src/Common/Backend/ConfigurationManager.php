@@ -29,7 +29,7 @@ final class ConfigurationManager
      * @var \Comfino\Api\SerializerInterface
      */
     private $serializer;
-
+    
     public const OPT_VALUE_TYPE_STRING = (1 << 0);
     public const OPT_VALUE_TYPE_INT = (1 << 1);
     public const OPT_VALUE_TYPE_FLOAT = (1 << 2);
@@ -225,14 +225,14 @@ final class ConfigurationManager
                         if ($this->availConfigOptions[$optionName] & self::OPT_VALUE_TYPE_ARRAY) {
                             if (is_array($optionValue)) {
                                 $this->configuration[$optionName] = array_map(
-                                    static function ($value): string {
+                                    static function ($value) : string {
                                         return (string) $value;
                                     },
                                     $optionValue
                                 );
                             } else {
                                 $this->configuration[$optionName] = (!empty($optionValue) ? array_map(
-                                    static function ($value): string {
+                                    static function ($value) : string {
                                         return (string) $value;
                                     },
                                     explode(',', $optionValue)
@@ -248,14 +248,14 @@ final class ConfigurationManager
                         if ($this->availConfigOptions[$optionName] & self::OPT_VALUE_TYPE_ARRAY) {
                             if (is_array($optionValue)) {
                                 $this->configuration[$optionName] = array_map(
-                                    static function ($value): int {
+                                    static function ($value) : int {
                                         return (int) $value;
                                     },
                                     $optionValue
                                 );
                             } else {
                                 $this->configuration[$optionName] = (!empty($optionValue) ? array_map(
-                                    static function ($value): int {
+                                    static function ($value) : int {
                                         return (int) $value;
                                     },
                                     explode(',', $optionValue)
@@ -271,14 +271,14 @@ final class ConfigurationManager
                         if ($this->availConfigOptions[$optionName] & self::OPT_VALUE_TYPE_ARRAY) {
                             if (is_array($optionValue)) {
                                 $this->configuration[$optionName] = array_map(
-                                    static function ($value): float {
+                                    static function ($value) : float {
                                         return (float) $value;
                                     },
                                     $optionValue
                                 );
                             } else {
                                 $this->configuration[$optionName] = (!empty($optionValue) ? array_map(
-                                    static function ($value): float {
+                                    static function ($value) : float {
                                         return (float) $value;
                                     },
                                     explode(',', $optionValue)
@@ -294,14 +294,14 @@ final class ConfigurationManager
                         if ($this->availConfigOptions[$optionName] & self::OPT_VALUE_TYPE_ARRAY) {
                             if (is_array($optionValue)) {
                                 $this->configuration[$optionName] = array_map(
-                                    static function ($value): bool {
+                                    static function ($value) : bool {
                                         return (bool) $value;
                                     },
                                     $optionValue
                                 );
                             } else {
                                 $this->configuration[$optionName] = (!empty($optionValue) ? array_map(
-                                    static function ($value): bool {
+                                    static function ($value) : bool {
                                         return (bool) $value;
                                     },
                                     explode(',', $optionValue)

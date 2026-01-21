@@ -1,4 +1,40 @@
 <?php
+/**
+ * Template for plugin configuration panel.
+ *
+ * Displays the main configuration interface with tabbed navigation for
+ * payment settings, sale settings, widget settings, abandoned cart settings,
+ * developer settings, and plugin diagnostics.
+ *
+ * @var WP $wp WordPress global
+ * @var string $title Page title
+ * @var string $description Page description
+ * @var string $plugin_version Plugin version number
+ * @var string $contact_msg1 Contact message part 1
+ * @var string $contact_msg2 Contact message part 2
+ * @var string $support_email_address Support email address
+ * @var string $support_email_subject Support email subject
+ * @var string $support_email_body Support email body
+ * @var string $active_tab Currently active tab slug
+ * @var string $settings_html Generated settings HTML for current tab
+ * @var array $settings_allowed_html Allowed HTML tags for settings
+ * @var string $shop_info Shop environment information (diagnostics tab)
+ * @var string $errors_log Error log contents (diagnostics tab)
+ * @var string $debug_log Debug log contents (diagnostics tab)
+ * @var string $api_host Comfino API host URL (diagnostics tab)
+ * @var string $shop_domain Shop domain name (diagnostics tab)
+ * @var string $widget_key Widget key (diagnostics tab)
+ * @var string $new_widget_status New widget API status (diagnostics tab)
+ * @var bool $is_dev_env Development environment flag (diagnostics tab)
+ * @var string $build_ts Plugin build timestamp (diagnostics tab)
+ * @var string|null $github_version Latest GitHub version or null (diagnostics tab)
+ * @var int|null $github_version_checked_at Timestamp of last version check (diagnostics tab)
+ * @var bool $auto_updates_enabled WordPress auto-updates enabled flag (diagnostics tab)
+ * @var string $comfino_logo_img Comfino logo HTML
+ * @var array $comfino_logo_allowed_html Allowed HTML tags for logo
+ * @var string $cache_root_path Cache root directory path (diagnostics tab)
+ * @var string $cache_path Cache directory path (diagnostics tab)
+ */
 
 use Comfino\Common\Backend\FileUtils;
 use Comfino\Configuration\ConfigManager;
@@ -20,35 +56,6 @@ function comfino_prepare_tab_url(string $subsection): string
 
     return wp_nonce_url($urlParts['path'] . '?' . http_build_query(array_map('strip_tags', $queryArgs)), 'comfino_settings', 'comfino_nonce');
 }
-
-/** @var WP $wp */
-/** @var string $title */
-/** @var string $description */
-/** @var string $plugin_version */
-/** @var string $contact_msg1 */
-/** @var string $contact_msg2 */
-/** @var string $support_email_address */
-/** @var string $support_email_subject */
-/** @var string $support_email_body */
-/** @var string $active_tab */
-/** @var string $settings_html */
-/** @var array $settings_allowed_html */
-/** @var string $shop_info */
-/** @var string $errors_log */
-/** @var string $debug_log */
-/** @var string $api_host */
-/** @var string $shop_domain */
-/** @var string $widget_key */
-/** @var string $new_widget_status */
-/** @var bool $is_dev_env */
-/** @var string $build_ts */
-/** @var string|null $github_version */
-/** @var int|null $github_version_checked_at */
-/** @var bool $auto_updates_enabled */
-/** @var string $comfino_logo_img */
-/** @var array $comfino_logo_allowed_html */
-/** @var string $cache_root_path */
-/** @var string $cache_path */
 ?>
 <h2><?php echo esc_html($title); ?></h2>
 <p><?php echo esc_html($description); ?></p>
@@ -92,26 +99,21 @@ function comfino_prepare_tab_url(string $subsection): string
                     <p><b>Widget key:</b> <?php echo esc_html($widget_key); ?></p>
                     <p><b>New widget API:</b> <?php echo esc_html($new_widget_status); ?></p>
                     <p>
-                        <b><?php echo esc_html__('Latest available version:', 'comfino-payment-gateway'); ?></b>
+                        <b>Latest available version:</b>
                         <?php if ($auto_updates_enabled): ?>
-                            <span style="color: #888;"><?php echo esc_html__('Managed by WordPress auto-updates', 'comfino-payment-gateway'); ?></span>
+                            <span style="color: #888;">Managed by WordPress auto-updates</span>
                         <?php elseif ($github_version !== null): ?>
                             <b style="<?php echo version_compare($github_version, $plugin_version, '>') ? 'color: orange;' : 'color: green;'; ?>"><?php echo esc_html($github_version); ?></b>
                             <?php if (version_compare($github_version, $plugin_version, '>')): ?>
-                                (<a href="https://github.com/comfino/WooCommerce/releases" target="_blank"><?php echo esc_html__('Download from GitHub', 'comfino-payment-gateway'); ?></a>)
+                                (<a href="https://github.com/comfino/WooCommerce/releases" target="_blank">Download from GitHub</a>)
                             <?php else: ?>
-                                (<?php echo esc_html__('up to date', 'comfino-payment-gateway'); ?>)
+                                (up to date)
                             <?php endif; ?>
                             <?php if ($github_version_checked_at): ?>
-                                <small style="color: #666;">
-                                <?php
-                                    /* translators: %s: Date and time (UTC) of last GitHub version check in Y-m-d H:i:s format */
-                                    echo esc_html(sprintf(__('Last checked: %s UTC', 'comfino-payment-gateway'), gmdate('Y-m-d H:i:s', $github_version_checked_at)));
-                                ?>
-                                </small>
+                                <small style="color: #666;"><?php esc_html(sprintf('Last checked: %s UTC', gmdate('Y-m-d H:i:s', $github_version_checked_at))); ?></small>
                             <?php endif; ?>
                         <?php else: ?>
-                            <span style="color: #888;"><?php echo esc_html__('Checking...', 'comfino-payment-gateway'); ?></span>
+                            <span style="color: #888;">'Checking...</span>
                         <?php endif; ?>
                     </p>
                     <p>
@@ -171,13 +173,22 @@ function comfino_prepare_tab_url(string $subsection): string
                     ?>
                 </td>
             </tr>
-            <tr valign="top"><th scope="row" class="titledesc"><label for="errors-log"><?php echo esc_html__('Errors log', 'comfino-payment-gateway'); ?></label></th>
-                <td><textarea id="errors-log" rows="20" cols="60" readonly class="input-text wide-input" style="width: 800px; height: 400px"><?php echo esc_textarea($errors_log); ?></textarea></td>
-            </tr>
-            <tr valign="top"><th scope="row" class="titledesc"><label for="debug-log"><?php echo esc_html__('Debug log', 'comfino-payment-gateway'); ?></label></th>
-                <td><textarea id="debug-log" rows="40" cols="60" readonly class="input-text wide-input" style="width: 800px; height: 400px"><?php echo esc_textarea($debug_log); ?></textarea></td>
-            </tr>
             <?php
+            // Module reset section
+            include __DIR__ . '/_configure/module-reset.php';
+
+            // Error log section
+            $comfino_errors_log = $errors_log;
+
+            include __DIR__ . '/_configure/error-log.php';
+
+            // Debug log section
+            $comfino_debug_log = $debug_log;
+
+            include __DIR__ . '/_configure/debug-log.php';
+
+            // Installation logs section
+            include __DIR__ . '/_configure/installation-logs.php';
             break;
     }
     ?>

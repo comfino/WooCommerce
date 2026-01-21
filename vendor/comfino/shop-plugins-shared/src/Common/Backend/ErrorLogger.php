@@ -12,7 +12,7 @@ use ComfinoExternal\Monolog\Logger as MonologLogger;
 final class ErrorLogger extends Logger
 {
     /**
-     * @var \Comfino\Extended\Api\Client
+     * @var Client
      */
     private $apiClient;
     /**
@@ -32,9 +32,10 @@ final class ErrorLogger extends Logger
      */
     private $modulePath;
     /**
-     * @var mixed[]
+     * @var array
      */
     private $environment;
+    private const CATCHED_ERRORS_MASK = E_ERROR | E_RECOVERABLE_ERROR | E_PARSE;
     private const ERROR_TYPES = [
         E_ERROR => 'E_ERROR',
         E_WARNING => 'E_WARNING',
@@ -62,13 +63,13 @@ final class ErrorLogger extends Logger
     private static $logger;
 
     /**
+     * @param Client $apiClient
      * @param string $logFilePath
-     * @return self
-     * @param \Comfino\Extended\Api\Client $apiClient
      * @param string $host
      * @param string $platform
      * @param string $modulePath
-     * @param mixed[] $environment
+     * @param array $environment
+     * @return self
      */
     public static function getInstance($apiClient, $logFilePath, $host, $platform, $modulePath, $environment): self
     {
@@ -79,6 +80,14 @@ final class ErrorLogger extends Logger
         return self::$instance;
     }
 
+    /**
+     * @param Client $apiClient
+     * @param string $logFilePath
+     * @param string $host
+     * @param string $platform
+     * @param string $modulePath
+     * @param array $environment
+     */
     private function __construct(Client $apiClient, string $logFilePath, string $host, string $platform, string $modulePath, array $environment)
     {
         $this->apiClient = $apiClient;
@@ -91,6 +100,7 @@ final class ErrorLogger extends Logger
 
     /**
      * @return MonologLogger
+     * @throws \Exception
      */
     public function getLogger(): MonologLogger
     {
@@ -109,7 +119,6 @@ final class ErrorLogger extends Logger
      * @param string|null $apiRequest
      * @param string|null $apiResponse
      * @param string|null $stackTrace
-     * @return void
      */
     public function sendError(
         $errorPrefix,
@@ -120,11 +129,13 @@ final class ErrorLogger extends Logger
         $apiResponse = null,
         $stackTrace = null
     ): void {
-        if (preg_match('/Error .*in |Exception .*in /', $errorMessage) && strpos($errorMessage, $this->modulePath) === false) {
+        $formattedErrorMessage = "$errorPrefix: $errorMessage";
+
+        if (preg_match('/Error .*in |Exception .*in /', $formattedErrorMessage) && strpos($formattedErrorMessage, $this->modulePath) === false) {
             return;
         }
 
-        if (getenv('COMFINO_DEBUG') === 'TRUE') {
+        if (getenv('COMFINO_DEV_ENV') === 'TRUE' && getenv('COMFINO_FORCE_ERRORS_SENDING') !== 'TRUE') {
             $errorsSendingDisabled = true;
         } else {
             $errorsSendingDisabled = false;
@@ -135,7 +146,7 @@ final class ErrorLogger extends Logger
             $this->platform,
             $this->environment,
             $errorCode,
-            "$errorPrefix: $errorMessage",
+            $formattedErrorMessage,
             $apiRequestUrl,
             $apiRequest,
             $apiResponse,
@@ -175,7 +186,14 @@ final class ErrorLogger extends Logger
      */
     public function logError($errorPrefix, $errorMessage): void
     {
-        $this->getLogger()->error($errorPrefix . ': ' . $errorMessage);
+        try {
+            $this->getLogger()->error("$errorPrefix: $errorMessage");
+        } catch (\Exception $e) {
+            if (FileUtils::isWritable($this->logFilePath)) {
+                FileUtils::append($this->logFilePath, "$errorPrefix: $errorMessage");
+                FileUtils::append($this->logFilePath, "Logger error: {$e->getMessage()} in {$e->getFile()}:{$e->getLine()}");
+            }
+        }
     }
 
     /**
@@ -202,15 +220,19 @@ final class ErrorLogger extends Logger
     }
 
     /**
+     * @param int $errorType
+     * @param string $errorMessage
+     * @param string $file
+     * @param int $line
      * @return false
      */
-    public function errorHandler($errNo, $errMsg, $file, $line): bool
+    public function errorHandler($errorType, $errorMessage, $file, $line): bool
     {
-        $errorType = $this->getErrorTypeName($errNo);
-
-        if (strpos($errorType, 'E_USER_') === false && strpos($errorType, 'NOTICE') === false) {
-            $this->sendError("Error $errorType in $file:$line", (string) $errNo, $errMsg);
+        if (!($errorType & self::CATCHED_ERRORS_MASK)) {
+            return false;
         }
+
+        $this->sendError("Error {$this->getErrorTypeName($errorType)} in $file:$line", (string) $errorType, $errorMessage);
 
         return false;
     }
@@ -222,25 +244,21 @@ final class ErrorLogger extends Logger
     {
         $this->sendError(
             'Exception ' . get_class($exception) . " in {$exception->getFile()}:{$exception->getLine()}",
-            (string) $exception->getCode(),
-            $exception->getMessage(),
-            null,
-            null,
-            null,
-            $exception->getTraceAsString()
+            (string) $exception->getCode(), $exception->getMessage(),
+            null, null, null, $exception->getTraceAsString()
         );
     }
 
     public function init(): void
     {
-        if (getenv('COMFINO_DEBUG') === 'TRUE') {
+        if (getenv('COMFINO_DEV_ENV') === 'TRUE' && getenv('COMFINO_FORCE_ERRORS_HANDLING') !== 'TRUE') {
             return;
         }
 
         static $initialized = false;
 
         if (!$initialized) {
-            set_error_handler([$this, 'errorHandler'], E_ERROR | E_RECOVERABLE_ERROR | E_PARSE);
+            set_error_handler([$this, 'errorHandler'], self::CATCHED_ERRORS_MASK);
             set_exception_handler([$this, 'exceptionHandler']);
             register_shutdown_function([$this, 'shutdown']);
 
@@ -250,15 +268,18 @@ final class ErrorLogger extends Logger
 
     public function shutdown(): void
     {
-        if (($error = error_get_last()) !== null && ($error['type'] & (E_ERROR | E_RECOVERABLE_ERROR | E_PARSE))) {
-            $errorType = $this->getErrorTypeName($error['type']);
-            $this->sendError("Error $errorType in $error[file]:$error[line]", (string) $error['type'], $error['message']);
+        if (($error = error_get_last()) !== null && ($error['type'] & self::CATCHED_ERRORS_MASK)) {
+            $this->sendError("Error {$this->getErrorTypeName($error['type'])} in $error[file]:$error[line]", (string) $error['type'], $error['message']);
         }
 
         restore_error_handler();
         restore_exception_handler();
     }
 
+    /**
+     * @param int $errorType
+     * @return string
+     */
     private function getErrorTypeName(int $errorType): string
     {
         return

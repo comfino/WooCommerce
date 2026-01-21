@@ -9,7 +9,7 @@ use Comfino\Api\HttpErrorExceptionInterface;
 class AuthorizationError extends \RuntimeException implements HttpErrorExceptionInterface
 {
     private $url;
-
+    
     private $requestBody;
 
     public function __construct(string $message = '', int $code = 0, ?\Throwable $previous = null, string $url = '', string $requestBody = '')

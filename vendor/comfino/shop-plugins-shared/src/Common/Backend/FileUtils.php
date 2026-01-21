@@ -7,6 +7,14 @@ namespace Comfino\Common\Backend;
 class FileUtils
 {
     /**
+     * @param string[] $components
+     */
+    public static function buildPathFromComponents($components): string
+    {
+        return implode(DIRECTORY_SEPARATOR, $components);
+    }
+
+    /**
      * @param string $filePath
      */
     public static function read($filePath): string

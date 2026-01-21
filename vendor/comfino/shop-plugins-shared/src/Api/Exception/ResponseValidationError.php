@@ -9,9 +9,9 @@ use Comfino\Api\HttpErrorExceptionInterface;
 class ResponseValidationError extends \RuntimeException implements HttpErrorExceptionInterface
 {
     private $url;
-
+    
     private $requestBody;
-
+    
     private $responseBody;
 
     public function __construct(string $message = '', int $code = 0, ?\Throwable $previous = null, string $url = '', string $requestBody = '', string $responseBody = '')

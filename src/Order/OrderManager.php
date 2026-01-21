@@ -3,6 +3,7 @@
 namespace Comfino\Order;
 
 use Comfino\Common\Shop\Cart;
+use Comfino\PaymentGateway;
 use Comfino\Shop\Order\Cart\CartItem;
 use Comfino\Shop\Order\Cart\CartItemInterface;
 use Comfino\Shop\Order\Cart\Product;
@@ -16,12 +17,19 @@ if (!defined('ABSPATH')) {
 final class OrderManager
 {
     /**
-     * @param \WC_Cart $cart
-     * @param int $priceModifier
+     * Converts WooCommerce cart to Comfino cart structure for API submission.
      *
-     * @return Cart Comfino cart structure.
+     * Transforms cart data including products, prices, delivery costs, and tax information
+     * into the format expected by Comfino API. Handles product variations, category inheritance,
+     * and optional price modifiers.
      *
-     * @throws \Exception|\InvalidArgumentException
+     * @param \WC_Cart $cart WooCommerce cart object containing items and totals
+     * @param int $priceModifier Optional price modifier in cents (e.g., custom commission). Default 0.
+     *
+     * @return Cart Comfino cart structure with cart items, totals, and delivery information
+     *
+     * @throws \InvalidArgumentException If cart total value is negative
+     * @throws \Exception If cart data cannot be retrieved or processed
      */
     public static function getShopCart(\WC_Cart $cart, int $priceModifier = 0): Cart
     {
@@ -153,9 +161,15 @@ final class OrderManager
     }
 
     /**
-     * @param \WC_Product $product WooCommerce product entity.
+     * Creates Comfino cart structure from a single product for widget display.
      *
-     * @return Cart Comfino cart structure.
+     * Generates a minimal cart containing only the specified product, used for calculating
+     * available payment options on product pages. Handles product variations and category
+     * inheritance from parent products.
+     *
+     * @param \WC_Product $product WooCommerce product object (simple, variable, or variation)
+     *
+     * @return Cart Comfino cart structure with single product, prices including/excluding tax, and tax information
      */
     public static function getShopCartFromProduct(\WC_Product $product): Cart
     {
@@ -206,9 +220,14 @@ final class OrderManager
     }
 
     /**
-     * @param \WC_Order $order WooCommerce order entity.
+     * Extracts customer information from WooCommerce order for Comfino API.
      *
-     * @return Customer Comfino customer structure.
+     * Converts order billing and shipping data into Comfino customer structure. Attempts to find
+     * phone number from billing info or order metadata. Includes both billing and delivery addresses.
+     *
+     * @param \WC_Order $order WooCommerce order object with customer and address information
+     *
+     * @return Customer Comfino customer structure with name, email, phone, tax ID, and addresses
      */
     public static function getShopCustomerFromOrder(\WC_Order $order): Customer
     {
@@ -299,6 +318,252 @@ final class OrderManager
         );
     }
 
+    /**
+     * Loads WooCommerce order with proper error distinction.
+     *
+     * HPOS-compatible order loading that distinguishes between "order not found"
+     * and "database error during loading" scenarios. Uses wc_get_order() which
+     * abstracts both legacy (CPT-based) and HPOS (custom tables) storage.
+     *
+     * @param int|string $orderId Order identifier - numeric ID or order reference
+     *
+     * @return \WC_Order|null WooCommerce order object if found, null otherwise
+     *
+     * @throws \RuntimeException If database error occurs during loading
+     */
+    public static function loadOrder($orderId): ?\WC_Order
+    {
+        global $wpdb;
+
+        // Clear any previous database errors to get accurate state.
+        $wpdb->suppress_errors(false);
+        $wpdb->last_error = '';
+
+        // wc_get_order() works with both HPOS and legacy storage.
+        $order = wc_get_order($orderId);
+
+        if (!$order) {
+            // Check if database error occurred during loading.
+            if (!empty($wpdb->last_error)) {
+                throw new \RuntimeException(esc_html($wpdb->last_error));
+            }
+
+            // No database error, order simply doesn't exist - return null.
+            return null;
+        }
+
+        return $order;
+    }
+
+    /**
+     * Loads WooCommerce order by custom order number (sequential or formatted).
+     *
+     * This method supports various sequential order number plugins by trying multiple
+     * approaches in order of preference:
+     *
+     * 1. Modern HPOS meta_query (if supported by WooCommerce version).
+     * 2. Plugin-specific APIs (for legacy compatibility without HPOS meta_query support).
+     *
+     * Supported plugins:
+     * - SkyVerge Sequential Order Numbers (free & Pro)
+     * - WebToffee Sequential Order Numbers
+     * - YITH WooCommerce Sequential Order Number
+     * - Custom Order Numbers for WooCommerce (Algoritmika/Booster)
+     * - Tyche Softwares Custom Order Numbers
+     *
+     * @param string $orderNumber Custom order number (e.g., "2026-12345", "ORD-00123")
+     *
+     * @return \WC_Order|null WooCommerce order object if found, null otherwise
+     *
+     * @throws \RuntimeException If database error occurs during loading
+     */
+    public static function loadOrderByNumber(string $orderNumber): ?\WC_Order
+    {
+        global $wpdb;
+
+        try {
+            // Try direct loading first (might work with order numbers in some setups).
+            if (($order = self::loadOrder($orderNumber)) !== null) {
+                return $order;
+            }
+        } catch (\RuntimeException $e) {
+            // Continue to other methods if direct loading fails.
+        }
+
+        /* Modern approach: Use HPOS meta_query if supported (WooCommerce 8.2+).
+           https://developer.woocommerce.com/docs/features/high-performance-order-storage/wc-order-query-improvements/#metadata-queries-meta_query */
+        if (self::supportsMetaQuery()) {
+            // Common meta keys used by sequential order number plugins.
+            $metaKeys = [
+                '_order_number',                     // YITH, SkyVerge Pro, generic
+                '_alg_wc_full_custom_order_number',  // Algoritmika/Booster (full number with prefix/suffix)
+                '_alg_wc_custom_order_number',       // Algoritmika/Booster (base number)
+                '_wcj_order_number',                 // Booster legacy key
+                'wt_order_number',                   // WebToffee alternative key
+                '_custom_order_number',              // Generic/other plugins
+            ];
+
+            try {
+                $orders = wc_get_orders([
+                    'meta_query' => array_merge(
+                        array_map(
+                            static function (string $metaKey) use ($orderNumber): array {
+                                return ['key' => $metaKey, 'value' => $orderNumber, 'compare' => '='];
+                            },
+                            $metaKeys
+                        ),
+                        ['relation' => 'OR']
+                    ),
+                    'payment_method' => PaymentGateway::GATEWAY_ID,
+                    'limit' => 1,
+                ]);
+
+                if (count($orders) && ($orders[0] instanceof \WC_Order)) {
+                    return $orders[0];
+                }
+            } catch (\Exception $e) {
+                throw new \RuntimeException(esc_html($e->getMessage()));
+            }
+        }
+
+        /* Legacy fallback: Plugin-specific APIs for systems without HPOS meta_query support. */
+
+        if (function_exists('wc_sequential_order_numbers')) {
+            // SkyVerge Sequential Order Numbers (free & Pro)
+            if ($orderId = wc_sequential_order_numbers()->find_order_by_order_number($orderNumber)) {
+                try {
+                    if (($order = self::loadOrder($orderId)) !== null) {
+                        return $order;
+                    }
+                } catch (\RuntimeException $e) {
+                    // Continue to other methods.
+                }
+            }
+        } elseif (class_exists('Wt_Advanced_Order_Number')) {
+            // WebToffee Sequential Order Number for WooCommerce
+            if ($orderId = (new \Wt_Advanced_Order_Number())->wt_order_id_from_order_number($orderNumber)) {
+                try {
+                    if (($order = self::loadOrder($orderId)) !== null) {
+                        return $order;
+                    }
+                } catch (\RuntimeException $e) {
+                    // Continue to other methods.
+                }
+            }
+        } elseif (class_exists('YITH_WooCommerce_Sequential_Order_Number') || class_exists('YITH_Sequential_Order_Number')) {
+            // YITH WooCommerce Sequential Order Number
+            try {
+                /* YITH doesn't provide a public API method, so we use direct meta query.
+                   YITH typically stores order number in '_order_number' meta key. */
+                $orderId = $wpdb->get_var($wpdb->prepare(
+                    "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_order_number' AND meta_value = %s LIMIT 1",
+                    $orderNumber
+                ));
+
+                if ($orderId && ($order = self::loadOrder($orderId)) !== null) {
+                    return $order;
+                }
+            } catch (\Exception $e) {
+                // Continue to other methods.
+            }
+        } elseif (class_exists('Alg_WC_Custom_Order_Numbers') || function_exists('alg_wc_custom_order_numbers')) {
+            // Custom Order Numbers for WooCommerce (Algoritmika/Booster)
+            try {
+                /* Try direct meta query for Algoritmika keys.
+                   Try full custom order number first (includes prefix/suffix). */
+                $orderId = $wpdb->get_var($wpdb->prepare(
+                    "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_alg_wc_full_custom_order_number' AND meta_value = %s LIMIT 1",
+                    $orderNumber
+                ));
+
+                if (!$orderId) {
+                    // Try base custom order number (without prefix/suffix).
+                    $orderId = $wpdb->get_var($wpdb->prepare(
+                        "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_alg_wc_custom_order_number' AND meta_value = %s LIMIT 1",
+                        $orderNumber
+                    ));
+                }
+
+                if ($orderId && ($order = self::loadOrder($orderId)) !== null) {
+                    return $order;
+                }
+            } catch (\Exception $e) {
+                // Continue to other methods.
+            }
+        } elseif (class_exists('Tyche_Softwares_Order_Numbers') || function_exists('tyche_order_number')) {
+            // Tyche Softwares Custom Order Numbers for WooCommerce
+            try {
+                // Tyche typically uses '_custom_order_number' meta key.
+                $orderId = $wpdb->get_var($wpdb->prepare(
+                    "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_custom_order_number' AND meta_value = %s LIMIT 1",
+                    $orderNumber
+                ));
+
+                if ($orderId && ($order = self::loadOrder($orderId)) !== null) {
+                    return $order;
+                }
+            } catch (\Exception $e) {
+                // Continue...
+            }
+        } else {
+            try {
+                /* Final fallback: Generic meta key search for any other plugins.
+                   This covers plugins that might use different meta keys not listed above. */
+                $orderId = $wpdb->get_var($wpdb->prepare(
+                    "SELECT
+                         post_id
+                     FROM
+                         {$wpdb->postmeta}
+                     WHERE
+                         meta_key IN ('_order_number', '_custom_order_number', 'order_number', 'custom_order_number') AND
+                         meta_value = %s LIMIT 1",
+                    $orderNumber
+                ));
+
+                if ($orderId && ($order = self::loadOrder($orderId)) !== null) {
+                    return $order;
+                }
+            } catch (\Exception $e) {
+                // All methods exhausted.
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Checks if the current WooCommerce version supports meta_query in wc_get_orders().
+     *
+     * Meta query support for HPOS was added in WooCommerce 8.2.0.
+     * https://developer.woocommerce.com/docs/extensions/core-concepts/wc-get-orders/
+     *
+     * @return bool True if meta_query is supported, false otherwise
+     */
+    private static function supportsMetaQuery(): bool
+    {
+        if (!defined('WC_VERSION') || version_compare(WC_VERSION, '8.2.0', '<')) {
+            return false;
+        }
+
+        if (class_exists('Automattic\WooCommerce\Utilities\OrderUtil')) {
+            return \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+        }
+
+        return false;
+    }
+
+    /**
+     * Retrieves order notes containing specific Comfino status updates.
+     *
+     * Searches through WooCommerce order notes to find system-generated notes
+     * recording Comfino payment status changes. Used to prevent duplicate status
+     * notifications to Comfino API.
+     *
+     * @param int $orderId WooCommerce order ID to search notes for
+     * @param array $statuses Array of Comfino status strings to search for (e.g., ['CANCELLED_BY_SHOP', 'RESIGN'])
+     *
+     * @return array Associative array with status as key and order note object as value
+     */
     public static function getOrderStatusNotes(int $orderId, array $statuses): array
     {
         $orderNotes = wc_get_order_notes(['order_id' => $orderId]);

@@ -69,9 +69,11 @@ use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Configuration\ConfigManager;
 use Comfino\DebugLogger;
 use Comfino\ErrorLogger;
+use Comfino\Main;
 use Comfino\Order\ShopStatusManager;
 use Comfino\PaymentGateway;
 use Comfino\PluginShared\CacheManager;
+use Comfino\View\TemplateManager;
 
 class Comfino_Payment_Gateway
 {
@@ -81,7 +83,7 @@ class Comfino_Payment_Gateway
     /** @var Comfino_Payment_Gateway */
     private static $instance;
 
-    public static function get_instance(): Comfino_Payment_Gateway
+    public static function get_instance(): self
     {
         if (self::$instance === null) {
             self::$instance = new self();
@@ -109,6 +111,9 @@ class Comfino_Payment_Gateway
         add_action('admin_init', [$this, 'check_environment']);
         add_action('admin_init', [$this, 'check_debug_mode']);
         add_action('admin_notices', [$this, 'admin_notices'], 15);
+        add_action('admin_post_comfino_module_reset', [$this, 'handle_module_reset']);
+        add_action('admin_post_comfino_clear_error_log', [$this, 'handle_clear_error_log']);
+        add_action('admin_post_comfino_clear_debug_log', [$this, 'handle_clear_debug_log']);
         add_action('plugins_loaded', function (): void {
             if (get_transient('comfino_plugin_updated')) {
                 $this->upgrade_plugin();
@@ -164,7 +169,7 @@ class Comfino_Payment_Gateway
 
         // Add loaded script tag filter for adding custom attribute which prevents blocking by Google CMP scripts.
         add_filter('script_loader_tag', static function (string $tag, string $handle): string {
-            if (strpos($handle, 'comfino') !== 0) {
+            if (strpos($handle, PaymentGateway::GATEWAY_ID) !== 0) {
                 return $tag;
             }
 
@@ -187,7 +192,7 @@ class Comfino_Payment_Gateway
 
         // Add inline script tag filter for adding custom attribute which prevents blocking by Google CMP scripts.
         add_filter('wp_inline_script_attributes', static function (array $attributes): array {
-            if (isset($attributes['id']) && strpos($attributes['id'], 'comfino') === 0) {
+            if (isset($attributes['id']) && strpos($attributes['id'], PaymentGateway::GATEWAY_ID) === 0) {
                 $attributes['data-cmp-ab'] = '2';
             }
 
@@ -223,8 +228,8 @@ class Comfino_Payment_Gateway
             }
         });
 
-        Comfino\Main::setPluginDirectory(__DIR__);
-        Comfino\Main::setPluginFile(__FILE__);
+        Main::setPluginDirectory(__DIR__);
+        Main::setPluginFile(__FILE__);
     }
 
     /**
@@ -232,7 +237,7 @@ class Comfino_Payment_Gateway
      */
     public function activation_check(): void
     {
-        $environmentWarning = Comfino\Main::getEnvironmentWarning(true);
+        $environmentWarning = Main::getEnvironmentWarning(true);
 
         if ($environmentWarning) {
             deactivate_plugins(plugin_basename(__FILE__));
@@ -240,8 +245,7 @@ class Comfino_Payment_Gateway
             wp_die(wp_kses_post($environmentWarning));
         }
 
-        // Initialize default configuration values on first activation.
-        $this->init_default_configuration();
+        Main::install();
     }
 
     /**
@@ -270,7 +274,7 @@ class Comfino_Payment_Gateway
         }
 
         // Initialize Comfino plugin.
-        Comfino\Main::init();
+        Main::init();
     }
 
     /**
@@ -278,7 +282,7 @@ class Comfino_Payment_Gateway
      */
     public function check_environment()
     {
-        $environmentWarning = Comfino\Main::getEnvironmentWarning();
+        $environmentWarning = Main::getEnvironmentWarning();
 
         if ($environmentWarning) {
             // Ensure is_plugin_active() is available.
@@ -315,6 +319,46 @@ class Comfino_Payment_Gateway
             ), 'user_description') . '</div>';
 
             $this->upgrade_plugin();
+        }
+
+        // Check for plugin reset results.
+        if ($resetResults = get_transient('comfino_module_reset_results')) {
+            $hasErrors = ($resetResults['config_failed'] ?? 0) > 0;
+            $noticeClass = $hasErrors ? 'notice notice-warning is-dismissible' : 'notice notice-success is-dismissible';
+            $noticeMessage = $hasErrors
+                ? __('Plugin reset completed with some errors.', 'comfino-payment-gateway')
+                : __('Plugin reset completed successfully.', 'comfino-payment-gateway');
+            $noticeMessage .= ' ' . sprintf(
+                __('Configuration: %1$d repaired, %2$d failed', 'comfino-payment-gateway'),
+                $resetResults['config_repaired'] ?? 0,
+                $resetResults['config_failed'] ?? 0
+            );
+
+            $this->add_admin_notice('module_reset', $noticeClass, $noticeMessage);
+
+            delete_transient('comfino_module_reset_results');
+        }
+
+        // Check for error log cleared.
+        if (get_transient('comfino_error_log_cleared')) {
+            $this->add_admin_notice(
+                'error_log_cleared',
+                'notice notice-success is-dismissible',
+                __('Error log cleared successfully.', 'comfino-payment-gateway')
+            );
+
+            delete_transient('comfino_error_log_cleared');
+        }
+
+        // Check for debug log cleared.
+        if (get_transient('comfino_debug_log_cleared')) {
+            $this->add_admin_notice(
+                'debug_log_cleared',
+                'notice notice-success is-dismissible',
+                __('Debug log cleared successfully.', 'comfino-payment-gateway')
+            );
+
+            delete_transient('comfino_debug_log_cleared');
         }
 
         foreach ($this->notices as $noticeKey => $notice) {
@@ -380,7 +424,6 @@ class Comfino_Payment_Gateway
      */
     public function check_debug_mode(): void
     {
-        // Only check for admin users who can manage WooCommerce and if debug mode is active.
         if (!current_user_can('manage_woocommerce') || !ConfigManager::isDebugMode()) {
             return;
         }
@@ -403,22 +446,18 @@ class Comfino_Payment_Gateway
      */
     public function display_debug_mode_notice(): void
     {
-        // Double-check debug mode is still enabled.
-        if (!ConfigManager::isDebugMode()) {
+        if (!ConfigManager::isDebugMode() || get_user_meta(get_current_user_id(), 'comfino_debug_notice_dismissed', true)) {
             return;
         }
 
-        // Double-check user hasn't dismissed.
-        if (get_user_meta(get_current_user_id(), 'comfino_debug_notice_dismissed', true)) {
-            return;
-        }
-
-        // Prepare template variables.
-        $settings_url = admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino');
-        $nonce_value = wp_create_nonce('comfino-dismiss-debug-notice');
-
-        // Load template file.
-        include __DIR__ . '/views/admin/debug-mode-notice.php';
+        TemplateManager::renderView(
+            'debug-mode-notice',
+            'admin',
+            [
+                'settings_url' => admin_url('admin.php?page=wc-settings&tab=checkout&section=comfino'),
+                'nonce_value' => wp_create_nonce('comfino-dismiss-debug-notice'),
+            ]
+        );
     }
 
     /**
@@ -427,24 +466,91 @@ class Comfino_Payment_Gateway
      */
     public function dismiss_debug_mode_notice(): void
     {
-        // Verify nonce for security.
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'comfino-dismiss-debug-notice')) {
+        if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_key(wp_unslash($_POST['nonce'])), 'comfino-dismiss-debug-notice')) {
             wp_send_json_error(['message' => __('Invalid nonce.', 'comfino-payment-gateway')]);
 
             return;
         }
 
-        // Verify user capabilities.
         if (!current_user_can('manage_woocommerce')) {
             wp_send_json_error(['message' => __('Insufficient permissions.', 'comfino-payment-gateway')]);
 
             return;
         }
 
-        // Store dismissal preference for current user.
         update_user_meta(get_current_user_id(), 'comfino_debug_notice_dismissed', true);
 
         wp_send_json_success(['message' => __('Notice dismissed.', 'comfino-payment-gateway')]);
+    }
+
+    /**
+     * Handle module reset action.
+     */
+    public function handle_module_reset(): void
+    {
+        if (!isset($_POST['comfino_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['comfino_nonce'])), 'comfino_settings')) {
+            /** @noinspection ForgottenDebugOutputInspection */
+            wp_die('Security check failed.');
+        }
+
+        if (!current_user_can('manage_woocommerce')) {
+            /** @noinspection ForgottenDebugOutputInspection */
+            wp_die('You do not have permission to perform this action.');
+        }
+
+        set_transient('comfino_module_reset_results', Main::reset(), 60);
+
+        wp_safe_redirect(wp_get_referer());
+
+        exit;
+    }
+
+    /**
+     * Handle clear error log action.
+     */
+    public function handle_clear_error_log(): void
+    {
+        if (!isset($_POST['comfino_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['comfino_nonce'])), 'comfino_settings')) {
+            /** @noinspection ForgottenDebugOutputInspection */
+            wp_die('Security check failed.');
+        }
+
+        if (!current_user_can('manage_woocommerce')) {
+            /** @noinspection ForgottenDebugOutputInspection */
+            wp_die('You do not have permission to perform this action.');
+        }
+
+        ErrorLogger::clearLogs();
+
+        set_transient('comfino_error_log_cleared', true, 60);
+
+        wp_safe_redirect(wp_get_referer());
+
+        exit;
+    }
+
+    /**
+     * Handle clear debug log action.
+     */
+    public function handle_clear_debug_log(): void
+    {
+        if (!isset($_POST['comfino_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['comfino_nonce'])), 'comfino_settings')) {
+            /** @noinspection ForgottenDebugOutputInspection */
+            wp_die('Security check failed.');
+        }
+
+        if (!current_user_can('manage_woocommerce')) {
+            /** @noinspection ForgottenDebugOutputInspection */
+            wp_die('You do not have permission to perform this action.');
+        }
+
+        DebugLogger::clearLogs();
+
+        set_transient('comfino_debug_log_cleared', true, 60);
+
+        wp_safe_redirect(wp_get_referer());
+
+        exit;
     }
 
     private function upgrade_plugin(): void
@@ -549,39 +655,6 @@ class Comfino_Payment_Gateway
         update_user_meta(get_current_user_id(), 'comfino_debug_notice_dismissed', false);
 
         set_transient('comfino_plugin_updated', 0);
-    }
-
-    /**
-     * Initializes default configuration values on first plugin activation.
-     */
-    private function init_default_configuration(): void
-    {
-        $storageAdapter = new Comfino\Configuration\StorageAdapter();
-        $optionKey = $storageAdapter->get_option_key();
-
-        // Check if configuration already exists.
-        if (get_option($optionKey) !== false) {
-            return;
-        }
-
-        // Persist default configuration values to database.
-        $defaultValues = ConfigManager::getDefaultConfigurationValues();
-        $configurationData = [];
-
-        foreach ($defaultValues as $optionName => $defaultValue) {
-            if (array_key_exists($optionName, ConfigManager::CONFIG_OPTIONS_MAP)) {
-                $internalName = ConfigManager::CONFIG_OPTIONS_MAP[$optionName];
-
-                // Convert boolean values to WooCommerce format ('yes'/'no').
-                if (is_bool($defaultValue)) {
-                    $defaultValue = $defaultValue ? 'yes' : 'no';
-                }
-
-                $configurationData[$internalName] = $defaultValue;
-            }
-        }
-
-        update_option($optionKey, $configurationData);
     }
 
     /**

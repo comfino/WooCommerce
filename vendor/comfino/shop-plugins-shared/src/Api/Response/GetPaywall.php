@@ -7,7 +7,7 @@ namespace Comfino\Api\Response;
 class GetPaywall extends Base
 {
     public $paywallBody;
-
+    
     public $paywallHash;
 
     /**

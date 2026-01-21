@@ -67,6 +67,7 @@
     },
     "require": {
         "php": ">=7.1",
+        "ext-ctype": "*",
         "ext-curl": "*",
         "ext-json": "*",
         "ext-zlib": "*",

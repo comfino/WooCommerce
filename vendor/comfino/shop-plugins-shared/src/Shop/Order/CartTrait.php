@@ -28,7 +28,7 @@ trait CartTrait
                     'vatRate' => $cartItem->getProduct()->getTaxRate(),
                     'vatAmount' => $cartItem->getProduct()->getTaxValue(),
                 ],
-                static function ($value): bool {
+                static function ($value) : bool {
                     return $value !== null;
                 }
             );
@@ -71,7 +71,7 @@ trait CartTrait
                 'deliveryCostVatAmount' => $cart->getDeliveryCostTaxValue(),
                 'category' => $cart->getCategory(),
             ],
-            static function ($value): bool {
+            static function ($value) : bool {
                 return $value !== null;
             }
         );

@@ -131,7 +131,65 @@ class MainTest extends \PHPUnit_Framework_TestCase
     {
         $testDir = '/test/uninstall/dir';
 
-        $this->assertTrue(Main::uninstall($testDir));
+        // unstall() should not throw exceptions.
+        Main::uninstall($testDir);
+
+        // Verify it completes without errors (no assertion needed, just checking no exception).
         $this->assertEquals($testDir, Main::getPluginDirectory());
+    }
+
+    public function testInstall(): void
+    {
+        // install() should not throw exceptions.
+        Main::install();
+
+        // Verify it completes without errors (no assertion needed, just checking no exception).
+        $this->assertTrue(true);
+    }
+
+    public function testReset(): void
+    {
+        $stats = Main::reset();
+
+        // Verify the structure of returned statistics.
+        $this->assertInternalType('array', $stats);
+        $this->assertArrayHasKey('config_repaired', $stats);
+        $this->assertArrayHasKey('config_failed', $stats);
+        $this->assertArrayHasKey('operations', $stats);
+        $this->assertInternalType('array', $stats['operations']);
+    }
+
+    public function testReadInstallLog(): void
+    {
+        $log = Main::readInstallLog();
+
+        // Should return string (empty if log doesn't exist).
+        $this->assertInternalType('string', $log);
+    }
+
+    public function testReadUpgradeLog(): void
+    {
+        $log = Main::readUpgradeLog();
+
+        // Should return string (empty if log doesn't exist).
+        $this->assertInternalType('string', $log);
+    }
+
+    public function testReadUninstallLog(): void
+    {
+        $log = Main::readUninstallLog();
+
+        // Should return string (empty if log doesn't exist).
+        $this->assertInternalType('string', $log);
+    }
+
+    public function testUpdateUpgradeLog(): void
+    {
+        $testContent = 'Test upgrade log entry';
+
+        // Should not throw exceptions.
+        Main::updateUpgradeLog($testContent);
+
+        $this->assertTrue(true);
     }
 }

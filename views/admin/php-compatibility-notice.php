@@ -5,10 +5,10 @@
  * Used when the plugin is loaded in an incompatible PHP environment.
  * This template uses PHP 5.6+ compatible syntax only.
  *
- * @var string $current_php_version Current PHP version.
- * @var string $required_php_version Required PHP version.
- * @var string $plugin_version Current plugin version.
- * @var bool $can_deactivate Whether current user can deactivate plugins.
+ * @var string $current_php_version Current PHP version
+ * @var string $required_php_version Required PHP version
+ * @var string $plugin_version Current plugin version
+ * @var bool $can_deactivate Whether current user can deactivate plugins
  */
 
 if (!defined('ABSPATH')) {

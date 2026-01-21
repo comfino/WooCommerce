@@ -1,1 +1,12 @@
 .idea
+/vendor/*
+!/vendor/autoload.php
+!/vendor/cache/
+!/vendor/comfino/
+!/vendor/composer/
+!/vendor/fig/
+!/vendor/league/
+!/vendor/monolog/
+!/vendor/psr/
+!/vendor/sunrise/
+!/vendor/symfony/

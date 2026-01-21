@@ -20,7 +20,7 @@ abstract class Logger
         $filename = pathinfo($logFilePath, PATHINFO_FILENAME);
         $extension = pathinfo($logFilePath, PATHINFO_EXTENSION);
 
-        $files = glob($dir . '/' . $filename . '-*.' . $extension);
+        $files = glob($dir . DIRECTORY_SEPARATOR . $filename . '-*.' . $extension);
 
         if (empty($files)) {
             return null;
@@ -35,14 +35,14 @@ abstract class Logger
 
     /**
      * @param string $logFilePath
-     * @return array
+     * @return string[]
      */
     protected function findAllLogFiles($logFilePath): array
     {
         $filename = pathinfo($logFilePath, PATHINFO_FILENAME);
         $extension = pathinfo($logFilePath, PATHINFO_EXTENSION);
 
-        $files = glob(dirname($logFilePath) . '/' . $filename . '-*.' . $extension);
+        $files = glob(dirname($logFilePath) . DIRECTORY_SEPARATOR . $filename . '-*.' . $extension);
 
         return $files ?: [];
     }

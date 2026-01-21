@@ -35,6 +35,7 @@ use Comfino\Api\Response\GetWidgetTypes as GetWidgetTypesResponse;
 use Comfino\Api\Response\IsShopAccountActive as IsShopAccountActiveResponse;
 use Comfino\Api\Response\ValidateOrder as ValidateOrderResponse;
 use Comfino\Api\Serializer\Json as JsonSerializer;
+use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Shop\Order\CartInterface;
 use Comfino\Shop\Order\OrderInterface;
 use ComfinoExternal\Psr\Http\Client\ClientExceptionInterface;
@@ -46,7 +47,7 @@ use ComfinoExternal\Psr\Http\Message\StreamFactoryInterface;
 /**
  * Comfino API client.
  *
- * @version 1.1.0
+ * @version 1.1.2
  * @author Artur Kozubski <akozubski@comperia.pl>
  */
 class Client
@@ -75,26 +76,26 @@ class Client
      * @var SerializerInterface|null
      */
     protected $serializer;
-    public const CLIENT_VERSION = '1.1.0';
+    public const CLIENT_VERSION = '1.1.2';
     public const PRODUCTION_HOST = 'https://api-ecommerce.comfino.pl';
     public const SANDBOX_HOST = 'https://api-ecommerce.craty.pl';
 
     protected $apiLanguage = 'pl';
-
+    
     protected $apiCurrency = 'PLN';
-
+    
     protected $customApiHost;
-
+    
     protected $customUserAgent;
-
+    
     protected $customHeaders = [];
-
+    
     protected $clientHostName = '';
-
+    
     protected $isSandboxMode = false;
-
+    
     protected $request;
-
+    
     protected $response;
 
     /**

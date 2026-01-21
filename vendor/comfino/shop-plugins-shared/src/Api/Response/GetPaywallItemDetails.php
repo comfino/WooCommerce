@@ -7,7 +7,7 @@ namespace Comfino\Api\Response;
 class GetPaywallItemDetails extends Base
 {
     public $productDetails;
-
+    
     public $listItemData;
 
     /**

@@ -40,7 +40,7 @@ class Cart
      * @var CartItemInterface[]
      */
     private $cartItems;
-
+    
     private $cartCategoryIds;
 
     /**
@@ -148,7 +148,7 @@ class Cart
                         'categoryIds' => $cartItem->getProduct()->getCategoryIds(),
                     ];
 
-                    return $withNulls ? $product : array_filter($product, static function ($productFieldValue): bool {
+                    return $withNulls ? $product : array_filter($product, static function ($productFieldValue) : bool {
                         return $productFieldValue !== null;
                     });
                 },
@@ -156,7 +156,7 @@ class Cart
             ),
         ];
 
-        return $withNulls ? $cart : array_filter($cart, static function ($cartFieldValue): bool {
+        return $withNulls ? $cart : array_filter($cart, static function ($cartFieldValue) : bool {
             return $cartFieldValue !== null;
         });
     }

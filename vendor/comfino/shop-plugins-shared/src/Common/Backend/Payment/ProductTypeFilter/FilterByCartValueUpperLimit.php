@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Comfino\Common\Backend\Payment\ProductTypeFilter;
 
 use Comfino\Common\Backend\Payment\ProductTypeFilterInterface;
+use Comfino\Common\Shop\Cart;
 
 class FilterByCartValueUpperLimit implements ProductTypeFilterInterface
 {
