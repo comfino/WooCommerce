@@ -17,14 +17,10 @@ if (!defined('ABSPATH')) {
     </th>
     <td>
         <textarea id="debug-log" rows="40" cols="60" readonly class="input-text wide-input" style="width: 800px; height: 400px"><?php echo esc_textarea($comfino_debug_log); ?></textarea>
-        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-            <?php wp_nonce_field('comfino_settings', 'comfino_nonce'); ?>
-            <input type="hidden" name="action" value="comfino_clear_debug_log">
-            <p>
-                <button type="submit" class="button button-secondary" onclick="return confirm('<?php echo esc_js(__('Are you sure you want to clear the debug log?', 'comfino-payment-gateway')); ?>');">
-                    <?php echo esc_html__('Clear debug log', 'comfino-payment-gateway'); ?>
-                </button>
-            </p>
-        </form>
+        <p>
+            <button type="button" class="button button-secondary" onclick="if (confirm('<?php echo esc_js(__('Are you sure you want to clear the debug log?', 'comfino-payment-gateway')); ?>')) { comfinoSubmitAction('comfino_clear_debug_log', '<?php echo esc_js(wp_create_nonce('comfino_settings')); ?>'); }">
+                <?php echo esc_html__('Clear debug log', 'comfino-payment-gateway'); ?>
+            </button>
+        </p>
     </td>
 </tr>

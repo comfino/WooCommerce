@@ -174,7 +174,7 @@ function comfino_prepare_tab_url(string $subsection): string
                 </td>
             </tr>
             <?php
-            // Module reset section
+            // Plugin reset section
             include __DIR__ . '/_configure/module-reset.php';
 
             // Error log section
@@ -193,4 +193,34 @@ function comfino_prepare_tab_url(string $subsection): string
     }
     ?>
 </table>
+<script>
+function comfinoSubmitAction(action, nonce)
+{
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '<?php echo esc_url(admin_url('admin-post.php')); ?>';
+
+    const actionInput = document.createElement('input');
+    actionInput.type = 'hidden';
+    actionInput.name = 'action';
+    actionInput.value = action;
+    form.appendChild(actionInput);
+
+    const nonceInput = document.createElement('input');
+    nonceInput.type = 'hidden';
+    nonceInput.name = 'comfino_nonce';
+    nonceInput.value = nonce;
+    form.appendChild(nonceInput);
+
+    const refererInput = document.createElement('input');
+    refererInput.type = 'hidden';
+    refererInput.name = '_wp_http_referer';
+    refererInput.value = window.location.href;
+    form.appendChild(refererInput);
+
+    document.body.appendChild(form);
+
+    form.submit();
+}
+</script>
 <?php wp_nonce_field('comfino_settings', 'comfino_nonce', false); ?>

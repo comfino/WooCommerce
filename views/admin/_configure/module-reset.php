@@ -21,14 +21,10 @@ if (!defined('ABSPATH')) {
             </ul>
             <p style="margin-top: 10px;"><em><?php echo esc_html__('Note: This operation does NOT delete any existing configuration or data.', 'comfino-payment-gateway'); ?></em></p>
         </div>
-        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-            <?php wp_nonce_field('comfino_settings', 'comfino_nonce'); ?>
-            <input type="hidden" name="action" value="comfino_module_reset">
-            <p>
-                <button type="submit" class="button button-secondary" onclick="return confirm('<?php echo esc_js(__('Are you sure you want to reset the plugin? This will repair missing options and clear all caches.', 'comfino-payment-gateway')); ?>');">
-                    <?php echo esc_html__('Reset plugin', 'comfino-payment-gateway'); ?>
-                </button>
-            </p>
-        </form>
+        <p>
+            <button type="button" class="button button-secondary" onclick="if (confirm('<?php echo esc_js(__('Are you sure you want to reset the plugin? This will repair missing options and clear all caches.', 'comfino-payment-gateway')); ?>')) { comfinoSubmitAction('comfino_plugin_reset', '<?php echo esc_js(wp_create_nonce('comfino_settings')); ?>'); }">
+                <?php echo esc_html__('Reset plugin', 'comfino-payment-gateway'); ?>
+            </button>
+        </p>
     </td>
 </tr>

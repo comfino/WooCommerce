@@ -111,7 +111,7 @@ class Comfino_Payment_Gateway
         add_action('admin_init', [$this, 'check_environment']);
         add_action('admin_init', [$this, 'check_debug_mode']);
         add_action('admin_notices', [$this, 'admin_notices'], 15);
-        add_action('admin_post_comfino_module_reset', [$this, 'handle_module_reset']);
+        add_action('admin_post_comfino_plugin_reset', [$this, 'handle_plugin_reset']);
         add_action('admin_post_comfino_clear_error_log', [$this, 'handle_clear_error_log']);
         add_action('admin_post_comfino_clear_debug_log', [$this, 'handle_clear_debug_log']);
         add_action('plugins_loaded', function (): void {
@@ -322,21 +322,22 @@ class Comfino_Payment_Gateway
         }
 
         // Check for plugin reset results.
-        if ($resetResults = get_transient('comfino_module_reset_results')) {
+        if ($resetResults = get_transient('comfino_plugin_reset_results')) {
             $hasErrors = ($resetResults['config_failed'] ?? 0) > 0;
             $noticeClass = $hasErrors ? 'notice notice-warning is-dismissible' : 'notice notice-success is-dismissible';
             $noticeMessage = $hasErrors
                 ? __('Plugin reset completed with some errors.', 'comfino-payment-gateway')
                 : __('Plugin reset completed successfully.', 'comfino-payment-gateway');
             $noticeMessage .= ' ' . sprintf(
+                /* translators: 1: Number of configuration options repaired 2: Number of configuration options failed */
                 __('Configuration: %1$d repaired, %2$d failed', 'comfino-payment-gateway'),
                 $resetResults['config_repaired'] ?? 0,
                 $resetResults['config_failed'] ?? 0
             );
 
-            $this->add_admin_notice('module_reset', $noticeClass, $noticeMessage);
+            $this->add_admin_notice('plugin_reset', $noticeClass, $noticeMessage);
 
-            delete_transient('comfino_module_reset_results');
+            delete_transient('comfino_plugin_reset_results');
         }
 
         // Check for error log cleared.
@@ -362,7 +363,7 @@ class Comfino_Payment_Gateway
         }
 
         foreach ($this->notices as $noticeKey => $notice) {
-            echo '<div class="' . esc_attr(sanitize_html_class($notice['class'])) . '"><p>';
+            echo '<div class="' . esc_attr($notice['class']) . '"><p>';
             echo wp_kses($notice['message'], ['a' => ['href' => []]]);
             echo "</p></div>";
         }
@@ -484,9 +485,9 @@ class Comfino_Payment_Gateway
     }
 
     /**
-     * Handle module reset action.
+     * Handle plugin reset action.
      */
-    public function handle_module_reset(): void
+    public function handle_plugin_reset(): void
     {
         if (!isset($_POST['comfino_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['comfino_nonce'])), 'comfino_settings')) {
             /** @noinspection ForgottenDebugOutputInspection */
@@ -498,7 +499,7 @@ class Comfino_Payment_Gateway
             wp_die('You do not have permission to perform this action.');
         }
 
-        set_transient('comfino_module_reset_results', Main::reset(), 60);
+        set_transient('comfino_plugin_reset_results', Main::reset(), 60);
 
         wp_safe_redirect(wp_get_referer());
 
