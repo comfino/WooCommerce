@@ -8,7 +8,7 @@
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
  * Text Domain: comfino-payment-gateway
- * WC tested up to: 10.3.5
+ * WC tested up to: 10.4.3
  * WC requires at least: 3.0
  * Tested up to: 6.9
  * Requires at least: 5.0
