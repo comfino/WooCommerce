@@ -166,6 +166,9 @@ final class Main
     {
         ErrorLogger::init();
 
+        // Initialize version tracking option for upgrade detection.
+        update_option('comfino_plugin_current_version', PaymentGateway::VERSION, false);
+
         // Initialize default configuration values on first activation.
         $resultStats = self::initDefaultConfiguration();
 
@@ -187,10 +190,12 @@ final class Main
             $resultStats['operations'][] = ['name' => 'configuration_options_delete', 'success' => false];
         }
 
-        // 2. Delete transients.
+        // 2. Delete options and transients.
+        delete_option('comfino_plugin_current_version');
         delete_transient('comfino_plugin_updated');
         delete_transient('comfino_plugin_prev_version');
         delete_transient('comfino_plugin_updated_at');
+
         $resultStats['operations'][] = ['name' => 'transients_delete', 'success' => true];
 
         // 3. Notify Comfino API about plugin removal.
@@ -532,7 +537,8 @@ final class Main
     {
         $logPath = FileUtils::buildPathFromComponents([self::getVarPath(), 'log', $fileName]);
 
-        if (FileUtils::isWritable($logPath)) {
+        // Check if file is writable (if exists) or if directory is writable (to create new file).
+        if (FileUtils::isWritable($logPath) || (!FileUtils::exists($logPath) && FileUtils::isWritable(dirname($logPath)))) {
             FileUtils::append($logPath, gmdate('Y-m-d H:i:s') . "\n$logContents");
         }
     }

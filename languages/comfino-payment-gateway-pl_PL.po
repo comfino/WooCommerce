@@ -5,8 +5,8 @@ msgstr ""
 "Project-Id-Version: Comfino payment gateway 4.2.7\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/comfino-payment-"
 "gateway\n"
-"POT-Creation-Date: 2026-01-24T20:29:46+00:00\n"
-"PO-Revision-Date: 2026-01-24 21:30+0100\n"
+"POT-Creation-Date: 2026-01-25T13:30:30+00:00\n"
+"PO-Revision-Date: 2026-01-25 14:31+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: pl_PL\n"
@@ -42,33 +42,33 @@ msgid "https://github.com/comfino"
 msgstr "https://github.com/comfino"
 
 #. translators: 1: Previous plugin version 2: Current plugin version
-#: comfino-payment-gateway.php:316
+#: comfino-payment-gateway.php:324
 msgid "Comfino plugin updated from version %1$s to %2$s."
 msgstr "Wtyczka Comfino została zaktualizowana z wersji %1$s do %2$s."
 
-#: comfino-payment-gateway.php:329
+#: comfino-payment-gateway.php:337
 msgid "Plugin reset completed with some errors."
 msgstr "Resetowanie wtyczki zakończone z pewnymi błędami."
 
-#: comfino-payment-gateway.php:330
+#: comfino-payment-gateway.php:338
 msgid "Plugin reset completed successfully."
 msgstr "Resetowanie wtyczki zakończony pomyślnie."
 
 #. translators: 1: Number of configuration options repaired 2: Number of configuration options failed
-#: comfino-payment-gateway.php:333
+#: comfino-payment-gateway.php:341
 msgid "Configuration: %1$d repaired, %2$d failed"
 msgstr "Konfiguracja: %1$d naprawionych, %2$d nieudanych"
 
-#: comfino-payment-gateway.php:348
+#: comfino-payment-gateway.php:356
 msgid "Error log cleared successfully."
 msgstr "Log błędów wyczyszczony pomyślnie."
 
-#: comfino-payment-gateway.php:359
+#: comfino-payment-gateway.php:367
 msgid "Debug log cleared successfully."
 msgstr "Log debugowania wyczyszczony pomyślnie."
 
 #. translators: 1: Current version 2: Available version 3: GitHub releases URL
-#: comfino-payment-gateway.php:407
+#: comfino-payment-gateway.php:416
 msgid ""
 "<strong>Comfino Payment Gateway:</strong> A new version (%2$s) is available "
 "on GitHub. You are currently using version %1$s. Visit <a href=\"%3$s\" "
@@ -78,15 +78,15 @@ msgstr ""
 "na GitHub. Obecnie używasz wersji %1$s. Odwiedź <a href=\"%3$s\" "
 "target=\"_blank\">GitHub Releases</a>, aby uzyskać więcej informacji."
 
-#: comfino-payment-gateway.php:471
+#: comfino-payment-gateway.php:480
 msgid "Invalid nonce."
 msgstr "Nieprawidłowy nonce."
 
-#: comfino-payment-gateway.php:477
+#: comfino-payment-gateway.php:486
 msgid "Insufficient permissions."
 msgstr "Niewystarczające uprawnienia."
 
-#: comfino-payment-gateway.php:484
+#: comfino-payment-gateway.php:493
 msgid "Notice dismissed."
 msgstr "Powiadomienie zostało odrzucone."
 
@@ -112,7 +112,7 @@ msgid "Settings"
 msgstr "Ustawienia"
 
 #. translators: 1: Minimum required PHP version 2: Current PHP version
-#: src/Main.php:378
+#: src/Main.php:383
 msgid ""
 "The plugin could not be activated. The minimum PHP version required for "
 "Comfino is %1$s. You are running %2$s."
@@ -121,7 +121,7 @@ msgstr ""
 "to %1$s. Używasz %2$s."
 
 #. translators: 1: Minimum required PHP version 2: Current PHP version
-#: src/Main.php:384
+#: src/Main.php:389
 msgid ""
 "The Comfino plugin has been deactivated. The minimum PHP version required "
 "for Comfino is %1$s. You are running %2$s."
@@ -129,17 +129,17 @@ msgstr ""
 "Wtyczka Comfino została wyłączona. Minimalna wersja PHP wymagana dla Comfino "
 "to %1$s. Używasz %2$s."
 
-#: src/Main.php:392
+#: src/Main.php:397
 msgid "The plugin could not be activated. WooCommerce needs to be activated."
 msgstr "Wtyczka nie mogła zostać włączona. WooCommerce musi zostać aktywowany."
 
-#: src/Main.php:393
+#: src/Main.php:398
 msgid ""
 "The Comfino plugin has been deactivated. WooCommerce needs to be activated."
 msgstr "Wtyczka Comfino została wyłączona. WooCommerce musi zostać aktywowany."
 
 #. translators: 1: Minimum required WooCommerce version 2: Current WooCommerce version
-#: src/Main.php:400
+#: src/Main.php:405
 msgid ""
 "The plugin could not be activated. The minimum WooCommerce version required "
 "for Comfino is %1$s. You are running %2$s."
@@ -148,7 +148,7 @@ msgstr ""
 "Comfino to %1$s. Używasz %2$s."
 
 #. translators: 1: Minimum required WooCommerce version 2: Current WooCommerce version
-#: src/Main.php:406
+#: src/Main.php:411
 msgid ""
 "The Comfino plugin has been deactivated. The minimum WooCommerce version "
 "required for Comfino is %1$s. You are running %2$s."
@@ -156,7 +156,7 @@ msgstr ""
 "Wtyczka Comfino została wyłączona. Minimalna wersja WooCommerce wymagana dla "
 "Comfino to %1$s. Używasz %2$s."
 
-#: src/Main.php:414
+#: src/Main.php:419
 msgid ""
 "The plugin could not be activated. It requires PHP cURL extension which is "
 "not installed. More details: https://www.php.net/manual/en/book.curl.php"
@@ -165,7 +165,7 @@ msgstr ""
 "jest zainstalowane. Więcej szczegółów: https://www.php.net/manual/en/"
 "book.curl.php"
 
-#: src/Main.php:415
+#: src/Main.php:420
 msgid ""
 "The Comfino plugin has been deactivated. It requires PHP cURL extension "
 "which is not installed. More details: https://www.php.net/manual/en/"

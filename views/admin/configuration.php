@@ -161,7 +161,8 @@ function comfino_prepare_tab_url(string $subsection): string
                             ['hr' => [], 'h4' => [], 'ul' => [], 'li' => [], 'b' => []]
                         );
 
-                        $comfino_internal_flags = '<li><b>comfino_plugin_updated</b>: ' . get_transient('comfino_plugin_updated') . '</li>';
+                        $comfino_internal_flags = '<li><b>comfino_plugin_current_version</b>: ' . get_option('comfino_plugin_current_version') . '</li>';
+                        $comfino_internal_flags .= '<li><b>comfino_plugin_updated</b>: ' . get_transient('comfino_plugin_updated') . '</li>';
                         $comfino_internal_flags .= '<li><b>comfino_plugin_prev_version</b>: ' . get_transient('comfino_plugin_prev_version') . '</li>';
                         $comfino_internal_flags .= '<li><b>comfino_plugin_updated_at</b>: ' . gmdate('Y-m-d H:i:s', get_transient('comfino_plugin_updated_at')) . ' UTC</li>';
 

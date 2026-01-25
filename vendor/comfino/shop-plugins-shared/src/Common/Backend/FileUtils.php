@@ -81,6 +81,14 @@ class FileUtils
     /**
      * @param string $filePath
      */
+    public static function exists($filePath): bool
+    {
+        return (new \SplFileInfo($filePath))->isFile();
+    }
+
+    /**
+     * @param string $filePath
+     */
     public static function isWritable($filePath): bool
     {
         return (new \SplFileInfo($filePath))->isWritable();

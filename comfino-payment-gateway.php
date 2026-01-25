@@ -115,23 +115,14 @@ class Comfino_Payment_Gateway
         add_action('admin_post_comfino_clear_error_log', [$this, 'handle_clear_error_log']);
         add_action('admin_post_comfino_clear_debug_log', [$this, 'handle_clear_debug_log']);
         add_action('plugins_loaded', function (): void {
+            // Store current version in persistent option for upgrade tracking.
+            if (get_option('comfino_plugin_current_version', '') !== PaymentGateway::VERSION) {
+                update_option('comfino_plugin_current_version', PaymentGateway::VERSION, false);
+            }
+
             if (get_transient('comfino_plugin_updated')) {
                 $this->upgrade_plugin();
             }
-        });
-
-        // Capture current version BEFORE upgrade starts (before files are replaced).
-        add_action('pre_set_site_transient_update_plugins', static function ($transient) {
-            if (!empty($transient->response)) {
-                $comfinoPluginPathName = plugin_basename(__FILE__);
-
-                if (isset($transient->response[$comfinoPluginPathName])) {
-                    // Plugin update is available - capture current version before upgrade.
-                    set_transient('comfino_pre_upgrade_version', PaymentGateway::VERSION, HOUR_IN_SECONDS);
-                }
-            }
-
-            return $transient;
         });
 
         // Upgrade hook
@@ -139,16 +130,14 @@ class Comfino_Payment_Gateway
             $comfinoPluginPathName = plugin_basename(__FILE__);
 
             if ($options['action'] === 'update' && $options['type'] === 'plugin') {
+                $pluginUpdated = false;
+
                 // Plugin updated.
                 if (isset($options['plugins'])) {
                     // Bulk plugins update (update page)
                     foreach($options['plugins'] as $pluginPathName) {
                         if ($pluginPathName === $comfinoPluginPathName) {
-                            // Comfino plugin updated.
-                            set_transient('comfino_plugin_updated', 1);
-                            set_transient('comfino_plugin_prev_version', get_transient('comfino_pre_upgrade_version') ?: 'unknown');
-                            set_transient('comfino_plugin_updated_at', time());
-                            delete_transient('comfino_pre_upgrade_version');
+                            $pluginUpdated = true;
 
                             break;
                         }
@@ -156,24 +145,26 @@ class Comfino_Payment_Gateway
                 } elseif (isset($options['plugin'])) {
                     // Normal plugin update or via auto update
                     if ($options['plugin'] === $comfinoPluginPathName) {
-                        // Comfino plugin updated.
-                        set_transient('comfino_plugin_updated', 1);
-                        set_transient('comfino_plugin_prev_version', get_transient('comfino_pre_upgrade_version') ?: 'unknown');
-                        set_transient('comfino_plugin_updated_at', time());
-                        delete_transient('comfino_pre_upgrade_version');
+                        $pluginUpdated = true;
                     }
+                }
+
+                if ($pluginUpdated && ($previousVersion = get_option('comfino_plugin_current_version', 'unknown')) !== PaymentGateway::VERSION) {
+                    // Only set transient if version actually changed.
+                    set_transient('comfino_plugin_updated', 1);
+                    set_transient('comfino_plugin_prev_version', $previousVersion);
+                    set_transient('comfino_plugin_updated_at', time());
                 }
             }
         }, 10, 2);
 
         // Overwrite hook
         add_action('upgrader_overwrote_package', static function (string $package, array $data, string $package_type): void {
-            if ($package_type === 'plugin' && $data['Name'] === 'Comfino Payment Gateway') {
-                // Comfino plugin updated.
+            if ($package_type === 'plugin' && $data['Name'] === 'Comfino Payment Gateway' && ($previousVersion = get_option('comfino_plugin_current_version', 'unknown')) !== PaymentGateway::VERSION) {
+                // Only set transient if version actually changed.
                 set_transient('comfino_plugin_updated', 1);
-                set_transient('comfino_plugin_prev_version', get_transient('comfino_pre_upgrade_version') ?: 'unknown');
+                set_transient('comfino_plugin_prev_version', $previousVersion);
                 set_transient('comfino_plugin_updated_at', time());
-                delete_transient('comfino_pre_upgrade_version');
             }
         }, 10, 3);
 
@@ -392,6 +383,7 @@ class Comfino_Payment_Gateway
 
         if ($updateDetails === null) {
             $updateDetails = [
+                'comfino_plugin_current_version' => get_option('comfino_plugin_current_version'),
                 'comfino_plugin_updated' => get_transient('comfino_plugin_updated'),
                 'comfino_plugin_prev_version' => get_transient('comfino_plugin_prev_version'),
                 'comfino_plugin_updated_at' => get_transient('comfino_plugin_updated_at'),
@@ -657,6 +649,13 @@ class Comfino_Payment_Gateway
             if ($needsUpdate) {
                 ConfigManager::updateConfigurationValue('COMFINO_STATUS_MAP', $currentStatusMap);
             }
+        }
+
+        /* 4.2.7 */
+        // Initialize version tracking option if not set (for existing installations).
+        if (!get_option('comfino_plugin_current_version') && ($previousVersion = get_transient('comfino_plugin_prev_version')) && $previousVersion !== 'unknown') {
+            // First upgrade after implementing version tracking. Use the previous version from transient if available.
+            update_option('comfino_plugin_current_version', $previousVersion, false);
         }
 
         // Update code of widget initialization script.

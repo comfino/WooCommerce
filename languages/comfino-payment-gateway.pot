@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-01-24T20:29:46+00:00\n"
+"POT-Creation-Date: 2026-01-25T13:30:30+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.10.0\n"
 "X-Domain: comfino-payment-gateway\n"
@@ -40,45 +40,45 @@ msgid "https://github.com/comfino"
 msgstr ""
 
 #. translators: 1: Previous plugin version 2: Current plugin version
-#: comfino-payment-gateway.php:316
+#: comfino-payment-gateway.php:324
 msgid "Comfino plugin updated from version %1$s to %2$s."
 msgstr ""
 
-#: comfino-payment-gateway.php:329
+#: comfino-payment-gateway.php:337
 msgid "Plugin reset completed with some errors."
 msgstr ""
 
-#: comfino-payment-gateway.php:330
+#: comfino-payment-gateway.php:338
 msgid "Plugin reset completed successfully."
 msgstr ""
 
 #. translators: 1: Number of configuration options repaired 2: Number of configuration options failed
-#: comfino-payment-gateway.php:333
+#: comfino-payment-gateway.php:341
 msgid "Configuration: %1$d repaired, %2$d failed"
 msgstr ""
 
-#: comfino-payment-gateway.php:348
+#: comfino-payment-gateway.php:356
 msgid "Error log cleared successfully."
 msgstr ""
 
-#: comfino-payment-gateway.php:359
+#: comfino-payment-gateway.php:367
 msgid "Debug log cleared successfully."
 msgstr ""
 
 #. translators: 1: Current version 2: Available version 3: GitHub releases URL
-#: comfino-payment-gateway.php:407
+#: comfino-payment-gateway.php:416
 msgid "<strong>Comfino Payment Gateway:</strong> A new version (%2$s) is available on GitHub. You are currently using version %1$s. Visit <a href=\"%3$s\" target=\"_blank\">GitHub Releases</a> for more information."
 msgstr ""
 
-#: comfino-payment-gateway.php:471
+#: comfino-payment-gateway.php:480
 msgid "Invalid nonce."
 msgstr ""
 
-#: comfino-payment-gateway.php:477
+#: comfino-payment-gateway.php:486
 msgid "Insufficient permissions."
 msgstr ""
 
-#: comfino-payment-gateway.php:484
+#: comfino-payment-gateway.php:493
 msgid "Notice dismissed."
 msgstr ""
 
@@ -100,38 +100,38 @@ msgid "Settings"
 msgstr ""
 
 #. translators: 1: Minimum required PHP version 2: Current PHP version
-#: src/Main.php:378
+#: src/Main.php:383
 msgid "The plugin could not be activated. The minimum PHP version required for Comfino is %1$s. You are running %2$s."
 msgstr ""
 
 #. translators: 1: Minimum required PHP version 2: Current PHP version
-#: src/Main.php:384
+#: src/Main.php:389
 msgid "The Comfino plugin has been deactivated. The minimum PHP version required for Comfino is %1$s. You are running %2$s."
 msgstr ""
 
-#: src/Main.php:392
+#: src/Main.php:397
 msgid "The plugin could not be activated. WooCommerce needs to be activated."
 msgstr ""
 
-#: src/Main.php:393
+#: src/Main.php:398
 msgid "The Comfino plugin has been deactivated. WooCommerce needs to be activated."
 msgstr ""
 
 #. translators: 1: Minimum required WooCommerce version 2: Current WooCommerce version
-#: src/Main.php:400
+#: src/Main.php:405
 msgid "The plugin could not be activated. The minimum WooCommerce version required for Comfino is %1$s. You are running %2$s."
 msgstr ""
 
 #. translators: 1: Minimum required WooCommerce version 2: Current WooCommerce version
-#: src/Main.php:406
+#: src/Main.php:411
 msgid "The Comfino plugin has been deactivated. The minimum WooCommerce version required for Comfino is %1$s. You are running %2$s."
 msgstr ""
 
-#: src/Main.php:414
+#: src/Main.php:419
 msgid "The plugin could not be activated. It requires PHP cURL extension which is not installed. More details: https://www.php.net/manual/en/book.curl.php"
 msgstr ""
 
-#: src/Main.php:415
+#: src/Main.php:420
 msgid "The Comfino plugin has been deactivated. It requires PHP cURL extension which is not installed. More details: https://www.php.net/manual/en/book.curl.php"
 msgstr ""
 
