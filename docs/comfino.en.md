@@ -41,7 +41,7 @@ Financial product availability rules (product category filters) enable Comfino p
 
 By default, Comfino payments are available unconditionally for all product types. To disable Comfino for selected product types, uncheck the appropriate categories in the category tree for each type of financial offer and click "Save".
 
-![Konfiguracja](images/en/configuration2.png "Konfiguracja")
+![Configuration](images/en/configuration2.png "Konfiguracja")
 
 **WIDGET SETTINGS**
 
@@ -73,7 +73,7 @@ Detailed information on the operation of the widget and its configuration option
 
 **ABANDONED CART SETTINGS**
 
-![Konfiguracja](images/en/configuration4.png "Konfiguracja")
+![Configuration](images/en/configuration4.png "Konfiguracja")
 
 The "Abandoned cart rescue" feature allows you to minimize the problem of abandoned carts. When a customer adds products to the cart but abandons it, also due to an unsuccessful payment, they will automatically receive a reminder email with a direct link to the payment. This service allows you to effectively recover potential transactions and increase order conversions.
 
@@ -114,8 +114,8 @@ The reset operation performs the following actions:
 
 To perform a reset, click the "Reset plugin" button.
 
-![Konfiguracja](images/en/configuration6b1.png "Konfiguracja")
-![Konfiguracja](images/en/configuration6b2.png "Konfiguracja")
+![Configuration](images/en/configuration6b1.png "Konfiguracja")
+![Configuration](images/en/configuration6b2.png "Konfiguracja")
 
 This tab also contains a record of operations performed during module installation, update and uninstallation.
 
@@ -131,7 +131,7 @@ Update log:
 Uninstallation log:
 * **After uninstallation – verifying that the process completed correctly**
 
-![Konfiguracja](images/en/configuration6c.png "Konfiguracja")
+![Configuration](images/en/configuration6c.png "Konfiguracja")
 
 Information about developer mode activity is displayed in the tabs `"PAYMENT SETTINGS"` and `"PLUGIN DIAGNOSTICS"`.
 In this mode, the plugin uses the key from the `"DEVELOPER SETTINGS"` tab to communicate with the Comfino test API. You will also receive a test environment key from a Comfino representative.
