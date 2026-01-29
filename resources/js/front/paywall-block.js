@@ -7,6 +7,7 @@ window.Comfino = {
     shippingMethods: null,
     paywallTemplate: null,
     initialized: false,
+    iframeLoaded: false,
     Label: () => {
         ComfinoPaywallFrontend.logEvent('Comfino.Label', 'debug', Comfino.label, comfinoSettings.icon);
 
@@ -76,7 +77,7 @@ window.Comfino = {
                     }
 
                     // Check if iframe is visible and not yet loaded.
-                    if (iframe.style.display === 'block' && !ComfinoPaywallFrontend.isLoaded()) {
+                    if (iframe.style.display === 'block' && !Comfino.iframeLoaded) {
                         // Check if iframe content is actually loaded.
                         if (iframe.contentWindow && iframe.contentWindow.location) {
                             try {
@@ -91,6 +92,8 @@ window.Comfino = {
                                         comfinoSettings.paywallOptions.platformVersion
                                     );
 
+                                    Comfino.iframeLoaded = true;
+
                                     return;
                                 }
                             } catch (e) {
@@ -100,7 +103,7 @@ window.Comfino = {
                                 iframe.addEventListener('load', function onIframeLoad() {
                                     ComfinoPaywallFrontend.logEvent('Iframe load event fired.', 'debug');
 
-                                    if (!ComfinoPaywallFrontend.isLoaded()) {
+                                    if (!Comfino.iframeLoaded) {
                                         ComfinoPaywallFrontend.onload(
                                             iframe,
                                             comfinoSettings.paywallOptions.platformName,
@@ -117,7 +120,7 @@ window.Comfino = {
                     }
 
                     // Keep checking until loaded.
-                    if (Comfino.isSelected && !ComfinoPaywallFrontend.isLoaded()) {
+                    if (Comfino.isSelected && !Comfino.iframeLoaded) {
                         setTimeout(monitorIframeLoad, 100);
                     }
                 };
@@ -148,6 +151,7 @@ window.Comfino = {
                 };
 
                 checkAndInitialize();
+                monitorIframeLoad();
             }
         }, []);
 
@@ -231,6 +235,8 @@ wp.hooks.addAction('experimental__woocommerce_blocks-checkout-set-active-payment
                     /* Re-initialize to update the iframe reference in case React recreated it.
                        This prevents "Cannot read properties of null (reading 'postMessage')" errors
                        when switching between payment methods. */
+                    Comfino.iframeLoaded = false;
+
                     ComfinoPaywallFrontend.init(null, iframe, comfinoSettings.paywallOptions);
                     ComfinoPaywallFrontend.executeClickLogic();
 
