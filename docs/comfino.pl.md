@@ -25,10 +25,11 @@ Pola parametrów konfiguracyjnych:
 **USTAWIENIA PŁATNOŚCI**
 
 * **Włączony/Wyłączony** — status aktywności modułu Comfino (widoczność na liście metod płatności w koszyku)
+* **Klucz API środowiska produkcyjnego** — unikalny klucz dostępowy umożliwiający komunikację modułu z API Comfino (otrzymasz go od przedstawiciela Comfino)
 * **Tytuł** — tekst wyświetlany na liście metod płatności (domyślnie `"Comfino"`)
 * **Minimalna kwota w koszyku** — kwota, powyżej której będzie wyświetlana płatność i widget Comfino
-* **Klucz API środowiska produkcyjnego** — unikalny klucz dostępowy umożliwiający komunikację modułu z API Comfino (otrzymasz go od przedstawiciela Comfino)
 * **Wyświetlanie logo** — status widoczności logo Comfino obok tytułu na liście metod płatności (domyślnie: włączone)
+* **Numer zamówienia** — Używaj numeru zamówienia widocznego dla klienta zamiast numerycznego ID zamówienia w komunikacji z API Comfino. Dotyczy tylko nowych zamówień.
 
 ![Konfiguracja](images/pl/configuration1.png "Konfiguracja")
 

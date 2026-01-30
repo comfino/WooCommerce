@@ -26,10 +26,11 @@ Configuration parameter fields:
 **PAYMENT SETTINGS**
 
 * **Enable/Disable** — activity status of the Comfino module (visibility on the list of payment methods in the basket)
+* **Production environment API key** — a unique access key that allows the module to communicate with the Comfino API (you will receive it from a Comfino representative)
 * **Title** — text displayed on the list of payment methods (default `"Comfino"`)
 * **Minimal amount in cart** — amount above which the Comfino payment and widget will be displayed
-* **Production environment API key** — a unique access key that allows the module to communicate with the Comfino API (you will receive it from a Comfino representative)
 * **Show logo** — visibility status of the Comfino logo next to the title at the list of payment methods (default: enabled)
+* **Order number** — Use customer-visible order reference instead of numeric order ID for Comfino API integration. New orders only.
 
 ![Configuration](images/en/configuration1.png "Configuration")
 
