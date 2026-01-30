@@ -304,7 +304,7 @@ final class SettingsForm
             case 'payment_settings':
                 $formFields = array_intersect_key(
                     self::getFormFieldsDefinitions(),
-                    array_flip(['enabled', 'production_key', 'title', 'min_cart_amount', 'show_logo'])
+                    array_flip(['enabled', 'production_key', 'title', 'min_cart_amount', 'show_logo', 'use_order_reference'])
                 );
                 break;
 
@@ -463,6 +463,11 @@ final class SettingsForm
                 'default' => ConfigManager::getDefaultValue('enabled') === true ? 'yes' : 'no',
                 'description' => __('Shows Comfino payment option at the payment list.', 'comfino-payment-gateway'),
             ],
+            'production_key' => [
+                'title' => __('Production environment API key', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'placeholder' => __('Please enter the key provided during registration', 'comfino-payment-gateway'),
+            ],
             'title' => [
                 'title' => __('Title', 'comfino-payment-gateway'),
                 'type' => 'text',
@@ -473,16 +478,21 @@ final class SettingsForm
                 'type' => 'text',
                 'default' => (string) ConfigManager::getDefaultValue('min_cart_amount'),
             ],
-            'production_key' => [
-                'title' => __('Production environment API key', 'comfino-payment-gateway'),
-                'type' => 'text',
-                'placeholder' => __('Please enter the key provided during registration', 'comfino-payment-gateway'),
-            ],
             'show_logo' => [
                 'title' => __('Show logo', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
                 'label' => __('Show logo on payment method', 'comfino-payment-gateway'),
                 'default' => ConfigManager::getDefaultValue('show_logo') === true ? 'yes' : 'no',
+            ],
+            'use_order_reference' => [
+                'title' => __('Order number', 'comfino-payment-gateway'),
+                'type' => 'checkbox',
+                'label' => __('Use order reference as external ID', 'comfino-payment-gateway'),
+                'default' => ConfigManager::getDefaultValue('use_order_reference') === true ? 'yes' : 'no',
+                'description' => __(
+                    'Use customer-visible order reference instead of numeric order ID for Comfino API integration. New orders only.',
+                    'comfino-payment-gateway'
+                ),
             ],
             'sandbox_mode' => [
                 'title' => __('Test environment', 'comfino-payment-gateway'),
