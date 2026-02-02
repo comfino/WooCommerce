@@ -128,7 +128,25 @@ class PaymentGateway extends \WC_Payment_Gateway
             ['cart_id' => $cart->get_cart_hash(), '$order_id' => $order_id, '$_POST' => $_POST]
         );
 
-        $orderId = (string) $order_id;
+        $wcOrder = wc_get_order($order_id);
+
+        // Get order ID or reference based on configuration.
+        if ($useOrderReference = ConfigManager::getConfigurationValue('COMFINO_USE_ORDER_REFERENCE', false)) {
+            $orderId = !empty($wcOrder->get_order_number()) ? $wcOrder->get_order_number() : (string) $order_id;
+        } else {
+            $orderId = (string) $order_id;
+        }
+
+        DebugLogger::logEvent(
+            '[PAYMENT]',
+            'Order identifier for Comfino API',
+            [
+                'use_reference' => $useOrderReference,
+                'order_id' => $orderId,
+                'reference' => $wcOrder->get_order_number() ?? 'not_set',
+            ]
+        );
+
         $initLoanAmount = (int) filter_var(sanitize_text_field(wp_unslash($_POST['comfino_loan_amount'] ?? '0')), FILTER_VALIDATE_INT);
         $priceModifier = (int) filter_var(sanitize_text_field(wp_unslash($_POST['comfino_price_modifier'] ?? '0')), FILTER_VALIDATE_INT);
         $loanType = sanitize_text_field(wp_unslash($_POST['comfino_loan_type'] ?? 'undefined'));
@@ -142,7 +160,6 @@ class PaymentGateway extends \WC_Payment_Gateway
             return ['result' => 'failure', 'redirect' => ''];
         }
 
-        $wcOrder = wc_get_order($order_id);
         $shopCustomer = OrderManager::getShopCustomerFromOrder($wcOrder);
         $returnUrl = $this->get_return_url($wcOrder);
 
