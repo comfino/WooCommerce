@@ -12,17 +12,17 @@ use ComfinoExternal\Psr\Http\Message\StreamFactoryInterface;
 abstract class Request
 {
     protected $serializer;
-
+    
     protected $method;
-
+    
     protected $apiEndpointPath;
-
+    
     protected $requestHeaders;
-
+    
     protected $requestParams;
-
+    
     protected $requestUri;
-
+    
     protected $requestBody;
 
     /**

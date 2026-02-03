@@ -9,11 +9,11 @@ use Comfino\Api\Dto\Order\Cart\CartItem;
 class Cart
 {
     public $totalAmount;
-
+    
     public $deliveryCost;
-
+    
     public $category;
-
+    
     public $products;
 
     /**

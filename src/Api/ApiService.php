@@ -50,7 +50,7 @@ final class ApiService
         add_filter(
             'rest_pre_serve_request',
             static function (bool $served, \WP_HTTP_Response $result, \WP_REST_Request $request, \WP_REST_Server $server): bool {
-                if (is_string($result->get_data()) && strpos($request->get_route(), 'comfino') !== false) {
+                if (is_string($result->get_data()) && strpos($request->get_route(), PaymentGateway::GATEWAY_ID) !== false) {
                     echo esc_html($result->get_data());
 
                     $served = true;
@@ -348,7 +348,7 @@ final class ApiService
     private static function registerWordPressApiEndpoint(string $endpointName, array $endpointCallbacks): string
     {
         register_rest_route(
-            'comfino',
+            PaymentGateway::GATEWAY_ID,
             self::$endpointUrls[$endpointName],
             array_map(
                 static function (array $endpointCallback): array {

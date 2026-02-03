@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Comfino\Common\Backend\Log;
 
-use ComfinoExternal\Monolog\Formatter\LineFormatter;
+use ComfinoExternal\Monolog\Logger;
 use ComfinoExternal\Monolog\Handler\RotatingFileHandler;
 use ComfinoExternal\Monolog\Handler\StreamHandler;
-use ComfinoExternal\Monolog\Logger;
+use ComfinoExternal\Monolog\Formatter\LineFormatter;
 use ComfinoExternal\Monolog\Processor\PsrLogMessageProcessor;
 
 final class LoggerFactory
@@ -31,8 +31,8 @@ final class LoggerFactory
             new LineFormatter(
                 "[%datetime%] [%level_name%] %message% %context%\n",
                 "Y-m-d H:i:s",
-                true,
-                true
+                true, 
+                true  
             )
         );
 
@@ -51,6 +51,7 @@ final class LoggerFactory
      * @param string $logFilePath
      * @param bool $enableSanitization
      * @return Logger
+     * @throws \Exception
      */
     public static function createErrorLogger(string $logFilePath, bool $enableSanitization = true): Logger
     {
@@ -89,7 +90,7 @@ final class LoggerFactory
      */
     public static function createSizeRotatingLogger(
         string $logFilePath,
-        int $maxFileSize = 10485760,
+        int $maxFileSize = 10485760, 
         int $maxFiles = 5,
         string $minLevel = 'debug',
         bool $enableSanitization = true
@@ -186,11 +187,11 @@ final class LoggerFactory
             return;
         }
 
-        if (!file_exists($htaccessPath = $logDir . '/.htaccess')) {
+        if (!file_exists($htaccessPath = $logDir . DIRECTORY_SEPARATOR . '.htaccess')) {
             file_put_contents($htaccessPath, "Order deny,allow\nDeny from all\n");
         }
 
-        if (!file_exists($indexPath = $logDir . '/index.php')) {
+        if (!file_exists($indexPath = $logDir . DIRECTORY_SEPARATOR . 'index.php')) {
             file_put_contents($indexPath, "<?php\n// Silence is golden.\n");
         }
     }

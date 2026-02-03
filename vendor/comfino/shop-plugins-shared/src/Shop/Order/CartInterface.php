@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Comfino\Shop\Order;
 
+use Comfino\Shop\Order\Cart\CartItemInterface;
+
 interface CartInterface
 {
     public function getItems(): array;

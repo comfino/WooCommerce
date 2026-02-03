@@ -6,6 +6,7 @@ namespace Comfino\Common\Backend\Payment\ProductTypeFilter;
 
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
 use Comfino\Common\Backend\Payment\ProductTypeFilterInterface;
+use Comfino\Common\Shop\Cart;
 
 class FilterByProductType implements ProductTypeFilterInterface
 {

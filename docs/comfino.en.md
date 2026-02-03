@@ -6,16 +6,15 @@ Download the latest version of the plugin from the website: https://github.com/c
 
 On-line version of the documentation: https://comfino.pl/plugins/WooCommerce/en
 
-Go to the `"Plugins"` tab, then click the `"Add new -> Upload plugin"` button. Select the appropriate module file. The plugin will install automatically.
+Go to the `"Plugins"` tab, then click the `"Add Plugin -> Upload plugin"` button. Select the appropriate module file. The plugin will install automatically.
 
 ![Installation](images/en/installation-1.png "Installation")
 ![Installation](images/en/installation-2.png "Installation")
-![Installation](images/en/installation-3.png "Installation")
 
 ## CONFIGURATION
 
 The configuration parameters of the module are grouped by categories corresponding to the tabs of the configuration panel: `"Payment settings"`, `"Sale settings"`, `"Widget settings"`, `"Abandoned cart settings"`, `"Developer settings"`.
-The last tab `"Plugin diagnostics"` does not contain any parameters to be set and has an information-diagnostic function. It contains, among other things, a local error log and a list of the plugin's internal operations recorded in debug mode (debug mode log).
+The last tab `"Plugin diagnostics"` does not contain any parameters to be set and has an information-diagnostic function. It contains, among other things, a local error log and a list of the plugin's internal operations recorded in debug mode (debug mode log), additionally includes plugin installation, update and uninstallation logs.
 
 Before using Comfino payments, the module must be configured. You can do this by clicking `"Settings"` in the module info panel.
 
@@ -26,10 +25,12 @@ Configuration parameter fields:
 
 **PAYMENT SETTINGS**
 
-* **Enable/Disable** - activity status of the Comfino module (visibility on the list of payment methods in the basket)
-* **Title** - text displayed on the list of payment methods (default `"Comfino"`)
+* **Enable/Disable** — activity status of the Comfino module (visibility on the list of payment methods in the basket)
 * **Production environment API key** — a unique access key that allows the module to communicate with the Comfino API (you will receive it from a Comfino representative)
-* **Show logo** - visibility status of the Comfino logo next to the title at the list of payment methods (default: enabled)
+* **Title** — text displayed on the list of payment methods (default `"Comfino"`)
+* **Minimal amount in cart** — amount above which the Comfino payment and widget will be displayed
+* **Show logo** — visibility status of the Comfino logo next to the title at the list of payment methods (default: enabled)
+* **Order number** — Use customer-visible order reference instead of numeric order ID for Comfino API integration. New orders only.
 
 ![Configuration](images/en/configuration1.png "Configuration")
 
@@ -41,15 +42,16 @@ Financial product availability rules (product category filters) enable Comfino p
 
 By default, Comfino payments are available unconditionally for all product types. To disable Comfino for selected product types, uncheck the appropriate categories in the category tree for each type of financial offer and click "Save".
 
-![Konfiguracja](images/en/configuration2.png "Konfiguracja")
+![Configuration](images/en/configuration2.png "Konfiguracja")
 
 **WIDGET SETTINGS**
 
 **Basic Settings**
 
 * **Widget enable** — promotional widget activation/deactivation switch on the product page
-* **Widget type** — way of presenting the widget [`Installment calculator`, `Extended calculator - products`]
+* **Widget type** — way of presenting the widget [`Standard widget`, `Classic widget`]
 * **Offer types** — types of financing offers promoted [`Zero percent installments`, `Convenient installments`, `Pay later`, `Installments for companies`, `Deferred payments for companies`, `Leasing`]
+* **Show logos** — switch enabling to display the logo of each available financial provider
 
 The availability of offer types on the list depends on the individual contract and may differ from that described in the documentation.
 
@@ -72,7 +74,7 @@ Detailed information on the operation of the widget and its configuration option
 
 **ABANDONED CART SETTINGS**
 
-![Konfiguracja](images/en/configuration4.png "Konfiguracja")
+![Configuration](images/en/configuration4.png "Konfiguracja")
 
 The "Abandoned cart rescue" feature allows you to minimize the problem of abandoned carts. When a customer adds products to the cart but abandons it, also due to an unsuccessful payment, they will automatically receive a reminder email with a direct link to the payment. This service allows you to effectively recover potential transactions and increase order conversions.
 
@@ -87,8 +89,7 @@ Debug mode is useful in case of problems with Comfino payment availability. In t
 
 Debug mode is useful in case of problems with Comfino payment availability. In this mode module logs details of internal process responsible for displaying of Comfino payment option at the payment methods list.
 
-![Configuration](images/en/configuration5a.png "Configuration")
-![Configuration](images/en/configuration5b.png "Configuration")
+![Configuration](images/en/configuration5.png "Configuration")
 
 **Note**
 
@@ -97,9 +98,45 @@ Before launching payments on the production store, disable developer mode to blo
 **PLUGIN DIAGNOSTICS**
 
 The tab contains technical information about the plugin and the environment (plugin version, store version, PHP and web server version, etc.).\
-It also contains a list of recent errors with a preview of the local error log and a list of the plugin's internal operations recorded in debug mode (debug mode log).
 
-![Configuration](images/en/configuration6.png "Configuration")
+![Configuration](images/en/configuration6a.png "Configuration")
+
+It also contains a list of recent errors with a preview of the local error log and a list of the plugin's internal operations recorded in debug mode (debug mode log).
+There is also an option to clear the error log as well as the list of internal operations in debug mode.
+
+![Configuration](images/en/configuration6b.png "Configuration")
+
+The **Plugin reset** section allows you to restore the module to its initial configuration without losing any data or individual business settings.\
+The reset operation performs the following actions:
+* Adds missing configuration options – supplements the configuration with missing settings while retaining existing values.
+* Clears the module cache – clears the cache, eliminating issues resulting from outdated data.
+
+**Note**: Resetting the plugin does not delete existing configuration or data (e.g., settings).
+
+To perform a reset, click the "Reset plugin" button.
+
+![Configuration](images/en/configuration6b1.png "Konfiguracja")
+![Configuration](images/en/configuration6b2.png "Konfiguracja")
+
+This tab also contains a record of operations performed during module installation, update and uninstallation.
+
+**When to view logs:**
+
+Installation log:
+* **After initial plugin installation – verifying correct configuration**
+
+Update log:
+* **After updating the plugin to a newer version**
+* **When unexpected errors occur after updating**
+
+Uninstallation log:
+* **After uninstallation – verifying that the process completed correctly**
+
+![Configuration](images/en/configuration6c.png "Konfiguracja")
+
+Information about developer mode activity is displayed in the tabs `"PAYMENT SETTINGS"` and `"PLUGIN DIAGNOSTICS"`.
+In this mode, the plugin uses the key from the `"DEVELOPER SETTINGS"` tab to communicate with the Comfino test API. You will also receive a test environment key from a Comfino representative.
+
 
 ## REMARKS
 

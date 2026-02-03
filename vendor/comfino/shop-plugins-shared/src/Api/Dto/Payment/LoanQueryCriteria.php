@@ -7,13 +7,13 @@ namespace Comfino\Api\Dto\Payment;
 class LoanQueryCriteria
 {
     public $loanAmount;
-
+    
     public $loanTerm;
-
+    
     public $loanType;
-
+    
     public $productTypes;
-
+    
     public $taxId;
 
     /**

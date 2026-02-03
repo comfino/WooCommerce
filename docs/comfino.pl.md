@@ -6,15 +6,14 @@ Pobierz najnowszą wersję wtyczki ze strony: https://github.com/comfino/WooComm
 
 Wersja on-line dokumentacji: https://comfino.pl/plugins/WooCommerce/pl
 
-Przejdź do zakładki `"Wtyczki"`, następnie kliknij przycisk `"Dodaj nową -> Wyślij wtyczkę na serwer"`. Należy wybrać odpowiedni plik z modułem. Wtyczka zainstaluje się automatycznie.
+Przejdź do zakładki `"Wtyczki"`, następnie kliknij przycisk `"Dodaj wtyczkę -> Wyślij wtyczkę na serwer"`. Należy wybrać odpowiedni plik z modułem. Wtyczka zainstaluje się automatycznie.
 
 ![Instalacja](images/pl/installation-1.png "Instalacja")
 ![Instalacja](images/pl/installation-2.png "Instalacja")
-![Instalacja](images/pl/installation-3.png "Instalacja")
 
 ## KONFIGURACJA
 Parametry konfiguracyjne modułu są pogrupowane kategoriami odpowiadającymi zakładkom panelu konfiguracyjnego: `"Ustawienia płatności"`, `"Ustawienia sprzedaży"`, `"Ustawienia widgetu"`, `"Ustawienia ratowania koszyków"`, `"Ustawienia deweloperskie"`.
-Ostatnia zakładka `"Diagnostyka wtyczki"` nie zawiera żadnych parametrów do ustawienia i pełni funkcję informacyjno-diagnostyczną. Zawiera między innymi lokalny dziennik błędów (log błędów) oraz listę z zapisanymi w trybie debug operacjami wewnętrznymi wtyczki (log trybu debugowania).
+Ostatnia zakładka `"Diagnostyka wtyczki"` nie zawiera żadnych parametrów do ustawienia i pełni funkcję informacyjno-diagnostyczną. Zawiera między innymi lokalny dziennik błędów (log błędów), listę z zapisanymi w trybie debug operacjami wewnętrznymi wtyczki (log trybu debugowania) oraz logi instalacji, aktualizacji i dezinstalacji wtyczki.
 
 Przed użyciem płatności Comfino, moduł musi zostać skonfigurowany. Możesz to zrobić, klikając `"Ustawienia"` w panelu informacyjnym modułu.
 
@@ -26,9 +25,11 @@ Pola parametrów konfiguracyjnych:
 **USTAWIENIA PŁATNOŚCI**
 
 * **Włączony/Wyłączony** — status aktywności modułu Comfino (widoczność na liście metod płatności w koszyku)
-* **Tytuł** — tekst wyświetlany na liście metod płatności (domyślnie `"Comfino"`)
 * **Klucz API środowiska produkcyjnego** — unikalny klucz dostępowy umożliwiający komunikację modułu z API Comfino (otrzymasz go od przedstawiciela Comfino)
+* **Tytuł** — tekst wyświetlany na liście metod płatności (domyślnie `"Comfino"`)
+* **Minimalna kwota w koszyku** — kwota, powyżej której będzie wyświetlana płatność i widget Comfino
 * **Wyświetlanie logo** — status widoczności logo Comfino obok tytułu na liście metod płatności (domyślnie: włączone)
+* **Numer zamówienia** — Używaj numeru zamówienia widocznego dla klienta zamiast numerycznego ID zamówienia w komunikacji z API Comfino. Dotyczy tylko nowych zamówień.
 
 ![Konfiguracja](images/pl/configuration1.png "Konfiguracja")
 
@@ -47,8 +48,9 @@ Domyślnie płatności Comfino są dostępne bezwarunkowo dla wszystkich typów 
 **Ustawienia podstawowe**
 
 * **Widget włączony** — przełącznik aktywacji/deaktywacji widgetu promocyjnego na stronie produktu
-* **Typ widgetu** — sposób prezentacji widgetu [`Kalkulator rat`, `Rozszerzony kalkulator - produkty`]
+* **Typ widgetu** — sposób prezentacji widgetu [`Widget standardowy`, `Widget klasyczny`]
 * **Typy ofert** — typy promowanych ofert finansowania [`Raty zero procent`, `Niskie raty`, `Zapłać później`, `Raty dla firm`, `Odroczone płatności dla firm`, `Leasing`]
+* **Wyświetlanie logotypów** — przełącznik umożliwiający pokazanie loga każdego z dostępnych dostawców finansowych
 
 Dostępność typów ofert na liście jest uzależniona od indywidualnej umowy i może różnić się od tej opisanej w dokumentacji.
 
@@ -86,8 +88,7 @@ Tryb debugowania przydaje się w przypadku problemów z dostępnością płatno�
 
 Tryb serwisowy jest przydatny do testowania bramki płatniczej Comfino bez konieczności udostępniania jej klientom. W tym trybie metoda płatności Comfino widoczna jest tylko dla wybranych sesji, a logi debugowania są zbierane wyłącznie dla tych sesji.
 
-![Konfiguracja](images/pl/configuration5a.png "Konfiguracja")
-![Konfiguracja](images/pl/configuration5b.png "Konfiguracja")
+![Konfiguracja](images/pl/configuration5.png "Konfiguracja")
 
 **Uwaga**
 
@@ -96,10 +97,44 @@ Przed uruchomieniem płatności na sklepie produkcyjnym, wyłącz tryb deweloper
 **DIAGNOSTYKA WTYCZKI**
 
 Zakładka zawiera informacje techniczne o wtyczce i środowisku (wersja wtyczki, wersja sklepu, wersja PHP i serwera www, itp.).\
-Zawiera też listę ostatnich błędów wraz z podglądem lokalnego dziennika błędów (log błędów) oraz listę z zapisanymi w trybie debug operacjami wewnętrznymi wtyczki (log trybu debugowania).
 
 ![Konfiguracja](images/pl/configuration6a.png "Konfiguracja")
+
+Zawiera też listę ostatnich błędów wraz z podglądem lokalnego dziennika błędów (log błędów) oraz listę z zapisanymi w trybie debug operacjami wewnętrznymi wtyczki (log trybu debugowania).
+Jest również opcja wyczyszczenia dziennika błędów, jak i listy operacji wewnętrznych w trybie debug.
+
 ![Konfiguracja](images/pl/configuration6b.png "Konfiguracja")
+
+Sekcja **Reset wtyczki** służy do przywrócenia wtyczki do stanu początkowej konfiguracji bez utraty danych ani indywidualnych ustawień biznesowych.\
+Operacja resetu wykonuje następujące czynności:
+* Dodaje brakujące opcje konfiguracyjne – uzupełnia konfigurację o brakujące ustawienia, zachowując już istniejące wartości.
+* Czyści pamięć podręczną modułu – usuwa cache, co pozwala wyeliminować problemy wynikające z nieaktualnych danych.
+
+**Uwaga**: Reset wtyczki nie usuwa istniejącej konfiguracji ani danych (np. ustawień).
+
+Aby wykonać reset, należy użyć przycisku „Zresetuj wtyczkę”.
+
+![Konfiguracja](images/pl/configuration6b1.png "Konfiguracja")
+![Konfiguracja](images/pl/configuration6b2.png "Konfiguracja")
+
+Zakładka zawiera dodatkowo zapis operacji wykonanych podczas instalacji, aktualizacji i dezinstalacji wtyczki.
+
+**Kiedy przeglądać logi:**
+
+Log instalacyjny:
+* **Po pierwszej instalacji wtyczki – weryfikacja poprawnej konfiguracji**
+
+Log aktualizacji:
+* **Po aktualizacji wtyczki do nowszej wersji**
+* **Gdy po aktualizacji pojawiają się nieoczekiwane błędy**
+
+Log dezinstalacji:
+* **Po odinstalowaniu – weryfikacja, czy proces zakończył się prawidłowo**
+
+![Konfiguracja](images/pl/configuration6c.png "Konfiguracja")
+
+Informacja o aktywności trybu deweloperskiego jest wyświetlana w zakładkach `"USTAWIENIA PŁATNOŚCI"` i `"DIAGNOSTYKA WTYCZKI"`.
+W trybie tym wtyczka używa klucza z zakładki `"USTAWIENIA DEWELOPERSKIE"` do komunikacji z testowym API Comfino. Klucz środowiska testowego również otrzymasz od przedstawiciela Comfino.
 
 ## UWAGI
 

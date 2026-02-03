@@ -12,21 +12,21 @@ use Comfino\Api\Dto\Payment\LoanTypeEnum;
 class GetOrder extends Base
 {
     public $orderId;
-
+    
     public $status;
-
+    
     public $createdAt;
-
+    
     public $applicationUrl;
-
+    
     public $notifyUrl;
-
+    
     public $returnUrl;
-
+    
     public $loanParameters;
-
+    
     public $cart;
-
+    
     public $customer;
 
     /**
@@ -45,7 +45,7 @@ class GetOrder extends Base
 
         try {
             $createdAt = new \DateTime($deserializedResponseBody['createdAt']);
-        } catch (\Exception $exception) {
+        } catch (\Exception $exception)  {
             $createdAt = null;
         }
 
@@ -67,7 +67,7 @@ class GetOrder extends Base
             $deserializedResponseBody['loanParameters']['term'],
             LoanTypeEnum::from($deserializedResponseBody['loanParameters']['type']),
             $deserializedResponseBody['loanParameters']['allowedProductTypes'] !== null ? array_map(
-                static function (string $productType): LoanTypeEnum {
+                static function (string $productType) : LoanTypeEnum {
                     return LoanTypeEnum::from($productType);
                 },
                 $deserializedResponseBody['loanParameters']['allowedProductTypes']

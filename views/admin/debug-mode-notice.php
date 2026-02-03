@@ -5,8 +5,8 @@
  * Displayed to administrators when debug mode is enabled.
  * Warns about potential performance impact and production use.
  *
- * @var string $settings_url URL to plugin settings page.
- * @var string $nonce_value Nonce for AJAX dismissal action.
+ * @var string $settings_url URL to plugin settings page
+ * @var string $nonce_value Nonce for AJAX dismissal action
  */
 
 if (!defined('ABSPATH')) {

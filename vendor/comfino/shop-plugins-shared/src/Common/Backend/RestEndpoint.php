@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Comfino\Common\Backend;
 
 use Comfino\Api\SerializerInterface;
+use Comfino\Common\Exception\InvalidEndpoint;
+use Comfino\Common\Exception\InvalidRequest;
 use ComfinoExternal\Psr\Http\Message\ServerRequestInterface;
 
 abstract class RestEndpoint implements RestEndpointInterface
@@ -12,11 +14,11 @@ abstract class RestEndpoint implements RestEndpointInterface
     /**
      * @var string
      */
-    private $name;
+    protected $name;
     /**
      * @var string
      */
-    private $endpointUrl;
+    protected $endpointUrl;
     /**
      * @var string[]
      */
@@ -107,6 +109,37 @@ abstract class RestEndpoint implements RestEndpointInterface
 
         if (strtoupper($serverRequest->getMethod()) === 'POST') {
             return $serverRequest->getParsedBody();
+        }
+
+        return $requestPayload;
+    }
+
+    /**
+     * @param \ComfinoExternal\Psr\Http\Message\ServerRequestInterface $serverRequest
+     * @param string|null $endpointName
+     */
+    public function processRequest($serverRequest, $endpointName = null): ?array
+    {
+        if (!$this->endpointPathMatch($serverRequest, $endpointName)) {
+            throw new InvalidEndpoint('Endpoint path does not match request path.');
+        }
+
+        try {
+            if (!is_array($requestPayload = $this->getParsedRequestBody($serverRequest))) {
+                throw new InvalidRequest(
+                    (string) $serverRequest->getUri(),
+                    $serverRequest->getBody()->getContents(),
+                    'Invalid request payload.'
+                );
+            }
+        } catch (\JsonException $e) {
+            throw new InvalidRequest(
+                (string) $serverRequest->getUri(),
+                $serverRequest->getBody()->getContents(),
+                sprintf('Invalid request payload: %s', $e->getMessage()),
+                $e->getCode(),
+                $e
+            );
         }
 
         return $requestPayload;

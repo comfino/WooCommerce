@@ -9,13 +9,13 @@ use Comfino\Api\Dto\Payment\LoanTypeEnum;
 class LoanParameters
 {
     public $amount;
-
+    
     public $maxAmount;
-
+    
     public $term;
-
+    
     public $type;
-
+    
     public $allowedProductTypes;
 
     /**

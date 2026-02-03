@@ -8,6 +8,8 @@ use Comfino\Api\Exception\AccessDenied;
 use Comfino\Api\Exception\AuthorizationError;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
+use Comfino\DebugLogger;
+use Comfino\ErrorLogger;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Main;
 use Comfino\PluginShared\CacheManager;
@@ -23,6 +25,20 @@ final class SettingsForm
     public const COMFINO_SUPPORT_EMAIL = 'pomoc@comfino.pl';
     public const COMFINO_SUPPORT_PHONE = '887-106-027';
 
+    /**
+     * Processes form submission from plugin configuration page.
+     *
+     * Handles various form submissions including:
+     * - Plugin diagnostics actions (module reset, log clearing).
+     * - Configuration updates for all settings tabs.
+     * - API key validation and widget key retrieval.
+     *
+     * @param string $activeTab Active tab identifier
+     * @param array $configurationOptionsToSave Configuration options to save
+     * @param array $postData Posted form data
+     *
+     * @return array Processing result with success status and error messages
+     */
     public static function processForm(string $activeTab, array $configurationOptionsToSave, array $postData): array
     {
         $errorMessages = [];
@@ -220,6 +236,28 @@ final class SettingsForm
 
                 $configurationOptionsToSave['COMFINO_WIDGET_KEY'] = $widgetKey;
                 break;
+
+            case 'plugin_diagnostics':
+                // Handle diagnostics tab button submissions. These are handled separately and don't update configuration.
+                if (isset($postData['submit_module_reset'])) {
+                    // Module reset is handled separately via session data. The actual reset is triggered and results are stored for display.
+                    return ['success' => true, 'errorMessages' => []];
+                }
+
+                if (isset($postData['submit_clear_error_log'])) {
+                    ErrorLogger::clearLogs();
+
+                    return ['success' => true, 'errorMessages' => [], 'log_cleared' => 'error'];
+                }
+
+                if (isset($postData['submit_clear_debug_log'])) {
+                    DebugLogger::clearLogs();
+
+                    return ['success' => true, 'errorMessages' => [], 'log_cleared' => 'debug'];
+                }
+
+                // No action buttons pressed - just viewing the diagnostics page.
+                return ['success' => true, 'errorMessages' => []];
         }
 
         if (!$widgetKeyError && count($errorMessages)) {
@@ -240,6 +278,20 @@ final class SettingsForm
         return ['success' => $success, 'errorMessages' => $errorMessages];
     }
 
+    /**
+     * Generates form fields configuration for plugin settings.
+     *
+     * Builds form field definitions for different configuration tabs:
+     * - payment_settings: API key, payment text, minimal cart amount, logo display
+     * - sale_settings: Product category filters for financial products
+     * - widget_settings: Widget configuration and appearance options
+     * - abandoned_cart_settings: Abandoned cart reminder settings
+     * - developer_settings: Sandbox mode, debug mode, service mode
+     *
+     * @param string|null $activeTab Active tab identifier (null returns all fields)
+     *
+     * @return array Form fields configuration for WooCommerce form rendering
+     */
     public static function getFormFields(?string $activeTab = null): array
     {
         if (empty($activeTab)) {
@@ -252,7 +304,7 @@ final class SettingsForm
             case 'payment_settings':
                 $formFields = array_intersect_key(
                     self::getFormFieldsDefinitions(),
-                    array_flip(['enabled', 'production_key', 'title', 'min_cart_amount', 'show_logo'])
+                    array_flip(['enabled', 'production_key', 'title', 'min_cart_amount', 'show_logo', 'use_order_reference'])
                 );
                 break;
 
@@ -320,7 +372,13 @@ final class SettingsForm
     }
 
     /**
-     * @param int[] $selectedCategories
+     * Renders product category tree for filtering.
+     *
+     * @param string $treeId Tree element ID
+     * @param string $productType Product type code
+     * @param int[] $selectedCategories Selected category IDs
+     *
+     * @return string Rendered HTML for category tree
      */
     public static function renderCategoryTree(string $treeId, string $productType, array $selectedCategories): string
     {
@@ -338,7 +396,11 @@ final class SettingsForm
     }
 
     /**
-     * @param int[] $selectedCategories
+     * Builds hierarchical category tree structure.
+     *
+     * @param int[] $selectedCategories Selected category IDs
+     *
+     * @return array Tree structure for JavaScript tree component
      */
     private static function buildCategoriesTree(array $selectedCategories): array
     {
@@ -350,7 +412,13 @@ final class SettingsForm
     }
 
     /**
-     * @param \WP_Term[] $treeNodes
+     * Recursively processes category nodes into tree structure.
+     *
+     * @param \WP_Term[] $treeNodes WooCommerce category terms
+     * @param int[] $selectedNodes Selected category IDs
+     * @param int $parentId Parent category ID for current level
+     *
+     * @return array Processed tree nodes with children
      */
     private static function processTreeNodes(array $treeNodes, array $selectedNodes, int $parentId): array
     {
@@ -374,6 +442,17 @@ final class SettingsForm
         return $categoryTree;
     }
 
+    /**
+     * Returns complete form field definitions for all configuration tabs.
+     *
+     * Defines all available form fields with their properties including:
+     * - Field type (checkbox, text, textarea, select, etc.)
+     * - Labels and descriptions
+     * - Default values
+     * - Validation rules
+     *
+     * @return array Complete form field definitions
+     */
     private static function getFormFieldsDefinitions(): array
     {
         $fieldDefinitions = [
@@ -383,6 +462,11 @@ final class SettingsForm
                 'label' => __('Enable Comfino payment module', 'comfino-payment-gateway'),
                 'default' => ConfigManager::getDefaultValue('enabled') === true ? 'yes' : 'no',
                 'description' => __('Shows Comfino payment option at the payment list.', 'comfino-payment-gateway'),
+            ],
+            'production_key' => [
+                'title' => __('Production environment API key', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'placeholder' => __('Please enter the key provided during registration', 'comfino-payment-gateway'),
             ],
             'title' => [
                 'title' => __('Title', 'comfino-payment-gateway'),
@@ -394,16 +478,21 @@ final class SettingsForm
                 'type' => 'text',
                 'default' => (string) ConfigManager::getDefaultValue('min_cart_amount'),
             ],
-            'production_key' => [
-                'title' => __('Production environment API key', 'comfino-payment-gateway'),
-                'type' => 'text',
-                'placeholder' => __('Please enter the key provided during registration', 'comfino-payment-gateway'),
-            ],
             'show_logo' => [
                 'title' => __('Show logo', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
                 'label' => __('Show logo on payment method', 'comfino-payment-gateway'),
                 'default' => ConfigManager::getDefaultValue('show_logo') === true ? 'yes' : 'no',
+            ],
+            'use_order_reference' => [
+                'title' => __('Order number', 'comfino-payment-gateway'),
+                'type' => 'checkbox',
+                'label' => __('Use order reference as external ID', 'comfino-payment-gateway'),
+                'default' => ConfigManager::getDefaultValue('use_order_reference') === true ? 'yes' : 'no',
+                'description' => __(
+                    'Use customer-visible order reference instead of numeric order ID for Comfino API integration. New orders only.',
+                    'comfino-payment-gateway'
+                ),
             ],
             'sandbox_mode' => [
                 'title' => __('Test environment', 'comfino-payment-gateway'),

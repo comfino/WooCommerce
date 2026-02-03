@@ -10,7 +10,6 @@ use Comfino\Shop\Order\OrderInterface;
 
 class CreateOrder extends Request
 {
-    use CartTrait;
     /**
      * @var OrderInterface
      */
@@ -19,6 +18,7 @@ class CreateOrder extends Request
      * @var bool
      */
     private $validateOnly = false;
+    use CartTrait;
 
     /**
      * @var mixed[]|null
@@ -58,7 +58,7 @@ class CreateOrder extends Request
 
         $this->preparedRequestBody = array_filter(
             [
-
+                
                 'notifyUrl' => $this->order->getNotifyUrl(),
                 'returnUrl' => $this->order->getReturnUrl(),
                 'orderId' => $this->order->getId(),
@@ -70,7 +70,7 @@ class CreateOrder extends Request
                         'type' => $this->order->getLoanParameters()->getType(),
                         'allowedProductTypes' => $this->order->getLoanParameters()->getAllowedProductTypes(),
                     ],
-                    static function ($value): bool {
+                    static function ($value) : bool {
                         return $value !== null;
                     }
                 ),
@@ -98,13 +98,13 @@ class CreateOrder extends Request
                                     'city' => ($nullsafeVariable5 = $customer->getAddress()) ? $nullsafeVariable5->getCity() : null,
                                     'countryCode' => ($nullsafeVariable6 = $customer->getAddress()) ? $nullsafeVariable6->getCountryCode() : null,
                                 ],
-                                static function ($value): bool {
+                                static function ($value) : bool {
                                     return $value !== null;
                                 }
                             )
                         ) ? $address : null,
                     ],
-                    static function ($value): bool {
+                    static function ($value) : bool {
                         return $value !== null;
                     }
                 ),
@@ -112,7 +112,7 @@ class CreateOrder extends Request
                 'seller' => count(
                     $seller = array_filter(
                         ['taxId' => ($nullsafeVariable7 = $this->order->getSeller()) ? $nullsafeVariable7->getTaxId() : null],
-                        static function ($value): bool {
+                        static function ($value) : bool {
                             return $value !== null;
                         }
                     )
@@ -122,7 +122,7 @@ class CreateOrder extends Request
                 'transferTitle' => $this->order->getTransferTitle(),
                 'simulation' => $this->validateOnly ?: null,
             ],
-            static function ($value): bool {
+            static function ($value) : bool {
                 return $value !== null;
             }
         );

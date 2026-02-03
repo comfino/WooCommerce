@@ -30,6 +30,7 @@ final class ConfigManager
         'COMFINO_PAYMENT_TEXT' => 'title',
         'COMFINO_MINIMAL_CART_AMOUNT' => 'min_cart_amount',
         'COMFINO_SHOW_LOGO' => 'show_logo',
+        'COMFINO_USE_ORDER_REFERENCE' => 'use_order_reference',
         'COMFINO_IS_SANDBOX' => 'sandbox_mode',
         'COMFINO_DEBUG' => 'debug_mode',
         'COMFINO_SERVICE_MODE' => 'service_mode',
@@ -74,6 +75,7 @@ final class ConfigManager
             'COMFINO_PAYMENT_TEXT' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_MINIMAL_CART_AMOUNT' => ConfigurationManager::OPT_VALUE_TYPE_FLOAT,
             'COMFINO_SHOW_LOGO' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
+            'COMFINO_USE_ORDER_REFERENCE' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
         ],
         'sale_settings' => [
             'COMFINO_PRODUCT_CATEGORY_FILTERS' => ConfigurationManager::OPT_VALUE_TYPE_JSON,
@@ -127,6 +129,7 @@ final class ConfigManager
         'COMFINO_PAYMENT_TEXT',
         'COMFINO_SHOW_LOGO',
         'COMFINO_MINIMAL_CART_AMOUNT',
+        'COMFINO_USE_ORDER_REFERENCE',
         'COMFINO_IS_SANDBOX',
         'COMFINO_DEBUG',
         'COMFINO_SERVICE_MODE',
@@ -413,11 +416,62 @@ final class ConfigManager
 
     public static function initConfigurationValues(array $configurationOptions): void
     {
-        foreach ($configurationOptions as $optionName => $optionValue) {
-            if (self::getConfigurationValue($optionName) === null) {
-                self::updateConfigurationValue($optionName, $optionValue);
+        self::updateConfiguration(
+            array_filter(
+                $configurationOptions,
+                static function ($optionName) { return self::getConfigurationValue($optionName) === null; },
+                ARRAY_FILTER_USE_KEY
+            ),
+            false
+        );
+    }
+
+    /**
+     * Repairs missing configuration options by adding them with default values.
+     * Does not overwrite existing options - only creates missing ones.
+     *
+     * @return array Statistics about the repair operation with keys:
+     *               - 'checked': Total number of options checked.
+     *               - 'missing': Number of missing options found.
+     *               - 'repaired': Number of options successfully repaired.
+     *               - 'failed': Number of options that failed to repair.
+     *               - 'options_repaired': Array of option names that were repaired.
+     *               - 'options_failed': Array of option names that failed to repair
+     */
+    public static function repairMissingConfigurationOptions(): array
+    {
+        $resultStats = [
+            'checked' => 0,
+            'missing' => 0,
+            'repaired' => 0,
+            'failed' => 0,
+            'options_repaired' => [],
+            'options_failed' => [],
+        ];
+
+        $defaultValues = self::getDefaultConfigurationValues();
+        $optionsToInit = [];
+
+        foreach ($defaultValues as $optName => $optValue) {
+            $resultStats['checked']++;
+
+            if (self::getConfigurationValue($optName) === null) {
+                $resultStats['missing']++;
+                $optionsToInit[$optName] = $optValue;
             }
         }
+
+        try {
+            self::updateConfiguration($optionsToInit, false);
+
+            $resultStats['repaired'] = count($optionsToInit);
+            $resultStats['options_repaired'] = array_merge($resultStats['options_repaired'], array_keys($optionsToInit));
+        } catch (\Throwable $e) {
+            $resultStats['failed'] = count($optionsToInit);
+            $resultStats['options_failed'] = array_merge($resultStats['options_failed'], array_keys($optionsToInit));
+        }
+
+        return $resultStats;
     }
 
     public static function updateConfigurationValue(string $optionName, $optionValue): void
@@ -460,7 +514,7 @@ final class ConfigManager
             ErrorLogger::sendError(
                 $e,
                 'Widget code update',
-                $e->getCode(),
+                (string) $e->getCode(),
                 $e->getMessage(),
                 null,
                 null,
@@ -566,6 +620,7 @@ final class ConfigManager
             'COMFINO_PAYMENT_TEXT' => 'Comfino',
             'COMFINO_SHOW_LOGO' => true,
             'COMFINO_MINIMAL_CART_AMOUNT' => 30,
+            'COMFINO_USE_ORDER_REFERENCE' => false,
             'COMFINO_IS_SANDBOX' => false,
             'COMFINO_DEBUG' => false,
             'COMFINO_SERVICE_MODE' => false,

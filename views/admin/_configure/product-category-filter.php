@@ -1,15 +1,21 @@
 <?php
+/**
+ * Template for product category filter tree.
+ *
+ * Displays an interactive category tree for filtering products by type.
+ * Uses Tree.js library for tree rendering and selection.
+ *
+ * @see https://github.com/daweilv/treejs
+ *
+ * @var string $tree_id Tree element ID
+ * @var string $product_type Product type code
+ * @var array $tree_nodes Tree structure data
+ * @var int $close_depth Initial depth for closed nodes
+ */
 
 if (!defined('ABSPATH')) {
     exit;
 }
-
-/** @see https://github.com/daweilv/treejs */
-
-/** @var string $tree_id */
-/** @var string $product_type */
-/** @var array $tree_nodes */
-/** @var int $close_depth */
 ?>
 <div id="<?php echo esc_attr($tree_id); ?>_<?php echo esc_attr($product_type); ?>"></div>
 <input id="<?php echo esc_attr($tree_id); ?>_<?php echo esc_attr($product_type); ?>_input" name="<?php echo esc_attr($tree_id); ?>[<?php echo esc_attr($product_type); ?>]" type="hidden" data-initialized="no" />

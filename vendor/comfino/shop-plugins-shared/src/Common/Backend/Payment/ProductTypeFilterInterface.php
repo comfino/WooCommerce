@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Comfino\Common\Backend\Payment;
 
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
+use Comfino\Common\Shop\Cart;
 
 interface ProductTypeFilterInterface
 {

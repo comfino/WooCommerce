@@ -15,7 +15,7 @@ final class ProductTypeTools
     public static function getAsEnums(array $productTypes): array
     {
         return array_map(
-            static function (string $productType): LoanTypeEnum {
+            static function (string $productType) : LoanTypeEnum {
                 return LoanTypeEnum::from($productType);
             },
             $productTypes

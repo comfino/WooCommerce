@@ -4,6 +4,7 @@ namespace Comfino\Configuration;
 
 use Comfino\Common\Backend\Configuration\StorageAdapterInterface;
 use Comfino\Common\Backend\ConfigurationManager;
+use Comfino\PaymentGateway;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -16,7 +17,7 @@ class StorageAdapter extends \WC_Payment_Gateway implements StorageAdapterInterf
 
     public function __construct()
     {
-        $this->id = 'comfino';
+        $this->id = PaymentGateway::GATEWAY_ID;
         $this->optTypeFlags = array_merge(array_merge(...array_values(ConfigManager::CONFIG_OPTIONS)));
     }
 

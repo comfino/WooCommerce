@@ -20,11 +20,15 @@ use Comfino\View\FrontendManager;
 use Comfino\View\SettingsForm;
 use Comfino\View\TemplateManager;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
-    public const VERSION = '4.2.6';
-    public const BUILD_TS = 1765965552;
+    public const VERSION = '4.2.7';
+    public const BUILD_TS = 1769345926;
     public const WIDGET_INIT_SCRIPT_HASH = '0603f4e0904fd65e2aef1aded0c57c40';
     public const WIDGET_INIT_SCRIPT_LAST_HASH = '55e4306bb493ff6f99b2f8f617e18038';
 
@@ -45,7 +49,7 @@ class PaymentGateway extends \WC_Payment_Gateway
         $this->supports = ['products'];
         $this->title = $this->get_option('title');
 
-        if (is_admin() && strpos(Main::getCurrentUrl(), 'comfino') === false && strpos(Main::getCurrentUrl(), 'wc-orders') === false) {
+        if (is_admin() && strpos(Main::getCurrentUrl(), $this->id) === false && strpos(Main::getCurrentUrl(), 'wc-orders') === false) {
             return;
         }
 
@@ -67,15 +71,15 @@ class PaymentGateway extends \WC_Payment_Gateway
                     $order = wc_get_order(absint(get_query_var('order-pay')));
 
                     if ($order instanceof \WC_Order && $order->has_status('failed')) {
-                        if (ConfigManager::getConfigurationValue('COMFINO_ABANDONED_PAYMENTS') === 'comfino') {
+                        if (ConfigManager::getConfigurationValue('COMFINO_ABANDONED_PAYMENTS') === PaymentGateway::GATEWAY_ID) {
                             foreach ($gateways as $name => $gateway) {
-                                if ($name !== 'comfino') {
+                                if ($name !== PaymentGateway::GATEWAY_ID) {
                                     unset($gateways[$name]);
                                 }
                             }
                         } else {
                             foreach ($gateways as $name => $gateway) {
-                                if ($name !== 'comfino') {
+                                if ($name !== PaymentGateway::GATEWAY_ID) {
                                     $gateway->chosen = false;
                                 } else {
                                     $gateway->chosen = true;
@@ -124,7 +128,25 @@ class PaymentGateway extends \WC_Payment_Gateway
             ['cart_id' => $cart->get_cart_hash(), '$order_id' => $order_id, '$_POST' => $_POST]
         );
 
-        $orderId = (string) $order_id;
+        $wcOrder = wc_get_order($order_id);
+
+        // Get order ID or reference based on configuration.
+        if ($useOrderReference = ConfigManager::getConfigurationValue('COMFINO_USE_ORDER_REFERENCE', false)) {
+            $orderId = !empty($wcOrder->get_order_number()) ? $wcOrder->get_order_number() : (string) $order_id;
+        } else {
+            $orderId = (string) $order_id;
+        }
+
+        DebugLogger::logEvent(
+            '[PAYMENT]',
+            'Order identifier for Comfino API',
+            [
+                'use_reference' => $useOrderReference,
+                'order_id' => $orderId,
+                'reference' => $wcOrder->get_order_number() ?? 'not_set',
+            ]
+        );
+
         $initLoanAmount = (int) filter_var(sanitize_text_field(wp_unslash($_POST['comfino_loan_amount'] ?? '0')), FILTER_VALIDATE_INT);
         $priceModifier = (int) filter_var(sanitize_text_field(wp_unslash($_POST['comfino_price_modifier'] ?? '0')), FILTER_VALIDATE_INT);
         $loanType = sanitize_text_field(wp_unslash($_POST['comfino_loan_type'] ?? 'undefined'));
@@ -138,7 +160,6 @@ class PaymentGateway extends \WC_Payment_Gateway
             return ['result' => 'failure', 'redirect' => ''];
         }
 
-        $wcOrder = wc_get_order($order_id);
         $shopCustomer = OrderManager::getShopCustomerFromOrder($wcOrder);
         $returnUrl = $this->get_return_url($wcOrder);
 

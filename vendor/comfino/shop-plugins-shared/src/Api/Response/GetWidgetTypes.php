@@ -9,7 +9,7 @@ use Comfino\Widget\WidgetTypeEnum;
 class GetWidgetTypes extends Base
 {
     public $widgetTypes;
-
+    
     public $widgetTypesWithNames;
 
     /**
@@ -21,7 +21,7 @@ class GetWidgetTypes extends Base
 
         $this->widgetTypesWithNames = $deserializedResponseBody;
         $this->widgetTypes = array_map(
-            static function (string $widgetType): WidgetTypeEnum {
+            static function (string $widgetType) : WidgetTypeEnum {
                 return WidgetTypeEnum::from($widgetType, false);
             },
             array_keys($deserializedResponseBody)

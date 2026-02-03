@@ -54,7 +54,7 @@ class WidgetInitScriptHelper
         return str_replace(
             array_merge(
                 array_map(
-                    static function (string $widgetInitParamName): string {
+                    static function (string $widgetInitParamName) : string {
                         return '{' . $widgetInitParamName . '}';
                     },
                     array_merge(self::WIDGET_INIT_PARAMS, array_keys($widgetInitVariables))

@@ -9,21 +9,21 @@ use Comfino\Api\Dto\Order\Customer\Address;
 class Customer
 {
     public $firstName;
-
+    
     public $lastName;
-
+    
     public $email;
-
+    
     public $phoneNumber;
-
+    
     public $ip;
-
+    
     public $taxId;
-
+    
     public $regular;
-
+    
     public $logged;
-
+    
     public $address;
 
     /**

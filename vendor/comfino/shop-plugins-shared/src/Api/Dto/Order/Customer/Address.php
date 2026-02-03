@@ -7,15 +7,15 @@ namespace Comfino\Api\Dto\Order\Customer;
 class Address
 {
     public $street;
-
+    
     public $buildingNumber;
-
+    
     public $apartmentNumber;
-
+    
     public $postalCode;
-
+    
     public $city;
-
+    
     public $countryCode;
 
     /**

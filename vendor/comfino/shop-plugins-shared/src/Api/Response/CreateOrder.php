@@ -7,9 +7,9 @@ namespace Comfino\Api\Response;
 class CreateOrder extends Base
 {
     public $status;
-
+    
     public $externalId;
-
+    
     public $applicationUrl;
 
     /**

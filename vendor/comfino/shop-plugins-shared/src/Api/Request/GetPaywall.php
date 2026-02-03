@@ -26,7 +26,7 @@ class GetPaywall extends Request
                     'productTypes' => ($queryCriteria->productTypes !== null ? implode(',', $queryCriteria->productTypes) : null),
                     'taxId' => $queryCriteria->taxId,
                 ],
-                static function ($value): bool {
+                static function ($value) : bool {
                     return $value !== null;
                 }
             )

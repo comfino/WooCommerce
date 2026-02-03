@@ -11,11 +11,11 @@ use Comfino\Shop\Order\CartTrait;
 
 class GetFinancialProductDetails extends Request
 {
-    use CartTrait;
     /**
      * @var CartInterface
      */
     private $cart;
+    use CartTrait;
 
     /**
      * @param LoanQueryCriteria $queryCriteria
@@ -35,7 +35,7 @@ class GetFinancialProductDetails extends Request
                     'productTypes' => ($queryCriteria->productTypes !== null ? implode(',', $queryCriteria->productTypes) : null),
                     'taxId' => $queryCriteria->taxId,
                 ],
-                static function ($value): bool {
+                static function ($value) : bool {
                     return $value !== null;
                 }
             )

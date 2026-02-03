@@ -11,11 +11,11 @@ use Comfino\Shop\Order\CartTrait;
 
 class GetPaywallItemDetails extends Request
 {
-    use CartTrait;
     /**
      * @var CartInterface
      */
     private $cart;
+    use CartTrait;
 
     /**
      * @param int $loanAmount

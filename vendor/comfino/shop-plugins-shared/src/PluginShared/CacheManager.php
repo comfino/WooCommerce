@@ -41,7 +41,7 @@ final class CacheManager
     public static function set(string $key, $value, int $ttl = 0, ?array $tags = null): void
     {
         $maxRetries = 3;
-        $retryDelay = 10000;
+        $retryDelay = 10000; 
 
         for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
             try {
@@ -57,7 +57,7 @@ final class CacheManager
 
                 self::getCachePool()->save($item);
 
-                return;
+                return; 
             } catch (InvalidArgumentException $exception) {
                 return;
             } catch (\Throwable $exception) {
@@ -65,7 +65,7 @@ final class CacheManager
                     return;
                 }
 
-                usleep($retryDelay * $attempt);
+                usleep($retryDelay * $attempt); 
             }
         }
     }

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Comfino\Common\Api;
 
 use Comfino\Api\Exception\RequestValidationError;
+use Comfino\Api\Request;
 use Comfino\Api\Request\CreateOrder as CreateOrderRequest;
 use Comfino\Common\Api\Response\ValidateOrder as ValidateOrderResponse;
 use Comfino\Common\Exception\ConnectionTimeout;
+use Comfino\Shop\Order\OrderInterface;
 use ComfinoExternal\Psr\Http\Client\ClientExceptionInterface;
 use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 use ComfinoExternal\Sunrise\Http\Factory\RequestFactory;
@@ -98,7 +100,6 @@ class Client extends \Comfino\Extended\Api\Client
      * @param int $transferTimeout
      * @param int $connectionMaxNumAttempts
      * @param array $options
-     * @return void
      */
     public function resetClient($connectionTimeout, $transferTimeout, $connectionMaxNumAttempts, $options = []): void
     {
@@ -230,7 +231,7 @@ class Client extends \Comfino\Extended\Api\Client
      */
     protected function calcFibonacciNumber($n): int
     {
-        static $phi = 1.6180339;
+        static $phi = 1.6180339; 
         static $fibSequence = [0, 1, 1, 2, 3, 5];
 
         if ($n < 6) {

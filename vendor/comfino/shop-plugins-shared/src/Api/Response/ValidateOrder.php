@@ -15,15 +15,15 @@ use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 class ValidateOrder extends Base
 {
     public $trackId;
-
+    
     public $success;
-
+    
     public $httpStatusCode;
-
+    
     public $errors;
-
+    
     public $isNetworkError;
-
+    
     public $errorCode;
 
     public function __construct(Request $request, ?ResponseInterface $response, SerializerInterface $serializer, ?\Throwable $exception = null)

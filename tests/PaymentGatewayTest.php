@@ -109,10 +109,13 @@ class PaymentGatewayTest extends \PHPUnit_Framework_TestCase
     public function testOrderStatusChanged(): void
     {
         /* Test that the method exists and can be called.
-           Full testing would require mocking WooCommerce order objects. */
-        $this->expectException(\Error::class); // Expected since wc_get_order will fail.
+           With mock wc_get_order() returning a valid order, this should complete without errors. */
 
+        // This should not throw an exception with the mock environment.
         $this->gateway->order_status_changed(123, 'pending', 'processing');
+
+        // Just verify the method completed.
+        $this->assertTrue(true);
     }
 
     public function testInitFormFields(): void

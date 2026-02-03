@@ -4,8 +4,10 @@ namespace Comfino;
 
 use Comfino\Api\ApiClient;
 use Comfino\Api\ApiService;
+use Comfino\Common\Backend\FileUtils;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
+use Comfino\Configuration\StorageAdapter;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Order\OrderManager;
 use Comfino\PluginShared\CacheManager;
@@ -21,6 +23,10 @@ final class Main
     private const MIN_PHP_VERSION_ID = 70100;
     private const MIN_PHP_VERSION = '7.1.0';
     private const MIN_WC_VERSION = '3.0.0';
+
+    private const INSTALL_LOG_FILENAME = 'install.log';
+    private const UPGRADE_LOG_FILENAME = 'upgrade.log';
+    private const UNINSTALL_LOG_FILENAME = 'uninstall.log';
 
     /** @var bool */
     private static $initialized = false;
@@ -139,7 +145,7 @@ final class Main
             if (isset($post) && 'shop_order' === $post->post_type) {
                 $order = wc_get_order($post->ID);
 
-                if (isset($statuses['wc-cancelled']) && $order->get_payment_method() === 'comfino' && $order->has_status('completed')) {
+                if (isset($statuses['wc-cancelled']) && $order->get_payment_method() === PaymentGateway::GATEWAY_ID && $order->has_status('completed')) {
                     unset($statuses['wc-cancelled']);
                 }
             }
@@ -156,20 +162,50 @@ final class Main
         self::$initialized = true;
     }
 
-    public static function uninstall(string $pluginDirectory): bool
+    public static function install(): void
     {
-        ConfigManager::deleteConfigurationValues();
+        ErrorLogger::init();
 
+        // Initialize version tracking option for upgrade detection.
+        update_option('comfino_plugin_current_version', PaymentGateway::VERSION, false);
+
+        // Initialize default configuration values on first activation.
+        $resultStats = self::initDefaultConfiguration();
+
+        self::createInstallLog(print_r($resultStats, true));
+    }
+
+    public static function uninstall(string $pluginDirectory): void
+    {
+        self::$pluginDirectory = $pluginDirectory;
+
+        ErrorLogger::init();
+
+        $resultStats = ['operations' => []];
+
+        // 1. Delete configuration values.
+        if (ConfigManager::deleteConfigurationValues()) {
+            $resultStats['operations'][] = ['name' => 'configuration_options_delete', 'success' => true];
+        } else {
+            $resultStats['operations'][] = ['name' => 'configuration_options_delete', 'success' => false];
+        }
+
+        // 2. Delete options and transients.
+        delete_option('comfino_plugin_current_version');
         delete_transient('comfino_plugin_updated');
         delete_transient('comfino_plugin_prev_version');
         delete_transient('comfino_plugin_updated_at');
 
-        self::$pluginDirectory = $pluginDirectory;
+        $resultStats['operations'][] = ['name' => 'transients_delete', 'success' => true];
 
-        ErrorLogger::init();
-        ApiClient::getInstance()->notifyPluginRemoval();
+        // 3. Notify Comfino API about plugin removal.
+        if (ApiClient::getInstance()->notifyPluginRemoval()) {
+            $resultStats['operations'][] = ['name' => 'uninstall_notification_sent', 'success' => true];
+        } else {
+            $resultStats['operations'][] = ['name' => 'uninstall_notification_sent', 'success' => false];
+        }
 
-        return true;
+        self::createUninstallLog(print_r($resultStats, true));
     }
 
     public static function renderPaywallIframe(\WC_Cart $cart, float $total, bool $isPaymentBlock): string
@@ -256,9 +292,14 @@ final class Main
         return $paymentIsAvailable;
     }
 
+    public static function getVarPath(): string
+    {
+        return dirname(__DIR__) . DIRECTORY_SEPARATOR . 'var';
+    }
+
     public static function getCacheRootPath(): string
     {
-        return dirname(__DIR__) . '/var';
+        return self::getVarPath();
     }
 
     public static function getCachePath(): string
@@ -382,6 +423,50 @@ final class Main
         return false;
     }
 
+    /**
+     * Resets plugin to initial state without uninstalling.
+     *
+     * This method:
+     * - Repairs missing configuration options.
+     * - Clears configuration and frontend cache.
+     *
+     * @return array Reset operation statistics
+     */
+    public static function reset(): array
+    {
+        ErrorLogger::init();
+
+        $resultStats = [
+            'config_repaired' => 0,
+            'config_failed' => 0,
+            'operations' => [],
+        ];
+
+        // 1. Repair missing configuration options.
+        try {
+            $repairStats = ConfigManager::repairMissingConfigurationOptions();
+
+            $resultStats['config_repaired'] = $repairStats['repaired'];
+            $resultStats['config_failed'] = $repairStats['failed'];
+            $resultStats['operations'][] = [
+                'name' => 'configuration_repair',
+                'success' => $repairStats['failed'] === 0,
+                'details' => $repairStats,
+            ];
+        } catch (\Throwable $e) {
+            $resultStats['operations'][] = [
+                'name' => 'configuration_repair',
+                'success' => false,
+                'error' => $e->getMessage(),
+            ];
+        }
+
+        // 2. Clear configuration and frontend cache.
+        CacheManager::getCachePool()->clear();
+
+        return $resultStats;
+    }
+
     public static function getPaywallOptions(float $total): array
     {
         return [
@@ -398,6 +483,66 @@ final class Main
         ];
     }
 
+    public static function updateUpgradeLog(string $logContents): void
+    {
+        self::appendLog(self::UPGRADE_LOG_FILENAME, $logContents);
+    }
+
+    public static function readUpgradeLog(): string
+    {
+        return self::readLog(self::UPGRADE_LOG_FILENAME);
+    }
+
+    public static function readInstallLog(): string
+    {
+        return self::readLog(self::INSTALL_LOG_FILENAME);
+    }
+
+    public static function readUninstallLog(): string
+    {
+        return self::readLog(self::UNINSTALL_LOG_FILENAME);
+    }
+
+    private static function createInstallLog(string $logContents): void
+    {
+        self::writeLog(self::INSTALL_LOG_FILENAME, $logContents);
+    }
+
+    private static function createUninstallLog(string $logContents): void
+    {
+        self::writeLog(self::UNINSTALL_LOG_FILENAME, $logContents);
+    }
+
+    private static function readLog(string $fileName): string
+    {
+        $logPath = FileUtils::buildPathFromComponents([self::getVarPath(), 'log', $fileName]);
+
+        if (FileUtils::isReadable($logPath)) {
+            return FileUtils::read($logPath);
+        }
+
+        return '';
+    }
+
+    private static function writeLog(string $fileName, string $logContents): void
+    {
+        $logPath = FileUtils::buildPathFromComponents([self::getVarPath(), 'log', $fileName]);
+
+        if (FileUtils::isWritable(dirname($logPath))) {
+            FileUtils::write($logPath, gmdate('Y-m-d H:i:s') . "\n$logContents");
+        }
+    }
+
+    private static function appendLog(string $fileName, string $logContents): void
+    {
+        $logPath = FileUtils::buildPathFromComponents([self::getVarPath(), 'log', $fileName]);
+
+        // Check if file is writable (if exists) or if directory is writable (to create new file).
+        if (FileUtils::isWritable($logPath) || (!FileUtils::exists($logPath) && FileUtils::isWritable(dirname($logPath)))) {
+            FileUtils::append($logPath, gmdate('Y-m-d H:i:s') . "\n$logContents");
+        }
+    }
+
     private static function getShopLink(): string
     {
         global $wp_rewrite;
@@ -411,5 +556,59 @@ final class Main
         }
 
         return sanitize_url(wp_unslash($_SERVER['HTTP_REFERER'] ?? ''));
+    }
+
+    /**
+     * Initializes default configuration values on first plugin activation.
+     */
+    private static function initDefaultConfiguration(): array
+    {
+        $resultStats = ['operations' => []];
+
+        $storageAdapter = new StorageAdapter();
+        $optionKey = $storageAdapter->get_option_key();
+
+        // Check if configuration already exists.
+        if (get_option($optionKey) !== false) {
+            $resultStats['operations'][] = [
+                'name' => 'configuration_exists',
+                'success' => true,
+                'note' => 'Configuration already exists.',
+            ];
+
+            return $resultStats;
+        }
+
+        // Persist default configuration values to database.
+        $defaultValues = ConfigManager::getDefaultConfigurationValues();
+        $configurationData = [];
+
+        foreach ($defaultValues as $optionName => $defaultValue) {
+            if (array_key_exists($optionName, ConfigManager::CONFIG_OPTIONS_MAP)) {
+                $internalName = ConfigManager::CONFIG_OPTIONS_MAP[$optionName];
+
+                // Convert boolean values to WooCommerce format ('yes'/'no').
+                if (is_bool($defaultValue)) {
+                    $defaultValue = $defaultValue ? 'yes' : 'no';
+                }
+
+                $configurationData[$internalName] = $defaultValue;
+            }
+        }
+
+        if (update_option($optionKey, $configurationData)) {
+            $resultStats['operations'][] = [
+                'name' => 'init_configuration_options',
+                'success' => true,
+                'options_count' => count($configurationData),
+            ];
+        } else {
+            $resultStats['operations'][] = [
+                'name' => 'init_configuration_options',
+                'success' => false,
+            ];
+        }
+
+        return $resultStats;
     }
 }
