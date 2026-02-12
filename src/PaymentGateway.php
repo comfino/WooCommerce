@@ -4,6 +4,8 @@ namespace Comfino;
 
 use Comfino\Api\ApiClient;
 use Comfino\Api\ApiService;
+use Comfino\Api\Dto\Payment\FinancialProduct;
+use Comfino\Api\Dto\Payment\LoanQueryCriteria;
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
 use Comfino\Common\Backend\ConfigurationManager;
 use Comfino\Common\Backend\Factory\OrderFactory;
@@ -19,6 +21,7 @@ use Comfino\Shop\Order\OrderInterface;
 use Comfino\View\FrontendManager;
 use Comfino\View\SettingsForm;
 use Comfino\View\TemplateManager;
+use ComfinoExternal\Psr\Http\Client\ClientExceptionInterface;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -27,7 +30,7 @@ if (!defined('ABSPATH')) {
 class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
-    public const VERSION = '4.2.7';
+    public const VERSION = '4.2.8';
     public const BUILD_TS = 1769345926;
     public const WIDGET_INIT_SCRIPT_HASH = '0603f4e0904fd65e2aef1aded0c57c40';
     public const WIDGET_INIT_SCRIPT_LAST_HASH = '55e4306bb493ff6f99b2f8f617e18038';
@@ -131,7 +134,7 @@ class PaymentGateway extends \WC_Payment_Gateway
         $wcOrder = wc_get_order($order_id);
 
         // Get order ID or reference based on configuration.
-        if ($useOrderReference = ConfigManager::getConfigurationValue('COMFINO_USE_ORDER_REFERENCE', false)) {
+        if ($useOrderReference = ConfigManager::isOrderReferenceEnabled()) {
             $orderId = !empty($wcOrder->get_order_number()) ? $wcOrder->get_order_number() : (string) $order_id;
         } else {
             $orderId = (string) $order_id;
@@ -158,6 +161,20 @@ class PaymentGateway extends \WC_Payment_Gateway
             wc_add_notice(FrontendManager::processError('Shop cart creation error', $e)['title'], 'error');
 
             return ['result' => 'failure', 'redirect' => ''];
+        }
+
+        if (empty($loanType) || empty($loanTerm)) {
+            // Preselected financial offer data incomplete - load financial offer again and set default product as first user choice before redirection.
+            if (empty($financialProducts = $this->getFinancialProducts($shopCart->getTotalValue()))) {
+                // Emergency offer loading failed - return error to the user and prevent redirection to avoid transaction failure.
+                wc_add_notice(__('Preselected financial offer data incomplete. Please try again.', 'comfino-payment-gateway'));
+
+                return ['result' => 'failure', 'redirect' => ''];
+            }
+
+            // Use first offer with default term as an emergency preselection before redirection to the external Comfino page.
+            $loanType = (string) $financialProducts[0]->type;
+            $loanTerm = $financialProducts[0]->loanTerm;
         }
 
         $shopCustomer = OrderManager::getShopCustomerFromOrder($wcOrder);
@@ -577,6 +594,20 @@ class PaymentGateway extends \WC_Payment_Gateway
         }
 
         return $errors;
+    }
+
+    /**
+     * @return FinancialProduct[]
+     */
+    private function getFinancialProducts(int $loanAmount): array
+    {
+        try {
+            return ApiClient::getInstance()->getFinancialProducts(new LoanQueryCriteria($loanAmount))->financialProducts;
+        } catch (ClientExceptionInterface $e) {
+            FrontendManager::processError('Emergency financial offer retrieving error', $e);
+
+            return [];
+        }
     }
 
     private function createOrder(
