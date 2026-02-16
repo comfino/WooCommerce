@@ -15,7 +15,6 @@ use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 use ComfinoExternal\Sunrise\Http\Factory\RequestFactory;
 use ComfinoExternal\Sunrise\Http\Factory\ResponseFactory;
 use ComfinoExternal\Sunrise\Http\Factory\StreamFactory;
-use ComfinoExternal\Sunrise\Http\Message\Response;
 
 class Client extends \Comfino\Extended\Api\Client
 {
@@ -35,6 +34,13 @@ class Client extends \Comfino\Extended\Api\Client
      * @var array
      */
     protected $options = [];
+    
+    private const MAX_CONNECTION_TIMEOUT = 30;
+    
+    private const MAX_TRANSFER_TIMEOUT = 60;
+    
+    private const DEFAULT_MAX_ATTEMPTS = 3;
+
     /**
      * @var \ComfinoExternal\Sunrise\Http\Factory\ResponseFactory
      */
@@ -58,12 +64,13 @@ class Client extends \Comfino\Extended\Api\Client
         $this->transferTimeout = $transferTimeout;
         $this->connectionMaxNumAttempts = $connectionMaxNumAttempts;
         $this->options = $options;
+        
         if ($this->connectionTimeout >= $this->transferTimeout) {
             $this->transferTimeout = 3 * $this->connectionTimeout;
         }
 
         if ($this->connectionMaxNumAttempts === 0) {
-            $this->connectionMaxNumAttempts = 3;
+            $this->connectionMaxNumAttempts = self::DEFAULT_MAX_ATTEMPTS;
         }
 
         self::$responseFactory = new ResponseFactory();
@@ -125,49 +132,53 @@ class Client extends \Comfino\Extended\Api\Client
 
     /**
      * @param int $connectAttemptIdx
+     * @return int
      */
     public function calculateConnectionTimeout($connectAttemptIdx): int
     {
-        if ($connectAttemptIdx <= 1 || $connectAttemptIdx > $this->connectionMaxNumAttempts || $this->connectionMaxNumAttempts <= 1) {
+        if ($connectAttemptIdx < 1 || $connectAttemptIdx > $this->connectionMaxNumAttempts) {
             return $this->connectionTimeout;
         }
 
-        static $initSeqIndex = 0;
-
-        if ($initSeqIndex === 0) {
-            $initSeqIndex = $this->findFibonacciSequenceIndex($this->connectionTimeout);
+        if ($this->connectionMaxNumAttempts <= 1) {
+            return $this->connectionTimeout;
         }
 
-        return $this->calcFibonacciNumber($initSeqIndex + $connectAttemptIdx - 1);
+        $timeout = $this->connectionTimeout << ($connectAttemptIdx - 1);
+
+        return min($timeout, self::MAX_CONNECTION_TIMEOUT);
     }
 
     /**
      * @param int $connectAttemptIdx
+     * @return int
      */
     public function calculateTransferTimeout($connectAttemptIdx): int
     {
-        if ($connectAttemptIdx <= 1 || $connectAttemptIdx > $this->connectionMaxNumAttempts || $this->connectionMaxNumAttempts <= 1) {
+        if ($connectAttemptIdx < 1 || $connectAttemptIdx > $this->connectionMaxNumAttempts) {
             return $this->transferTimeout;
         }
 
-        static $initSeqIndex = 0;
-
-        if ($initSeqIndex === 0) {
-            $initSeqIndex = $this->findFibonacciSequenceIndex($this->transferTimeout);
+        if ($this->connectionMaxNumAttempts <= 1) {
+            return $this->transferTimeout;
         }
 
-        return $this->calcFibonacciNumber($initSeqIndex + $connectAttemptIdx - 1);
+        $timeout = $this->transferTimeout << ($connectAttemptIdx - 1);
+
+        return min($timeout, self::MAX_TRANSFER_TIMEOUT);
     }
 
     /**
-     * @throws ClientExceptionInterface
-     * @param \Comfino\Api\Request $request
+     * @param Request $request
      * @param int|null $apiVersion
+     * @return ResponseInterface
+     * @throws ClientExceptionInterface
+     * @throws ConnectionTimeout
      */
     protected function sendRequest($request, $apiVersion = null): ResponseInterface
     {
-        $connectionTimeout = $this->connectionTimeout;
-        $transferTimeout = $this->transferTimeout;
+        $lastConnectionTimeout = $this->connectionTimeout;
+        $lastTransferTimeout = $this->transferTimeout;
 
         for ($connectAttemptIdx = 1; $connectAttemptIdx <= $this->connectionMaxNumAttempts; $connectAttemptIdx++) {
             try {
@@ -175,76 +186,50 @@ class Client extends \Comfino\Extended\Api\Client
             } catch (ClientExceptionInterface $e) {
                 if ($e->getCode() === CURLE_OPERATION_TIMEDOUT) {
                     if ($connectAttemptIdx < $this->connectionMaxNumAttempts) {
-                        $connectionTimeout = $this->calculateConnectionTimeout($connectAttemptIdx);
-                        $transferTimeout = $this->calculateTransferTimeout($connectAttemptIdx);
+                        $lastConnectionTimeout = $this->calculateConnectionTimeout($connectAttemptIdx + 1);
+                        $lastTransferTimeout = $this->calculateTransferTimeout($connectAttemptIdx + 1);
 
-                        $this->client = $this->createClient($connectionTimeout, $transferTimeout, $this->options);
-                    } else {
-                        throw new ConnectionTimeout(
-                            $e->getMessage(),
-                            $e->getCode(),
-                            $e,
-                            $connectAttemptIdx,
-                            $connectionTimeout,
-                            $transferTimeout,
-                            $request->getRequestUri() ?? '',
-                            $request->getRequestBody() ?? ''
-                        );
+                        $this->client = $this->createClient($lastConnectionTimeout, $lastTransferTimeout, $this->options);
+
+                        continue;
                     }
-                } else {
-                    throw $e;
+
+                    throw new ConnectionTimeout(
+                        $e->getMessage(),
+                        $e->getCode(),
+                        $e,
+                        $connectAttemptIdx,
+                        $lastConnectionTimeout,
+                        $lastTransferTimeout,
+                        $request->getRequestUri() ?? '',
+                        $request->getRequestBody() ?? ''
+                    );
                 }
+
+                throw $e;
             }
         }
 
-        return new Response();
+        throw new \RuntimeException('Unexpected state: retry loop completed without return or exception.');
     }
 
     /**
      * @param int $connectionTimeout
      * @param int $transferTimeout
-     * @param mixed[] $options
+     * @param array $options
+     * @return \ComfinoExternal\Sunrise\Http\Client\Curl\Client
      */
     protected function createClient($connectionTimeout, $transferTimeout, $options = []): \ComfinoExternal\Sunrise\Http\Client\Curl\Client
     {
-        $clientOptions = [CURLOPT_CONNECTTIMEOUT => $connectionTimeout, CURLOPT_TIMEOUT => $transferTimeout];
+        $clientOptions = [
+            CURLOPT_CONNECTTIMEOUT => $connectionTimeout,
+            CURLOPT_TIMEOUT => $transferTimeout
+        ];
 
-        foreach ($options as $optionIdx => $valueValue) {
-            $clientOptions[$optionIdx] = $valueValue;
+        foreach ($options as $optionKey => $optionValue) {
+            $clientOptions[$optionKey] = $optionValue;
         }
 
         return new \ComfinoExternal\Sunrise\Http\Client\Curl\Client(self::$responseFactory, $clientOptions);
-    }
-
-    /**
-     * @param int $fibNum
-     * @return int
-     */
-    protected function findFibonacciSequenceIndex($fibNum): int
-    {
-        return (int) round(2.078087 * log($fibNum) + 1.672276);
-    }
-
-    /**
-     * @param int $n
-     * @return int
-     */
-    protected function calcFibonacciNumber($n): int
-    {
-        static $phi = 1.6180339; 
-        static $fibSequence = [0, 1, 1, 2, 3, 5];
-
-        if ($n < 6) {
-            return $fibSequence[$n];
-        }
-
-        $i = 5;
-        $fn = 5;
-
-        while ($i++ < $n) {
-            $fn = (int) round($fn * $phi);
-        }
-
-        return $fn;
     }
 }
