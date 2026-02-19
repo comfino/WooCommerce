@@ -287,17 +287,17 @@ final class ConfigManager
 
     public static function isEnabled(): bool
     {
-        return self::getInstance()->getConfigurationValue('COMFINO_ENABLED');
+        return self::getInstance()->getConfigurationValue('COMFINO_ENABLED') ?? false;
     }
 
     public static function isSandboxMode(): bool
     {
-        return self::getInstance()->getConfigurationValue('COMFINO_IS_SANDBOX');
+        return self::getInstance()->getConfigurationValue('COMFINO_IS_SANDBOX') ?? false;
     }
 
     public static function isWidgetEnabled(): bool
     {
-        return self::getInstance()->getConfigurationValue('COMFINO_WIDGET_ENABLED');
+        return self::getInstance()->getConfigurationValue('COMFINO_WIDGET_ENABLED') ?? false;
     }
 
     public static function isDebugMode(): bool
@@ -322,7 +322,12 @@ final class ConfigManager
 
     public static function isAbandonedCartEnabled(): bool
     {
-        return self::getInstance()->getConfigurationValue('COMFINO_ABANDONED_CART_ENABLED');
+        return self::getInstance()->getConfigurationValue('COMFINO_ABANDONED_CART_ENABLED') ?? false;
+    }
+
+    public static function isOrderReferenceEnabled(): bool
+    {
+        return self::getInstance()->getConfigurationValue('COMFINO_USE_ORDER_REFERENCE') ?? false;
     }
 
     /**

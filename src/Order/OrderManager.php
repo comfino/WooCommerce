@@ -3,6 +3,7 @@
 namespace Comfino\Order;
 
 use Comfino\Common\Shop\Cart;
+use Comfino\DebugLogger;
 use Comfino\PaymentGateway;
 use Comfino\Shop\Order\Cart\CartItem;
 use Comfino\Shop\Order\Cart\CartItemInterface;
@@ -335,6 +336,8 @@ final class OrderManager
     {
         global $wpdb;
 
+        DebugLogger::logEvent('[ORDER]', 'loadOrder', ['$orderId' => $orderId]);
+
         // Clear any previous database errors to get accurate state.
         $wpdb->suppress_errors(false);
         $wpdb->last_error = '';
@@ -345,8 +348,15 @@ final class OrderManager
         if (!$order) {
             // Check if database error occurred during loading.
             if (!empty($wpdb->last_error)) {
+                DebugLogger::logEvent(
+                    '[ORDER]', 'loadOrder - error',
+                    ['$orderId' => $orderId, '$wpdb->last_error' => $wpdb->last_error]
+                );
+
                 throw new \RuntimeException(esc_html($wpdb->last_error));
             }
+
+            DebugLogger::logEvent('[ORDER]', 'loadOrder - not found', ['$orderId' => $orderId]);
 
             // No database error, order simply doesn't exist - return null.
             return null;
@@ -380,6 +390,8 @@ final class OrderManager
     public static function loadOrderByNumber(string $orderNumber): ?\WC_Order
     {
         global $wpdb;
+
+        DebugLogger::logEvent('[ORDER]', 'loadOrderByNumber', ['$orderNumber' => $orderNumber]);
 
         try {
             // Try direct loading first (might work with order numbers in some setups).
@@ -421,7 +433,14 @@ final class OrderManager
                 if (count($orders) && ($orders[0] instanceof \WC_Order)) {
                     return $orders[0];
                 }
+
+                DebugLogger::logEvent('[ORDER]', 'loadOrderByNumber[meta_query]:wc_get_orders - not found');
             } catch (\Exception $e) {
+                DebugLogger::logEvent(
+                    '[ORDER]', 'loadOrderByNumber[meta_query]:wc_get_orders - error',
+                    ['errorMessage' => $e->getMessage()]
+                );
+
                 throw new \RuntimeException(esc_html($e->getMessage()));
             }
         }
@@ -437,8 +456,14 @@ final class OrderManager
                     }
                 } catch (\RuntimeException $e) {
                     // Continue to other methods.
+                    DebugLogger::logEvent(
+                        '[ORDER]', 'loadOrderByNumber[SkyVerge]:find_order_by_order_number - error',
+                        ['errorMessage' => $e->getMessage()]
+                    );
                 }
             }
+
+            DebugLogger::logEvent('[ORDER]', 'loadOrderByNumber[SkyVerge]:find_order_by_order_number - not found');
         } elseif (class_exists('Wt_Advanced_Order_Number')) {
             // WebToffee Sequential Order Number for WooCommerce
             if ($orderId = (new \Wt_Advanced_Order_Number())->wt_order_id_from_order_number($orderNumber)) {
@@ -448,8 +473,13 @@ final class OrderManager
                     }
                 } catch (\RuntimeException $e) {
                     // Continue to other methods.
+                    DebugLogger::logEvent(
+                        '[ORDER]', 'loadOrderByNumber[WebToffee]:wt_order_id_from_order_number - error',
+                        ['errorMessage' => $e->getMessage()]
+                    );
                 }
-            }
+
+                DebugLogger::logEvent('[ORDER]', 'loadOrderByNumber[WebToffee]:wt_order_id_from_order_number - not found');}
         } elseif (class_exists('YITH_WooCommerce_Sequential_Order_Number') || class_exists('YITH_Sequential_Order_Number')) {
             // YITH WooCommerce Sequential Order Number
             try {
@@ -465,7 +495,10 @@ final class OrderManager
                 }
             } catch (\Exception $e) {
                 // Continue to other methods.
+                DebugLogger::logEvent('[ORDER]', 'loadOrderByNumber[YITH]:SQL - error', ['errorMessage' => $e->getMessage()]);
             }
+
+            DebugLogger::logEvent('[ORDER]', 'loadOrderByNumber[YITH]:SQL - not found');
         } elseif (class_exists('Alg_WC_Custom_Order_Numbers') || function_exists('alg_wc_custom_order_numbers')) {
             // Custom Order Numbers for WooCommerce (Algoritmika/Booster)
             try {
@@ -487,8 +520,14 @@ final class OrderManager
                 if ($orderId && ($order = self::loadOrder($orderId)) !== null) {
                     return $order;
                 }
+
+                DebugLogger::logEvent('[ORDER]', 'loadOrderByNumber[Algoritmika/Booster]:SQL - not found');
             } catch (\Exception $e) {
                 // Continue to other methods.
+                DebugLogger::logEvent(
+                    '[ORDER]', 'loadOrderByNumber[Algoritmika/Booster]:SQL - error',
+                    ['errorMessage' => $e->getMessage()]
+                );
             }
         } elseif (class_exists('Tyche_Softwares_Order_Numbers') || function_exists('tyche_order_number')) {
             // Tyche Softwares Custom Order Numbers for WooCommerce
@@ -502,8 +541,14 @@ final class OrderManager
                 if ($orderId && ($order = self::loadOrder($orderId)) !== null) {
                     return $order;
                 }
+
+                DebugLogger::logEvent('[ORDER]', 'loadOrderByNumber[Tyche Softwares]:SQL - not found');
             } catch (\Exception $e) {
                 // Continue...
+                DebugLogger::logEvent(
+                    '[ORDER]', 'loadOrderByNumber[Tyche Softwares]:SQL - error',
+                    ['errorMessage' => $e->getMessage()]
+                );
             }
         } else {
             try {
@@ -523,8 +568,14 @@ final class OrderManager
                 if ($orderId && ($order = self::loadOrder($orderId)) !== null) {
                     return $order;
                 }
+
+                DebugLogger::logEvent('[ORDER]', 'loadOrderByNumber[final fallback]:SQL - not found');
             } catch (\Exception $e) {
                 // All methods exhausted.
+                DebugLogger::logEvent(
+                    '[ORDER]', 'loadOrderByNumber[final fallback]:SQL - error',
+                    ['errorMessage' => $e->getMessage()]
+                );
             }
         }
 

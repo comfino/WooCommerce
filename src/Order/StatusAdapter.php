@@ -73,10 +73,10 @@ class StatusAdapter implements OrderStatusAdapterInterface
             ['orderId' => $orderId, 'status' => $status]
         );
 
-        // Determine if orderId is numeric (legacy) or reference (new).
-        $isNumericId = is_numeric($orderId) && ctype_digit((string) $orderId);
+        // Determine if orderId is numeric (legacy) or reference (new) and order sequential numbers are active.
+        $loadById = is_numeric($orderId) && ctype_digit((string) $orderId) && !ConfigManager::isOrderReferenceEnabled();
 
-        if ($isNumericId) {
+        if ($loadById) {
             // Legacy path: Load by numeric ID using HPOS-compatible method.
             try {
                 $order = OrderManager::loadOrder($orderId);
@@ -93,7 +93,7 @@ class StatusAdapter implements OrderStatusAdapterInterface
         }
 
         if ($order === null) {
-            throw new NotFound(esc_html(sprintf('Order not found by %s: %s', $isNumericId ? 'id' : 'reference', $orderId)));
+            throw new NotFound(esc_html(sprintf('Order not found by %s: %s', $loadById ? 'id' : 'reference', $orderId)));
         }
 
         if ($order->get_payment_method() !== PaymentGateway::GATEWAY_ID) {
@@ -107,7 +107,7 @@ class StatusAdapter implements OrderStatusAdapterInterface
             '[ORDER_STATUS_UPDATE]',
             sprintf(
                 "StatusAdapter::setStatus (order %s: %s, status: \"%s\", internal ID: %d)",
-                $isNumericId ? 'ID' : 'reference',
+                $loadById ? 'ID' : 'reference',
                 $orderId,
                 $inputStatus,
                 $order->get_id()

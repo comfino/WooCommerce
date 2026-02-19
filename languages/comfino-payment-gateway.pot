@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv3.
 msgid ""
 msgstr ""
-"Project-Id-Version: Comfino Payment Gateway 4.2.7\n"
+"Project-Id-Version: Comfino Payment Gateway 4.2.8\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/comfino-payment-gateway\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-01-30T15:22:49+00:00\n"
+"POT-Creation-Date: 2026-02-12T14:01:18+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.10.0\n"
 "X-Domain: comfino-payment-gateway\n"
@@ -147,73 +147,77 @@ msgstr ""
 msgid "Comfino status"
 msgstr ""
 
-#: src/PaymentGateway.php:40
+#: src/PaymentGateway.php:43
 msgid "Comfino payments"
 msgstr ""
 
-#: src/PaymentGateway.php:41
+#: src/PaymentGateway.php:44
 msgid "Comfino is an innovative payment method for customers of e-commerce stores! These are installment payments, deferred (buy now, pay later) and corporate payments available on one platform with the help of quick integration. Grow your business with Comfino!"
 msgstr ""
 
-#: src/PaymentGateway.php:45
+#: src/PaymentGateway.php:48
 msgid "The wide range of Comfino installment payments means fast and safe shopping without burdening your budget here and now. Unexpected expenses, larger purchases, or maybe you just prefer to pay later? With Comfino you have a choice! 0% installments, Convenient Installments and deferred payments \"Buy now, pay later\". All so that you can enjoy shopping without worrying about your finances."
 msgstr ""
 
-#: src/PaymentGateway.php:193
+#: src/PaymentGateway.php:170
+msgid "Preselected financial offer data incomplete. Please try again."
+msgstr ""
+
+#: src/PaymentGateway.php:227
 msgid "Comfino create order"
 msgstr ""
 
 #. translators: 1: WordPress version 2: WooCommerce version 3: Comfino plugin version
-#: src/PaymentGateway.php:251
+#: src/PaymentGateway.php:285
 msgid "WordPress %1$s WooCommerce %2$s Comfino %3$s - question"
 msgstr ""
 
-#: src/PaymentGateway.php:263
+#: src/PaymentGateway.php:297
 msgid "Do you want to ask about something? Write to us at"
 msgstr ""
 
 #. translators: s%: Comfino support telephone
-#: src/PaymentGateway.php:266
+#: src/PaymentGateway.php:300
 msgid "or contact us by phone. We are waiting on the number: %s. We will answer all your questions!"
 msgstr ""
 
-#: src/PaymentGateway.php:493
+#: src/PaymentGateway.php:527
 msgid "Invalid customer e-mail address. Please check your account contact data."
 msgstr ""
 
-#: src/PaymentGateway.php:500
+#: src/PaymentGateway.php:534
 msgid "Phone number is required. Please add a phone number to your billing or delivery address."
 msgstr ""
 
-#: src/PaymentGateway.php:508
+#: src/PaymentGateway.php:542
 msgid "First name is required."
 msgstr ""
 
-#: src/PaymentGateway.php:512
+#: src/PaymentGateway.php:546
 msgid "Last name is required."
 msgstr ""
 
-#: src/PaymentGateway.php:519
+#: src/PaymentGateway.php:553
 msgid "Delivery address is required."
 msgstr ""
 
-#: src/PaymentGateway.php:522
+#: src/PaymentGateway.php:556
 msgid "City/Town is required."
 msgstr ""
 
-#: src/PaymentGateway.php:526
+#: src/PaymentGateway.php:560
 msgid "Postal code is required."
 msgstr ""
 
-#: src/PaymentGateway.php:534
+#: src/PaymentGateway.php:568
 msgid "Cart is empty. Please add products to your cart."
 msgstr ""
 
-#: src/PaymentGateway.php:539
+#: src/PaymentGateway.php:573
 msgid "Cart total amount must be greater than zero."
 msgstr ""
 
-#: src/PaymentGateway.php:544
+#: src/PaymentGateway.php:578
 msgid "Comfino payment is not available for this cart. Please check cart amount and product types."
 msgstr ""
 

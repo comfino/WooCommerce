@@ -56,7 +56,7 @@ final class ShopStatusManager
                     }
 
                     // Get order ID or reference based on configuration.
-                    if (ConfigManager::getConfigurationValue('COMFINO_USE_ORDER_REFERENCE', false)) {
+                    if (ConfigManager::isOrderReferenceEnabled()) {
                         $orderId = $order->get_order_number();
                     } else {
                         $orderId = (string) $order->get_id();

@@ -26,12 +26,10 @@ window.ComfinoPaywallInit = {
         ComfinoPaywallData.paywallOptions.onUpdateOrderPaymentState = (loanParams) => {
             ComfinoPaywallFrontend.logEvent('updateOrderPaymentState WooCommerce', 'debug', loanParams);
 
-            if (loanParams.loanTerm !== 0) {
-                document.getElementById('comfino-loan-amount').value = loanParams.loanAmount;
-                document.getElementById('comfino-loan-type').value = loanParams.loanType;
-                document.getElementById('comfino-loan-term').value = loanParams.loanTerm;
-                document.getElementById('comfino-price-modifier').value = priceModifier;
-            }
+            document.getElementById('comfino-loan-amount').value = loanParams.loanAmount;
+            document.getElementById('comfino-loan-type').value = loanParams.loanType;
+            document.getElementById('comfino-loan-term').value = loanParams.loanTerm;
+            document.getElementById('comfino-price-modifier').value = priceModifier;
         }
 
         iframeContainer.appendChild(iframe);

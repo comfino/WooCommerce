@@ -1,3 +1,6 @@
+4.2.8
+ * Fixed a bug in webhook (payment status notifications): order not found error when "Use order reference as external ID" option is active, fixed a frontend bug concerned with Gutenberg blocks (empty comfino_loan_type error).
+
 4.2.7
  * Minor fixes and improvements.
 
