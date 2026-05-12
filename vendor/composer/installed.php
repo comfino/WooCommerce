@@ -3,7 +3,7 @@
         'name' => 'comfino/woocommerce',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'c9facab6267414d880eeb084cb85f8315abc29dd',
+        'reference' => 'e9d9ee070c6fdbd715728955864c0dee79ef45f7',
         'type' => 'woocommerce-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -58,7 +58,7 @@
         'comfino/shop-plugins-shared' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '9d0680060b63f2514519f8268115c841ddcc466e',
+            'reference' => '04ac87168a8ac50bc0932ed584f683c4e15a3bc4',
             'type' => 'library',
             'install_path' => __DIR__ . '/../comfino/shop-plugins-shared',
             'aliases' => array(
@@ -69,7 +69,7 @@
         'comfino/woocommerce' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'c9facab6267414d880eeb084cb85f8315abc29dd',
+            'reference' => 'e9d9ee070c6fdbd715728955864c0dee79ef45f7',
             'type' => 'woocommerce-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -201,7 +201,7 @@
         'sunrise/http-client-curl' => array(
             'pretty_version' => 'v1.4.6',
             'version' => '1.4.6.0',
-            'reference' => 'df3fa3f7f9bf9f88fb6afc6ce79866bc51e789f8',
+            'reference' => null,
             'type' => 'library',
             'install_path' => __DIR__ . '/../sunrise/http-client-curl',
             'aliases' => array(),
@@ -210,7 +210,7 @@
         'sunrise/http-factory' => array(
             'pretty_version' => 'v2.0.3',
             'version' => '2.0.3.0',
-            'reference' => 'c923fcd8ac770f68e5070f06324d50713c6fe681',
+            'reference' => null,
             'type' => 'library',
             'install_path' => __DIR__ . '/../sunrise/http-factory',
             'aliases' => array(),
@@ -219,7 +219,7 @@
         'sunrise/http-header' => array(
             'pretty_version' => 'v2.0.2',
             'version' => '2.0.2.0',
-            'reference' => 'b291196b4f0b041e6f546d1eed91cbcdb1e773b8',
+            'reference' => null,
             'type' => 'library',
             'install_path' => __DIR__ . '/../sunrise/http-header',
             'aliases' => array(),
@@ -228,7 +228,7 @@
         'sunrise/http-message' => array(
             'pretty_version' => 'v2.1.3',
             'version' => '2.1.3.0',
-            'reference' => 'cd6ebddf984ff2169c30c315a5d87ae88aa930da',
+            'reference' => null,
             'type' => 'library',
             'install_path' => __DIR__ . '/../sunrise/http-message',
             'aliases' => array(),
@@ -237,7 +237,7 @@
         'sunrise/http-server-request' => array(
             'pretty_version' => 'v2.2.2',
             'version' => '2.2.2.0',
-            'reference' => '431ed2d5b27def62b23196987cd9db654dcda7ce',
+            'reference' => null,
             'type' => 'library',
             'install_path' => __DIR__ . '/../sunrise/http-server-request',
             'aliases' => array(),
@@ -246,7 +246,7 @@
         'sunrise/stream' => array(
             'pretty_version' => 'v1.3.4',
             'version' => '1.3.4.0',
-            'reference' => 'd1a4764f51b9b6710c0c216820accba3d43e5644',
+            'reference' => null,
             'type' => 'library',
             'install_path' => __DIR__ . '/../sunrise/stream',
             'aliases' => array(),
@@ -255,7 +255,7 @@
         'sunrise/uri' => array(
             'pretty_version' => 'v1.2.5',
             'version' => '1.2.5.0',
-            'reference' => 'cf636bb78bec0888ad0e0645588a1ee2d783adae',
+            'reference' => null,
             'type' => 'library',
             'install_path' => __DIR__ . '/../sunrise/uri',
             'aliases' => array(),

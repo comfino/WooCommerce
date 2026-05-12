@@ -3,7 +3,7 @@
  * Plugin Name: Comfino Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
  * Description: Comfino Payment Gateway for WooCommerce.
- * Version: 4.2.8
+ * Version: 4.3.0
  * Author: Comfino
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
@@ -23,9 +23,8 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Guard clause to prevent plugin execution in incompatible environments.
- * This MUST be placed before any code which uses PHP 7.1+ syntax and before any use statements.
- * Uses PHP 5.6+ compatible syntax.
+ * Guard clause to prevent plugin execution in incompatible environments. This MUST be placed before any code that uses
+ * PHP 7.1+ syntax and before any use statements. Uses PHP 5.6+ compatible syntax.
  */
 if (PHP_VERSION_ID < 70100) {
     // Display admin notice about PHP version incompatibility.
@@ -251,6 +250,17 @@ class Comfino_Payment_Gateway
             deactivate_plugins(plugin_basename(__FILE__));
             /** @noinspection ForgottenDebugOutputInspection */
             wp_die(wp_kses_post($environmentWarning));
+        }
+
+        if (!in_array('sha3-256', hash_algos(), true)) {
+            add_action('admin_notices', static function () {
+                echo '<div class="notice notice-error"><p>'
+                    . esc_html__(
+                        'Comfino requires OpenSSL >= 1.1.0 (SHA-3 support) for the V3 paywall.',
+                        'comfino-payment-gateway'
+                    )
+                    . '</p></div>';
+            });
         }
 
         Main::install();

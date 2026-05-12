@@ -57,23 +57,23 @@ function comfino_prepare_tab_url(string $subsection): string
     return wp_nonce_url($urlParts['path'] . '?' . http_build_query(array_map('strip_tags', $queryArgs)), 'comfino_settings', 'comfino_nonce');
 }
 ?>
-<h2><?php echo esc_html($title); ?></h2>
-<p><?php echo esc_html($description); ?></p>
-<?php echo wp_kses($comfino_logo_img, $comfino_logo_allowed_html); ?> <span style="font-weight: bold; font-size: 16px; vertical-align: bottom"><?php echo esc_html($plugin_version); ?></span>
+<h2><?= esc_html($title) ?></h2>
+<p><?= esc_html($description) ?></p>
+<?= wp_kses($comfino_logo_img, $comfino_logo_allowed_html) ?> <span style="font-weight: bold; font-size: 16px; vertical-align: bottom"><?= esc_html($plugin_version) ?></span>
 <p>
-    <?php echo esc_html($contact_msg1); ?>
-    <a href="mailto:<?php echo esc_html($support_email_address); ?>?subject=<?php echo esc_html($support_email_subject); ?>&body=<?php echo esc_html($support_email_body); ?>">
-        <?php echo esc_html($support_email_address); ?>
+    <?= esc_html($contact_msg1); ?>
+    <a href="mailto:<?= esc_html($support_email_address) ?>?subject=<?= esc_html($support_email_subject) ?>&body=<?= esc_html($support_email_body) ?>">
+        <?= esc_html($support_email_address); ?>
     </a>
-    <?php echo esc_html($contact_msg2); ?>
+    <?= esc_html($contact_msg2); ?>
 </p>
 <nav class="nav-tab-wrapper woo-nav-tab-wrapper">
-    <a href="<?php echo esc_attr(comfino_prepare_tab_url('payment_settings')); ?>" class="nav-tab<?php echo $active_tab === 'payment_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Payment settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo esc_attr(comfino_prepare_tab_url('sale_settings')); ?>" class="nav-tab<?php echo $active_tab === 'sale_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Sale settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo esc_attr(comfino_prepare_tab_url('widget_settings')); ?>" class="nav-tab<?php echo $active_tab === 'widget_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Widget settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo esc_attr(comfino_prepare_tab_url('abandoned_cart_settings')); ?>" class="nav-tab<?php echo $active_tab === 'abandoned_cart_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Abandoned cart settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo esc_attr(comfino_prepare_tab_url('developer_settings')); ?>" class="nav-tab<?php echo $active_tab === 'developer_settings' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Developer settings', 'comfino-payment-gateway'); ?></a>
-    <a href="<?php echo esc_attr(comfino_prepare_tab_url('plugin_diagnostics')); ?>" class="nav-tab<?php echo $active_tab === 'plugin_diagnostics' ? ' nav-tab-active' : ''; ?>"><?php echo esc_html__('Plugin diagnostics', 'comfino-payment-gateway'); ?></a>
+    <a href="<?= esc_attr(comfino_prepare_tab_url('payment_settings')); ?>" class="nav-tab<?= $active_tab === 'payment_settings' ? ' nav-tab-active' : '' ?>"><?= esc_html__('Payment settings', 'comfino-payment-gateway') ?></a>
+    <a href="<?= esc_attr(comfino_prepare_tab_url('sale_settings')); ?>" class="nav-tab<?= $active_tab === 'sale_settings' ? ' nav-tab-active' : '' ?>"><?= esc_html__('Sale settings', 'comfino-payment-gateway') ?></a>
+    <a href="<?= esc_attr(comfino_prepare_tab_url('widget_settings')); ?>" class="nav-tab<?= $active_tab === 'widget_settings' ? ' nav-tab-active' : '' ?>"><?= esc_html__('Widget settings', 'comfino-payment-gateway') ?></a>
+    <a href="<?= esc_attr(comfino_prepare_tab_url('abandoned_cart_settings')); ?>" class="nav-tab<?= $active_tab === 'abandoned_cart_settings' ? ' nav-tab-active' : '' ?>"><?= esc_html__('Abandoned cart settings', 'comfino-payment-gateway') ?></a>
+    <a href="<?= esc_attr(comfino_prepare_tab_url('developer_settings')); ?>" class="nav-tab<?= $active_tab === 'developer_settings' ? ' nav-tab-active' : '' ?>"><?= esc_html__('Developer settings', 'comfino-payment-gateway') ?></a>
+    <a href="<?= esc_attr(comfino_prepare_tab_url('plugin_diagnostics')); ?>" class="nav-tab<?= $active_tab === 'plugin_diagnostics' ? ' nav-tab-active' : '' ?>"><?= esc_html__('Plugin diagnostics', 'comfino-payment-gateway') ?></a>
 </nav>
 <table class="form-table">
     <?php
@@ -88,22 +88,22 @@ function comfino_prepare_tab_url(string $subsection): string
 
         case 'plugin_diagnostics':
             ?>
-            <tr valign="top"><th scope="row" class="titledesc"></th><td><?php echo esc_html($shop_info); ?></td></tr>
+            <tr valign="top"><th scope="row" class="titledesc"></th><td><?= esc_html($shop_info) ?></td></tr>
             <tr valign="top">
                 <th scope="row" class="titledesc"></th>
                 <td>
                     <hr>
-                    <p><b>Comfino API host:</b> <?php echo esc_html($api_host); ?></p>
-                    <p><b>Plugin build time:</b> <?php echo esc_html($build_ts); ?> UTC</p>
-                    <p><b>Shop domain:</b> <?php echo esc_html($shop_domain); ?></p>
-                    <p><b>Widget key:</b> <?php echo esc_html($widget_key); ?></p>
-                    <p><b>New widget API:</b> <?php echo esc_html($new_widget_status); ?></p>
+                    <p><b>Comfino API host:</b> <?= esc_html($api_host) ?></p>
+                    <p><b>Plugin build time:</b> <?= esc_html($build_ts) ?> UTC</p>
+                    <p><b>Shop domain:</b> <?= esc_html($shop_domain) ?></p>
+                    <p><b>Widget key:</b> <?= esc_html($widget_key) ?></p>
+                    <p><b>New widget API:</b> <?= esc_html($new_widget_status) ?></p>
                     <p>
                         <b>Latest available version:</b>
                         <?php if ($auto_updates_enabled): ?>
                             <span style="color: #888;">Managed by WordPress auto-updates</span>
                         <?php elseif ($github_version !== null): ?>
-                            <b style="<?php echo version_compare($github_version, $plugin_version, '>') ? 'color: orange;' : 'color: green;'; ?>"><?php echo esc_html($github_version); ?></b>
+                            <b style="<?= version_compare($github_version, $plugin_version, '>') ? 'color: orange;' : 'color: green;'; ?>"><?= esc_html($github_version) ?></b>
                             <?php if (version_compare($github_version, $plugin_version, '>')): ?>
                                 (<a href="https://github.com/comfino/WooCommerce/releases" target="_blank">Download from GitHub</a>)
                             <?php else: ?>
@@ -118,11 +118,11 @@ function comfino_prepare_tab_url(string $subsection): string
                     </p>
                     <p>
                         <b>Cache root directory writable:</b> <?php if (FileUtils::isWritable($cache_root_path)): ?><b style="color: green">YES</b><?php else: ?><b style="color: red">NO</b><?php endif; ?>
-                        <?php if (getenv('COMFINO_DEV_ENV') === 'TRUE'): ?>(<i><?php echo esc_html($cache_root_path); ?></i>)<?php endif; ?>
+                        <?php if (getenv('COMFINO_DEV_ENV') === 'TRUE'): ?>(<i><?= esc_html($cache_root_path) ?></i>)<?php endif; ?>
                     </p>
                     <p>
                         <b>Cache directory writable:</b> <?php if (FileUtils::isWritable($cache_path)): ?><b style="color: green">YES</b><?php else: ?><b style="color: red">NO</b><?php endif; ?>
-                        <?php if (getenv('COMFINO_DEV_ENV') === 'TRUE'): ?>(<i><?php echo esc_html($cache_path); ?></i>)<?php endif; ?>
+                        <?php if (getenv('COMFINO_DEV_ENV') === 'TRUE'): ?>(<i><?= esc_html($cache_path) ?></i>)<?php endif; ?>
                     </p>
                     <?php
                     if (getenv('COMFINO_DEV_ENV') === 'TRUE') {
@@ -199,7 +199,7 @@ function comfinoSubmitAction(action, nonce)
 {
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = '<?php echo esc_url(admin_url('admin-post.php')); ?>';
+    form.action = '<?= esc_url(admin_url('admin-post.php')); ?>';
 
     const actionInput = document.createElement('input');
     actionInput.type = 'hidden';

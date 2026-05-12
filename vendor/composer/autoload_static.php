@@ -2,7 +2,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitf7c11ec0518961d431ec47935214504c
+class ComposerStaticInitc881c954c3f7c2bbd7196d2eee3dca74
 {
     public static $files = array (
         'e90b514f516f456feec46b4f674e0f58' => __DIR__ . '/..' . '/sunrise/http-message/constants/REASON_PHRASES.php',
@@ -419,9 +419,6 @@ class ComposerStaticInitf7c11ec0518961d431ec47935214504c
         'ComfinoExternal\\Psr\\Log\\LoggerInterface' => __DIR__ . '/..' . '/psr/log/Psr/Log/LoggerInterface.php',
         'ComfinoExternal\\Psr\\Log\\LoggerTrait' => __DIR__ . '/..' . '/psr/log/Psr/Log/LoggerTrait.php',
         'ComfinoExternal\\Psr\\Log\\NullLogger' => __DIR__ . '/..' . '/psr/log/Psr/Log/NullLogger.php',
-        'ComfinoExternal\\Psr\\Log\\Test\\DummyTest' => __DIR__ . '/..' . '/psr/log/Psr/Log/Test/DummyTest.php',
-        'ComfinoExternal\\Psr\\Log\\Test\\LoggerInterfaceTest' => __DIR__ . '/..' . '/psr/log/Psr/Log/Test/LoggerInterfaceTest.php',
-        'ComfinoExternal\\Psr\\Log\\Test\\TestLogger' => __DIR__ . '/..' . '/psr/log/Psr/Log/Test/TestLogger.php',
         'ComfinoExternal\\Psr\\SimpleCache\\CacheException' => __DIR__ . '/..' . '/psr/simple-cache/src/CacheException.php',
         'ComfinoExternal\\Psr\\SimpleCache\\CacheInterface' => __DIR__ . '/..' . '/psr/simple-cache/src/CacheInterface.php',
         'ComfinoExternal\\Psr\\SimpleCache\\InvalidArgumentException' => __DIR__ . '/..' . '/psr/simple-cache/src/InvalidArgumentException.php',
@@ -480,7 +477,6 @@ class ComposerStaticInitf7c11ec0518961d431ec47935214504c
         'ComfinoExternal\\Symfony\\Component\\OptionsResolver\\Exception\\UndefinedOptionsException' => __DIR__ . '/..' . '/symfony/options-resolver/Exception/UndefinedOptionsException.php',
         'ComfinoExternal\\Symfony\\Component\\OptionsResolver\\Options' => __DIR__ . '/..' . '/symfony/options-resolver/Options.php',
         'ComfinoExternal\\Symfony\\Component\\OptionsResolver\\OptionsResolver' => __DIR__ . '/..' . '/symfony/options-resolver/OptionsResolver.php',
-        'ComfinoExternal\\Symfony\\Component\\Yaml\\Command\\LintCommand' => __DIR__ . '/..' . '/symfony/yaml/Command/LintCommand.php',
         'ComfinoExternal\\Symfony\\Component\\Yaml\\Dumper' => __DIR__ . '/..' . '/symfony/yaml/Dumper.php',
         'ComfinoExternal\\Symfony\\Component\\Yaml\\Escaper' => __DIR__ . '/..' . '/symfony/yaml/Escaper.php',
         'ComfinoExternal\\Symfony\\Component\\Yaml\\Exception\\DumpException' => __DIR__ . '/..' . '/symfony/yaml/Exception/DumpException.php',
@@ -506,6 +502,7 @@ class ComposerStaticInitf7c11ec0518961d431ec47935214504c
         'Comfino\\Api\\Dto\\Order\\Customer' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Dto/Order/Customer.php',
         'Comfino\\Api\\Dto\\Order\\Customer\\Address' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Dto/Order/Customer/Address.php',
         'Comfino\\Api\\Dto\\Order\\LoanParameters' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Dto/Order/LoanParameters.php',
+        'Comfino\\Api\\Dto\\Payment\\AllowedProductConfig' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Dto/Payment/AllowedProductConfig.php',
         'Comfino\\Api\\Dto\\Payment\\FinancialProduct' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Dto/Payment/FinancialProduct.php',
         'Comfino\\Api\\Dto\\Payment\\LoanParameters' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Dto/Payment/LoanParameters.php',
         'Comfino\\Api\\Dto\\Payment\\LoanQueryCriteria' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Api/Dto/Payment/LoanQueryCriteria.php',
@@ -614,6 +611,7 @@ class ComposerStaticInitf7c11ec0518961d431ec47935214504c
         'Comfino\\Order\\ShopStatusManager' => __DIR__ . '/../..' . '/src/Order/ShopStatusManager.php',
         'Comfino\\Order\\StatusAdapter' => __DIR__ . '/../..' . '/src/Order/StatusAdapter.php',
         'Comfino\\PaymentGateway' => __DIR__ . '/../..' . '/src/PaymentGateway.php',
+        'Comfino\\PaywallAuthTokenGenerator' => __DIR__ . '/../..' . '/src/PaywallAuthTokenGenerator.php',
         'Comfino\\PluginShared\\CacheManager' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/PluginShared/CacheManager.php',
         'Comfino\\Shop\\Order\\Cart' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Shop/Order/Cart.php',
         'Comfino\\Shop\\Order\\CartInterface' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Shop/Order/CartInterface.php',
@@ -643,9 +641,9 @@ class ComposerStaticInitf7c11ec0518961d431ec47935214504c
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitf7c11ec0518961d431ec47935214504c::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitf7c11ec0518961d431ec47935214504c::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInitf7c11ec0518961d431ec47935214504c::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitc881c954c3f7c2bbd7196d2eee3dca74::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitc881c954c3f7c2bbd7196d2eee3dca74::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInitc881c954c3f7c2bbd7196d2eee3dca74::$classMap;
 
         }, null, ClassLoader::class);
     }
