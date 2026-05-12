@@ -4,6 +4,7 @@ namespace Comfino;
 
 use Comfino\Api\ApiClient;
 use Comfino\Api\ApiService;
+use Comfino\Api\Dto\Payment\AllowedProductConfig;
 use Comfino\Api\Dto\Payment\FinancialProduct;
 use Comfino\Api\Dto\Payment\LoanQueryCriteria;
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
@@ -30,8 +31,8 @@ if (!defined('ABSPATH')) {
 class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
-    public const VERSION = '4.2.8';
-    public const BUILD_TS = 1771246114;
+    public const VERSION = '4.3.0';
+    public const BUILD_TS = 1778592613;
     public const WIDGET_INIT_SCRIPT_HASH = '0603f4e0904fd65e2aef1aded0c57c40';
     public const WIDGET_INIT_SCRIPT_LAST_HASH = '55e4306bb493ff6f99b2f8f617e18038';
 
@@ -150,13 +151,11 @@ class PaymentGateway extends \WC_Payment_Gateway
             ]
         );
 
-        $initLoanAmount = (int) filter_var(sanitize_text_field(wp_unslash($_POST['comfino_loan_amount'] ?? '0')), FILTER_VALIDATE_INT);
-        $priceModifier = (int) filter_var(sanitize_text_field(wp_unslash($_POST['comfino_price_modifier'] ?? '0')), FILTER_VALIDATE_INT);
         $loanType = sanitize_text_field(wp_unslash($_POST['comfino_loan_type'] ?? 'undefined'));
         $loanTerm = (int) filter_var(sanitize_text_field(wp_unslash($_POST['comfino_loan_term'] ?? '0')), FILTER_VALIDATE_INT);
 
         try {
-            $shopCart = OrderManager::getShopCart($cart, $priceModifier);
+            $shopCart = OrderManager::getShopCart($cart);
         } catch (\Exception $e) {
             wc_add_notice(FrontendManager::processError('Shop cart creation error', $e)['title'], 'error');
 
@@ -207,8 +206,6 @@ class PaymentGateway extends \WC_Payment_Gateway
             '[PAYMENT]',
             'Validation passed - proceeding with order creation',
             [
-                '$initLoanAmount' => $initLoanAmount,
-                '$priceModifier' => $priceModifier,
                 '$cartTotalValue' => $shopCart->getTotalValue(),
                 '$loanAmount' => $order->getCart()->getTotalAmount(),
                 '$loanType' => (string) $order->getLoanParameters()->getType(),
@@ -454,6 +451,11 @@ class PaymentGateway extends \WC_Payment_Gateway
         return FrontendManager::renderProductCategoryTree($data);
     }
 
+    public function generate_allowed_products_config_html(string $key, array $data): string
+    {
+        return FrontendManager::renderAllowedProductsConfig($data);
+    }
+
     public function generatePaywallIframe(bool $isPaymentBlock): string
     {
         return WC()->cart !== null ? Main::renderPaywallIframe(WC()->cart, $this->get_order_total(), $isPaymentBlock) : '';
@@ -602,7 +604,10 @@ class PaymentGateway extends \WC_Payment_Gateway
     private function getFinancialProducts(int $loanAmount): array
     {
         try {
-            return ApiClient::getInstance()->getFinancialProducts(new LoanQueryCriteria($loanAmount))->financialProducts;
+            $allowedProductsConfig = self::buildAllowedProductsConfig();
+            $criteria = new LoanQueryCriteria($loanAmount, null, null, null, null, null, $allowedProductsConfig);
+
+            return ApiClient::getInstance()->getFinancialProducts($criteria)->financialProducts;
         } catch (ClientExceptionInterface $e) {
             FrontendManager::processError('Emergency financial offer retrieving error', $e);
 
@@ -632,7 +637,40 @@ class PaymentGateway extends \WC_Payment_Gateway
             SettingsManager::getAllowedProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL, $shopCart),
             $shopCart->getDeliveryNetCost(),
             $shopCart->getDeliveryTaxRate(),
-            $shopCart->getDeliveryTaxValue()
+            $shopCart->getDeliveryTaxValue(),
+            null,
+            self::buildAllowedProductsConfig()
         );
+    }
+
+    /**
+     * @return AllowedProductConfig[]|null
+     */
+    private static function buildAllowedProductsConfig(): ?array
+    {
+        $configData = ConfigManager::getConfigurationValue('COMFINO_ALLOWED_PRODUCTS_CONFIG');
+
+        if (!is_array($configData) || empty($configData)) {
+            return null;
+        }
+
+        $result = [];
+
+        foreach ($configData as $entry) {
+            if (empty($entry['type'])) {
+                continue;
+            }
+
+            $result[] = new AllowedProductConfig(
+                new LoanTypeEnum($entry['type'], false),
+                isset($entry['maxTerm']) ? (int) $entry['maxTerm'] : null,
+                isset($entry['minTerm']) ? (int) $entry['minTerm'] : null,
+                isset($entry['terms']) && is_array($entry['terms'])
+                    ? array_map('intval', $entry['terms'])
+                    : null
+            );
+        }
+
+        return !empty($result) ? $result : null;
     }
 }

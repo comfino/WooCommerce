@@ -42,6 +42,8 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('COMFINO_API_KEY', ConfigManager::CONFIG_OPTIONS_MAP);
         $this->assertEquals('enabled', ConfigManager::CONFIG_OPTIONS_MAP['COMFINO_ENABLED']);
         $this->assertEquals('production_key', ConfigManager::CONFIG_OPTIONS_MAP['COMFINO_API_KEY']);
+        $this->assertArrayHasKey('COMFINO_ALLOWED_PRODUCTS_CONFIG', ConfigManager::CONFIG_OPTIONS_MAP);
+        $this->assertEquals('allowed_products_config', ConfigManager::CONFIG_OPTIONS_MAP['COMFINO_ALLOWED_PRODUCTS_CONFIG']);
     }
 
     public function testConfigOptionsConstants(): void
@@ -58,6 +60,14 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertContains('COMFINO_ENABLED', ConfigManager::ACCESSIBLE_CONFIG_OPTIONS);
         // COMFINO_API_KEY is not in accessible options for security reasons.
         $this->assertContains('COMFINO_PAYMENT_TEXT', ConfigManager::ACCESSIBLE_CONFIG_OPTIONS);
+        $this->assertContains('COMFINO_ALLOWED_PRODUCTS_CONFIG', ConfigManager::ACCESSIBLE_CONFIG_OPTIONS);
+    }
+
+    public function testAllowedProductsConfigDefaultIsNull(): void
+    {
+        $defaults = ConfigManager::getDefaultConfigurationValues();
+        $this->assertArrayHasKey('COMFINO_ALLOWED_PRODUCTS_CONFIG', $defaults);
+        $this->assertNull($defaults['COMFINO_ALLOWED_PRODUCTS_CONFIG']);
     }
 
     public function testGetEnvironmentInfo(): void

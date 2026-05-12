@@ -24,20 +24,11 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         // Mock functions are handled in bootstrap.php
     }
 
-    public function testGetPaywallRenderer(): void
+    public function testGetAuthTokenReturnsString(): void
     {
-        $renderer1 = FrontendManager::getPaywallRenderer();
-        $renderer2 = FrontendManager::getPaywallRenderer();
+        $token = FrontendManager::getAuthToken();
 
-        $this->assertSame($renderer1, $renderer2); // Should be singleton.
-    }
-
-    public function testGetPaywallIframeRenderer(): void
-    {
-        $renderer1 = FrontendManager::getPaywallIframeRenderer();
-        $renderer2 = FrontendManager::getPaywallIframeRenderer();
-
-        $this->assertSame($renderer1, $renderer2); // Should be singleton.
+        $this->assertInternalType('string', $token);
     }
 
     public function testRenderHiddenInput(): void
@@ -547,26 +538,19 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('option', $allowedHtml);
     }
 
-    public function testGetPaywallRendererReturnsSameInstance(): void
+    public function testGetAuthTokenIsBase64EncodedWhenConfigured(): void
     {
-        // Test singleton pattern.
-        $renderer1 = FrontendManager::getPaywallRenderer();
-        $renderer2 = FrontendManager::getPaywallRenderer();
-        $renderer3 = FrontendManager::getPaywallRenderer();
+        // In unconfigured test environment, token is empty.
+        // When credentials are set, token should be valid base64.
+        $token = FrontendManager::getAuthToken();
 
-        $this->assertSame($renderer1, $renderer2);
-        $this->assertSame($renderer2, $renderer3);
-    }
-
-    public function testGetPaywallIframeRendererReturnsSameInstance(): void
-    {
-        // Test singleton pattern.
-        $renderer1 = FrontendManager::getPaywallIframeRenderer();
-        $renderer2 = FrontendManager::getPaywallIframeRenderer();
-        $renderer3 = FrontendManager::getPaywallIframeRenderer();
-
-        $this->assertSame($renderer1, $renderer2);
-        $this->assertSame($renderer2, $renderer3);
+        if (!empty($token)) {
+            $decoded = base64_decode($token, true);
+            $this->assertNotFalse($decoded);
+            $this->assertEquals($token, base64_encode($decoded));
+        } else {
+            $this->assertInternalType('string', $token);
+        }
     }
 
     public function testResetScriptsCanBeCalledMultipleTimes(): void

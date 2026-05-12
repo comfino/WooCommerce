@@ -3,10 +3,13 @@
 namespace Comfino\View\Block;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
-use Comfino\Api\ApiService;
 use Comfino\Configuration\ConfigManager;
+use Comfino\Configuration\SettingsManager;
 use Comfino\DebugLogger;
-use Comfino\Main;
+use Comfino\ErrorLogger;
+use Comfino\FinancialProduct\ProductTypesListTypeEnum;
+use Comfino\Order\OrderManager;
+use Comfino\PaywallAuthTokenGenerator;
 use Comfino\View\FrontendManager;
 
 final class PaymentGateway extends AbstractPaymentMethodType
@@ -61,30 +64,22 @@ final class PaymentGateway extends AbstractPaymentMethodType
         /** @var \Comfino_Payment_Gateway $comfino_payment_gateway */
         global $comfino_payment_gateway;
 
-        $iframeRenderer = FrontendManager::getPaywallIframeRenderer();
-
-        $styleIds = FrontendManager::includeExternalStyles($iframeRenderer->getStyles());
-        $scriptIds = FrontendManager::registerExternalScripts($iframeRenderer->getScripts());
-
-        $scriptIds = array_merge($scriptIds, FrontendManager::registerLocalScripts(
-            ['paywall-block.js'],
+        $scriptIds = FrontendManager::registerLocalScripts(
+            ['comfino-blocks.js'],
             [
-                'paywall-block.js' => array_merge(
-                    [
-                        'wc-blocks-registry',
-                        'wc-settings',
-                        'wp-element',
-                        'wp-html-entities',
-                        'wp-i18n',
-                    ],
-                    $scriptIds
-                )
+                'comfino-blocks.js' => [
+                    'wc-blocks-registry',
+                    'wc-settings',
+                    'wp-element',
+                    'wp-html-entities',
+                    'wp-i18n',
+                ],
             ]
-        ));
+        );
 
         DebugLogger::logEvent(
-            '[PAYWALL]', 'get_payment_method_script_handles registered styles and scripts.',
-            ['$styleIds' => $styleIds, '$scriptIds' => $scriptIds]
+            '[PAYWALL]', 'get_payment_method_script_handles registered scripts.',
+            ['$scriptIds' => $scriptIds]
         );
 
         if (function_exists('wp_set_script_translations')) {
@@ -103,17 +98,55 @@ final class PaymentGateway extends AbstractPaymentMethodType
      */
     public function get_payment_method_data(): array
     {
-        return [
-            'title' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
-            'description' => $this->gateway->get_description(),
-            'icon' => ConfigManager::getConfigurationValue('COMFINO_SHOW_LOGO') ? ConfigManager::getPaywallLogoUrl() : '',
-            'iframeTemplate' => $this->is_active() ? $this->gateway->generatePaywallIframe(true) : '',
-            'paywallUrl' => ApiService::getEndpointUrl('paywall'),
-            'paywallOptions' => array_merge(
-                Main::getPaywallOptions($this->gateway->getTotal()),
-                ['wcBlocks' => true, 'attachClickHandler' => false]
-            ),
-            'supports' => array_filter($this->gateway->supports, [$this->gateway, 'supports']),
+        $wcCart = WC()->cart;
+        $loanAmount = $wcCart !== null ? (int) round($wcCart->get_cart_contents_total() * 100) : 0;
+        $authToken = FrontendManager::getAuthToken();
+
+        $allowedProductTypes = null;
+
+        if ($wcCart !== null) {
+            try {
+                $shopCart = OrderManager::getShopCart($wcCart);
+                $allowedProductTypes = SettingsManager::getAllowedProductTypes(
+                    ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
+                    $shopCart
+                );
+            } catch (\Throwable $e) {
+                ErrorLogger::sendError($e, 'getAllowedProductTypes');
+            }
+        }
+
+        $paymentData = [
+            'authToken'             => $authToken,
+            'loanAmount'            => $loanAmount,
+            'environment'           => ConfigManager::isSandboxMode() ? 'sandbox' : 'production',
+            'sdkScriptUrl'          => ConfigManager::getSdkScriptUrl(),
+            'label'                 => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
+            'ariaLabel'             => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
+            'supports'              => $this->gateway ? array_filter($this->gateway->supports, [$this->gateway, 'supports']) : ['products'],
+            'icon'                  => ConfigManager::getConfigurationValue('COMFINO_SHOW_LOGO') ? ConfigManager::getPaywallLogoUrl() : '',
+            'paywallSettings'       => [
+                'language' => \Comfino\Main::getShopLanguage(),
+                'currency' => \Comfino\Main::getShopCurrency(),
+            ],
+            'allowedProductsConfig' => self::buildAllowedProductsConfigForFrontend(),
+            'directRedirect'        => (bool) ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
+            'customPaywallCss'      => ConfigManager::getConfigurationValue('COMFINO_PAYWALL_CUSTOM_CSS_URL') ?: null,
+            'scriptNonce'           => (string) apply_filters('comfino_csp_script_nonce', ''),
         ];
+
+        if ($allowedProductTypes !== null) {
+            $paymentData['productTypes'] = array_map('strval', $allowedProductTypes);
+        }
+
+        return $paymentData;
+    }
+
+    /** @return array[]|null */
+    private static function buildAllowedProductsConfigForFrontend(): ?array
+    {
+        $config = ConfigManager::getConfigurationValue('COMFINO_ALLOWED_PRODUCTS_CONFIG');
+
+        return (is_array($config) && !empty($config)) ? $config : null;
     }
 }

@@ -23,6 +23,7 @@ class GetPaywall extends Request
                     'loanAmount' => $queryCriteria->loanAmount,
                     'loanTerm' => $queryCriteria->loanTerm,
                     'loanTypeSelected' => $queryCriteria->loanType,
+                    'priceModifier' => $queryCriteria->priceModifier,
                     'productTypes' => ($queryCriteria->productTypes !== null ? implode(',', $queryCriteria->productTypes) : null),
                     'taxId' => $queryCriteria->taxId,
                 ],

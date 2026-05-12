@@ -5,8 +5,6 @@ namespace Comfino\View;
 use Comfino\Api\ApiClient;
 use Comfino\Api\HttpErrorExceptionInterface;
 use Comfino\Common\Frontend\FrontendHelper;
-use Comfino\Common\Frontend\PaywallIframeRenderer;
-use Comfino\Common\Frontend\PaywallRenderer;
 use Comfino\Common\Frontend\WidgetInitScriptHelper;
 use Comfino\Configuration\ConfigManager;
 use Comfino\DebugLogger;
@@ -14,6 +12,7 @@ use Comfino\ErrorLogger;
 use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
 use Comfino\Main;
 use Comfino\PaymentGateway;
+use Comfino\PaywallAuthTokenGenerator;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -21,26 +20,16 @@ if (!defined('ABSPATH')) {
 
 final class FrontendManager
 {
-    public static function getPaywallRenderer(): PaywallRenderer
+    public static function getAuthToken(): string
     {
-        static $renderer = null;
+        $widgetKey = ConfigManager::getWidgetKey() ?? '';
+        $apiKey = ConfigManager::getApiKey() ?? '';
 
-        if ($renderer === null) {
-            $renderer = new PaywallRenderer();
+        if (empty($apiKey) || empty($widgetKey)) {
+            return '';
         }
 
-        return $renderer;
-    }
-
-    public static function getPaywallIframeRenderer(): PaywallIframeRenderer
-    {
-        static $renderer = null;
-
-        if ($renderer === null) {
-            $renderer = new PaywallIframeRenderer();
-        }
-
-        return $renderer;
+        return PaywallAuthTokenGenerator::generateAuthToken($widgetKey, $apiKey);
     }
 
     public static function renderAdminLogo(): string
@@ -167,6 +156,29 @@ final class FrontendManager
             wp_kses_post($data['title']),
             implode('<br/>', $inputs),
             $wcSettings->get_description_html($data)
+        );
+    }
+
+    public static function renderAllowedProductsConfig(array $data): string
+    {
+        $defaults = [
+            'title' => '',
+            'type' => 'allowed_products_config',
+            'product_types' => [],
+            'saved_config' => [],
+        ];
+
+        $data = wp_parse_args($data, $defaults);
+
+        return sprintf(
+            '<tr valign="top"><td class="forminp" colspan="2"><h3>%s</h3>%s</td></tr>',
+            esc_html($data['title']),
+            TemplateManager::renderView(
+                'allowed-products-config',
+                'admin/_configure',
+                ['product_types' => $data['product_types'], 'saved_config'  => $data['saved_config']],
+                false
+            )
         );
     }
 

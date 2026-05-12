@@ -24,6 +24,9 @@ if (!defined('ABSPATH')) {
 
 final class ConfigManager
 {
+    private const COMFINO_SDK_JS_PRODUCTION = 'https://widget.comfino.pl/sdk/v1/comfino-sdk.min.js';
+    private const COMFINO_SDK_JS_SANDBOX = 'https://widget.craty.pl/sdk/v1/comfino-sdk.min.js';
+
     public const CONFIG_OPTIONS_MAP = [
         'COMFINO_ENABLED' => 'enabled',
         'COMFINO_API_KEY' => 'production_key',
@@ -37,7 +40,10 @@ final class ConfigManager
         'COMFINO_DEV_ENV_VARS' => 'dev_env_vars',
         'COMFINO_SANDBOX_API_KEY' => 'sandbox_key',
         'COMFINO_PRODUCT_CATEGORY_FILTERS' => 'product_category_filters',
+        'COMFINO_ALLOWED_PRODUCTS_CONFIG' => 'allowed_products_config',
         'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => 'cat_filter_avail_prod_types',
+        'COMFINO_PAYWALL_DIRECT_REDIRECT' => 'paywall_direct_redirect',
+        'COMFINO_PAYWALL_CUSTOM_CSS_URL' => 'paywall_custom_css_url',
         'COMFINO_WIDGET_ENABLED' => 'widget_enabled',
         'COMFINO_WIDGET_KEY' => 'widget_key',
         'COMFINO_WIDGET_PRICE_SELECTOR' => 'widget_price_selector',
@@ -76,8 +82,11 @@ final class ConfigManager
             'COMFINO_MINIMAL_CART_AMOUNT' => ConfigurationManager::OPT_VALUE_TYPE_FLOAT,
             'COMFINO_SHOW_LOGO' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_USE_ORDER_REFERENCE' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
+            'COMFINO_PAYWALL_DIRECT_REDIRECT' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
+            'COMFINO_PAYWALL_CUSTOM_CSS_URL' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
         ],
         'sale_settings' => [
+            'COMFINO_ALLOWED_PRODUCTS_CONFIG'  => ConfigurationManager::OPT_VALUE_TYPE_JSON,
             'COMFINO_PRODUCT_CATEGORY_FILTERS' => ConfigurationManager::OPT_VALUE_TYPE_JSON,
         ],
         'widget_settings' => [
@@ -130,9 +139,12 @@ final class ConfigManager
         'COMFINO_SHOW_LOGO',
         'COMFINO_MINIMAL_CART_AMOUNT',
         'COMFINO_USE_ORDER_REFERENCE',
+        'COMFINO_PAYWALL_DIRECT_REDIRECT',
+        'COMFINO_PAYWALL_CUSTOM_CSS_URL',
         'COMFINO_IS_SANDBOX',
         'COMFINO_DEBUG',
         'COMFINO_SERVICE_MODE',
+        'COMFINO_ALLOWED_PRODUCTS_CONFIG',
         'COMFINO_PRODUCT_CATEGORY_FILTERS',
         'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES',
         'COMFINO_WIDGET_ENABLED',
@@ -554,6 +566,15 @@ final class ConfigManager
         return $widgetCode;
     }
 
+    public static function getSdkScriptUrl(): string
+    {
+        if (self::useDevEnvVars() && getenv('COMFINO_DEV_SDK_SCRIPT_URL')) {
+            return sanitize_url(wp_unslash(getenv('COMFINO_DEV_SDK_SCRIPT_URL')));
+        }
+
+        return self::isSandboxMode() ? self::COMFINO_SDK_JS_SANDBOX : self::COMFINO_SDK_JS_PRODUCTION;
+    }
+
     public static function getWidgetScriptUrl(): string
     {
         if (self::useDevEnvVars() && getenv('COMFINO_DEV_WIDGET_SCRIPT_URL')) {
@@ -630,7 +651,10 @@ final class ConfigManager
             'COMFINO_DEBUG' => false,
             'COMFINO_SERVICE_MODE' => false,
             'COMFINO_PRODUCT_CATEGORY_FILTERS' => '',
+            'COMFINO_ALLOWED_PRODUCTS_CONFIG' => null,
             'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => 'INSTALLMENTS_ZERO_PERCENT,PAY_LATER,COMPANY_BNPL,COMPANY_INSTALLMENTS,LEASING,PAY_IN_PARTS',
+            'COMFINO_PAYWALL_DIRECT_REDIRECT' => false,
+            'COMFINO_PAYWALL_CUSTOM_CSS_URL' => '',
             'COMFINO_WIDGET_ENABLED' => false,
             'COMFINO_WIDGET_KEY' => '',
             'COMFINO_WIDGET_PRICE_SELECTOR' => '.price .woocommerce-Price-amount bdi',
