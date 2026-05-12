@@ -36,7 +36,7 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         $fieldKey = 'test_field';
         $fieldValue = 'test_value';
         $data = ['title' => 'Test Field', 'type' => 'hidden'];
-        $wcSettings = new WC_Settings_API();
+        $wcSettings = $this->getMockForAbstractClass(WC_Settings_API::class);
 
         $html = FrontendManager::renderHiddenInput($fieldKey, $fieldValue, $data, $wcSettings);
 
@@ -57,7 +57,7 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
                 'option3' => 'Option 3'
             ]
         ];
-        $wcSettings = new WC_Settings_API();
+        $wcSettings = $this->getMockForAbstractClass(WC_Settings_API::class);
 
         $html = FrontendManager::renderCheckboxSet($fieldKey, $fieldValue, $data, $wcSettings);
 
@@ -72,7 +72,7 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         $fieldKey = 'test_checkboxes';
         $fieldValue = [];
         $data = ['title' => 'Test Checkboxes']; // No 'values' key.
-        $wcSettings = new WC_Settings_API();
+        $wcSettings = $this->getMockForAbstractClass(WC_Settings_API::class);
 
         $html = FrontendManager::renderCheckboxSet($fieldKey, $fieldValue, $data, $wcSettings);
 
@@ -342,7 +342,7 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
                 'data-id' => '123',
             ],
         ];
-        $wcSettings = new WC_Settings_API();
+        $wcSettings = $this->getMockForAbstractClass(WC_Settings_API::class);
 
         $html = FrontendManager::renderHiddenInput($fieldKey, $fieldValue, $data, $wcSettings);
 
@@ -360,7 +360,7 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
             'type' => 'hidden',
             'disabled' => true,
         ];
-        $wcSettings = new WC_Settings_API();
+        $wcSettings = $this->getMockForAbstractClass(WC_Settings_API::class);
 
         $html = FrontendManager::renderHiddenInput($fieldKey, $fieldValue, $data, $wcSettings);
 
@@ -379,7 +379,7 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
                 'option2' => 'Option 2',
             ]
         ];
-        $wcSettings = new WC_Settings_API();
+        $wcSettings = $this->getMockForAbstractClass(WC_Settings_API::class);
 
         $html = FrontendManager::renderCheckboxSet($fieldKey, $fieldValue, $data, $wcSettings);
 
