@@ -569,7 +569,13 @@ final class ConfigManager
     public static function getSdkScriptUrl(): string
     {
         if (self::useDevEnvVars() && getenv('COMFINO_DEV_SDK_SCRIPT_URL')) {
-            return sanitize_url(wp_unslash(getenv('COMFINO_DEV_SDK_SCRIPT_URL')));
+            $sdkScriptUrl = sanitize_url(wp_unslash(getenv('COMFINO_DEV_SDK_SCRIPT_URL')));
+
+            if (self::useUnminifiedScripts()) {
+                $sdkScriptUrl = str_replace('.min.js', '.js', $sdkScriptUrl);
+            }
+
+            return $sdkScriptUrl;
         }
 
         return self::isSandboxMode() ? self::COMFINO_SDK_JS_SANDBOX : self::COMFINO_SDK_JS_PRODUCTION;

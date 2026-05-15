@@ -98,6 +98,10 @@
                 comfinoPaywallData.customPaywallCss = config.customPaywallCss;
             }
 
+            if (config.creditors && typeof config.creditors === 'object') {
+                comfinoPaywallData.creditors = config.creditors;
+            }
+
             /* Load Comfino web frontend SDK as a plain script via DOM injection.
 
                Why not a dynamic import or async load? The SDK is a UMD bundle. When RequireJS's global define()

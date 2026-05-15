@@ -78,6 +78,42 @@ final class SettingsManager
     }
 
     /**
+     * Returns a map of available creditors grouped by product type, cached with a single entry.
+     *
+     * @return array<string, string[]>
+     */
+    public static function getCreditors(): array
+    {
+        $cacheKey = 'creditors';
+
+        if (($creditors = CacheManager::get($cacheKey)) !== null) {
+            return is_array($creditors) ? $creditors : [];
+        }
+
+        if (empty(ApiClient::getInstance()->getApiKey())) {
+            return [];
+        }
+
+        try {
+            $response = ApiClient::getInstance()->getCreditors();
+            $creditorsList = $response->creditors;
+            $cacheTtl = (int) $response->getHeader('Cache-TTL', '0');
+
+            CacheManager::set($cacheKey, $creditorsList, $cacheTtl, ['admin_product_types']);
+
+            return $creditorsList;
+        } catch (FilesystemException $e) {
+            ErrorLogger::getLoggerInstance()->logError('Creditors cache error', $e->getMessage());
+
+            return $creditorsList ?? [];
+        } catch (\Throwable $e) {
+            ApiClient::processApiError('Settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)', $e);
+        }
+
+        return [];
+    }
+
+    /**
      * @return string[]
      */
     public static function getProductTypesStrings(string $listType): array

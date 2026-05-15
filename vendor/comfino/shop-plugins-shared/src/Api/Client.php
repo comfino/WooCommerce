@@ -18,6 +18,7 @@ use Comfino\Api\Request\GetFinancialProducts as GetFinancialProductsRequest;
 use Comfino\Api\Request\GetOrder as GetOrderRequest;
 use Comfino\Api\Request\GetPaywall as GetPaywallRequest;
 use Comfino\Api\Request\GetPaywallItemDetails as GetPaywallItemDetailsRequest;
+use Comfino\Api\Request\GetCreditors as GetCreditorsRequest;
 use Comfino\Api\Request\GetProductTypes as GetProductTypesRequest;
 use Comfino\Api\Request\GetWidgetKey as GetWidgetKeyRequest;
 use Comfino\Api\Request\GetWidgetTypes as GetWidgetTypesRequest;
@@ -29,6 +30,7 @@ use Comfino\Api\Response\GetFinancialProducts as GetFinancialProductsResponse;
 use Comfino\Api\Response\GetOrder as GetOrderResponse;
 use Comfino\Api\Response\GetPaywall as GetPaywallResponse;
 use Comfino\Api\Response\GetPaywallItemDetails as GetPaywallItemDetailsResponse;
+use Comfino\Api\Response\GetCreditors as GetCreditorsResponse;
 use Comfino\Api\Response\GetProductTypes as GetProductTypesResponse;
 use Comfino\Api\Response\GetWidgetKey as GetWidgetKeyResponse;
 use Comfino\Api\Response\GetWidgetTypes as GetWidgetTypesResponse;
@@ -406,6 +408,21 @@ class Client
         $this->request = (new GetProductTypesRequest($listType))->setSerializer($this->serializer);
 
         return new GetProductTypesResponse($this->request, $this->sendRequest($this->request), $this->serializer);
+    }
+
+    /**
+     * @throws RequestValidationError
+     * @throws ResponseValidationError
+     * @throws AuthorizationError
+     * @throws AccessDenied
+     * @throws ServiceUnavailable
+     * @throws ClientExceptionInterface
+     */
+    public function getCreditors(): GetCreditorsResponse
+    {
+        $this->request = (new GetCreditorsRequest())->setSerializer($this->serializer);
+
+        return new GetCreditorsResponse($this->request, $this->sendRequest($this->request), $this->serializer);
     }
 
     /**

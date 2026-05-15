@@ -130,6 +130,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
                 'currency' => \Comfino\Main::getShopCurrency(),
             ],
             'allowedProductsConfig' => self::buildAllowedProductsConfigForFrontend(),
+            'creditors'             => SettingsManager::getCreditors() ?: null,
             'directRedirect'        => (bool) ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
             'customPaywallCss'      => ConfigManager::getConfigurationValue('COMFINO_PAYWALL_CUSTOM_CSS_URL') ?: null,
             'scriptNonce'           => (string) apply_filters('comfino_csp_script_nonce', ''),

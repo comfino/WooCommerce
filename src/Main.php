@@ -269,6 +269,7 @@ final class Main
                     'sdkScriptUrl'          => ConfigManager::getSdkScriptUrl(),
                     'productTypes'          => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,
                     'allowedProductsConfig' => self::buildAllowedProductsConfigForFrontend(),
+                    'creditors'             => SettingsManager::getCreditors() ?: null,
                     'paywallSettings'       => [
                         'language' => self::getShopLanguage(),
                         'currency' => self::getShopCurrency(),
