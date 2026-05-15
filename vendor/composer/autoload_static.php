@@ -634,6 +634,7 @@ class ComposerStaticInitc881c954c3f7c2bbd7196d2eee3dca74
         'Comfino\\Shop\\Order\\SellerInterface' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Shop/Order/SellerInterface.php',
         'Comfino\\View\\Block\\PaymentGateway' => __DIR__ . '/../..' . '/src/View/Block/PaymentGateway.php',
         'Comfino\\View\\FrontendManager' => __DIR__ . '/../..' . '/src/View/FrontendManager.php',
+        'Comfino\\View\\PaywallCartSerializer' => __DIR__ . '/../..' . '/src/View/PaywallCartSerializer.php',
         'Comfino\\View\\SettingsForm' => __DIR__ . '/../..' . '/src/View/SettingsForm.php',
         'Comfino\\View\\TemplateManager' => __DIR__ . '/../..' . '/src/View/TemplateManager.php',
         'Comfino\\Widget\\WidgetTypeEnum' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Widget/WidgetTypeEnum.php',

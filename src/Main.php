@@ -12,6 +12,7 @@ use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Order\OrderManager;
 use Comfino\PluginShared\CacheManager;
 use Comfino\View\FrontendManager;
+use Comfino\View\PaywallCartSerializer;
 use Comfino\View\TemplateManager;
 
 if (!defined('ABSPATH')) {
@@ -82,7 +83,7 @@ final class Main
                     WC()->session->init();
                 }
 
-                // For logged in customers, pull data from their account rather than the session which may contain incomplete data.
+                // For logged-in customers, pull data from their account rather than the session which may contain incomplete data.
                 if (WC()->customer === null) {
                     try {
                         if (is_user_logged_in()) {
@@ -153,14 +154,14 @@ final class Main
             return $statuses;
         });
 
-        // Prevent Cloudflare RocketLoader and JS bundlers (PhastPress, Autoptimize, WP Rocket)
-        // from deferring Comfino frontend scripts asynchronously. These scripts depend on the
-        // wp_localize_script inline data block that immediately precedes them in the HTML; async
-        // delivery breaks that ordering guarantee.
+        /* Prevent Cloudflare RocketLoader and JS bundlers (PhastPress, Autoptimize, WP Rocket) from deferring Comfino
+           frontend scripts asynchronously. These scripts depend on the wp_add_inline_script data block that immediately
+           precedes them in the HTML; async delivery breaks that ordering guarantee. */
         add_filter('script_loader_tag', static function (string $tag, string $handle): string {
             if (strpos($handle, 'comfino-script-') === 0) {
                 return str_replace('<script ', '<script data-cfasync="false" ', $tag);
             }
+
             return $tag;
         }, 10, 2);
 
@@ -246,6 +247,7 @@ final class Main
             $environment = ConfigManager::isSandboxMode() ? 'sandbox' : 'production';
 
             $allowedProductTypes = null;
+            $shopCart = null;
 
             try {
                 $shopCart = OrderManager::getShopCart($cart);
@@ -254,31 +256,42 @@ final class Main
                     $shopCart
                 );
             } catch (\Throwable $e) {
-                ErrorLogger::sendError($e, 'getAllowedProductTypes');
+                ErrorLogger::sendError($e, 'getAllowedProductTypes', (string) $e->getCode(), $e->getMessage());
+            }
+
+            $cartPayload = null;
+
+            if ($shopCart !== null) {
+                try {
+                    $cartPayload = PaywallCartSerializer::toArray($shopCart);
+                } catch (\Throwable $e) {
+                    ErrorLogger::sendError($e, 'serializeShopCart', (string) $e->getCode(), $e->getMessage());
+                }
             }
 
             $scriptIds = FrontendManager::includeLocalScripts(['comfino-checkout.js'], []);
 
-            wp_localize_script(
+            // Emit via wp_add_inline_script + wp_json_encode to preserve scalar types end-to-end.
+            wp_add_inline_script(
                 $scriptIds[0],
-                'comfinoSettings',
-                [
-                    'authToken'             => $authToken,
-                    'loanAmount'            => $loanAmount,
-                    'environment'           => $environment,
-                    'sdkScriptUrl'          => ConfigManager::getSdkScriptUrl(),
-                    'productTypes'          => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,
-                    'allowedProductsConfig' => self::buildAllowedProductsConfigForFrontend(),
-                    'creditors'             => SettingsManager::getCreditors() ?: null,
-                    'paywallSettings'       => [
+                'window.comfinoSettings = ' . wp_json_encode([
+                    'authToken' => $authToken,
+                    'loanAmount' => $loanAmount,
+                    'environment' => $environment,
+                    'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
+                    'productTypes' => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,
+                    'cart' => $cartPayload,
+                    'paywallSettings' => [
                         'language' => self::getShopLanguage(),
                         'currency' => self::getShopCurrency(),
+                        'customPaywallCss' => ConfigManager::getConfigurationValue('COMFINO_PAYWALL_CUSTOM_CSS_URL') ?: null,
                     ],
-                    'directRedirect'        => ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT', false),
-                    'customPaywallCss'      => ConfigManager::getConfigurationValue('COMFINO_PAYWALL_CUSTOM_CSS_URL') ?: null,
-                    // Propagate nonce for strict CSP environments (e.g., WP_CSP_Headers, NinjaFirewall).
-                    'scriptNonce'           => (string) apply_filters('comfino_csp_script_nonce', ''),
-                ]
+                    'directRedirect' => (bool)ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
+                    'creditors' => SettingsManager::getCreditors() ?: null,
+                    'allowedProductsConfig' => self::buildAllowedProductsConfigForFrontend(),
+                    'scriptNonce' => (string)apply_filters('comfino_csp_script_nonce', ''),
+                ]) . ';',
+                'before'
             );
 
             DebugLogger::logEvent(

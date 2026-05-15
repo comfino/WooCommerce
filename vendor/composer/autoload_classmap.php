@@ -336,6 +336,7 @@ return array(
     'Comfino\\Shop\\Order\\SellerInterface' => $vendorDir . '/comfino/shop-plugins-shared/src/Shop/Order/SellerInterface.php',
     'Comfino\\View\\Block\\PaymentGateway' => $baseDir . '/src/View/Block/PaymentGateway.php',
     'Comfino\\View\\FrontendManager' => $baseDir . '/src/View/FrontendManager.php',
+    'Comfino\\View\\PaywallCartSerializer' => $baseDir . '/src/View/PaywallCartSerializer.php',
     'Comfino\\View\\SettingsForm' => $baseDir . '/src/View/SettingsForm.php',
     'Comfino\\View\\TemplateManager' => $baseDir . '/src/View/TemplateManager.php',
     'Comfino\\Widget\\WidgetTypeEnum' => $vendorDir . '/comfino/shop-plugins-shared/src/Widget/WidgetTypeEnum.php',

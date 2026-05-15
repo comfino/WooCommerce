@@ -8,9 +8,10 @@ use Comfino\Configuration\SettingsManager;
 use Comfino\DebugLogger;
 use Comfino\ErrorLogger;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
+use Comfino\Main;
 use Comfino\Order\OrderManager;
-use Comfino\PaywallAuthTokenGenerator;
 use Comfino\View\FrontendManager;
+use Comfino\View\PaywallCartSerializer;
 
 final class PaymentGateway extends AbstractPaymentMethodType
 {
@@ -103,6 +104,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
         $authToken = FrontendManager::getAuthToken();
 
         $allowedProductTypes = null;
+        $shopCart = null;
 
         if ($wcCart !== null) {
             try {
@@ -112,35 +114,41 @@ final class PaymentGateway extends AbstractPaymentMethodType
                     $shopCart
                 );
             } catch (\Throwable $e) {
-                ErrorLogger::sendError($e, 'getAllowedProductTypes');
+                ErrorLogger::sendError($e, 'getAllowedProductTypes', (string) $e->getCode(), $e->getMessage());
             }
         }
 
-        $paymentData = [
-            'authToken'             => $authToken,
-            'loanAmount'            => $loanAmount,
-            'environment'           => ConfigManager::isSandboxMode() ? 'sandbox' : 'production',
-            'sdkScriptUrl'          => ConfigManager::getSdkScriptUrl(),
-            'label'                 => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
-            'ariaLabel'             => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
-            'supports'              => $this->gateway ? array_filter($this->gateway->supports, [$this->gateway, 'supports']) : ['products'],
-            'icon'                  => ConfigManager::getConfigurationValue('COMFINO_SHOW_LOGO') ? ConfigManager::getPaywallLogoUrl() : '',
-            'paywallSettings'       => [
-                'language' => \Comfino\Main::getShopLanguage(),
-                'currency' => \Comfino\Main::getShopCurrency(),
-            ],
-            'allowedProductsConfig' => self::buildAllowedProductsConfigForFrontend(),
-            'creditors'             => SettingsManager::getCreditors() ?: null,
-            'directRedirect'        => (bool) ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
-            'customPaywallCss'      => ConfigManager::getConfigurationValue('COMFINO_PAYWALL_CUSTOM_CSS_URL') ?: null,
-            'scriptNonce'           => (string) apply_filters('comfino_csp_script_nonce', ''),
-        ];
+        $cartPayload = null;
 
-        if ($allowedProductTypes !== null) {
-            $paymentData['productTypes'] = array_map('strval', $allowedProductTypes);
+        if ($shopCart !== null) {
+            try {
+                $cartPayload = PaywallCartSerializer::toArray($shopCart);
+            } catch (\Throwable $e) {
+                ErrorLogger::sendError($e, 'serializeShopCart', (string) $e->getCode(), $e->getMessage());
+            }
         }
 
-        return $paymentData;
+        return [
+            'authToken' => $authToken,
+            'loanAmount' => $loanAmount,
+            'environment' => ConfigManager::isSandboxMode() ? 'sandbox' : 'production',
+            'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
+            'label' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
+            'ariaLabel' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
+            'supports' => $this->gateway ? array_filter($this->gateway->supports, [$this->gateway, 'supports']) : ['products'],
+            'icon' => ConfigManager::getConfigurationValue('COMFINO_SHOW_LOGO') ? ConfigManager::getPaywallLogoUrl() : '',
+            'productTypes' => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,
+            'cart' => $cartPayload,
+            'paywallSettings' => [
+                'language' => Main::getShopLanguage(),
+                'currency' => Main::getShopCurrency(),
+                'customPaywallCss' => ConfigManager::getConfigurationValue('COMFINO_PAYWALL_CUSTOM_CSS_URL') ?: null,
+            ],
+            'directRedirect' => (bool)ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
+            'creditors' => SettingsManager::getCreditors() ?: null,
+            'allowedProductsConfig' => self::buildAllowedProductsConfigForFrontend(),
+            'scriptNonce' => (string)apply_filters('comfino_csp_script_nonce', ''),
+        ];
     }
 
     /** @return array[]|null */

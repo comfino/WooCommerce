@@ -59,48 +59,27 @@
                 return;
             }
 
-            // allowedProductTypes: null = no filter active, [] = all filtered (don't load SDK),
-            // [...] = filtered subset to pass to bootstrapPaywall().
-            const allowedProductTypes = config.productTypes;
-            const allowedProductsConfig = config.allowedProductsConfig;
-
-            if (Array.isArray(allowedProductTypes) && allowedProductTypes.length === 0) {
-                // All product types filtered out for this cart — don't load the paywall.
+            // productTypes: null = no filter active, [] = all filtered, [...] = filtered subset to pass to bootstrapPaywall().
+            if (Array.isArray(config.productTypes) && config.productTypes.length === 0) {
+                // All product types filtered out for this cart — don't load the paywall SDK.
                 return;
             }
 
-            // Comfino paywall bootstrap options
+            /* All paywall bootstrap options assigned directly from comfino_data — wcSettings (wp_json_encode)
+               preserves scalar types and the insertion order of associative arrays (creditors map ordering MUST
+               survive end-to-end because the paywall renderer uses it literally). */
             const comfinoPaywallData = {
                 authToken: config.authToken,
                 loanAmount: config.loanAmount,
+                platform: 'woocommerce',
                 environment: config.environment,
-                platform: 'woocommerce'
+                productTypes: config.productTypes,
+                cart: config.cart,
+                paywallSettings: config.paywallSettings,
+                directRedirect: config.directRedirect,
+                creditors: config.creditors,
+                allowedProductsConfig: config.allowedProductsConfig
             };
-
-            if (Array.isArray(allowedProductTypes) && allowedProductTypes.length > 0) {
-                // Set allowed financial product types for paywall if provided.
-                comfinoPaywallData.productTypes = allowedProductTypes;
-            }
-
-            if (Array.isArray(allowedProductsConfig) && allowedProductsConfig.length > 0) {
-                comfinoPaywallData.allowedProductsConfig = allowedProductsConfig;
-            }
-
-            if (config.paywallSettings && typeof config.paywallSettings === 'object') {
-                comfinoPaywallData.paywallSettings = config.paywallSettings;
-            }
-
-            if (config.directRedirect) {
-                comfinoPaywallData.directRedirect = true;
-            }
-
-            if (config.customPaywallCss) {
-                comfinoPaywallData.customPaywallCss = config.customPaywallCss;
-            }
-
-            if (config.creditors && typeof config.creditors === 'object') {
-                comfinoPaywallData.creditors = config.creditors;
-            }
 
             /* Load Comfino web frontend SDK as a plain script via DOM injection.
 
