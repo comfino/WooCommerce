@@ -174,7 +174,10 @@ class Comfino_Payment_Gateway
             return $methods;
         });
 
-        // Add loaded script tag filter for adding custom attribute which prevents blocking by Google CMP scripts.
+        /* Add loaded script tag filter for adding a custom attribute which prevents blocking by Google CMP scripts.
+           Also prevent Cloudflare RocketLoader and JS bundlers (PhastPress, Autoptimize, WP Rocket) from deferring
+           Comfino frontend scripts asynchronously. These scripts depend on the wp_add_inline_script data block that
+           immediately precedes them in the HTML; async delivery breaks that ordering guarantee. */
         add_filter('script_loader_tag', static function (string $tag, string $handle): string {
             if (strpos($handle, PaymentGateway::GATEWAY_ID) !== 0) {
                 return $tag;
@@ -186,13 +189,14 @@ class Comfino_Payment_Gateway
                 if (strpos($tag, 'async') === false) {
                     $attributes[] = 'async';
                 }
-            } elseif (strpos($tag, 'defer') !== false) {
+            } elseif (strpos($handle, 'defer') !== false) {
                 if (strpos($tag, 'defer') === false) {
                     $attributes[] = 'defer';
                 }
             }
 
-            $attributes[] = 'data-cmp-ab="2"';
+            $attributes[] = 'data-cmp-ab="2"'; // Google CMP blocking prevention
+            $attributes[] = 'data-cfasync="false"'; // Cloudflare RocketLoader async deferral prevention
 
             return str_replace('">', '" ' . implode(' ', $attributes) . '>', $tag);
         }, 10, 2);

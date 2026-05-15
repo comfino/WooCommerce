@@ -154,17 +154,6 @@ final class Main
             return $statuses;
         });
 
-        /* Prevent Cloudflare RocketLoader and JS bundlers (PhastPress, Autoptimize, WP Rocket) from deferring Comfino
-           frontend scripts asynchronously. These scripts depend on the wp_add_inline_script data block that immediately
-           precedes them in the HTML; async delivery breaks that ordering guarantee. */
-        add_filter('script_loader_tag', static function (string $tag, string $handle): string {
-            if (strpos($handle, 'comfino-script-') === 0) {
-                return str_replace('<script ', '<script data-cfasync="false" ', $tag);
-            }
-
-            return $tag;
-        }, 10, 2);
-
         // Initialize cache system.
         CacheManager::init(self::getCacheRootPath());
 
