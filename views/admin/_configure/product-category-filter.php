@@ -17,16 +17,16 @@ if (!defined('ABSPATH')) {
     exit;
 }
 ?>
-<div id="<?= esc_attr($tree_id) ?>_<?= esc_attr($product_type) ?>"></div>
-<input id="<?= esc_attr($tree_id) ?>_<?= esc_attr($product_type) ?>_input" name="<?= esc_attr($tree_id) ?>[<?= esc_attr($product_type) ?>]" type="hidden" data-initialized="no" />
+<div id="<?php echo esc_attr($tree_id) ?>_<?php echo esc_attr($product_type) ?>"></div>
+<input id="<?php echo esc_attr($tree_id) ?>_<?php echo esc_attr($product_type) ?>_input" name="<?php echo esc_attr($tree_id) ?>[<?php echo esc_attr($product_type) ?>]" type="hidden" data-initialized="no" />
 <script>
     new Tree(
-        '#<?= esc_js($tree_id) ?>_<?= esc_js($product_type) ?>',
+        '#<?php echo esc_js($tree_id) ?>_<?php echo esc_js($product_type) ?>',
         {
-            data: <?= wp_json_encode($tree_nodes) ?>,
-            closeDepth: <?= esc_js($close_depth) ?>,
+            data: <?php echo wp_json_encode($tree_nodes) ?>,
+            closeDepth: <?php echo esc_js($close_depth) ?>,
             onChange: function () {
-                let input = document.getElementById('<?= esc_js($tree_id) ?>_<?= esc_js($product_type) ?>_input');
+                let input = document.getElementById('<?php echo esc_js($tree_id) ?>_<?php echo esc_js($product_type) ?>_input');
                 input.value = this.values.join();
 
                 if (input.dataset.initialized === 'no') {

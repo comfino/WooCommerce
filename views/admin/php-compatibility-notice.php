@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
 ?>
 <div class="error">
     <p>
-        <?=
+        <?php echo
         wp_kses(
             sprintf(
                 /* translators: 1: Plugin version 2: Required PHP version 3: Current PHP version 4: Link to compatible version */
@@ -35,7 +35,7 @@ if (!defined('ABSPATH')) {
 <?php if ($can_deactivate): ?>
     <div class="error">
         <p>
-            <?=
+            <?php echo
             wp_kses(
                 __('<strong>Comfino Payment Gateway:</strong> The plugin has been automatically deactivated to prevent fatal errors. Please resolve the PHP version issue before reactivating.', 'comfino-payment-gateway'),
                 ['strong' => []]

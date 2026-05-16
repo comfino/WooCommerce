@@ -13,4 +13,4 @@ if (!defined('ABSPATH')) {
 }
 ?>
 
-<?= esc_html($error_message) ?>
+<?php echo esc_html($error_message); ?>

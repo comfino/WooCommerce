@@ -213,8 +213,8 @@ final class Main
     {
         static $rendered = false;
 
-        // Prevent duplicate render when page-builders (Elementor etc.) call payment_fields()
-        // more than once per request; only the first invocation should produce the container.
+        /* Prevent duplicate render when page-builders (Elementor etc.) call payment_fields() more than once per
+           request; only the first invocation should produce the container. */
         if ($rendered) {
             return '';
         }
