@@ -2,6 +2,7 @@
 (function () {
     'use strict';
 
+    // Resolve the Blocks payment-method registration API; bail if absent (this page is not a Blocks checkout).
     const registerPaymentMethod = window.wc && window.wc.wcBlocksRegistry
         ? window.wc.wcBlocksRegistry.registerPaymentMethod
         : null;
@@ -26,9 +27,7 @@
             createElement('div', {id: 'comfino-paywall-container'})
         ),
         edit: createElement('div', null, 'Comfino'),
-        canMakePayment: function () {
-            return true;
-        },
+        canMakePayment: () => true,
         ariaLabel: config.ariaLabel || 'Comfino payment method',
         supports: {features: config.supports || []},
         paymentMethodId: 'comfino',
@@ -41,15 +40,24 @@
     if (window.wc && window.wc.wcBlocksData && window.wc.wcBlocksData.PAYMENT_STORE_KEY) {
         const select = window.wp.data.select(window.wc.wcBlocksData.PAYMENT_STORE_KEY);
 
+        /* On payment-store changes: bootstrap the SDK the first time Comfino becomes active, then re-init only when
+           React re-renders the block content with an empty container (see the iframe-presence guard below). */
         window.wp.data.subscribe(function () {
             if (select.getActivePaymentMethod() !== 'comfino') {
                 return;
             }
 
-            // SDK already injected — re-trigger init for React re-renders that recreate the paywall container.
+            /* SDK already injected: only re-trigger init when React has re-rendered the block content and the new
+               #comfino-paywall-container does NOT yet hold an iframe. The wp.data.subscribe fires on every store mutation
+               (very frequent under Blocks), so an unconditional init() here would destroy and recreate the paywall on
+               each tick — generating loud "SDK already initialized" warnings and needless iframe rebuilds. */
             if (document.querySelector('script[data-comfino-sdk]')) {
                 if (window.ComfinoPaywallInit) {
-                    window.ComfinoPaywallInit.init();
+                    const container = document.getElementById('comfino-paywall-container');
+
+                    if (container && !container.querySelector('iframe.comfino-paywall')) {
+                        window.ComfinoPaywallInit.init();
+                    }
                 }
 
                 return;
@@ -73,6 +81,7 @@
                 loanAmount: config.loanAmount,
                 platform: 'woocommerce',
                 environment: config.environment,
+                wcBlocksActive: true,
                 productTypes: config.productTypes,
                 cart: config.cart,
                 paywallSettings: config.paywallSettings,
@@ -122,27 +131,7 @@
         });
     }
 
-    // Watch cart total changes in the Blocks store and reload the paywall with the updated amount.
-    if (window.wc && window.wc.wcBlocksData && window.wc.wcBlocksData.CART_STORE_KEY) {
-        const cartSelect = window.wp.data.select(window.wc.wcBlocksData.CART_STORE_KEY);
-        let lastCartTotal = null;
-
-        window.wp.data.subscribe(function () {
-            const totals = cartSelect.getCartTotals();
-
-            if (!totals || totals.total_price === lastCartTotal) {
-                return;
-            }
-
-            lastCartTotal = totals.total_price;
-
-            if (window.ComfinoPaywallInit) {
-                const newTotal = parseInt(totals.total_price, 10);
-
-                if (!isNaN(newTotal) && newTotal > 0) {
-                    window.ComfinoPaywallInit.reload(newTotal);
-                }
-            }
-        });
-    }
+    /* Cart-total refresh for the Blocks store is owned by the SDK's WooCommercePaywallController when
+       `wcBlocksActive: true` is set on the bootstrap data — it subscribes to wc-blocks-data CART_STORE_KEY and
+       drives paywall reloads. Plugin-side cart handling stays out of the way. */
 }());

@@ -46,8 +46,7 @@
     // Preserve original window.define for later restoration.
     const _amdDefine = window.define;
 
-    /* Temporarily hide window.define so the SDK's UMD bundle takes the global-assignment branch and
-       exposes window.Comfino. */
+    // Temporarily hide window.define so the SDK's UMD bundle takes the global-assignment branch and exposes window.Comfino.
     window.define = undefined;
 
     // Construct SDK script element and append to DOM.
@@ -84,6 +83,8 @@
         let container = document.getElementById('comfino-paywall-container');
 
         if (container && !isInVisibleContext(container)) {
+            /* First match is hidden (typically Elementor's builder-preview duplicate) — scan all candidates and pick
+              the first one rendered in a visible ancestor chain. */
             const candidates = document.querySelectorAll('[id="comfino-paywall-container"]');
 
             container = null;
@@ -111,8 +112,7 @@
 
     document.head.appendChild(script);
 
-    /* WooCommerce's updated_checkout cart-refresh handling lives in the SDK's WooCommercePaywallController
-       (subscribes to the jQuery event, reads the server-authoritative #comfino-loan-amount fragment, updates
-       the cached paywallData.loanAmount, and calls reload()). Keeping it in the SDK ensures every WC plugin
-       integration inherits the fix and the SPA-observer rebuild path uses the fresh amount. */
+    /* Cart-refresh on `updated_checkout` is owned by the SDK's WooCommercePaywallController — it reads the
+       server-authoritative #comfino-loan-amount fragment and drives the paywall reload. Plugin-side cart
+       handling stays out of the way. */
 }());
