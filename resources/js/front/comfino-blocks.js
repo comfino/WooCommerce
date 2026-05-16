@@ -83,14 +83,14 @@
 
             /* Load Comfino web frontend SDK as a plain script via DOM injection.
 
-               Why not a dynamic import or async load? The SDK is a UMD bundle. When RequireJS's global define()
-               is present (e.g. in some WP themes), UMD takes the AMD branch — it calls define() and returns its
-               export to RequireJS, but skips the global assignment (window.Comfino.*).
+               Why not a dynamic import or async load? The SDK is a UMD bundle. When RequireJS's global define() is
+               present (e.g. in some WP themes), UMD takes the AMD branch — it calls define() and returns its export
+               to RequireJS, but skips the global assignment (window.Comfino.*).
 
-               Solution: hide window.define before the script executes so the SDK's UMD wrapper sees no AMD
-               environment, takes the global-assignment branch, and sets window.Comfino. Restore define() in
-               onload/onerror. By the time the user reaches the payment step, all modules are already defined,
-               so the brief window where define is hidden is safe.
+               Solution: hide window.define before the script executes so the SDK's UMD wrapper sees no AMD environment,
+               takes the global-assignment branch, and sets window.Comfino. Restore define() in onload/onerror. By the
+               time the user reaches the payment step, all modules are already defined, so the brief window where define
+               is hidden is safe.
 
                Pass data directly to bootstrapPaywall() in onload — no intermediate global state used. */
 
