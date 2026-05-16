@@ -111,4 +111,18 @@
     };
 
     document.head.appendChild(script);
+
+    /* After WooCommerce refreshes the checkout on cart/shipping changes, reload the paywall with
+       the updated cart total sourced from the refreshed #comfino-loan-amount fragment. */
+    document.body.addEventListener('updated_checkout', function () {
+        const totalEl = document.getElementById('comfino-loan-amount');
+
+        if (totalEl && window.ComfinoPaywallInit) {
+            const newTotal = parseInt(totalEl.value, 10);
+
+            if (!isNaN(newTotal) && newTotal > 0) {
+                window.ComfinoPaywallInit.reload(newTotal);
+            }
+        }
+    });
 }());

@@ -121,4 +121,28 @@
             document.head.appendChild(script);
         });
     }
+
+    // Watch cart total changes in the Blocks store and reload the paywall with the updated amount.
+    if (window.wc && window.wc.wcBlocksData && window.wc.wcBlocksData.CART_STORE_KEY) {
+        const cartSelect = window.wp.data.select(window.wc.wcBlocksData.CART_STORE_KEY);
+        let lastCartTotal = null;
+
+        window.wp.data.subscribe(function () {
+            const totals = cartSelect.getCartTotals();
+
+            if (!totals || totals.total_price === lastCartTotal) {
+                return;
+            }
+
+            lastCartTotal = totals.total_price;
+
+            if (window.ComfinoPaywallInit) {
+                const newTotal = parseInt(totals.total_price, 10);
+
+                if (!isNaN(newTotal) && newTotal > 0) {
+                    window.ComfinoPaywallInit.reload(newTotal);
+                }
+            }
+        });
+    }
 }());

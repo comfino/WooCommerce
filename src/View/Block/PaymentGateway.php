@@ -100,7 +100,6 @@ final class PaymentGateway extends AbstractPaymentMethodType
     public function get_payment_method_data(): array
     {
         $wcCart = WC()->cart;
-        $loanAmount = $wcCart !== null ? (int) round($wcCart->get_cart_contents_total() * 100) : 0;
         $authToken = FrontendManager::getAuthToken();
 
         $allowedProductTypes = null;
@@ -117,6 +116,8 @@ final class PaymentGateway extends AbstractPaymentMethodType
                 ErrorLogger::sendError($e, 'getAllowedProductTypes', (string) $e->getCode(), $e->getMessage());
             }
         }
+
+        $loanAmount = $shopCart !== null ? $shopCart->getTotalAmount() : ($wcCart !== null ? (int) round($wcCart->get_total('edit') * 100) : 0);
 
         $cartPayload = null;
 

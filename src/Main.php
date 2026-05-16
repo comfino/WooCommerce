@@ -231,7 +231,6 @@ final class Main
         $rendered = true;
 
         if (!$isPaymentBlock) {
-            $loanAmount = (int) round($cart->get_cart_contents_total() * 100);
             $authToken = FrontendManager::getAuthToken();
             $environment = ConfigManager::isSandboxMode() ? 'sandbox' : 'production';
 
@@ -247,6 +246,8 @@ final class Main
             } catch (\Throwable $e) {
                 ErrorLogger::sendError($e, 'getAllowedProductTypes', (string) $e->getCode(), $e->getMessage());
             }
+
+            $loanAmount = $shopCart !== null ? $shopCart->getTotalAmount() : (int) round($cart->get_total('edit') * 100);
 
             $cartPayload = null;
 
@@ -289,7 +290,12 @@ final class Main
             );
         }
 
-        return TemplateManager::renderView('payment', 'front', [], !$isPaymentBlock);
+        return TemplateManager::renderView(
+            'payment',
+            'front',
+            ['comfino_total_amount' => $loanAmount ?? 0],
+            !$isPaymentBlock
+        );
     }
 
     public static function paymentIsAvailable(?\WC_Cart $cart): bool
