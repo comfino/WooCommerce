@@ -105,13 +105,6 @@ class Comfino_Payment_Gateway
         // Check for available GitHub updates (information only, no automatic updates).
         $this->check_github_version();
 
-        // Exclude runtime directories from WordPress Plugin Check scans.
-        add_filter('wp_plugin_check_ignore_directories', static function (array $dirs): array {
-            $dirs[] = 'var';
-
-            return $dirs;
-        });
-
         // Basic hooks
         add_action('init', [$this, 'init']);
         add_action('admin_init', [$this, 'check_environment']);

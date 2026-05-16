@@ -11,21 +11,51 @@
         return;
     }
 
-    const createElement = window.wp.element.createElement;
+    const { createElement, Fragment, useEffect } = window.wp.element;
 
     // Comfino payment method configuration
     const config = window.wc.wcSettings.getSetting('comfino_data', {});
 
+    /* Content component for Blocks checkout. Registers onPaymentSetup so the selected loanType/loanTerm — written
+       into the hidden inputs by the SDK on every UPDATE_PAYMENT_STATE — are forwarded as paymentMethodData in the
+       /wc/store/checkout REST request, which is what populates $_POST for process_payment(). The handler body is
+       built by WooCommercePaywallController.createBlocksPaymentSetupHandler so input IDs and the response envelope
+       stay in the SDK; the wrapper here resolves window.Comfino lazily because useEffect can run before the SDK
+       script is loaded (Comfino not yet selected when checkout mounts). */
+    function ComfinoContent(props) {
+        const eventRegistration = props.eventRegistration;
+        const emitResponse = props.emitResponse;
+
+        useEffect(function () {
+            return eventRegistration.onPaymentSetup(function () {
+                /* Resolve the SDK helper at fire-time. By the time onPaymentSetup runs (i.e., the user pressed
+                   "Place order" with Comfino selected), the SDK script has been injected and Comfino is on window.
+                   If for any reason it isn't, fall back to a SUCCESS response with empty payment-method data —
+                   WooCommerce will then reject server-side via the API rather than crashing the checkout. */
+                if (window.Comfino && typeof window.Comfino.WooCommercePaywallController === 'function') {
+                    return window.Comfino.WooCommercePaywallController.createBlocksPaymentSetupHandler(emitResponse)();
+                }
+
+                return {
+                    type: emitResponse.responseTypes.SUCCESS,
+                    meta: {paymentMethodData: {comfino_loan_type: '', comfino_loan_term: '0'}}
+                };
+            });
+        }, [eventRegistration.onPaymentSetup, emitResponse.responseTypes.SUCCESS]);
+
+        return createElement(
+            Fragment,
+            null,
+            createElement('input', {id: 'comfino-loan-type', name: 'comfino_loan_type', type: 'hidden', defaultValue: ''}),
+            createElement('input', {id: 'comfino-loan-term', name: 'comfino_loan_term', type: 'hidden', defaultValue: ''}),
+            createElement('div', {id: 'comfino-paywall-container'})
+        );
+    }
+
     const ComfinoPaymentContent = {
         name: 'comfino',
         label: config.label || 'Comfino',
-        content: createElement(
-            window.wp.element.Fragment,
-            null,
-            createElement('input', {id: 'comfino-loan-type', name: 'comfino_loan_type', type: 'hidden', value: ''}),
-            createElement('input', {id: 'comfino-loan-term', name: 'comfino_loan_term', type: 'hidden', value: ''}),
-            createElement('div', {id: 'comfino-paywall-container'})
-        ),
+        content: createElement(ComfinoContent),
         edit: createElement('div', null, 'Comfino'),
         canMakePayment: () => true,
         ariaLabel: config.ariaLabel || 'Comfino payment method',
@@ -40,26 +70,15 @@
     if (window.wc && window.wc.wcBlocksData && window.wc.wcBlocksData.PAYMENT_STORE_KEY) {
         const select = window.wp.data.select(window.wc.wcBlocksData.PAYMENT_STORE_KEY);
 
-        /* On payment-store changes: bootstrap the SDK the first time Comfino becomes active, then re-init only when
-           React re-renders the block content with an empty container (see the iframe-presence guard below). */
+        /* Bootstrap the SDK the first time Comfino becomes active. Container re-renders are reconciled by the
+           SDK's MutationObserver (BasePaywallController.startSpaObserver), which compares container identity and
+           also works in direct-redirect mode where there is no iframe. */
         window.wp.data.subscribe(function () {
             if (select.getActivePaymentMethod() !== 'comfino') {
                 return;
             }
 
-            /* SDK already injected: only re-trigger init when React has re-rendered the block content and the new
-               #comfino-paywall-container does NOT yet hold an iframe. The wp.data.subscribe fires on every store mutation
-               (very frequent under Blocks), so an unconditional init() here would destroy and recreate the paywall on
-               each tick — generating loud "SDK already initialized" warnings and needless iframe rebuilds. */
             if (document.querySelector('script[data-comfino-sdk]')) {
-                if (window.ComfinoPaywallInit) {
-                    const container = document.getElementById('comfino-paywall-container');
-
-                    if (container && !container.querySelector('iframe.comfino-paywall')) {
-                        window.ComfinoPaywallInit.init();
-                    }
-                }
-
                 return;
             }
 
