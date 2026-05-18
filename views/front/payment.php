@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 ?>
 <!-- Cart total in grosze; initial value set server-side, refreshed on cart/shipping changes via WooCommerce checkout fragments. -->
 <input id="comfino-loan-amount" name="comfino_loan_amount" type="hidden" value="<?php echo esc_attr($comfino_total_amount); ?>" />
-<!-- Loan parameters written by WooCommerceAdapter.updatePaymentState(), read on order submit. -->
+<!-- Loan parameters written by WooCommerceAdapter.updatePaymentState(), read on order placement. -->
 <input id="comfino-loan-type" name="comfino_loan_type" type="hidden" value="" />
 <input id="comfino-loan-term" name="comfino_loan_term" type="hidden" value="" />
 <!-- Comfino web frontend SDK renders paywall iframe here. -->
