@@ -4,7 +4,6 @@
     "description": "WooCommerce payment module for Comfino deferred payments gateway.",
     "homepage": "https://github.com/comfino/WooCommerce",
     "license": "OSL-3.0",
-    "author": "WooCommerce",
     "authors": [
         {
             "name": "Artur Kozubski",

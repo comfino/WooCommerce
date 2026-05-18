@@ -514,7 +514,7 @@ class PaymentGateway extends \WC_Payment_Gateway
     }
 
     /**
-     * Validates payment data from Order object before processing.
+     * Validates payment data from the Order object before processing.
      *
      * @return string[] Array of error messages, empty if validation passes.
      */
@@ -609,7 +609,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 
             return ApiClient::getInstance()->getFinancialProducts($criteria)->financialProducts;
         } catch (ClientExceptionInterface $e) {
-            FrontendManager::processError('Emergency financial offer retrieving error', $e);
+            FrontendManager::processError('Emergency financial offer retrieving error.', $e);
 
             return [];
         }

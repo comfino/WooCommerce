@@ -3,6 +3,8 @@
  * Fixed: paywall invisible when Cloudflare RocketLoader is active (added data-cfasync="false" to prevent async script deferral).
  * Fixed: paywall invisible or broken with JS optimization plugins (PhastPress, Autoptimize, WP Rocket) that bundle or defer scripts.
  * Fixed: paywall rendered inside hidden Elementor builder wrapper instead of the visible checkout — only the first visible paywall container is now used.
+ * Fixed: paywall invisible or malfunctioning when Google Consent Management Platform (Google CMP) is active.
+ * Fixed: paywall loan amount now updates correctly when cart items or shipping costs change.
  * Added support for strict Content Security Policy environments: shops using a nonce-based CSP can now propagate the nonce to the dynamically injected SDK script via the comfino_csp_script_nonce WordPress filter.
  * Added per-product-type installment term limits (allowedProductsConfig): admins can now restrict available installment terms per financial product type in the sale settings. Limits are enforced on both the paywall (financial products listing) and order creation.
  * Added direct redirect mode: when enabled, the full paywall offer browser is skipped and the customer is redirected straight to the Comfino payment gateway with the default financial product.
