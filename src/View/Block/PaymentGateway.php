@@ -145,10 +145,23 @@ final class PaymentGateway extends AbstractPaymentMethodType
                 'currency' => Main::getShopCurrency(),
                 'customPaywallCss' => ConfigManager::getConfigurationValue('COMFINO_PAYWALL_CUSTOM_CSS_URL') ?: null,
             ],
-            'directRedirect' => (bool)ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
+            /* Browser-safe shop environment payload — mirrors the shape produced by
+               AbstractShopEnvironmentBuilder::buildForFrontend() in php-sdk. Replaces the deprecated
+               `shopInfo` field. Kept in sync with the legacy-checkout payload built in Main::renderPaywallIframe();
+               candidate for refactor into a shared WooCommerceShopEnvironmentBuilder. */
+            'shopEnvironment' => [
+                'platform' => 'woocommerce',
+                'platformName' => 'WooCommerce',
+                'platformDomain' => Main::getShopDomain(),
+                'theme' => ['family' => 'woocommerce'],
+                'language' => Main::getShopLanguage(),
+                'currency' => Main::getShopCurrency(),
+                'pageContext' => ['type' => 'checkout'],
+            ],
+            'directRedirect' => (bool) ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
             'creditors' => SettingsManager::getCreditors() ?: null,
             'allowedProductsConfig' => self::buildAllowedProductsConfigForFrontend(),
-            'scriptNonce' => (string)apply_filters('comfino_csp_script_nonce', ''),
+            'scriptNonce' => (string) apply_filters('comfino_csp_script_nonce', ''),
         ];
     }
 

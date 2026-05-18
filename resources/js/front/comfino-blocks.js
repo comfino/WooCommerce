@@ -104,6 +104,7 @@
                 productTypes: config.productTypes,
                 cart: config.cart,
                 paywallSettings: config.paywallSettings,
+                shopEnvironment: config.shopEnvironment,
                 directRedirect: config.directRedirect,
                 creditors: config.creditors,
                 allowedProductsConfig: config.allowedProductsConfig

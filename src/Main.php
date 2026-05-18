@@ -261,6 +261,22 @@ final class Main
 
             $scriptIds = FrontendManager::includeLocalScripts(['comfino-checkout.js'], []);
 
+            /* Browser-safe shop environment payload — mirrors the shape produced by
+               AbstractShopEnvironmentBuilder::buildForFrontend() in php-sdk (used by Magento via
+               MagentoShopEnvironmentBuilder). Built inline here because WC has no concrete builder
+               subclass yet; can be refactored to WooCommerceShopEnvironmentBuilder later for parity
+               with Magento and PrestaShop. Replaces the deprecated `shopInfo` field — the SDK accepts
+               this directly as PaywallOptions.shopEnvironment with no compat shim involved. */
+            $shopEnvironment = [
+                'platform' => 'woocommerce',
+                'platformName' => 'WooCommerce',
+                'platformDomain' => self::getShopDomain(),
+                'theme' => ['family' => 'woocommerce'],
+                'language' => self::getShopLanguage(),
+                'currency' => self::getShopCurrency(),
+                'pageContext' => ['type' => 'checkout'],
+            ];
+
             // Emit via wp_add_inline_script + wp_json_encode to preserve scalar types end-to-end.
             wp_add_inline_script(
                 $scriptIds[0],
@@ -276,10 +292,11 @@ final class Main
                         'currency' => self::getShopCurrency(),
                         'customPaywallCss' => ConfigManager::getConfigurationValue('COMFINO_PAYWALL_CUSTOM_CSS_URL') ?: null,
                     ],
-                    'directRedirect' => (bool)ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
+                    'shopEnvironment' => $shopEnvironment,
+                    'directRedirect' => (bool) ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
                     'creditors' => SettingsManager::getCreditors() ?: null,
                     'allowedProductsConfig' => self::buildAllowedProductsConfigForFrontend(),
-                    'scriptNonce' => (string)apply_filters('comfino_csp_script_nonce', ''),
+                    'scriptNonce' => (string) apply_filters('comfino_csp_script_nonce', ''),
                 ]) . ';',
                 'before'
             );
