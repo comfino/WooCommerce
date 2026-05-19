@@ -21,6 +21,9 @@
         "prepend-autoloader": false,
         "allow-plugins": {
             "php-http/discovery": true
+        },
+        "audit": {
+            "ignore": ["PKSA-pwh8-d4fr-nywn", "PKSA-z3gr-8qht-p93v"]
         }
     },
     "autoload": {
@@ -74,6 +77,7 @@
         "cache/hierarchical-cache": "~1.1.0",
         "league/flysystem": "~1.0.70",
         "monolog/monolog": "^1.27",
+        "psr/http-factory": "^1.0",
         "psr/log": "^1.1",
         "symfony/deprecation-contracts": "<3.0",
         "symfony/options-resolver": "~4.4.0",

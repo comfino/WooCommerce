@@ -85,7 +85,7 @@ final class FrontendManager
             esc_attr($data['css']),
             $fieldValue,
             esc_attr($data['placeholder']),
-            disabled($data['disabled']),
+            disabled($data['disabled'], true, false),
             $wcSettings->get_custom_attribute_html($data)
         );
     }
@@ -125,7 +125,7 @@ final class FrontendManager
             $inputs[] = sprintf(
                 '<label for="%s"><input %s class="%s" type="checkbox" name="%s" id="%s" style="%s" value="%s" %s %s /> %s</label>', // WPCS: XSS ok.
                 $fieldName,
-                disabled($data['disabled']),
+                disabled($data['disabled'], true, false),
                 esc_attr($data['class']),
                 $fieldName,
                 $fieldName,

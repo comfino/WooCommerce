@@ -118,6 +118,8 @@ class TemplateManagerTest extends \PHPUnit_Framework_TestCase
         $name = 'simple-template';
         $path = 'front';
 
+        $this->expectOutputString('<div>Template: simple-template.php</div>');
+
         // Test with only required parameters.
         $result = TemplateManager::renderView($name, $path);
 
