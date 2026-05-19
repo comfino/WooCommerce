@@ -164,7 +164,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 
         if (empty($loanType) || empty($loanTerm)) {
             // Preselected financial offer data incomplete - load financial offer again and set default product as first user choice before redirection.
-            if (empty($financialProducts = $this->getFinancialProducts($shopCart->getTotalValue()))) {
+            if (empty($financialProducts = $this->getFinancialProducts($shopCart->getTotalValue(), $shopCart))) {
                 // Emergency offer loading failed - return error to the user and prevent redirection to avoid transaction failure.
                 wc_add_notice(__('Preselected financial offer data incomplete. Please try again.', 'comfino-payment-gateway'));
 
@@ -601,11 +601,15 @@ class PaymentGateway extends \WC_Payment_Gateway
     /**
      * @return FinancialProduct[]
      */
-    private function getFinancialProducts(int $loanAmount): array
+    private function getFinancialProducts(int $loanAmount, Cart $shopCart): array
     {
         try {
+            $allowedProductTypes = SettingsManager::getAllowedProductTypes(
+                ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
+                $shopCart
+            );
             $allowedProductsConfig = self::buildAllowedProductsConfig();
-            $criteria = new LoanQueryCriteria($loanAmount, null, null, null, null, null, $allowedProductsConfig);
+            $criteria = new LoanQueryCriteria($loanAmount, null, null, null, $allowedProductTypes, null, $allowedProductsConfig);
 
             return ApiClient::getInstance()->getFinancialProducts($criteria)->financialProducts;
         } catch (ClientExceptionInterface $e) {
