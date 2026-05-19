@@ -1,5 +1,6 @@
 .idea
 /packages/sunrise
+/composer.lock
 /vendor/*
 !/vendor/autoload.php
 !/vendor/cache/

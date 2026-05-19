@@ -4,6 +4,7 @@
     "description": "WooCommerce payment module for Comfino deferred payments gateway.",
     "homepage": "https://github.com/comfino/WooCommerce",
     "license": "OSL-3.0",
+    "author": "WooCommerce",
     "authors": [
         {
             "name": "Artur Kozubski",
@@ -23,7 +24,10 @@
             "php-http/discovery": true
         },
         "audit": {
-            "ignore": ["PKSA-pwh8-d4fr-nywn", "PKSA-z3gr-8qht-p93v"]
+            "ignore": [
+                "PKSA-pwh8-d4fr-nywn",
+                "PKSA-z3gr-8qht-p93v"
+            ]
         }
     },
     "autoload": {
@@ -99,7 +103,7 @@
     "repositories": [
         {
             "type": "artifact",
-            "url": "./packages/sunrise"
+            "url": "/home/akozubski/Devel/comfino/lib/shop-plugins-lib-builder/packages/sunrise"
         },
         {
             "type": "vcs",
