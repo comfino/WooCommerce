@@ -95,7 +95,7 @@
     "repositories": [
         {
             "type": "artifact",
-            "url": "/home/akozubski/Devel/comfino/lib/shop-plugins-lib-builder/packages/sunrise"
+            "url": "./packages/sunrise"
         },
         {
             "type": "vcs",

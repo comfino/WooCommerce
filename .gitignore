@@ -1,4 +1,5 @@
 .idea
+/packages/sunrise
 /vendor/*
 !/vendor/autoload.php
 !/vendor/cache/
