@@ -31,17 +31,29 @@ Pola parametrów konfiguracyjnych:
 * **Wyświetlanie logo** — status widoczności logo Comfino obok tytułu na liście metod płatności (domyślnie: włączone)
 * **Numer zamówienia** — Używaj numeru zamówienia widocznego dla klienta zamiast numerycznego ID zamówienia w komunikacji z API Comfino. Dotyczy tylko nowych zamówień.
 
+**Ustawienia paywalla**
+* **Tryb bezpośredniego przekierowania** — Nie wyświetlaj paywalla Comfino, wyłącza automatyczne wyświetlanie paywalla na podsumowaniu płatności, pozwalając przejść na wniosek bez potrzeby wyboru jednego z produktów finansowych Comfino.
+* **Niestandardowy styl CSS paywalla** — Odnośnik do pliku CSS ze stylami nadpisującymi wygląd paywalla (akceptowane są tylko adresy bezwzględne z domeny sklepu)
+
 ![Konfiguracja](images/pl/configuration1.png "Konfiguracja")
 
 **USTAWIENIA SPRZEDAŻY**
 
+**Reguły dostępności produktów finansowych**
+
+Sekcja reguł dostępności produktów finansowych umożliwia zawężenie dostępnych okresów dla każdego typu produktu finansowego, odpowiadającego dostępnym metodom finansowania zakupów w ramach umowy zawartej z Comfino. Dla każdego typu można określić minimalny i maksymalny okres spłaty oraz wyszczególnić konkretne okresy (rozdzielone przecinkami). Aby nie stosować żadnych ograniczeń dla danego typu produktu, wystarczy zostawić puste pola. Wszystkie ograniczenia działają łącznie: jeśli ustawione są "Wyszczególnione okresy", oferowane są tylko te konkretne okresy; wartości "Min./Maks." dodatkowo je zawężają. Ograniczenia są stosowane zarówno na paywallu, jak i wniosku.
+
+![Konfiguracja](images/pl/configuration2a.png "Konfiguracja")
+
+**Kategorie produktów**
+
 Zakładka zawiera ustawienia dotyczące zarządzania sprzedażą.
 
-Reguły dostępności produktów finansowych (filtry kategorii produktowych) umożliwiają przypisanie płatności Comfino do określonych kategorii produktów. Filtry kategorii są podzielone na sekcje odpowiadające dostępnym metodom finansowania zakupów w ramach umowy zawartej z Comfino. Ponadto zarządzanie dostępnością płatności Comfino jest możliwe tylko dla następujących typów produktów finansowych: "Raty zero procent", "Zapłać później", "Leasing". Jeśli zawarta umowa nie zawiera jednej z tych pozycji lub wszystkich, to zakładka będzie zawierała listę drzew ograniczonych do tej jednej metody finansowania lub będzie zawierać listę drzew dla pozostałych typów produktów z umowy, w przypadku braku obecności w umowie produktów "Raty zero procent", "Zapłać później" i "Leasing".
+Reguły dostępności produktów finansowych (filtry kategorii produktowych) umożliwiają przypisanie płatności Comfino do określonych kategorii produktów. Filtry kategorii są podzielone na sekcje odpowiadające dostępnym metodom finansowania zakupów w ramach umowy zawartej z Comfino. Ponadto zarządzanie dostępnością płatności Comfino jest możliwe tylko dla następujących typów produktów finansowych: "Raty zero procent", "Zapłać później", "Raty dla firm", "Odroczone płatności dla firm", "Podziel na 3", " "Leasing". Jeśli zawarta umowa nie zawiera jednej z tych pozycji lub wszystkich, to zakładka będzie zawierała listę drzew ograniczonych do tej jednej metody finansowania lub będzie zawierać listę drzew dla pozostałych typów produktów z umowy, w przypadku braku obecności w umowie produktów "Raty zero procent", "Zapłać później", "Raty dla firm", "Odroczone płatności dla firm", "Podziel na 3", " "Leasing".
 
 Domyślnie płatności Comfino są dostępne bezwarunkowo dla wszystkich typów produktów. W celu wyłączenia Comfino dla wybranych typów produktów należy odznaczyć odpowiednie kategorie w drzewie kategorii dla każdego typu oferty finansowej i kliknąć "Zapisz".
 
-![Konfiguracja](images/pl/configuration2.png "Konfiguracja")
+![Konfiguracja](images/pl/configuration2b.png "Konfiguracja")
 
 **USTAWIENIA WIDGETU**
 
