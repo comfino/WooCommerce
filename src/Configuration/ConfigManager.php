@@ -581,6 +581,44 @@ final class ConfigManager
         return self::isSandboxMode() ? self::COMFINO_SDK_JS_SANDBOX : self::COMFINO_SDK_JS_PRODUCTION;
     }
 
+    /**
+     * URL of the SDK's ESM build, when available. Returns null until the SDK publishes one — the
+     * front-end loader treats null as "fall back to the UMD URL" and only honors the value when
+     * sdkScriptKind === 'module'.
+     */
+    public static function getSdkScriptUrlEsm(): ?string
+    {
+        if (self::useDevEnvVars() && getenv('COMFINO_DEV_SDK_SCRIPT_URL_ESM')) {
+            $sdkScriptUrl = sanitize_url(wp_unslash(getenv('COMFINO_DEV_SDK_SCRIPT_URL_ESM')));
+
+            if (self::useUnminifiedScripts()) {
+                $sdkScriptUrl = str_replace('.min.js', '.js', $sdkScriptUrl);
+            }
+
+            return $sdkScriptUrl !== '' ? $sdkScriptUrl : null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Loader hint for the front-end bootstrap: 'umd' (default, current bundle) or 'module' (future
+     * ESM bundle, loaded via <script type="module">). Switching to 'module' lets us drop the
+     * window.define = undefined trick without breaking the plugin.
+     */
+    public static function getSdkScriptKind(): string
+    {
+        if (self::useDevEnvVars() && getenv('COMFINO_DEV_SDK_SCRIPT_KIND')) {
+            $kind = sanitize_text_field(wp_unslash(getenv('COMFINO_DEV_SDK_SCRIPT_KIND')));
+
+            if ($kind === 'module') {
+                return 'module';
+            }
+        }
+
+        return 'umd';
+    }
+
     public static function getWidgetScriptUrl(): string
     {
         if (self::useDevEnvVars() && getenv('COMFINO_DEV_WIDGET_SCRIPT_URL')) {

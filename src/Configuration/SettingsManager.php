@@ -6,7 +6,6 @@ use Comfino\Api\ApiClient;
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
 use Comfino\Common\Backend\Payment\ProductTypeFilter\FilterByCartValueLowerLimit;
 use Comfino\Common\Backend\Payment\ProductTypeFilter\FilterByExcludedCategory;
-use Comfino\Common\Backend\Payment\ProductTypeFilter\FilterByProductType;
 use Comfino\Common\Backend\Payment\ProductTypeFilterInterface;
 use Comfino\Common\Backend\Payment\ProductTypeFilterManager;
 use Comfino\Common\Shop\Cart;
@@ -317,13 +316,6 @@ final class SettingsManager
             $filters[] = new FilterByCartValueLowerLimit(
                 array_combine($availableProductTypes, array_fill(0, count($availableProductTypes), $minAmount))
             );
-        }
-
-        if ($listType === ProductTypesListTypeEnum::LIST_TYPE_WIDGET
-            && ConfigManager::getConfigurationValue('COMFINO_WIDGET_TYPE') === 'with-modal'
-            && !empty($widgetProductTypes = ConfigManager::getWidgetOfferTypes())
-        ) {
-            $filters[] = new FilterByProductType([new LoanTypeEnum(current($widgetProductTypes), false)]);
         }
 
         if (self::productCategoryFiltersActive($productCategoryFilters = self::getProductCategoryFilters())) {

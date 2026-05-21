@@ -134,6 +134,8 @@ final class PaymentGateway extends AbstractPaymentMethodType
             'loanAmount' => $loanAmount,
             'environment' => ConfigManager::isSandboxMode() ? 'sandbox' : 'production',
             'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
+            'sdkScriptUrlEsm' => ConfigManager::getSdkScriptUrlEsm(),
+            'sdkScriptKind' => ConfigManager::getSdkScriptKind(),
             'label' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
             'ariaLabel' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
             'supports' => $this->gateway ? array_filter($this->gateway->supports, [$this->gateway, 'supports']) : ['products'],

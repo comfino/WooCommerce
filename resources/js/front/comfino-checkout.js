@@ -5,7 +5,7 @@
     // Comfino payment method configuration
     const config = window.comfinoSettings || {};
 
-    if (!config.sdkScriptUrl || !config.authToken || document.querySelector('script[data-comfino-sdk]')) {
+    if (!config.sdkScriptUrl || !config.authToken) {
         return;
     }
 
@@ -32,55 +32,27 @@
         allowedProductsConfig: config.allowedProductsConfig
     };
 
-    /* Load Comfino web frontend SDK as a plain script via DOM injection.
+    /* Resolve visible paywall container — guards against Elementor rendering a hidden duplicate of the checkout
+       (including payment_fields()) in a builder-preview wrapper. */
+    function isInVisibleContext(element)
+    {
+        let node = element;
 
-       Why not a dynamic import or async load?  The SDK is a UMD bundle. When RequireJS's global define() is present
-       (e.g. in some WP themes), UMD takes the AMD branch — it calls define() and returns its export to RequireJS, but
-       skips the global assignment (window.Comfino.*).
+        while (node && node !== document.body) {
+            const computedStyle = window.getComputedStyle(node);
 
-       Solution: hide window.define before the script executes so the SDK's UMD wrapper sees no AMD environment, takes
-       the global-assignment branch, and sets window.Comfino.  Restore define() in onload/onerror.  By the time the user
-       reaches the payment step, all modules are already defined, so the brief window where define is hidden is safe.
-
-       Pass data directly to bootstrapPaywall() in onload — no intermediate global state used. */
-
-    // Preserve original window.define for later restoration.
-    const _amdDefine = window.define;
-
-    // Temporarily hide window.define so the SDK's UMD bundle takes the global-assignment branch and exposes window.Comfino.
-    window.define = undefined;
-
-    // Construct SDK script element and append to DOM.
-    const script = document.createElement('script');
-    script.src = config.sdkScriptUrl;
-    script.setAttribute('data-comfino-sdk', '1');
-
-    if (config.scriptNonce) {
-        script.setAttribute('nonce', config.scriptNonce);
-    }
-
-    script.onload = function () {
-        window.define = _amdDefine;
-
-        /* Resolve visible paywall container — guards against Elementor rendering a hidden duplicate of the checkout
-           (including payment_fields()) in a builder-preview wrapper. */
-        function isInVisibleContext(element)
-        {
-            let node = element;
-
-            while (node && node !== document.body) {
-                const computedStyle = window.getComputedStyle(node);
-
-                if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden') {
-                    return false;
-                }
-
-                node = node.parentElement;
+            if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden') {
+                return false;
             }
 
-            return true;
+            node = node.parentElement;
         }
 
+        return true;
+    }
+
+    function resolvePaywallContainer()
+    {
         let container = document.getElementById('comfino-paywall-container');
 
         if (container && !isInVisibleContext(container)) {
@@ -99,19 +71,92 @@
             }
         }
 
+        return container;
+    }
+
+    /* Load the Comfino web frontend SDK. Two code paths based on config.sdkScriptKind:
+
+       - 'umd' (default today): the bundle is loaded as a classic <script>. When RequireJS's global define() is
+         present (some WP themes ship it), the UMD wrapper would take the AMD branch and never populate
+         window.Comfino. We temporarily clear window.define for the duration of the script load to force the
+         global-assignment branch, and restore it in both onload and onerror.
+       - 'module': the bundle is loaded as <script type="module">. ESM does not consult window.define, so the
+         clear-and-restore dance is skipped entirely. The SDK is resolved from the returned reference, not from
+         a global — once UMD is retired we can drop the window.Comfino fallback.
+
+       Pass the resolved SDK reference through instead of relying on window.Comfino. The current UMD build still
+       populates the global, so reading from window.Comfino remains a valid fallback for the 'umd' branch. */
+    function loadSdk(cfg)
+    {
+        // Idempotency guard — bypass injection if a previous mount already resolved the SDK on this page.
+        if (window.Comfino && typeof window.Comfino.bootstrapPaywall === 'function') {
+            return Promise.resolve(window.Comfino);
+        }
+
+        if (window.__comfinoSdkPromise) {
+            return window.__comfinoSdkPromise;
+        }
+
+        const kind = cfg.sdkScriptKind === 'module' ? 'module' : 'umd';
+        const url = kind === 'module' ? (cfg.sdkScriptUrlEsm || cfg.sdkScriptUrl) : cfg.sdkScriptUrl;
+
+        window.__comfinoSdkPromise = new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = url;
+            script.setAttribute('data-comfino-sdk', '1');
+
+            if (cfg.scriptNonce) {
+                script.setAttribute('nonce', cfg.scriptNonce);
+            }
+
+            if (kind === 'module') {
+                script.type = 'module';
+                script.onload = () => resolve(window.Comfino);
+                script.onerror = (e) => {
+                    window.__comfinoSdkPromise = null;
+                    reject(e);
+                };
+            } else {
+                /* UMD branch — scope the define-clear to this single script load. Restore window.define on
+                   both load AND error so a failed script tag never leaves AMD-aware modules broken. */
+                const savedDefine = window.define;
+                window.define = undefined;
+
+                script.onload = () => {
+                    window.define = savedDefine;
+                    resolve(window.Comfino);
+                };
+                script.onerror = (e) => {
+                    window.define = savedDefine;
+                    window.__comfinoSdkPromise = null;
+                    reject(e);
+                };
+            }
+
+            document.head.appendChild(script);
+        });
+
+        return window.__comfinoSdkPromise;
+    }
+
+    loadSdk(config).then((sdk) => {
+        if (!sdk || typeof sdk.bootstrapPaywall !== 'function') {
+            return;
+        }
+
+        const container = resolvePaywallContainer();
+
         if (!container) {
             return;
         }
 
         comfinoPaywallData.container = container;
 
-        window.Comfino.bootstrapPaywall(comfinoPaywallData);
-    };
-    script.onerror = function () {
-        window.define = _amdDefine;
-    };
-
-    document.head.appendChild(script);
+        sdk.bootstrapPaywall(comfinoPaywallData);
+    }).catch(() => {
+        /* Script-load failed — leave the checkout unaffected (Comfino tile won't render). The shop's
+           server-side checkout will still place the order via other payment methods. */
+    });
 
     /* Cart-refresh on `updated_checkout` is owned by the SDK's WooCommercePaywallController — it reads the
        server-authoritative #comfino-loan-amount fragment and drives the paywall reload. Plugin-side cart

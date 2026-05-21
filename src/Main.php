@@ -285,6 +285,8 @@ final class Main
                     'loanAmount' => $loanAmount,
                     'environment' => $environment,
                     'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
+                    'sdkScriptUrlEsm' => ConfigManager::getSdkScriptUrlEsm(),
+                    'sdkScriptKind' => ConfigManager::getSdkScriptKind(),
                     'productTypes' => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,
                     'cart' => $cartPayload,
                     'paywallSettings' => [

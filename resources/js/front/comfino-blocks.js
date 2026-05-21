@@ -20,26 +20,41 @@
        into the hidden inputs by the SDK on every UPDATE_PAYMENT_STATE — are forwarded as paymentMethodData in the
        /wc/store/checkout REST request, which is what populates $_POST for process_payment(). The handler body is
        built by WooCommercePaywallController.createBlocksPaymentSetupHandler so input IDs and the response envelope
-       stay in the SDK; the wrapper here resolves window.Comfino lazily because useEffect can run before the SDK
-       script is loaded (Comfino not yet selected when checkout mounts). */
+       stay in the SDK; the wrapper here resolves the SDK lazily — useEffect can run before the SDK script is
+       loaded (Comfino not yet selected when checkout mounts). Prefer the cached promise on window over reading
+       window.Comfino directly so the ESM branch (which doesn't populate the global) still resolves. */
+    function resolveSdk() {
+        if (window.Comfino && typeof window.Comfino.WooCommercePaywallController === 'function') {
+            return Promise.resolve(window.Comfino);
+        }
+
+        if (window.__comfinoSdkPromise) {
+            return window.__comfinoSdkPromise;
+        }
+
+        return Promise.resolve(null);
+    }
+
     function ComfinoContent(props) {
         const eventRegistration = props.eventRegistration;
         const emitResponse = props.emitResponse;
 
         useEffect(function () {
             return eventRegistration.onPaymentSetup(function () {
-                /* Resolve the SDK helper at fire-time. By the time onPaymentSetup runs (i.e., the user pressed
-                   "Place order" with Comfino selected), the SDK script has been injected and Comfino is on window.
-                   If for any reason it isn't, fall back to a SUCCESS response with empty payment-method data —
-                   WooCommerce will then reject server-side via the API rather than crashing the checkout. */
-                if (window.Comfino && typeof window.Comfino.WooCommercePaywallController === 'function') {
-                    return window.Comfino.WooCommercePaywallController.createBlocksPaymentSetupHandler(emitResponse)();
-                }
+                /* Resolve the SDK at fire-time. By the time onPaymentSetup runs (i.e., the user pressed
+                   "Place order" with Comfino selected), the SDK script has been injected. If for any reason it
+                   isn't, fall back to a SUCCESS response with empty payment-method data — WooCommerce will then
+                   reject server-side via the API rather than crashing the checkout. */
+                return resolveSdk().then(function (sdk) {
+                    if (sdk && typeof sdk.WooCommercePaywallController === 'function') {
+                        return sdk.WooCommercePaywallController.createBlocksPaymentSetupHandler(emitResponse)();
+                    }
 
-                return {
-                    type: emitResponse.responseTypes.SUCCESS,
-                    meta: {paymentMethodData: {comfino_loan_type: '', comfino_loan_term: '0'}}
-                };
+                    return {
+                        type: emitResponse.responseTypes.SUCCESS,
+                        meta: {paymentMethodData: {comfino_loan_type: '', comfino_loan_term: '0'}}
+                    };
+                });
             });
         }, [eventRegistration.onPaymentSetup, emitResponse.responseTypes.SUCCESS]);
 
@@ -70,6 +85,68 @@
     if (window.wc && window.wc.wcBlocksData && window.wc.wcBlocksData.PAYMENT_STORE_KEY) {
         const select = window.wp.data.select(window.wc.wcBlocksData.PAYMENT_STORE_KEY);
 
+        /* Load the Comfino web frontend SDK. Two code paths based on config.sdkScriptKind:
+
+           - 'umd' (default today): the bundle is loaded as a classic <script>. When RequireJS's global define()
+             is present (some WP themes ship it), the UMD wrapper would take the AMD branch and never populate
+             window.Comfino. We temporarily clear window.define for the duration of the script load to force
+             the global-assignment branch, and restore it in both onload and onerror.
+           - 'module': the bundle is loaded as <script type="module">. ESM does not consult window.define, so
+             the clear-and-restore dance is skipped entirely. The SDK is resolved from the returned reference,
+             not from a global — once UMD is retired we can drop the window.Comfino fallback.
+
+           Pass the resolved SDK reference through instead of relying on window.Comfino. The current UMD build
+           still populates the global, so reading from window.Comfino remains a valid fallback for the 'umd'
+           branch. */
+        function loadSdk(cfg) {
+            if (window.Comfino && typeof window.Comfino.bootstrapPaywall === 'function') {
+                return Promise.resolve(window.Comfino);
+            }
+
+            if (window.__comfinoSdkPromise) {
+                return window.__comfinoSdkPromise;
+            }
+
+            const kind = cfg.sdkScriptKind === 'module' ? 'module' : 'umd';
+            const url = kind === 'module' ? (cfg.sdkScriptUrlEsm || cfg.sdkScriptUrl) : cfg.sdkScriptUrl;
+
+            window.__comfinoSdkPromise = new Promise(function (resolve, reject) {
+                const script = document.createElement('script');
+                script.src = url;
+                script.setAttribute('data-comfino-sdk', '1');
+
+                if (cfg.scriptNonce) {
+                    script.setAttribute('nonce', cfg.scriptNonce);
+                }
+
+                if (kind === 'module') {
+                    script.type = 'module';
+                    script.onload = function () { resolve(window.Comfino); };
+                    script.onerror = function (e) {
+                        window.__comfinoSdkPromise = null;
+                        reject(e);
+                    };
+                } else {
+                    const savedDefine = window.define;
+                    window.define = undefined;
+
+                    script.onload = function () {
+                        window.define = savedDefine;
+                        resolve(window.Comfino);
+                    };
+                    script.onerror = function (e) {
+                        window.define = savedDefine;
+                        window.__comfinoSdkPromise = null;
+                        reject(e);
+                    };
+                }
+
+                document.head.appendChild(script);
+            });
+
+            return window.__comfinoSdkPromise;
+        }
+
         /* Bootstrap the SDK the first time Comfino becomes active. Container re-renders are reconciled by the
            SDK's MutationObserver (BasePaywallController.startSpaObserver), which compares container identity and
            also works in direct-redirect mode where there is no iframe. */
@@ -78,7 +155,8 @@
                 return;
             }
 
-            if (document.querySelector('script[data-comfino-sdk]')) {
+            if (window.__comfinoSdkPromise) {
+                // Bootstrap already initiated on a previous activation of the Comfino method.
                 return;
             }
 
@@ -110,44 +188,13 @@
                 allowedProductsConfig: config.allowedProductsConfig
             };
 
-            /* Load Comfino web frontend SDK as a plain script via DOM injection.
-
-               Why not a dynamic import or async load? The SDK is a UMD bundle. When RequireJS's global define() is
-               present (e.g. in some WP themes), UMD takes the AMD branch — it calls define() and returns its export
-               to RequireJS, but skips the global assignment (window.Comfino.*).
-
-               Solution: hide window.define before the script executes so the SDK's UMD wrapper sees no AMD environment,
-               takes the global-assignment branch, and sets window.Comfino. Restore define() in onload/onerror. By the
-               time the user reaches the payment step, all modules are already defined, so the brief window where define
-               is hidden is safe.
-
-               Pass data directly to bootstrapPaywall() in onload — no intermediate global state used. */
-
-            // Preserve original window.define for later restoration.
-            const _amdDefine = window.define;
-
-            /* Temporarily hide window.define so the SDK's UMD bundle takes the global-assignment branch and
-               exposes window.Comfino. */
-            window.define = undefined;
-
-            // Construct SDK script element and append to DOM.
-            const script = document.createElement('script');
-            script.src = config.sdkScriptUrl;
-            script.setAttribute('data-comfino-sdk', '1');
-
-            if (config.scriptNonce) {
-                script.setAttribute('nonce', config.scriptNonce);
-            }
-
-            script.onload = function () {
-                window.define = _amdDefine;
-                window.Comfino.bootstrapPaywall(comfinoPaywallData);
-            };
-            script.onerror = function () {
-                window.define = _amdDefine;
-            };
-
-            document.head.appendChild(script);
+            loadSdk(config).then(function (sdk) {
+                if (sdk && typeof sdk.bootstrapPaywall === 'function') {
+                    sdk.bootstrapPaywall(comfinoPaywallData);
+                }
+            }).catch(function () {
+                /* Script-load failed — leave the checkout unaffected. */
+            });
         });
     }
 
