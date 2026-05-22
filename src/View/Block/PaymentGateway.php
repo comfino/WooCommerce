@@ -162,16 +162,8 @@ final class PaymentGateway extends AbstractPaymentMethodType
             ],
             'directRedirect' => (bool) ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
             'creditors' => SettingsManager::getCreditors() ?: null,
-            'allowedProductsConfig' => self::buildAllowedProductsConfigForFrontend(),
+            'allowedProductsConfig' => SettingsManager::getAllowedProductsConfigForFrontend(),
             'scriptNonce' => (string) apply_filters('comfino_csp_script_nonce', ''),
         ];
-    }
-
-    /** @return array[]|null */
-    private static function buildAllowedProductsConfigForFrontend(): ?array
-    {
-        $config = ConfigManager::getConfigurationValue('COMFINO_ALLOWED_PRODUCTS_CONFIG');
-
-        return (is_array($config) && !empty($config)) ? $config : null;
     }
 }

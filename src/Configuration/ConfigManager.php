@@ -522,7 +522,7 @@ final class ConfigManager
             $currentWidgetCode = self::getCurrentWidgetCode();
 
             if ($lastWidgetCodeHash === null || md5($currentWidgetCode) === $lastWidgetCodeHash) {
-                // Widget code not changed since last installed version - safely replace with new one.
+                // Widget code isn't changed since last installed version - safely replace with new one.
                 self::updateConfigurationValue('COMFINO_WIDGET_CODE', $initialWidgetCode);
 
                 return true;

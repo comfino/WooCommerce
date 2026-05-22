@@ -297,7 +297,7 @@ final class Main
                     'shopEnvironment' => $shopEnvironment,
                     'directRedirect' => (bool) ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
                     'creditors' => SettingsManager::getCreditors() ?: null,
-                    'allowedProductsConfig' => self::buildAllowedProductsConfigForFrontend(),
+                    'allowedProductsConfig' => SettingsManager::getAllowedProductsConfigForFrontend(),
                     'scriptNonce' => (string) apply_filters('comfino_csp_script_nonce', ''),
                 ]) . ';',
                 'before'
@@ -433,14 +433,6 @@ final class Main
     public static function getShopCurrency(): string
     {
         return get_woocommerce_currency();
-    }
-
-    /** @return array[]|null */
-    private static function buildAllowedProductsConfigForFrontend(): ?array
-    {
-        $config = ConfigManager::getConfigurationValue('COMFINO_ALLOWED_PRODUCTS_CONFIG');
-
-        return (is_array($config) && !empty($config)) ? $config : null;
     }
 
     public static function getCurrentUrl(): string

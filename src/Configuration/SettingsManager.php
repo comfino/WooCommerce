@@ -327,4 +327,55 @@ final class SettingsManager
 
         return $filters;
     }
+
+    /**
+     * Returns the normalized `COMFINO_ALLOWED_PRODUCTS_CONFIG` payload ready for both the paywall iframe bootstrap
+     * (frontend) and the backend `AllowedProductConfig` DTO builder. Drops entries whose `type` is missing or not
+     * a known `LoanTypeEnum`, ensures `terms` are positive ints, returns `null` when the result is empty so the
+     * SDK's `?.length` short-circuit matches the "no restrictions" semantics.
+     *
+     * @return array[]|null
+     */
+    public static function getAllowedProductsConfigForFrontend(): ?array
+    {
+        $raw = ConfigManager::getConfigurationValue('COMFINO_ALLOWED_PRODUCTS_CONFIG');
+
+        if (!is_array($raw) || empty($raw)) {
+            return null;
+        }
+
+        $validTypes = LoanTypeEnum::values();
+        $result = [];
+
+        foreach ($raw as $entry) {
+            if (!is_array($entry) || empty($entry['type']) || !in_array($entry['type'], $validTypes, true)) {
+                continue;
+            }
+
+            $normalized = ['type' => (string) $entry['type']];
+
+            if (isset($entry['minTerm']) && is_numeric($entry['minTerm'])) {
+                $normalized['minTerm'] = (int) $entry['minTerm'];
+            }
+
+            if (isset($entry['maxTerm']) && is_numeric($entry['maxTerm'])) {
+                $normalized['maxTerm'] = (int) $entry['maxTerm'];
+            }
+
+            if (isset($entry['terms']) && is_array($entry['terms'])) {
+                $terms = array_values(array_filter(
+                    array_map('intval', $entry['terms']),
+                    static function (int $t): bool { return $t > 0; }
+                ));
+
+                if (!empty($terms)) {
+                    $normalized['terms'] = $terms;
+                }
+            }
+
+            $result[] = $normalized;
+        }
+
+        return !empty($result) ? $result : null;
+    }
 }

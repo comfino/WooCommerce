@@ -4,6 +4,7 @@ namespace Comfino\View;
 
 use Comfino\Api\ApiClient;
 use Comfino\Api\ApiService;
+use Comfino\Api\Dto\Payment\LoanTypeEnum;
 use Comfino\Api\Exception\AccessDenied;
 use Comfino\Api\Exception\AuthorizationError;
 use Comfino\Configuration\ConfigManager;
@@ -183,20 +184,39 @@ final class SettingsForm
 
                 $allowedProductsConfig = [];
                 $termLimitsData = $postData['comfino_term_limits'] ?? [];
+                $validProductTypes = LoanTypeEnum::values();
 
                 foreach ($termLimitsData as $productType => $limits) {
                     $productType = sanitize_text_field($productType);
 
-                    $maxTerm  = isset($limits['maxTerm']) && $limits['maxTerm'] !== '' ? (int) $limits['maxTerm'] : null;
-                    $minTerm  = isset($limits['minTerm']) && $limits['minTerm'] !== '' ? (int) $limits['minTerm'] : null;
+                    if (!in_array($productType, $validProductTypes, true)) {
+                        /* translators: %s: Unknown product type code submitted in term-limits form */
+                        $errorMessages[] = sprintf(__('Unknown product type "%s" in term limits — entry skipped.', 'comfino-payment-gateway'), $productType);
+
+                        continue;
+                    }
+
+                    $maxTerm = isset($limits['maxTerm']) && $limits['maxTerm'] !== '' ? (int) $limits['maxTerm'] : null;
+                    $minTerm = isset($limits['minTerm']) && $limits['minTerm'] !== '' ? (int) $limits['minTerm'] : null;
                     $termsRaw = isset($limits['terms']) && $limits['terms'] !== '' ? $limits['terms'] : null;
-                    $terms    = null;
+                    $terms = null;
 
                     if ($termsRaw !== null) {
-                        $terms = array_values(array_filter(array_map('intval', explode(',', $termsRaw))));
+                        $terms = array_values(array_filter(
+                            array_map('intval', explode(',', $termsRaw)),
+                            static function (int $term): bool { return $term > 0; }
+                        ));
+
                         if (empty($terms)) {
                             $terms = null;
                         }
+                    }
+
+                    if ($minTerm !== null && $maxTerm !== null && $minTerm > $maxTerm) {
+                        /* translators: %s: Product type code */
+                        $errorMessages[] = sprintf(__('Term limits for "%s": minTerm must not exceed maxTerm.', 'comfino-payment-gateway'), $productType);
+
+                        continue;
                     }
 
                     if ($maxTerm !== null || $minTerm !== null || $terms !== null) {

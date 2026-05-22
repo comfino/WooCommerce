@@ -37,8 +37,9 @@ final class ShopStatusManager
 
         switch ($newStatus) {
             case 'failed':
-                if (ConfigManager::isAbandonedCartEnabled() && $order->get_payment_method() !== PaymentGateway::GATEWAY_ID
-                    && in_array($oldStatus, ['on-hold', 'pending'], true)
+                if (ConfigManager::isAbandonedCartEnabled() &&
+                    $order->get_payment_method() !== PaymentGateway::GATEWAY_ID &&
+                    in_array($oldStatus, ['on-hold', 'pending'], true)
                 ) {
                     // Send e-mail and API notifications about abandoned cart not paid by Comfino.
                     self::sendEmail($order);

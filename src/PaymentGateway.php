@@ -652,27 +652,29 @@ class PaymentGateway extends \WC_Payment_Gateway
      */
     private static function buildAllowedProductsConfig(): ?array
     {
-        $configData = ConfigManager::getConfigurationValue('COMFINO_ALLOWED_PRODUCTS_CONFIG');
+        $normalized = SettingsManager::getAllowedProductsConfigForFrontend();
 
-        if (!is_array($configData) || empty($configData)) {
+        if ($normalized === null) {
             return null;
         }
 
         $result = [];
 
-        foreach ($configData as $entry) {
-            if (empty($entry['type'])) {
-                continue;
+        foreach ($normalized as $entry) {
+            try {
+                $result[] = new AllowedProductConfig(
+                    new LoanTypeEnum($entry['type']),
+                    $entry['maxTerm'] ?? null,
+                    $entry['minTerm'] ?? null,
+                    $entry['terms'] ?? null
+                );
+            } catch (\Throwable $e) {
+                DebugLogger::logEvent(
+                    '[ALLOWED_PRODUCTS_CONFIG]',
+                    'Invalid allowed product config entry skipped.',
+                    ['$entry' => $entry, '$error' => $e->getMessage()]
+                );
             }
-
-            $result[] = new AllowedProductConfig(
-                new LoanTypeEnum($entry['type'], false),
-                isset($entry['maxTerm']) ? (int) $entry['maxTerm'] : null,
-                isset($entry['minTerm']) ? (int) $entry['minTerm'] : null,
-                isset($entry['terms']) && is_array($entry['terms'])
-                    ? array_map('intval', $entry['terms'])
-                    : null
-            );
         }
 
         return !empty($result) ? $result : null;
