@@ -60,7 +60,13 @@ final class ErrorLogger
         }
 
         self::getLoggerInstance()->sendError(
-            $errorPrefix, $errorCode, $errorMessage, $apiRequestUrl, $apiRequest, $apiResponse, $stackTrace
+            $errorPrefix,
+            $errorCode,
+            $errorMessage,
+            $apiRequestUrl,
+            $apiRequest,
+            $apiResponse,
+            $stackTrace ?? $exception->getTraceAsString()
         );
     }
 
