@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Comfino\Api\Request;
 
 use Comfino\Api\Dto\Payment\AllowedProductConfig;
+use Comfino\Api\Exception\RequestValidationError;
 use Comfino\Api\Request;
 use Comfino\Shop\Order\CartTrait;
 use Comfino\Shop\Order\OrderInterface;
@@ -155,9 +156,22 @@ class CreateOrder extends Request
     private function generateHash(array $data): string
     {
         try {
-            return hash('sha3-256', json_encode($data, JSON_PRESERVE_ZERO_FRACTION));
-        } catch (\JsonException $exception) {
-            return '';
+            $encoded = json_encode($data, JSON_PRESERVE_ZERO_FRACTION);
+        } catch (\JsonException $e) {
+            throw new RequestValidationError(
+                'Failed to serialize order data for integrity hashing: ' . $e->getMessage(),
+                0,
+                $e
+            );
         }
+
+        if ($encoded === false) {
+            throw new RequestValidationError(
+                'Failed to serialize order data for integrity hashing: ' . json_last_error_msg(),
+                0
+            );
+        }
+
+        return hash('sha3-256', $encoded);
     }
 }
