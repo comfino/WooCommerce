@@ -58,6 +58,7 @@ final class ApiClient
                 ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_NUM_ATTEMPTS', 3)
             );
 
+            self::$apiClient->setClientHostName(Main::getShopDomain());
             self::$apiClient->addCustomHeader('Comfino-Build-Timestamp', (string) PaymentGateway::BUILD_TS);
         } else {
             self::$apiClient->setCustomApiHost(ConfigManager::getApiHost());
