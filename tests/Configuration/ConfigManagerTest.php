@@ -27,6 +27,22 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
         Main::setPluginFile(__DIR__ . '/../../comfino-payment-gateway.php');
     }
 
+    public function tearDown(): void
+    {
+        // Reset ConfigManager and ConfigurationManager singletons so that any
+        // configuration mutations in this test class (e.g. COMFINO_DEBUG=true in
+        // testUpdateConfigurationValue) don't leak into subsequent test classes.
+        $cmProp = new \ReflectionProperty(ConfigManager::class, 'configurationManager');
+        $cmProp->setAccessible(true);
+        $cmProp->setValue(null, null);
+
+        $baseProp = new \ReflectionProperty(ConfigurationManager::class, 'instance');
+        $baseProp->setAccessible(true);
+        $baseProp->setValue(null, null);
+
+        parent::tearDown();
+    }
+
     public function testGetInstance(): void
     {
         $instance1 = ConfigManager::getInstance();

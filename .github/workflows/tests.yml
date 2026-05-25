@@ -64,6 +64,9 @@ jobs:
           COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.LIB_BUILDER_TOKEN }}"}}'
         run: composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction --no-progress
 
+      - name: Create writable log and cache directories
+        run: mkdir -p var/log var/cache
+
       - name: Run tests
         run: vendor/bin/phpunit
 
@@ -103,6 +106,9 @@ jobs:
         env:
           COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.LIB_BUILDER_TOKEN }}"}}'
         run: composer update --prefer-stable --prefer-dist --no-interaction --no-progress
+
+      - name: Create writable log and cache directories
+        run: mkdir -p var/log var/cache
 
       - name: Run tests with coverage
         run: XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-clover coverage.xml
