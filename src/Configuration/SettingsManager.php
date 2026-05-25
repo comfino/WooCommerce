@@ -251,6 +251,15 @@ final class SettingsManager
         return $availProds;
     }
 
+    public static function getAllowedProductsConfigForbiddenProductTypes(): array
+    {
+        if (!is_array($forbiddenProds = ConfigManager::getConfigurationValue('COMFINO_ALLOWED_PRODUCTS_CONFIG_FORBIDDEN_PROD_TYPES', []))) {
+            $forbiddenProds = array_map('trim', explode(',', $forbiddenProds));
+        }
+
+        return $forbiddenProds;
+    }
+
     public static function productCategoryFiltersActive(array $productCategoryFilters): bool
     {
         if (empty($productCategoryFilters)) {
@@ -284,6 +293,27 @@ final class SettingsManager
         }
 
         if (empty($availProductTypes = array_intersect_key($productTypes, $categoryFilterAvailProductTypes))) {
+            $availProductTypes = $productTypes;
+        }
+
+        return $availProductTypes;
+    }
+
+    public static function getAllowedProductsConfigAvailProdTypes(): array
+    {
+        $productTypes = self::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL);
+
+        if (isset($productTypes['error'])) {
+            return [];
+        }
+
+        $allowedProductConfigForbiddenProductTypes = [];
+
+        foreach (self::getAllowedProductsConfigForbiddenProductTypes() as $productType) {
+            $allowedProductConfigForbiddenProductTypes[$productType] = null;
+        }
+
+        if (empty($availProductTypes = array_diff_key($productTypes, $allowedProductConfigForbiddenProductTypes))) {
             $availProductTypes = $productTypes;
         }
 

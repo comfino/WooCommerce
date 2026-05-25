@@ -430,7 +430,7 @@ final class SettingsForm
                 $formFields['allowed_products_config'] = [
                     'title' => __('Installment term limits', 'comfino-payment-gateway'),
                     'type' => 'allowed_products_config',
-                    'product_types' => SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL),
+                    'product_types' => SettingsManager::getAllowedProductsConfigAvailProdTypes(),
                     'saved_config' => $savedConfigByType,
                 ];
 

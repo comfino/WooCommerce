@@ -672,6 +672,14 @@ class Comfino_Payment_Gateway
             update_option('comfino_plugin_current_version', $previousVersion, false);
         }
 
+        /* 4.3.0 */
+        if (!is_array(ConfigManager::getConfigurationValue('COMFINO_ALLOWED_PRODUCTS_CONFIG_FORBIDDEN_PROD_TYPES'))) {
+            ConfigManager::updateConfigurationValue(
+                'COMFINO_ALLOWED_PRODUCTS_CONFIG_FORBIDDEN_PROD_TYPES',
+                ['BLIK', 'PAY_LATER', 'PAY_IN_PARTS', 'INSTANT_PAYMENTS']
+            );
+        }
+
         // Update code of widget initialization script.
         ConfigManager::updateWidgetCode();
 
