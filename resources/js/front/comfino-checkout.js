@@ -53,25 +53,25 @@
 
     function resolvePaywallContainer()
     {
-        let container = document.getElementById('comfino-paywall-container');
+        const candidates = document.querySelectorAll('[id="comfino-paywall-container"]');
 
-        if (container && !isInVisibleContext(container)) {
-            /* First match is hidden (typically Elementor's builder-preview duplicate) — scan all candidates and pick
-              the first one rendered in a visible ancestor chain. */
-            const candidates = document.querySelectorAll('[id="comfino-paywall-container"]');
+        /* Single container — return it regardless of current visibility. The payment_box on a WooCommerce checkout is
+           display:none until its radio is selected; the SDK creates the iframe inside the hidden container, and it
+           becomes visible as soon as the shopper picks Comfino. Filtering by visibility here would silently abort
+           bootstrap when another payment method is the default. */
+        if (candidates.length <= 1) {
+            return candidates[0] || null;
+        }
 
-            container = null;
-
-            for (let i = 0; i < candidates.length; i++) {
-                if (isInVisibleContext(candidates[i])) {
-                    container = candidates[i];
-
-                    break;
-                }
+        /* Multiple containers — typical of Elementor's builder-preview rendering a duplicate hidden checkout. Pick the
+           one in a visible ancestor chain so the visible checkout drives the paywall. */
+        for (let i = 0; i < candidates.length; i++) {
+            if (isInVisibleContext(candidates[i])) {
+                return candidates[i];
             }
         }
 
-        return container;
+        return null;
     }
 
     /* Load the Comfino web frontend SDK. Two code paths based on config.sdkScriptKind:
