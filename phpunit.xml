@@ -9,9 +9,10 @@
          beStrictAboutOutputDuringTests="true"
          beStrictAboutTestsThatDoNotTestAnything="true">
     <php>
-        <!-- Diagnostics: keep full error reporting so any fatal during test
-             discovery is visible in CI. Re-narrow once green (was 24575 to
-             suppress PHPUnit 5.7 mock-generator deprecations on PHP 7.4+). -->
+        <!-- E_ALL & ~E_DEPRECATED (24575): suppress PHP deprecation notices
+             from PHPUnit 5.7's mock generator on PHP 7.4+
+             (ReflectionType::__toString() is deprecated since 7.4). -->
+        <ini name="error_reporting" value="24575"/>
         <ini name="display_errors" value="true"/>
         <ini name="display_startup_errors" value="true"/>
     </php>
