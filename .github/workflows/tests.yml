@@ -74,6 +74,23 @@ jobs:
       - name: Check autoloader
         run: php -r "require 'vendor/autoload.php'; echo 'Autoloader OK' . PHP_EOL;"
 
+      - name: Diagnose psr/http-message layout
+        run: |
+          echo "=== composer.lock psr/http-message ==="
+          grep -A 3 '"name": "psr/http-message"' composer.lock || true
+          echo
+          echo "=== vendor/psr/http-message/src/ResponseInterface.php (first 20 lines) ==="
+          sed -n '1,20p' vendor/psr/http-message/src/ResponseInterface.php || true
+          echo
+          echo "=== Other ResponseInterface.php under vendor (find) ==="
+          find vendor -name ResponseInterface.php -printf '%p\n' | head -20
+          echo
+          echo "=== autoload_psr4.php entries for ComfinoExternal\\Psr\\Http\\Message ==="
+          grep -n 'ComfinoExternal.*Psr.*Http.*Message' vendor/composer/autoload_psr4.php || true
+          echo
+          echo "=== autoload_psr4.php entries for Psr\\Http\\Message ==="
+          grep -n "'Psr\\\\\\\\Http\\\\\\\\Message" vendor/composer/autoload_psr4.php || true
+
       - name: Smoke-test ApiClient::getInstance()
         run: |
           set +e
