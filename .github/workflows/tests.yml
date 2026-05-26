@@ -101,7 +101,7 @@ jobs:
               }
           });
 
-          require __DIR__ . '/tests/bootstrap.php';
+          require getcwd() . '/tests/bootstrap.php';
           // bootstrap.php resets error_reporting; force back to E_ALL.
           error_reporting(E_ALL);
           fwrite(STDOUT, "Bootstrap loaded\n");
