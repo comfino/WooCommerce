@@ -74,6 +74,20 @@ jobs:
       - name: Check autoloader
         run: php -r "require 'vendor/autoload.php'; echo 'Autoloader OK' . PHP_EOL;"
 
+      - name: Diagnose scoped psr/* leakage
+        run: |
+          echo "=== composer --version ==="
+          composer --version
+          echo
+          echo "=== Composer installed psr/* / fig/* ==="
+          composer show 2>/dev/null | grep -E '^(psr|fig|monolog|symfony|league|cache|sunrise)/' || true
+          echo
+          echo "=== Namespace declared in each top-level psr/* package's main interface ==="
+          for f in $(find vendor/psr -name '*.php' | head -20); do
+            ns=$(grep -m1 '^namespace ' "$f" || echo "(no namespace)")
+            echo "$f -> $ns"
+          done
+
       - name: Run tests
         run: |
           set +e
