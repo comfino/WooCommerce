@@ -78,24 +78,45 @@ jobs:
         run: |
           set +e
           exec 2>&1
-          php \
-            -d error_reporting=-1 \
-            -d display_errors=On \
-            -d display_startup_errors=On \
-            -d log_errors=On \
-            -d output_buffering=0 \
-            -d implicit_flush=1 \
-            -d memory_limit=512M \
-            -d xdebug.max_nesting_level=1000 \
-            -r '
-              require "tests/bootstrap.php";
-              echo "Bootstrap loaded\n";
+          cat > /tmp/smoke.php <<'PHP'
+          <?php
+          ini_set('display_errors', '1');
+          ini_set('display_startup_errors', '1');
+          error_reporting(E_ALL);
+
+          set_error_handler(function ($errno, $errstr, $errfile, $errline) {
+              fwrite(STDOUT, "[error_handler] $errno $errstr in $errfile:$errline\n");
+              return false;
+          });
+          set_exception_handler(function ($e) {
+              fwrite(STDOUT, "[exception_handler] " . get_class($e) . ": " . $e->getMessage()
+                  . " in " . $e->getFile() . ":" . $e->getLine() . "\n" . $e->getTraceAsString() . "\n");
+          });
+          register_shutdown_function(function () {
+              $err = error_get_last();
+              if ($err !== null) {
+                  fwrite(STDOUT, "[shutdown last_error] " . print_r($err, true) . "\n");
+              } else {
+                  fwrite(STDOUT, "[shutdown] no last_error\n");
+              }
+          });
+
+          require __DIR__ . '/tests/bootstrap.php';
+          // bootstrap.php resets error_reporting; force back to E_ALL.
+          error_reporting(E_ALL);
+          fwrite(STDOUT, "Bootstrap loaded\n");
+
+          try {
               $c = \Comfino\Api\ApiClient::getInstance();
-              echo "getInstance OK: " . get_class($c) . "\n";
-            '
+              fwrite(STDOUT, "getInstance OK: " . get_class($c) . "\n");
+          } catch (\Throwable $t) {
+              fwrite(STDOUT, "[caught] " . get_class($t) . ": " . $t->getMessage()
+                  . " in " . $t->getFile() . ":" . $t->getLine() . "\n" . $t->getTraceAsString() . "\n");
+          }
+          PHP
+          php -d output_buffering=0 -d implicit_flush=1 -d memory_limit=512M /tmp/smoke.php
           status=$?
           echo "::notice::smoke exit = $status"
-          # Do not fail the job here; surface info, let the next step run anyway.
           exit 0
 
       - name: Run tests
