@@ -75,7 +75,19 @@ jobs:
         run: php -r "require 'vendor/autoload.php'; echo 'Autoloader OK' . PHP_EOL;"
 
       - name: Run tests
-        run: php -d error_reporting=32767 -d display_errors=On vendor/bin/phpunit 2>&1
+        run: |
+          set +e
+          php \
+            -d error_reporting=-1 \
+            -d display_errors=stderr \
+            -d display_startup_errors=On \
+            -d log_errors=On \
+            -d error_log=/dev/stderr \
+            -d zend.assertions=1 \
+            vendor/bin/phpunit --debug --verbose
+          status=$?
+          echo "::notice::phpunit exit code = $status"
+          exit $status
 
   coverage:
     runs-on: ubuntu-latest
