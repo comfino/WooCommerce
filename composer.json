@@ -96,12 +96,7 @@
     "require-dev": {
         "nyholm/psr7": "^1.6",
         "php-http/mock-client": "^1.6",
-        "phpdocumentor/reflection-common": "~2.1.0",
-        "phpdocumentor/reflection-docblock": "~4.3.4",
-        "phpdocumentor/type-resolver": "~1.0.1",
-        "phpspec/prophecy-phpunit": "^1.1",
-        "phpunit/phpunit": "^5.7",
-        "webmozart/assert": "<1.10"
+        "phpunit/phpunit": "^5.7.27"
     },
     "repositories": [
         {
