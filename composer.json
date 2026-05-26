@@ -99,7 +99,8 @@
     "repositories": [
         {
             "type": "artifact",
-            "url": "packages/sunrise"
+            "url": "packages/sunrise",
+            "only": ["sunrise/*"]
         },
         {
             "type": "vcs",
