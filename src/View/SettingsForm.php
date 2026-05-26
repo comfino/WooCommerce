@@ -182,6 +182,10 @@ final class SettingsForm
 
                 $configurationOptionsToSave['COMFINO_PRODUCT_CATEGORY_FILTERS'] = $productCategoryFilters;
 
+                if (!ConfigManager::getConfigurationValue('COMFINO_ALLOWED_PRODUCTS_CONFIG_ENABLED')) {
+                    break;
+                }
+
                 $allowedProductsConfig = [];
                 $termLimitsData = $postData['comfino_term_limits'] ?? [];
                 $validProductTypes = LoanTypeEnum::values();
@@ -380,10 +384,14 @@ final class SettingsForm
                 break;
 
             case 'sale_settings':
-                $formFields = array_intersect_key(
-                    self::getFormFieldsDefinitions(),
-                    array_flip(['cat_filter_avail_prod_types', 'sale_settings_fin_prods_avail_rules', 'allowed_products_config'])
-                );
+                $allowedProductsConfigEnabled = (bool) ConfigManager::getConfigurationValue('COMFINO_ALLOWED_PRODUCTS_CONFIG_ENABLED');
+                $saleSettingsFieldKeys = ['cat_filter_avail_prod_types', 'sale_settings_fin_prods_avail_rules'];
+
+                if ($allowedProductsConfigEnabled) {
+                    $saleSettingsFieldKeys[] = 'allowed_products_config';
+                }
+
+                $formFields = array_intersect_key(self::getFormFieldsDefinitions(), array_flip($saleSettingsFieldKeys));
 
                 $productCategories = ConfigManager::getAllProductCategories();
                 $productCategoryFilters = SettingsManager::getProductCategoryFilters();
@@ -416,23 +424,25 @@ final class SettingsForm
                     ];
                 }
 
-                $savedConfig = ConfigManager::getConfigurationValue('COMFINO_ALLOWED_PRODUCTS_CONFIG');
-                $savedConfigByType = [];
+                if ($allowedProductsConfigEnabled) {
+                    $savedConfig = ConfigManager::getConfigurationValue('COMFINO_ALLOWED_PRODUCTS_CONFIG');
+                    $savedConfigByType = [];
 
-                if (is_array($savedConfig)) {
-                    foreach ($savedConfig as $entry) {
-                        if (isset($entry['type'])) {
-                            $savedConfigByType[$entry['type']] = $entry;
+                    if (is_array($savedConfig)) {
+                        foreach ($savedConfig as $entry) {
+                            if (isset($entry['type'])) {
+                                $savedConfigByType[$entry['type']] = $entry;
+                            }
                         }
                     }
-                }
 
-                $formFields['allowed_products_config'] = [
-                    'title' => __('Installment term limits', 'comfino-payment-gateway'),
-                    'type' => 'allowed_products_config',
-                    'product_types' => SettingsManager::getAllowedProductsConfigAvailProdTypes(),
-                    'saved_config' => $savedConfigByType,
-                ];
+                    $formFields['allowed_products_config'] = [
+                        'title' => __('Installment term limits', 'comfino-payment-gateway'),
+                        'type' => 'allowed_products_config',
+                        'product_types' => SettingsManager::getAllowedProductsConfigAvailProdTypes(),
+                        'saved_config' => $savedConfigByType,
+                    ];
+                }
 
                 break;
 
