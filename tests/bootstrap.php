@@ -1,11 +1,5 @@
 <?php
 
-// On PHP 7.4+, PHPUnit 5.7's mock generator triggers ReflectionType::__toString()
-// deprecations that turn into PHPUnit warnings (failOnWarning="true"). Mask
-// E_DEPRECATED there; keep full reporting on older PHP so prefer-lowest fatals
-// stay visible in CI.
-error_reporting(PHP_VERSION_ID >= 70400 ? (E_ALL & ~E_DEPRECATED) : E_ALL);
-
 // Mock WooCommerce Blocks classes to prevent fatal errors.
 namespace Automattic\WooCommerce\Blocks\Payments\Integrations {
     if (!class_exists('AbstractPaymentMethodType')) {
@@ -20,6 +14,12 @@ namespace Automattic\WooCommerce\Blocks\Payments\Integrations {
 }
 
 namespace {
+    /* On PHP 7.4+, PHPUnit 5.7's mock generator triggers ReflectionType::__toString()
+       deprecations that turn into PHPUnit warnings (failOnWarning="true"). Mask
+       E_DEPRECATED there; keep full reporting on older PHP so prefer-lowest fatals
+      stay visible in CI. */
+    error_reporting(PHP_VERSION_ID >= 70400 ? (E_ALL & ~E_DEPRECATED) : E_ALL);
+
     // Define WordPress constants for testing.
     if (!defined('ABSPATH')) {
         define('ABSPATH', __DIR__ . '/../../../../');
