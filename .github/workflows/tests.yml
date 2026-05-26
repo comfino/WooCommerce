@@ -60,8 +60,8 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ matrix.dependency-version }}-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-${{ matrix.dependency-version }}-
+          key: ${{ runner.os }}-composer-${{ matrix.dependency-version }}-v2-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-${{ matrix.dependency-version }}-v2-
 
       - name: Install dependencies
         env:
@@ -76,17 +76,14 @@ jobs:
 
       - name: Diagnose scoped psr/* leakage
         run: |
-          echo "=== composer --version ==="
-          composer --version
+          echo "=== packages/sunrise contents ==="
+          ls -la packages/sunrise || true
           echo
-          echo "=== Composer installed psr/* / fig/* ==="
-          composer show 2>/dev/null | grep -E '^(psr|fig|monolog|symfony|league|cache|sunrise)/' || true
+          echo "=== psr/http-message source per composer.lock ==="
+          python3 -c "import json; d=json.load(open('composer.lock')); p=[x for x in d['packages'] if x['name']=='psr/http-message']; print(json.dumps(p[0] if p else {}, indent=2))"
           echo
-          echo "=== Namespace declared in each top-level psr/* package's main interface ==="
-          for f in $(find vendor/psr -name '*.php' | head -20); do
-            ns=$(grep -m1 '^namespace ' "$f" || echo "(no namespace)")
-            echo "$f -> $ns"
-          done
+          echo "=== composer why psr/http-message ==="
+          composer why psr/http-message || true
 
       - name: Run tests
         run: |
