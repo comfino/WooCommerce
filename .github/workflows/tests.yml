@@ -60,30 +60,24 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ matrix.dependency-version }}-v2-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-${{ matrix.dependency-version }}-v2-
+          key: ${{ runner.os }}-composer-${{ matrix.dependency-version }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-${{ matrix.dependency-version }}-
 
       - name: Install dependencies
         env:
           COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.LIB_BUILDER_TOKEN }}"}}'
-        run: composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction --no-progress
+        run: |
+          # The committed vendor/ ships scoped namespaces (ComfinoExternal\...) for
+          # runtime distribution. Tests need the unscoped packagist versions, so
+          # wipe vendor/ first to force composer to re-extract every package.
+          rm -rf vendor
+          composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction --no-progress
 
       - name: Create writable log and cache directories
         run: mkdir -p var/log var/cache
 
       - name: Check autoloader
         run: php -r "require 'vendor/autoload.php'; echo 'Autoloader OK' . PHP_EOL;"
-
-      - name: Diagnose scoped psr/* leakage
-        run: |
-          echo "=== packages/sunrise contents ==="
-          ls -la packages/sunrise || true
-          echo
-          echo "=== psr/http-message source per composer.lock ==="
-          python3 -c "import json; d=json.load(open('composer.lock')); p=[x for x in d['packages'] if x['name']=='psr/http-message']; print(json.dumps(p[0] if p else {}, indent=2))"
-          echo
-          echo "=== composer why psr/http-message ==="
-          composer why psr/http-message || true
 
       - name: Run tests
         run: |
