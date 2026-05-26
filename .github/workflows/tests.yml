@@ -77,14 +77,18 @@ jobs:
       - name: Run tests
         run: |
           set +e
+          # Merge stderr into stdout so fatals interleave with PHPUnit's --debug
+          # "Starting test 'X'" lines, pinpointing the offending test.
+          exec 2>&1
           php \
             -d error_reporting=-1 \
-            -d display_errors=stderr \
+            -d display_errors=On \
             -d display_startup_errors=On \
             -d log_errors=On \
-            -d error_log=/dev/stderr \
+            -d output_buffering=0 \
+            -d implicit_flush=1 \
             -d zend.assertions=1 \
-            vendor/bin/phpunit --debug --verbose
+            vendor/bin/phpunit --debug --verbose --stderr
           status=$?
           echo "::notice::phpunit exit code = $status"
           exit $status
