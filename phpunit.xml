@@ -9,10 +9,9 @@
          beStrictAboutOutputDuringTests="true"
          beStrictAboutTestsThatDoNotTestAnything="true">
     <php>
-        <!-- E_ALL & ~E_DEPRECATED (24575): suppress PHP deprecation notices
-             from PHPUnit 5.7's mock generator on PHP 7.4+
-             (ReflectionType::__toString() is deprecated since 7.4). -->
-        <ini name="error_reporting" value="24575"/>
+        <!-- error_reporting is set per PHP version in tests/bootstrap.php:
+             E_ALL & ~E_DEPRECATED on 7.4+ (mock-generator deprecation noise),
+             full E_ALL on 7.1–7.3 so prefer-lowest fatals stay visible. -->
         <ini name="display_errors" value="true"/>
         <ini name="display_startup_errors" value="true"/>
     </php>
