@@ -74,6 +74,30 @@ jobs:
       - name: Check autoloader
         run: php -r "require 'vendor/autoload.php'; echo 'Autoloader OK' . PHP_EOL;"
 
+      - name: Smoke-test ApiClient::getInstance()
+        run: |
+          set +e
+          exec 2>&1
+          php \
+            -d error_reporting=-1 \
+            -d display_errors=On \
+            -d display_startup_errors=On \
+            -d log_errors=On \
+            -d output_buffering=0 \
+            -d implicit_flush=1 \
+            -d memory_limit=512M \
+            -d xdebug.max_nesting_level=1000 \
+            -r '
+              require "tests/bootstrap.php";
+              echo "Bootstrap loaded\n";
+              $c = \Comfino\Api\ApiClient::getInstance();
+              echo "getInstance OK: " . get_class($c) . "\n";
+            '
+          status=$?
+          echo "::notice::smoke exit = $status"
+          # Do not fail the job here; surface info, let the next step run anyway.
+          exit 0
+
       - name: Run tests
         run: |
           set +e
