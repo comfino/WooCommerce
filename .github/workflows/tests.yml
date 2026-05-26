@@ -24,10 +24,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Fetch sunrise artifact packages
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: comfino/shop-plugins-lib-builder
           token: ${{ secrets.LIB_BUILDER_TOKEN }}
@@ -43,7 +43,7 @@ jobs:
           ls -la packages/sunrise
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@v2.37.1
         with:
           php-version: ${{ matrix.php }}
           extensions: curl, json, zlib
@@ -57,7 +57,7 @@ jobs:
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ matrix.dependency-version }}-${{ hashFiles('**/composer.lock') }}
@@ -81,10 +81,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Fetch sunrise artifact packages
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: comfino/shop-plugins-lib-builder
           token: ${{ secrets.LIB_BUILDER_TOKEN }}
@@ -100,7 +100,7 @@ jobs:
           ls -la packages/sunrise
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@v2.37.1
         with:
           php-version: 7.4
           extensions: curl, json, zlib
@@ -118,7 +118,7 @@ jobs:
         run: XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-clover coverage.xml --coverage-html coverage --coverage-text
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v6
         with:
           files: ./coverage.xml
           fail_ci_if_error: false
