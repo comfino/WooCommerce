@@ -71,8 +71,11 @@ jobs:
       - name: Create writable log and cache directories
         run: mkdir -p var/log var/cache
 
+      - name: Check autoloader
+        run: php -r "require 'vendor/autoload.php'; echo 'Autoloader OK' . PHP_EOL;"
+
       - name: Run tests
-        run: vendor/bin/phpunit
+        run: php -d error_reporting=32767 -d display_errors=On vendor/bin/phpunit 2>&1
 
   coverage:
     runs-on: ubuntu-latest
