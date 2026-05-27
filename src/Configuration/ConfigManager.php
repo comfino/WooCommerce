@@ -30,9 +30,7 @@ final class ConfigManager
     public const CONFIG_OPTIONS_MAP = [
         'COMFINO_ENABLED' => 'enabled',
         'COMFINO_API_KEY' => 'production_key',
-        'COMFINO_PAYMENT_TEXT' => 'title',
         'COMFINO_MINIMAL_CART_AMOUNT' => 'min_cart_amount',
-
         'COMFINO_USE_ORDER_REFERENCE' => 'use_order_reference',
         'COMFINO_IS_SANDBOX' => 'sandbox_mode',
         'COMFINO_DEBUG' => 'debug_mode',
@@ -80,9 +78,7 @@ final class ConfigManager
         'payment_settings' => [
             'COMFINO_ENABLED' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_API_KEY' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
-            'COMFINO_PAYMENT_TEXT' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_MINIMAL_CART_AMOUNT' => ConfigurationManager::OPT_VALUE_TYPE_FLOAT,
-
             'COMFINO_USE_ORDER_REFERENCE' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_PAYWALL_DIRECT_REDIRECT' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_PAYWALL_CUSTOM_CSS_URL' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
@@ -139,8 +135,6 @@ final class ConfigManager
 
     public const ACCESSIBLE_CONFIG_OPTIONS = [
         'COMFINO_ENABLED',
-        'COMFINO_PAYMENT_TEXT',
-
         'COMFINO_MINIMAL_CART_AMOUNT',
         'COMFINO_USE_ORDER_REFERENCE',
         'COMFINO_PAYWALL_DIRECT_REDIRECT',
@@ -698,8 +692,6 @@ final class ConfigManager
     {
         return [
             'COMFINO_ENABLED' => false,
-            'COMFINO_PAYMENT_TEXT' => 'Comfino',
-
             'COMFINO_MINIMAL_CART_AMOUNT' => 30,
             'COMFINO_USE_ORDER_REFERENCE' => false,
             'COMFINO_IS_SANDBOX' => false,

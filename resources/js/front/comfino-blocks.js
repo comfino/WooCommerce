@@ -67,13 +67,16 @@
         );
     }
 
+    /* WooCommerce Blocks requires `label` and `ariaLabel` on the registered payment method. The SDK's
+       DefaultPaymentMethodItemRenderer stamps the Comfino logo over this tile, so the literal strings here
+       only matter as accessibility fallback before the SDK boots — no need to plumb them through PHP. */
     const ComfinoPaymentContent = {
         name: 'comfino',
-        label: config.label || 'Comfino',
+        label: 'Comfino',
         content: createElement(ComfinoContent),
         edit: createElement('div', null, 'Comfino'),
         canMakePayment: () => true,
-        ariaLabel: config.ariaLabel || 'Comfino payment method',
+        ariaLabel: 'Comfino payment method',
         supports: {features: config.supports || []},
         paymentMethodId: 'comfino',
         savedTokenComponent: null,
@@ -164,7 +167,6 @@
        first selection (the React-managed `<div id="comfino-paywall-container">` only mounts inside the accordion
        content when Comfino is active, so iframe creation can't happen until then anyway — PaywallManager.activate()
        waits for the container via MutationObserver). */
-    const label = config.label || 'Comfino';
     const comfinoPaywallData = {
         authToken: config.authToken,
         loanAmount: config.loanAmount,
@@ -178,7 +180,7 @@
         directRedirect: config.directRedirect,
         creditors: config.creditors,
         allowedProductsConfig: config.allowedProductsConfig,
-        paymentMethodItem: { label: label, ariaLabel: label, auth: config.paymentMethodAuth || '' }
+        paymentMethodItem: { auth: config.paymentMethodAuth || '' }
     };
 
     loadSdk(config).then(function (sdk) {

@@ -50,7 +50,7 @@ class PaymentGateway extends \WC_Payment_Gateway
             'comfino-payment-gateway'
         );
         $this->supports = ['products'];
-        $this->title = $this->get_option('title');
+        $this->title = 'Comfino';
 
         if (is_admin() && strpos(Main::getCurrentUrl(), $this->id) === false && strpos(Main::getCurrentUrl(), 'wc-orders') === false) {
             return;

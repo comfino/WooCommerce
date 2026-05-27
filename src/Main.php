@@ -285,7 +285,6 @@ final class Main
                 'window.comfinoSettings = ' . wp_json_encode([
                     'authToken' => $authToken,
                     'loanAmount' => $loanAmount,
-                    'label' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
                     'paymentMethodAuth' => ConfigManager::getPaywallLogoAuthHash(),
                     'environment' => $environment,
                     'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),

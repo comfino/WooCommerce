@@ -138,8 +138,6 @@ final class PaymentGateway extends AbstractPaymentMethodType
             'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
             'sdkScriptUrlEsm' => ConfigManager::getSdkScriptUrlEsm(),
             'sdkScriptKind' => ConfigManager::getSdkScriptKind(),
-            'label' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
-            'ariaLabel' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
             'paymentMethodAuth' => ConfigManager::getPaywallLogoAuthHash(),
             'supports' => $this->gateway ? array_filter($this->gateway->supports, [$this->gateway, 'supports']) : ['products'],
             'productTypes' => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,

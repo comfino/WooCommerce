@@ -18,8 +18,6 @@
     /* All paywall bootstrap options assigned directly from comfinoSettings — wp_add_inline_script + wp_json_encode
        preserves scalar types and the insertion order of associative arrays (creditors map ordering MUST survive
        end-to-end because the paywall renderer uses it literally). */
-    const label = config.label || 'Comfino';
-
     const comfinoPaywallData = {
         authToken: config.authToken,
         loanAmount: config.loanAmount,
@@ -32,7 +30,7 @@
         directRedirect: config.directRedirect,
         creditors: config.creditors,
         allowedProductsConfig: config.allowedProductsConfig,
-        paymentMethodItem: { label: label, ariaLabel: label, auth: config.paymentMethodAuth || '' }
+        paymentMethodItem: { auth: config.paymentMethodAuth || '' }
     };
 
     /* Resolve visible paywall container — guards against Elementor rendering a hidden duplicate of the checkout

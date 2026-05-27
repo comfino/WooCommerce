@@ -75,7 +75,6 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertInternalType('array', ConfigManager::ACCESSIBLE_CONFIG_OPTIONS);
         $this->assertContains('COMFINO_ENABLED', ConfigManager::ACCESSIBLE_CONFIG_OPTIONS);
         // COMFINO_API_KEY is not in accessible options for security reasons.
-        $this->assertContains('COMFINO_PAYMENT_TEXT', ConfigManager::ACCESSIBLE_CONFIG_OPTIONS);
         $this->assertContains('COMFINO_ALLOWED_PRODUCTS_CONFIG', ConfigManager::ACCESSIBLE_CONFIG_OPTIONS);
     }
 
@@ -180,20 +179,15 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
         $defaults = ConfigManager::getDefaultConfigurationValues();
 
         $this->assertArrayHasKey('COMFINO_ENABLED', $defaults);
-        $this->assertArrayHasKey('COMFINO_PAYMENT_TEXT', $defaults);
-        $this->assertArrayHasKey('COMFINO_SHOW_LOGO', $defaults);
         $this->assertArrayHasKey('COMFINO_MINIMAL_CART_AMOUNT', $defaults);
 
         $this->assertFalse($defaults['COMFINO_ENABLED']);
-        $this->assertEquals('Comfino', $defaults['COMFINO_PAYMENT_TEXT']);
-        $this->assertTrue($defaults['COMFINO_SHOW_LOGO']);
         $this->assertEquals(30, $defaults['COMFINO_MINIMAL_CART_AMOUNT']);
     }
 
     public function testGetDefaultValue(): void
     {
         $this->assertFalse(ConfigManager::getDefaultValue('enabled'));
-        $this->assertEquals('Comfino', ConfigManager::getDefaultValue('title'));
         $this->assertNull(ConfigManager::getDefaultValue('non_existent'));
     }
 
@@ -201,7 +195,6 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
     {
         // Test with default value.
         $this->assertInternalType('bool', ConfigManager::getConfigurationValue('COMFINO_ENABLED', true));
-        $this->assertInternalType('string', ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT', 'Default Title'));
     }
 
     public function testGetConfigurationValueByInternalName(): void
