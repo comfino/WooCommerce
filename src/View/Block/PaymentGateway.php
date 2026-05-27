@@ -65,6 +65,8 @@ final class PaymentGateway extends AbstractPaymentMethodType
         /** @var \Comfino_Payment_Gateway $comfino_payment_gateway */
         global $comfino_payment_gateway;
 
+        FrontendManager::includeLocalStyles(['comfino-item-gate.css']);
+
         $scriptIds = FrontendManager::registerLocalScripts(
             ['comfino-blocks.js'],
             [
@@ -138,8 +140,8 @@ final class PaymentGateway extends AbstractPaymentMethodType
             'sdkScriptKind' => ConfigManager::getSdkScriptKind(),
             'label' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
             'ariaLabel' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
+            'paymentMethodAuth' => ConfigManager::getPaywallLogoAuthHash(),
             'supports' => $this->gateway ? array_filter($this->gateway->supports, [$this->gateway, 'supports']) : ['products'],
-            'icon' => ConfigManager::getConfigurationValue('COMFINO_SHOW_LOGO') ? ConfigManager::getPaywallLogoUrl() : '',
             'productTypes' => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,
             'cart' => $cartPayload,
             'paywallSettings' => [

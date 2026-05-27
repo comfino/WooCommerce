@@ -32,14 +32,13 @@ class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
     public const VERSION = '4.3.0';
-    public const BUILD_TS = 1779803034;
+    public const BUILD_TS = 1779870891;
     public const WIDGET_INIT_SCRIPT_HASH = '0603f4e0904fd65e2aef1aded0c57c40';
     public const WIDGET_INIT_SCRIPT_LAST_HASH = '55e4306bb493ff6f99b2f8f617e18038';
 
     public function __construct()
     {
         $this->id = self::GATEWAY_ID;
-        $this->icon = $this->get_icon();
         $this->has_fields = true;
         $this->method_title = __('Comfino payments', 'comfino-payment-gateway');
         $this->method_description = __(
@@ -105,17 +104,6 @@ class PaymentGateway extends \WC_Payment_Gateway
     }
 
     /* Shop cart checkout front logic. */
-
-    public function get_icon(): string
-    {
-        if (ConfigManager::getConfigurationValue('COMFINO_SHOW_LOGO')) {
-            $icon = FrontendManager::renderPaywallLogo();
-        } else {
-            $icon = '';
-        }
-
-        return apply_filters('woocommerce_gateway_icon', $icon, $this->id);
-    }
 
     public function payment_fields(): void
     {

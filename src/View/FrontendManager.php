@@ -2,7 +2,6 @@
 
 namespace Comfino\View;
 
-use Comfino\Api\ApiClient;
 use Comfino\Api\HttpErrorExceptionInterface;
 use Comfino\Common\Frontend\FrontendHelper;
 use Comfino\Common\Frontend\WidgetInitScriptHelper;
@@ -42,21 +41,6 @@ final class FrontendManager
             PaymentGateway::BUILD_TS,
             'width: 300px',
             'Comfino logo'
-        );
-    }
-
-    public static function renderPaywallLogo(): string
-    {
-        return FrontendHelper::renderPaywallLogo(
-            ConfigManager::getLogoApiHost(),
-            ApiClient::getInstance()->getApiKey(),
-            ConfigManager::getWidgetKey(),
-            'WC',
-            WC_VERSION,
-            PaymentGateway::VERSION,
-            PaymentGateway::BUILD_TS,
-            'height: 18px; margin: 0 5px',
-            ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT')
         );
     }
 
@@ -206,6 +190,33 @@ final class FrontendManager
             esc_html($data['title']),
             SettingsForm::renderCategoryTree($data['id'], $data['product_type'], $data['selected_categories'])
         );
+    }
+
+    public static function getLocalStyleUrl(string $styleFileName): string
+    {
+        global $comfino_payment_gateway;
+
+        return $comfino_payment_gateway->plugin_url() . "/resources/css/front/$styleFileName";
+    }
+
+    /**
+     * @param string[] $styles
+     * @param string[][] $dependencies
+     *
+     * @return string[]
+     */
+    public static function includeLocalStyles(array $styles, array $dependencies = [], $version = null): array
+    {
+        $styleIds = [];
+
+        foreach ($styles as $styleName) {
+            $styleId = 'comfino-style-' . str_replace('.', '-', strtolower(pathinfo($styleName, PATHINFO_FILENAME)));
+            $styleIds[] = $styleId;
+
+            wp_enqueue_style($styleId, self::getLocalStyleUrl($styleName), $dependencies[$styleName] ?? [], $version);
+        }
+
+        return $styleIds;
     }
 
     public static function getLocalScriptUrl(string $scriptFileName, bool $frontScript = true): string

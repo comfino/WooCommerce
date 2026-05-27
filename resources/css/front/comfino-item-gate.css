@@ -1,0 +1,25 @@
+/* Hide the Comfino payment method item until the SDK signals a successful init.
+   The --ready modifier class is applied by the SDK (DefaultPaymentMethodItemRenderer.setReady)
+   on the classic shortcode path, and by comfino-blocks.js on the Blocks path (the SDK adapter
+   only walks up to li.wc_payment_method, which doesn't exist in Blocks markup).
+   If the CDN script never runs or iframe init fails, the item stays hidden — users are not misled. */
+
+/* Classic shortcode checkout: <li class="wc_payment_method payment_method_comfino"> */
+li.wc_payment_method.payment_method_comfino {
+    display: none !important;
+}
+
+li.wc_payment_method.payment_method_comfino.comfino-payment-method-item--ready {
+    display: list-item !important;
+}
+
+/* WooCommerce Blocks checkout: <div class="wc-block-components-radio-control"> with input[value="comfino"].
+   :has() is widely supported in modern evergreen browsers; older browsers will simply not hide the tile
+   (graceful degradation — the SDK still bootstraps, paywall iframe still renders). */
+.wc-block-checkout__payment-methods .wc-block-components-radio-control:has(input[value="comfino"]) {
+    display: none !important;
+}
+
+.wc-block-checkout__payment-methods .wc-block-components-radio-control.comfino-payment-method-item--ready:has(input[value="comfino"]) {
+    display: block !important;
+}

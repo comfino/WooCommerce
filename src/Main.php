@@ -259,6 +259,8 @@ final class Main
                 }
             }
 
+            FrontendManager::includeLocalStyles(['comfino-item-gate.css']);
+
             $scriptIds = FrontendManager::includeLocalScripts(['comfino-checkout.js'], []);
 
             /* Browser-safe shop environment payload — mirrors the shape produced by
@@ -283,6 +285,8 @@ final class Main
                 'window.comfinoSettings = ' . wp_json_encode([
                     'authToken' => $authToken,
                     'loanAmount' => $loanAmount,
+                    'label' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
+                    'paymentMethodAuth' => ConfigManager::getPaywallLogoAuthHash(),
                     'environment' => $environment,
                     'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
                     'sdkScriptUrlEsm' => ConfigManager::getSdkScriptUrlEsm(),

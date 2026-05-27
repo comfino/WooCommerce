@@ -18,6 +18,8 @@
     /* All paywall bootstrap options assigned directly from comfinoSettings — wp_add_inline_script + wp_json_encode
        preserves scalar types and the insertion order of associative arrays (creditors map ordering MUST survive
        end-to-end because the paywall renderer uses it literally). */
+    const label = config.label || 'Comfino';
+
     const comfinoPaywallData = {
         authToken: config.authToken,
         loanAmount: config.loanAmount,
@@ -29,7 +31,8 @@
         shopEnvironment: config.shopEnvironment,
         directRedirect: config.directRedirect,
         creditors: config.creditors,
-        allowedProductsConfig: config.allowedProductsConfig
+        allowedProductsConfig: config.allowedProductsConfig,
+        paymentMethodItem: { label: label, ariaLabel: label, auth: config.paymentMethodAuth || '' }
     };
 
     /* Resolve visible paywall container — guards against Elementor rendering a hidden duplicate of the checkout
@@ -154,7 +157,7 @@
 
         sdk.bootstrapPaywall(comfinoPaywallData);
     }).catch(() => {
-        /* Script-load failed — leave the checkout unaffected (Comfino tile won't render). The shop's
+        /* Script load failed — leave the checkout unaffected (Comfino tile won't render). The shop's
            server-side checkout will still place the order via other payment methods. */
     });
 

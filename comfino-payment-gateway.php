@@ -673,6 +673,14 @@ class Comfino_Payment_Gateway
         }
 
         /* 4.3.0 */
+        // Remove COMFINO_SHOW_LOGO — logo is now entirely SDK/CDN-driven; stored value is dead data.
+        $comfinoSettings = get_option('woocommerce_comfino_settings', []);
+
+        if (is_array($comfinoSettings) && array_key_exists('show_logo', $comfinoSettings)) {
+            unset($comfinoSettings['show_logo']);
+            update_option('woocommerce_comfino_settings', $comfinoSettings);
+        }
+
         if (!is_array(ConfigManager::getConfigurationValue('COMFINO_ALLOWED_PRODUCTS_CONFIG_FORBIDDEN_PROD_TYPES'))) {
             ConfigManager::updateConfigurationValue(
                 'COMFINO_ALLOWED_PRODUCTS_CONFIG_FORBIDDEN_PROD_TYPES',

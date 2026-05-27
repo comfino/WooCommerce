@@ -81,122 +81,113 @@
 
     registerPaymentMethod(ComfinoPaymentContent);
 
-    // Watch for payment method selection.
-    if (window.wc && window.wc.wcBlocksData && window.wc.wcBlocksData.PAYMENT_STORE_KEY) {
-        const select = window.wp.data.select(window.wc.wcBlocksData.PAYMENT_STORE_KEY);
+    /* Load the Comfino web frontend SDK. Two code paths based on config.sdkScriptKind:
 
-        /* Load the Comfino web frontend SDK. Two code paths based on config.sdkScriptKind:
+       - 'umd' (default today): the bundle is loaded as a classic <script>. When RequireJS's global define()
+         is present (some WP themes ship it), the UMD wrapper would take the AMD branch and never populate
+         window.Comfino. We temporarily clear window.define for the duration of the script load to force
+         the global-assignment branch, and restore it in both onload and onerror.
+       - 'module': the bundle is loaded as <script type="module">. ESM does not consult window.define, so
+         the clear-and-restore dance is skipped entirely. The SDK is resolved from the returned reference,
+         not from a global — once UMD is retired we can drop the window.Comfino fallback.
 
-           - 'umd' (default today): the bundle is loaded as a classic <script>. When RequireJS's global define()
-             is present (some WP themes ship it), the UMD wrapper would take the AMD branch and never populate
-             window.Comfino. We temporarily clear window.define for the duration of the script load to force
-             the global-assignment branch, and restore it in both onload and onerror.
-           - 'module': the bundle is loaded as <script type="module">. ESM does not consult window.define, so
-             the clear-and-restore dance is skipped entirely. The SDK is resolved from the returned reference,
-             not from a global — once UMD is retired we can drop the window.Comfino fallback.
+       Pass the resolved SDK reference through instead of relying on window.Comfino. The current UMD build
+       still populates the global, so reading from window.Comfino remains a valid fallback for the 'umd'
+       branch. */
+    function loadSdk(cfg) {
+        if (window.Comfino && typeof window.Comfino.bootstrapPaywall === 'function') {
+            return Promise.resolve(window.Comfino);
+        }
 
-           Pass the resolved SDK reference through instead of relying on window.Comfino. The current UMD build
-           still populates the global, so reading from window.Comfino remains a valid fallback for the 'umd'
-           branch. */
-        function loadSdk(cfg) {
-            if (window.Comfino && typeof window.Comfino.bootstrapPaywall === 'function') {
-                return Promise.resolve(window.Comfino);
-            }
-
-            if (window.__comfinoSdkPromise) {
-                return window.__comfinoSdkPromise;
-            }
-
-            const kind = cfg.sdkScriptKind === 'module' ? 'module' : 'umd';
-            const url = kind === 'module' ? (cfg.sdkScriptUrlEsm || cfg.sdkScriptUrl) : cfg.sdkScriptUrl;
-
-            window.__comfinoSdkPromise = new Promise(function (resolve, reject) {
-                const script = document.createElement('script');
-                script.src = url;
-                script.setAttribute('data-comfino-sdk', '1');
-
-                if (cfg.scriptNonce) {
-                    script.setAttribute('nonce', cfg.scriptNonce);
-                }
-
-                if (kind === 'module') {
-                    script.type = 'module';
-                    script.onload = function () { resolve(window.Comfino); };
-                    script.onerror = function (e) {
-                        window.__comfinoSdkPromise = null;
-                        reject(e);
-                    };
-                } else {
-                    const savedDefine = window.define;
-                    window.define = undefined;
-
-                    script.onload = function () {
-                        window.define = savedDefine;
-                        resolve(window.Comfino);
-                    };
-                    script.onerror = function (e) {
-                        window.define = savedDefine;
-                        window.__comfinoSdkPromise = null;
-                        reject(e);
-                    };
-                }
-
-                document.head.appendChild(script);
-            });
-
+        if (window.__comfinoSdkPromise) {
             return window.__comfinoSdkPromise;
         }
 
-        /* Bootstrap the SDK the first time Comfino becomes active. Container re-renders are reconciled by the
-           SDK's MutationObserver (BasePaywallController.startSpaObserver), which compares container identity and
-           also works in direct-redirect mode where there is no iframe. */
-        window.wp.data.subscribe(function () {
-            if (select.getActivePaymentMethod() !== 'comfino') {
-                return;
+        const kind = cfg.sdkScriptKind === 'module' ? 'module' : 'umd';
+        const url = kind === 'module' ? (cfg.sdkScriptUrlEsm || cfg.sdkScriptUrl) : cfg.sdkScriptUrl;
+
+        window.__comfinoSdkPromise = new Promise(function (resolve, reject) {
+            const script = document.createElement('script');
+            script.src = url;
+            script.setAttribute('data-comfino-sdk', '1');
+
+            if (cfg.scriptNonce) {
+                script.setAttribute('nonce', cfg.scriptNonce);
             }
 
-            if (window.__comfinoSdkPromise) {
-                // Bootstrap already initiated on a previous activation of the Comfino method.
-                return;
+            if (kind === 'module') {
+                script.type = 'module';
+                script.onload = function () { resolve(window.Comfino); };
+                script.onerror = function (e) {
+                    window.__comfinoSdkPromise = null;
+                    reject(e);
+                };
+            } else {
+                const savedDefine = window.define;
+                window.define = undefined;
+
+                script.onload = function () {
+                    window.define = savedDefine;
+                    resolve(window.Comfino);
+                };
+                script.onerror = function (e) {
+                    window.define = savedDefine;
+                    window.__comfinoSdkPromise = null;
+                    reject(e);
+                };
             }
 
-            if (!config.sdkScriptUrl || !config.authToken) {
-                return;
-            }
-
-            // productTypes: null = no filter active, [] = all filtered, [...] = filtered subset to pass to bootstrapPaywall().
-            if (Array.isArray(config.productTypes) && config.productTypes.length === 0) {
-                // All product types filtered out for this cart — don't load the paywall SDK.
-                return;
-            }
-
-            /* All paywall bootstrap options assigned directly from comfino_data — wcSettings (wp_json_encode)
-               preserves scalar types and the insertion order of associative arrays (creditors map ordering MUST
-               survive end-to-end because the paywall renderer uses it literally). */
-            const comfinoPaywallData = {
-                authToken: config.authToken,
-                loanAmount: config.loanAmount,
-                platform: 'woocommerce',
-                environment: config.environment,
-                wcBlocksActive: true,
-                productTypes: config.productTypes,
-                cart: config.cart,
-                paywallSettings: config.paywallSettings,
-                shopEnvironment: config.shopEnvironment,
-                directRedirect: config.directRedirect,
-                creditors: config.creditors,
-                allowedProductsConfig: config.allowedProductsConfig
-            };
-
-            loadSdk(config).then(function (sdk) {
-                if (sdk && typeof sdk.bootstrapPaywall === 'function') {
-                    sdk.bootstrapPaywall(comfinoPaywallData);
-                }
-            }).catch(function () {
-                /* Script-load failed — leave the checkout unaffected. */
-            });
+            document.head.appendChild(script);
         });
+
+        return window.__comfinoSdkPromise;
     }
+
+    if (!config.sdkScriptUrl || !config.authToken) {
+        return;
+    }
+
+    // productTypes: null = no filter active, [] = all filtered, [...] = filtered subset to pass to bootstrapPaywall().
+    if (Array.isArray(config.productTypes) && config.productTypes.length === 0) {
+        // All product types filtered out for this cart — don't load the paywall SDK.
+        return;
+    }
+
+    /* All paywall bootstrap options assigned directly from comfino_data — wcSettings (wp_json_encode)
+       preserves scalar types and the insertion order of associative arrays (creditors map ordering MUST
+       survive end-to-end because the paywall renderer uses it literally).
+
+       Bootstrap happens on page load (not gated on first Comfino activation): the SDK's DefaultPaymentMethodItemRenderer
+       stamps the Comfino logo + class hooks onto the per-method tile during render(), and that has to happen before
+       the shopper clicks Comfino — otherwise the tile shows as "Comfino" text without a logo until selection. The
+       SDK adapter's subscribePaymentMethodSelection takes over from there: activate() lazily creates the iframe on
+       first selection (the React-managed `<div id="comfino-paywall-container">` only mounts inside the accordion
+       content when Comfino is active, so iframe creation can't happen until then anyway — PaywallManager.activate()
+       waits for the container via MutationObserver). */
+    const label = config.label || 'Comfino';
+    const comfinoPaywallData = {
+        authToken: config.authToken,
+        loanAmount: config.loanAmount,
+        platform: 'woocommerce',
+        environment: config.environment,
+        wcBlocksActive: true,
+        productTypes: config.productTypes,
+        cart: config.cart,
+        paywallSettings: config.paywallSettings,
+        shopEnvironment: config.shopEnvironment,
+        directRedirect: config.directRedirect,
+        creditors: config.creditors,
+        allowedProductsConfig: config.allowedProductsConfig,
+        paymentMethodItem: { label: label, ariaLabel: label, auth: config.paymentMethodAuth || '' }
+    };
+
+    loadSdk(config).then(function (sdk) {
+        if (sdk && typeof sdk.bootstrapPaywall === 'function') {
+            sdk.bootstrapPaywall(comfinoPaywallData);
+        }
+    }).catch(function () {
+        /* Script load failed — leave the checkout unaffected. */
+    });
 
     /* Cart-total refresh for the Blocks store is owned by the SDK's WooCommercePaywallController when
        `wcBlocksActive: true` is set on the bootstrap data — it subscribes to wc-blocks-data CART_STORE_KEY and
