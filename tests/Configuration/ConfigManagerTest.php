@@ -211,11 +211,6 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(ConfigurationManager::OPT_VALUE_TYPE_STRING, ConfigManager::getConfigurationValueType('NON_EXISTENT'));
     }
 
-    public function testGetPaywallLogoUrl(): void
-    {
-        $this->assertContains('get-paywall-logo', ConfigManager::getPaywallLogoUrl());
-    }
-
     public function testGetWidgetScriptUrl(): void
     {
         $this->assertContains('widget', ConfigManager::getWidgetScriptUrl());

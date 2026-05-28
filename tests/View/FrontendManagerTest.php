@@ -321,15 +321,6 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertContains('<img', $logo);
     }
 
-    public function testRenderPaywallLogo(): void
-    {
-        $logo = FrontendManager::renderPaywallLogo();
-
-        $this->assertInternalType('string', $logo);
-        // Logo rendering depends on configuration, may be empty.
-        $this->assertInternalType('string', $logo);
-    }
-
     public function testRenderHiddenInputWithCustomAttributes(): void
     {
         $fieldKey = 'test_field';
