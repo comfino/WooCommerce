@@ -97,7 +97,8 @@
        Pass the resolved SDK reference through instead of relying on window.Comfino. The current UMD build
        still populates the global, so reading from window.Comfino remains a valid fallback for the 'umd'
        branch. */
-    function loadSdk(cfg) {
+    function loadSdk(cfg)
+    {
         if (window.Comfino && typeof window.Comfino.bootstrapPaywall === 'function') {
             return Promise.resolve(window.Comfino);
         }
