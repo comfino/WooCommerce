@@ -141,6 +141,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
             'paymentMethodAuth' => ConfigManager::getPaywallLogoAuthHash(),
             'supports' => $this->gateway ? array_filter($this->gateway->supports, [$this->gateway, 'supports']) : ['products'],
             'productTypes' => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,
+            'productTypeNames' => SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL) ?: null,
             'cart' => $cartPayload,
             'paywallSettings' => [
                 'language' => Main::getShopLanguage(),

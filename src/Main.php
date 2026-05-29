@@ -291,6 +291,7 @@ final class Main
                     'sdkScriptUrlEsm' => ConfigManager::getSdkScriptUrlEsm(),
                     'sdkScriptKind' => ConfigManager::getSdkScriptKind(),
                     'productTypes' => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,
+                    'productTypeNames' => SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL) ?: null,
                     'cart' => $cartPayload,
                     'paywallSettings' => [
                         'language' => self::getShopLanguage(),

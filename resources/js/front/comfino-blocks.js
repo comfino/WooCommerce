@@ -174,6 +174,7 @@
         environment: config.environment,
         wcBlocksActive: true,
         productTypes: config.productTypes,
+        productTypeNames: config.productTypeNames,
         cart: config.cart,
         paywallSettings: config.paywallSettings,
         shopEnvironment: config.shopEnvironment,

@@ -24,6 +24,7 @@
         platform: 'woocommerce',
         environment: config.environment,
         productTypes: config.productTypes,
+        productTypeNames: config.productTypeNames,
         cart: config.cart,
         paywallSettings: config.paywallSettings,
         shopEnvironment: config.shopEnvironment,
@@ -105,6 +106,7 @@
             const script = document.createElement('script');
             script.src = url;
             script.setAttribute('data-comfino-sdk', '1');
+            script.setAttribute('data-cfasync', 'false');
 
             if (cfg.scriptNonce) {
                 script.setAttribute('nonce', cfg.scriptNonce);
