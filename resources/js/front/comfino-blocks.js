@@ -122,9 +122,10 @@
             if (kind === 'module') {
                 script.type = 'module';
                 script.onload = function () { resolve(window.Comfino); };
-                script.onerror = function (e) {
+                script.onerror = function (error) {
                     window.__comfinoSdkPromise = null;
-                    reject(e);
+
+                    reject(error);
                 };
             } else {
                 const savedDefine = window.define;
@@ -132,12 +133,14 @@
 
                 script.onload = function () {
                     window.define = savedDefine;
+
                     resolve(window.Comfino);
                 };
-                script.onerror = function (e) {
+                script.onerror = function (error) {
                     window.define = savedDefine;
                     window.__comfinoSdkPromise = null;
-                    reject(e);
+
+                    reject(error);
                 };
             }
 

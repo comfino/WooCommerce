@@ -115,9 +115,10 @@
             if (kind === 'module') {
                 script.type = 'module';
                 script.onload = () => resolve(window.Comfino);
-                script.onerror = (e) => {
+                script.onerror = (error) => {
                     window.__comfinoSdkPromise = null;
-                    reject(e);
+
+                    reject(error);
                 };
             } else {
                 /* UMD branch — scope the define-clear to this single script load. Restore window.define on
@@ -127,12 +128,14 @@
 
                 script.onload = () => {
                     window.define = savedDefine;
+
                     resolve(window.Comfino);
                 };
-                script.onerror = (e) => {
+                script.onerror = (error) => {
                     window.define = savedDefine;
                     window.__comfinoSdkPromise = null;
-                    reject(e);
+
+                    reject(error);
                 };
             }
 

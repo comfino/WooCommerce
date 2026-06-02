@@ -354,12 +354,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:comfino/shop-plugins-shared.git",
-                "reference": "82e57590f76cf33cf32d52f453e7ee6145812b1c"
+                "reference": "08ea297cd6eb0fbf09a6fdf476a0c54087e421cf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/comfino/shop-plugins-shared/zipball/82e57590f76cf33cf32d52f453e7ee6145812b1c",
-                "reference": "82e57590f76cf33cf32d52f453e7ee6145812b1c",
+                "url": "https://api.github.com/repos/comfino/shop-plugins-shared/zipball/08ea297cd6eb0fbf09a6fdf476a0c54087e421cf",
+                "reference": "08ea297cd6eb0fbf09a6fdf476a0c54087e421cf",
                 "shasum": ""
             },
             "require": {
@@ -381,10 +381,10 @@
                 "phpspec/prophecy-phpunit": "^1.1",
                 "phpunit/phpunit": "^5.7"
             },
-            "time": "2026-05-27T08:34:21+00:00",
+            "time": "2026-06-02T11:02:24+00:00",
             "default-branch": true,
             "type": "library",
-            "installation-source": "dist",
+            "installation-source": "source",
             "autoload": {
                 "psr-4": {
                     "Comfino\\": "src/"
@@ -407,10 +407,6 @@
             ],
             "description": "Shared library for shop plugins with all dependencies cumulated from ecommerce packages.",
             "homepage": "https://github.com/comfino/shop-plugins-shared",
-            "support": {
-                "source": "https://github.com/comfino/shop-plugins-shared/tree/master",
-                "issues": "https://github.com/comfino/shop-plugins-shared/issues"
-            },
             "install-path": "../comfino/shop-plugins-shared"
         },
         {
