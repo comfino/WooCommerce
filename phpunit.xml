@@ -14,6 +14,8 @@
              full E_ALL on 7.1–7.3 so prefer-lowest fatals stay visible. -->
         <ini name="display_errors" value="true"/>
         <ini name="display_startup_errors" value="true"/>
+        <!-- Prevent ErrorLogger from sending errors to the production endpoint during tests. -->
+        <env name="COMFINO_DEV_ENV" value="TRUE"/>
     </php>
     <testsuites>
         <testsuite name="Comfino WooCommerce plugin tests">
