@@ -20,6 +20,8 @@
        end-to-end because the paywall renderer uses it literally). */
     const comfinoPaywallData = {
         authToken: config.authToken,
+        loggingToken: config.loggingToken || '',
+        trackId: config.trackId || '',
         loanAmount: config.loanAmount,
         platform: 'woocommerce',
         environment: config.environment,

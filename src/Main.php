@@ -232,6 +232,8 @@ final class Main
 
         if (!$isPaymentBlock) {
             $authToken = FrontendManager::getAuthToken();
+            $loggingToken = FrontendManager::getLoggingToken();
+            $trackId = FrontendManager::getTrackId();
             $environment = ConfigManager::isSandboxMode() ? 'sandbox' : 'production';
 
             $allowedProductTypes = null;
@@ -284,6 +286,8 @@ final class Main
                 $scriptIds[0],
                 'window.comfinoSettings = ' . wp_json_encode([
                     'authToken' => $authToken,
+                    'loggingToken' => $loggingToken,
+                    'trackId' => $trackId,
                     'loanAmount' => $loanAmount,
                     'paymentMethodAuth' => ConfigManager::getPaywallLogoAuthHash(),
                     'environment' => $environment,

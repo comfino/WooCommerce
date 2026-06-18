@@ -31,6 +31,23 @@ final class FrontendManager
         return PaywallAuthTokenGenerator::generateAuthToken($widgetKey, $apiKey);
     }
 
+    public static function getLoggingToken(): string
+    {
+        $widgetKey = ConfigManager::getWidgetKey() ?? '';
+        $apiKey = ConfigManager::getApiKey() ?? '';
+
+        if (empty($apiKey) || empty($widgetKey)) {
+            return '';
+        }
+
+        return PaywallAuthTokenGenerator::generateLoggingToken($widgetKey, $apiKey);
+    }
+
+    public static function getTrackId(): string
+    {
+        return \Comfino\Api\ApiClient::getInstance()->getTrackId();
+    }
+
     public static function renderAdminLogo(): string
     {
         return FrontendHelper::renderAdminLogo(

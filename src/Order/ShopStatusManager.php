@@ -51,8 +51,18 @@ final class ShopStatusManager
             case 'cancelled':
                 if ($order->get_payment_method() === PaymentGateway::GATEWAY_ID) {
                     // Process orders paid by Comfino only.
-
-                    if (count(OrderManager::getOrderStatusNotes($order->get_id(), [StatusManager::STATUS_CANCELLED_BY_SHOP, StatusManager::STATUS_RESIGN])) > 0) {
+                    if (count(
+                        OrderManager::getOrderStatusNotes(
+                            $order->get_id(),
+                            [
+                                StatusManager::STATUS_CANCELLED,
+                                StatusManager::STATUS_CANCELLED_BY_SHOP,
+                                StatusManager::STATUS_REJECTED,
+                                StatusManager::STATUS_RESIGN,
+                            ]
+                        )
+                    ) > 0) {
+                        // Cancellation originated from Comfino API notification - do not resend cancel request.
                         break;
                     }
 

@@ -83,9 +83,9 @@ final class OrderManager
                         $product->get_sku(),
                         $imageUrl,
                         $categoryIds,
-                        $taxRate !== null ? $netPrice : null,
+                        $taxRate !== null ? $netPrice : $grossPrice,
                         $taxRate !== null ? (int) $taxRate['rate'] : null,
-                        $taxRate !== null ? $grossPrice - $netPrice : null
+                        $taxRate !== null ? $grossPrice - $netPrice : 0
                     ),
                     (int) $item['quantity']
                 );
@@ -123,8 +123,11 @@ final class OrderManager
         }
 
         $deliveryCost = (int) round(($cart->get_shipping_total() + $cart->get_shipping_tax()) * 100);
-        $deliveryNetCost = null;
-        $deliveryTaxValue = null;
+
+        /* Paid delivery defaults to no-VAT semantics (net equals gross, tax value 0, rate null); the actual net
+           cost, tax value and rate are filled in below when a shipping tax rate applies. Free delivery stays null. */
+        $deliveryNetCost = $deliveryCost > 0 ? $deliveryCost : null;
+        $deliveryTaxValue = $deliveryCost > 0 ? 0 : null;
         $deliveryTaxRate = null;
 
         if (!empty($taxClasses = $cart->get_cart_item_tax_classes_for_shipping())) {
@@ -142,7 +145,7 @@ final class OrderManager
                 $taxRate = null;
             }
 
-            if ($taxRate !== null) {
+            if ($taxRate !== null && (float) $cart->get_shipping_tax() > 0.0) {
                 $deliveryNetCost = (int) round($cart->get_shipping_total() * 100);
                 $deliveryTaxValue = (int) round($cart->get_shipping_tax() * 100);
                 $deliveryTaxRate = (int) $taxRate['rate'];
@@ -189,8 +192,8 @@ final class OrderManager
         }
 
         $grossPrice = (int) (wc_get_price_including_tax($product) * 100);
-        $netPrice = ($taxRates !== null ? (int) (wc_get_price_excluding_tax($product) * 100) : null);
-        $taxValue = ($taxRate !== null ? $grossPrice - $netPrice : null);
+        $netPrice = ($taxRate !== null ? (int) (wc_get_price_excluding_tax($product) * 100) : $grossPrice);
+        $taxValue = ($taxRate !== null ? $grossPrice - $netPrice : 0);
 
         return new Cart(
             $grossPrice,

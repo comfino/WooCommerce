@@ -101,6 +101,8 @@ class Client
     protected $request;
     
     protected $response;
+    
+    private $trackId;
 
     /**
      * @param RequestFactoryInterface $requestFactory
@@ -531,6 +533,14 @@ class Client
     }
 
     /**
+     * @return string
+     */
+    public function getTrackId(): string
+    {
+        return $this->trackId = $this->trackId ?? $this->generateTrackId();
+    }
+
+    /**
      * @throws RequestValidationError
      * @throws ClientExceptionInterface
      * @param \Comfino\Api\Request $request
@@ -538,11 +548,7 @@ class Client
      */
     protected function sendRequest($request, $apiVersion = null): ResponseInterface
     {
-        if (($trackId = !empty($this->clientHostName) ? $this->clientHostName : gethostname()) === false) {
-            $trackId = 'trid-' . uniqid('', true);
-        } else {
-            $trackId .= ('-' . microtime(true));
-        }
+        $this->trackId = $this->trackId ?? $this->generateTrackId();
 
         $apiRequest = $request->getPsrRequest(
             $this->requestFactory,
@@ -554,7 +560,7 @@ class Client
         ->withHeader('Api-Language', $this->apiLanguage)
         ->withHeader('Api-Currency', $this->apiCurrency)
         ->withHeader('User-Agent', $this->getUserAgent())
-        ->withHeader('Comfino-Track-Id', $trackId);
+        ->withHeader('Comfino-Track-Id', $this->trackId);
 
         if (count($this->customHeaders) > 0) {
             foreach ($this->customHeaders as $headerName => $headerValue) {
@@ -572,5 +578,16 @@ class Client
     protected function getUserAgent(): string
     {
         return $this->customUserAgent ?? "Comfino API client {$this->getVersion()}";
+    }
+
+    private function generateTrackId(): string
+    {
+        $base = !empty($this->clientHostName) ? $this->clientHostName : gethostname();
+
+        if ($base === false) {
+            return 'trid-' . uniqid('', true);
+        }
+
+        return $base . '-' . microtime(true);
     }
 }

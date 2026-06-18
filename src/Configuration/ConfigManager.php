@@ -659,6 +659,8 @@ final class ConfigManager
             'PRODUCT_CART_DETAILS' => $productData['product_cart_details'],
             'LANGUAGE' => Main::getShopLanguage(),
             'CURRENCY' => Main::getShopCurrency(),
+            'LOGGING_TOKEN' => \Comfino\View\FrontendManager::getLoggingToken(),
+            'TRACK_ID' => \Comfino\View\FrontendManager::getTrackId(),
         ];
     }
 
