@@ -374,7 +374,7 @@ final class SettingsForm
                 $formFields = array_intersect_key(
                     self::getFormFieldsDefinitions(),
                     array_flip([
-                        'enabled', 'production_key', 'min_cart_amount', 'use_order_reference',
+                        'enabled', 'production_key', 'payment_text', 'min_cart_amount', 'use_order_reference',
                         'paywall_settings_section', 'paywall_direct_redirect', 'paywall_custom_css_url',
                     ])
                 );
@@ -572,6 +572,12 @@ final class SettingsForm
                 'title' => __('Production environment API key', 'comfino-payment-gateway'),
                 'type' => 'text',
                 'placeholder' => __('Please enter the key provided during registration', 'comfino-payment-gateway'),
+            ],
+            'payment_text' => [
+                'title' => __('Payment text', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'default' => (string) ConfigManager::getDefaultValue('payment_text'),
+                'description' => __('Label displayed for Comfino in the checkout payment method list.', 'comfino-payment-gateway'),
             ],
             'min_cart_amount' => [
                 'title' => __('Minimal amount in cart', 'comfino-payment-gateway'),

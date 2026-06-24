@@ -136,8 +136,6 @@ final class PaymentGateway extends AbstractPaymentMethodType
             'loanAmount' => $loanAmount,
             'environment' => ConfigManager::isSandboxMode() ? 'sandbox' : 'production',
             'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
-            'sdkScriptUrlEsm' => ConfigManager::getSdkScriptUrlEsm(),
-            'sdkScriptKind' => ConfigManager::getSdkScriptKind(),
             'paymentMethodAuth' => ConfigManager::getPaywallLogoAuthHash(),
             'supports' => $this->gateway ? array_filter($this->gateway->supports, [$this->gateway, 'supports']) : ['products'],
             'productTypes' => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,

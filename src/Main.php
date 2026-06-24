@@ -261,9 +261,15 @@ final class Main
                 }
             }
 
-            FrontendManager::includeLocalStyles(['comfino-item-gate.css']);
-
-            $scriptIds = FrontendManager::includeLocalScripts(['comfino-checkout.js'], []);
+            wp_enqueue_style('comfino-item-gate', ConfigManager::getCheckoutCssUrl());
+            wp_enqueue_script(
+                'comfino-checkout',
+                ConfigManager::getCheckoutScriptUrl(),
+                [],
+                null,
+                ['in_footer' => true]
+            );
+            wp_script_add_data('comfino-checkout', 'crossorigin', 'anonymous');
 
             /* Browser-safe shop environment payload — mirrors the shape produced by
                AbstractShopEnvironmentBuilder::buildForFrontend() in php-sdk (used by Magento via
@@ -281,46 +287,42 @@ final class Main
                 'pageContext' => ['type' => 'checkout'],
             ];
 
-            // Emit via wp_add_inline_script + wp_json_encode to preserve scalar types end-to-end.
-            wp_add_inline_script(
-                $scriptIds[0],
-                'window.comfinoSettings = ' . wp_json_encode([
-                    'authToken' => $authToken,
-                    'loggingToken' => $loggingToken,
-                    'trackId' => $trackId,
-                    'loanAmount' => $loanAmount,
-                    'paymentMethodAuth' => ConfigManager::getPaywallLogoAuthHash(),
-                    'environment' => $environment,
-                    'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
-                    'sdkScriptUrlEsm' => ConfigManager::getSdkScriptUrlEsm(),
-                    'sdkScriptKind' => ConfigManager::getSdkScriptKind(),
-                    'productTypes' => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,
-                    'productTypeNames' => SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL) ?: null,
-                    'cart' => $cartPayload,
-                    'paywallSettings' => [
-                        'language' => self::getShopLanguage(),
-                        'currency' => self::getShopCurrency(),
-                        'customPaywallCss' => ConfigManager::getConfigurationValue('COMFINO_PAYWALL_CUSTOM_CSS_URL') ?: null,
-                    ],
-                    'shopEnvironment' => $shopEnvironment,
-                    'directRedirect' => (bool) ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
-                    'creditors' => SettingsManager::getCreditors() ?: null,
-                    'allowedProductsConfig' => SettingsManager::getAllowedProductsConfigForFrontend(),
-                    'scriptNonce' => (string) apply_filters('comfino_csp_script_nonce', ''),
-                ]) . ';',
-                'before'
-            );
+            $comfinoConfig = [
+                'authToken' => $authToken,
+                'loggingToken' => $loggingToken,
+                'trackId' => $trackId,
+                'loanAmount' => $loanAmount,
+                'paymentMethodAuth' => ConfigManager::getPaywallLogoAuthHash(),
+                'paymentMethodLabel' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT') ?: null,
+                'environment' => $environment,
+                'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
+                'productTypes' => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,
+                'productTypeNames' => SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL) ?: null,
+                'cart' => $cartPayload,
+                'paywallSettings' => [
+                    'language' => self::getShopLanguage(),
+                    'currency' => self::getShopCurrency(),
+                    'customPaywallCss' => ConfigManager::getConfigurationValue('COMFINO_PAYWALL_CUSTOM_CSS_URL') ?: null,
+                ],
+                'shopEnvironment' => $shopEnvironment,
+                'directRedirect' => (bool) ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
+                'creditors' => SettingsManager::getCreditors() ?: null,
+                'allowedProductsConfig' => SettingsManager::getAllowedProductsConfigForFrontend(),
+            ];
 
             DebugLogger::logEvent(
                 '[PAYWALL]', 'renderPaywallIframe registered scripts.',
-                ['$scriptIds' => $scriptIds, '$loanAmount' => $loanAmount]
+                ['$loanAmount' => $loanAmount]
             );
         }
 
         return TemplateManager::renderView(
             'payment',
             'front',
-            ['comfino_total_amount' => $loanAmount ?? 0],
+            [
+                'comfino_total_amount' => $loanAmount ?? 0,
+                'comfino_checkout_config' => $comfinoConfig ?? null,
+            ],
             !$isPaymentBlock
         );
     }

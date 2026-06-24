@@ -24,12 +24,10 @@ if (!defined('ABSPATH')) {
 
 final class ConfigManager
 {
-    private const COMFINO_SDK_JS_PRODUCTION = 'https://widget.comfino.pl/sdk/v1/comfino-sdk.min.js';
-    private const COMFINO_SDK_JS_SANDBOX = 'https://widget.craty.pl/sdk/v1/comfino-sdk.min.js';
-
     public const CONFIG_OPTIONS_MAP = [
         'COMFINO_ENABLED' => 'enabled',
         'COMFINO_API_KEY' => 'production_key',
+        'COMFINO_PAYMENT_TEXT' => 'payment_text',
         'COMFINO_MINIMAL_CART_AMOUNT' => 'min_cart_amount',
         'COMFINO_USE_ORDER_REFERENCE' => 'use_order_reference',
         'COMFINO_IS_SANDBOX' => 'sandbox_mode',
@@ -78,6 +76,7 @@ final class ConfigManager
         'payment_settings' => [
             'COMFINO_ENABLED' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_API_KEY' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
+            'COMFINO_PAYMENT_TEXT' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_MINIMAL_CART_AMOUNT' => ConfigurationManager::OPT_VALUE_TYPE_FLOAT,
             'COMFINO_USE_ORDER_REFERENCE' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_PAYWALL_DIRECT_REDIRECT' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
@@ -135,6 +134,7 @@ final class ConfigManager
 
     public const ACCESSIBLE_CONFIG_OPTIONS = [
         'COMFINO_ENABLED',
+        'COMFINO_PAYMENT_TEXT',
         'COMFINO_MINIMAL_CART_AMOUNT',
         'COMFINO_USE_ORDER_REFERENCE',
         'COMFINO_PAYWALL_DIRECT_REDIRECT',
@@ -573,55 +573,60 @@ final class ConfigManager
 
     public static function getSdkScriptUrl(): string
     {
-        if (self::useDevEnvVars() && getenv('COMFINO_DEV_SDK_SCRIPT_URL')) {
-            $sdkScriptUrl = sanitize_url(wp_unslash(getenv('COMFINO_DEV_SDK_SCRIPT_URL')));
+        return self::resolveSdkScriptUrl('comfino-sdk.esm.min.js', 'COMFINO_DEV_SDK_SCRIPT_URL');
+    }
 
-            if (self::useUnminifiedScripts()) {
-                $sdkScriptUrl = str_replace('.min.js', '.js', $sdkScriptUrl);
-            }
-
-            return $sdkScriptUrl;
+    public static function getCheckoutScriptUrl(): string
+    {
+        if (self::useDevEnvVars() && getenv('COMFINO_DEV_CHECKOUT_SCRIPT_URL')) {
+            return sanitize_url(wp_unslash(getenv('COMFINO_DEV_CHECKOUT_SCRIPT_URL')));
         }
 
-        return self::isSandboxMode() ? self::COMFINO_SDK_JS_SANDBOX : self::COMFINO_SDK_JS_PRODUCTION;
+        $fileName = (self::useDevEnvVars() && self::useUnminifiedScripts())
+            ? 'comfino-woocommerce.js'
+            : 'comfino-woocommerce.min.js';
+
+        return sanitize_url(wp_unslash(\Comfino\View\FrontendManager::getExternalResourcesBaseUrl() . "/checkout/v1/$fileName"));
+    }
+
+    public static function getCheckoutCssUrl(): string
+    {
+        if (self::useDevEnvVars() && getenv('COMFINO_DEV_CHECKOUT_CSS_URL')) {
+            return sanitize_url(wp_unslash(getenv('COMFINO_DEV_CHECKOUT_CSS_URL')));
+        }
+
+        return sanitize_url(wp_unslash(\Comfino\View\FrontendManager::getExternalResourcesBaseUrl() . '/checkout/v1/css/comfino-item-gate-woocommerce.css'));
     }
 
     /**
-     * URL of the SDK's ESM build, when available. Returns null until the SDK publishes one — the
-     * front-end loader treats null as "fall back to the UMD URL" and only honors the value when
-     * sdkScriptKind === 'module'.
+     * Compose the CDN URL of an SDK bundle served from /sdk/v1/. Resolution order:
+     *   1. An explicit full-URL dev override ($devUrlEnvVar) wins outright.
+     *   2. Otherwise, the host comes from FrontendManager::getExternalResourcesBaseUrl() — so
+     *      COMFINO_DEV_STATIC_RESOURCES_BASE_URL points the SDK at the local widget dev server,
+     *      exactly like the external widget scripts/styles.
+     * In both branches the .min suffix is dropped when COMFINO_DEV_USE_UNMINIFIED_SCRIPTS is on.
      */
-    public static function getSdkScriptUrlEsm(): ?string
+    private static function resolveSdkScriptUrl(string $scriptFileName, string $devUrlEnvVar): string
     {
-        if (self::useDevEnvVars() && getenv('COMFINO_DEV_SDK_SCRIPT_URL_ESM')) {
-            $sdkScriptUrl = sanitize_url(wp_unslash(getenv('COMFINO_DEV_SDK_SCRIPT_URL_ESM')));
+        $unminified = self::useDevEnvVars() && self::useUnminifiedScripts();
 
-            if (self::useUnminifiedScripts()) {
+        if (self::useDevEnvVars() && getenv($devUrlEnvVar)) {
+            $sdkScriptUrl = sanitize_url(wp_unslash(getenv($devUrlEnvVar)));
+
+            if ($unminified) {
                 $sdkScriptUrl = str_replace('.min.js', '.js', $sdkScriptUrl);
             }
 
-            return $sdkScriptUrl !== '' ? $sdkScriptUrl : null;
-        }
-
-        return null;
-    }
-
-    /**
-     * Loader hint for the front-end bootstrap: 'umd' (default, current bundle) or 'module' (future
-     * ESM bundle, loaded via <script type="module">). Switching to 'module' lets us drop the
-     * window.define = undefined trick without breaking the plugin.
-     */
-    public static function getSdkScriptKind(): string
-    {
-        if (self::useDevEnvVars() && getenv('COMFINO_DEV_SDK_SCRIPT_KIND')) {
-            $kind = sanitize_text_field(wp_unslash(getenv('COMFINO_DEV_SDK_SCRIPT_KIND')));
-
-            if ($kind === 'module') {
-                return 'module';
+            if ($sdkScriptUrl !== '') {
+                return $sdkScriptUrl;
             }
         }
 
-        return 'umd';
+        if ($unminified) {
+            $scriptFileName = str_replace('.min.js', '.js', $scriptFileName);
+        }
+
+        return sanitize_url(wp_unslash(\Comfino\View\FrontendManager::getExternalResourcesBaseUrl() . "/sdk/v1/$scriptFileName"));
     }
 
     public static function getWidgetScriptUrl(): string
@@ -694,6 +699,7 @@ final class ConfigManager
     {
         return [
             'COMFINO_ENABLED' => false,
+            'COMFINO_PAYMENT_TEXT' => 'Comfino',
             'COMFINO_MINIMAL_CART_AMOUNT' => 30,
             'COMFINO_USE_ORDER_REFERENCE' => false,
             'COMFINO_IS_SANDBOX' => false,

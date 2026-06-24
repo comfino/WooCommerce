@@ -84,19 +84,8 @@
 
     registerPaymentMethod(ComfinoPaymentContent);
 
-    /* Load the Comfino web frontend SDK. Two code paths based on config.sdkScriptKind:
-
-       - 'umd' (default today): the bundle is loaded as a classic <script>. When RequireJS's global define()
-         is present (some WP themes ship it), the UMD wrapper would take the AMD branch and never populate
-         window.Comfino. We temporarily clear window.define for the duration of the script load to force
-         the global-assignment branch, and restore it in both onload and onerror.
-       - 'module': the bundle is loaded as <script type="module">. ESM does not consult window.define, so
-         the clear-and-restore dance is skipped entirely. The SDK is resolved from the returned reference,
-         not from a global — once UMD is retired we can drop the window.Comfino fallback.
-
-       Pass the resolved SDK reference through instead of relying on window.Comfino. The current UMD build
-       still populates the global, so reading from window.Comfino remains a valid fallback for the 'umd'
-       branch. */
+    /* Cache the SDK-load promise on window so block re-mounts reuse the existing script tag.
+       The SDK ESM bundle is loaded as type="module"; crossOrigin="anonymous" is required. */
     function loadSdk(cfg)
     {
         if (window.Comfino && typeof window.Comfino.bootstrapPaywall === 'function') {
@@ -107,8 +96,7 @@
             return window.__comfinoSdkPromise;
         }
 
-        const kind = cfg.sdkScriptKind === 'module' ? 'module' : 'umd';
-        const url = kind === 'module' ? (cfg.sdkScriptUrlEsm || cfg.sdkScriptUrl) : cfg.sdkScriptUrl;
+        const url = cfg.sdkScriptUrl;
 
         window.__comfinoSdkPromise = new Promise(function (resolve, reject) {
             const script = document.createElement('script');
@@ -119,30 +107,14 @@
                 script.setAttribute('nonce', cfg.scriptNonce);
             }
 
-            if (kind === 'module') {
-                script.type = 'module';
-                script.onload = function () { resolve(window.Comfino); };
-                script.onerror = function (error) {
-                    window.__comfinoSdkPromise = null;
+            script.type = 'module';
+            script.crossOrigin = 'anonymous';
+            script.onload = function () { resolve(window.Comfino); };
+            script.onerror = function (error) {
+                window.__comfinoSdkPromise = null;
 
-                    reject(error);
-                };
-            } else {
-                const savedDefine = window.define;
-                window.define = undefined;
-
-                script.onload = function () {
-                    window.define = savedDefine;
-
-                    resolve(window.Comfino);
-                };
-                script.onerror = function (error) {
-                    window.define = savedDefine;
-                    window.__comfinoSdkPromise = null;
-
-                    reject(error);
-                };
-            }
+                reject(error);
+            };
 
             document.head.appendChild(script);
         });
