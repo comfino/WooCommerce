@@ -65,20 +65,19 @@ final class PaymentGateway extends AbstractPaymentMethodType
         /** @var \Comfino_Payment_Gateway $comfino_payment_gateway */
         global $comfino_payment_gateway;
 
-        FrontendManager::includeLocalStyles(['comfino-item-gate.css']);
+        wp_enqueue_style('comfino-item-gate', ConfigManager::getCheckoutCssUrl());
 
-        $scriptIds = FrontendManager::registerLocalScripts(
-            ['comfino-blocks.js'],
-            [
-                'comfino-blocks.js' => [
-                    'wc-blocks-registry',
-                    'wc-settings',
-                    'wp-element',
-                    'wp-html-entities',
-                    'wp-i18n',
-                ],
-            ]
+        wp_register_script(
+            'comfino-blocks',
+            ConfigManager::getBlocksCheckoutScriptUrl(),
+            ['wc-blocks-registry', 'wc-settings', 'wp-element', 'wp-html-entities', 'wp-i18n'],
+            null,
+            true
         );
+        wp_script_add_data('comfino-blocks', 'crossorigin', 'anonymous');
+        wp_enqueue_script('comfino-blocks');
+
+        $scriptIds = ['comfino-blocks'];
 
         DebugLogger::logEvent(
             '[PAYWALL]', 'get_payment_method_script_handles registered scripts.',
@@ -87,7 +86,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
 
         if (function_exists('wp_set_script_translations')) {
             wp_set_script_translations(
-                $scriptIds[0],
+                'comfino-blocks',
                 'comfino-payment-gateway',
                 $comfino_payment_gateway->plugin_abspath() . 'languages/'
             );
@@ -133,10 +132,13 @@ final class PaymentGateway extends AbstractPaymentMethodType
 
         return [
             'authToken' => $authToken,
+            'loggingToken' => FrontendManager::getLoggingToken(),
+            'trackId' => FrontendManager::getTrackId(),
             'loanAmount' => $loanAmount,
             'environment' => ConfigManager::isSandboxMode() ? 'sandbox' : 'production',
             'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
             'paymentMethodAuth' => ConfigManager::getPaywallLogoAuthHash(),
+            'paymentMethodLabel' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT') ?: null,
             'supports' => $this->gateway ? array_filter($this->gateway->supports, [$this->gateway, 'supports']) : ['products'],
             'productTypes' => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,
             'productTypeNames' => SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL) ?: null,

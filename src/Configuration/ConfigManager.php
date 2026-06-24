@@ -589,6 +589,19 @@ final class ConfigManager
         return sanitize_url(wp_unslash(\Comfino\View\FrontendManager::getExternalResourcesBaseUrl() . "/checkout/v1/$fileName"));
     }
 
+    public static function getBlocksCheckoutScriptUrl(): string
+    {
+        if (self::useDevEnvVars() && getenv('COMFINO_DEV_BLOCKS_SCRIPT_URL')) {
+            return sanitize_url(wp_unslash(getenv('COMFINO_DEV_BLOCKS_SCRIPT_URL')));
+        }
+
+        $fileName = (self::useDevEnvVars() && self::useUnminifiedScripts())
+            ? 'comfino-woocommerce-blocks.js'
+            : 'comfino-woocommerce-blocks.min.js';
+
+        return sanitize_url(wp_unslash(\Comfino\View\FrontendManager::getExternalResourcesBaseUrl() . "/checkout/v1/$fileName"));
+    }
+
     public static function getCheckoutCssUrl(): string
     {
         if (self::useDevEnvVars() && getenv('COMFINO_DEV_CHECKOUT_CSS_URL')) {
