@@ -532,7 +532,7 @@ final class ConfigManager
 
     public static function getSdkScriptUrl(): string
     {
-        return self::resolveSdkScriptUrl('comfino-sdk.esm.min.js', 'COMFINO_DEV_SDK_SCRIPT_URL');
+        return self::resolveSdkScriptUrl('comfino-sdk.min.js', 'COMFINO_DEV_SDK_SCRIPT_URL');
     }
 
     public static function getCheckoutScriptUrl(): string

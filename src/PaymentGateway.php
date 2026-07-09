@@ -19,7 +19,6 @@ use Comfino\Order\ShopStatusManager;
 use Comfino\Shop\Order\Customer;
 use Comfino\Shop\Order\Order;
 use Comfino\Shop\Order\OrderInterface;
-use Comfino\Telemetry\ShopEnvironmentReporter;
 use Comfino\View\FrontendManager;
 use Comfino\View\SettingsForm;
 use Comfino\View\TemplateManager;
@@ -64,16 +63,6 @@ class PaymentGateway extends \WC_Payment_Gateway
         add_action('admin_enqueue_scripts', [$this, 'admin_scripts']);
 
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
-        // Report the shop environment to Comfino after the gateway settings are persisted (priority 20 > 10).
-        add_action(
-            'woocommerce_update_options_payment_gateways_' . $this->id,
-            static function (): void {
-                if (!empty(ConfigManager::getApiKey())) {
-                    ShopEnvironmentReporter::report();
-                }
-            },
-            20
-        );
         add_action('woocommerce_order_status_changed', [$this, 'order_status_changed'], 10, 3);
 
         add_filter(

@@ -14,6 +14,7 @@ use Comfino\ErrorLogger;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Main;
 use Comfino\PluginShared\CacheManager;
+use Comfino\Telemetry\ShopEnvironmentReporter;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -334,6 +335,11 @@ final class SettingsForm
         } else {
             // Update plugin configuration.
             ConfigManager::updateConfiguration($configurationOptionsToSave, false);
+
+            // Report the shop environment to Comfino after a successful settings save (fire-and-forget).
+            if (!empty(ConfigManager::getApiKey())) {
+                ShopEnvironmentReporter::report();
+            }
 
             $success = true;
         }
