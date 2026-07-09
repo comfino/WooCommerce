@@ -19,6 +19,10 @@ if (!defined('ABSPATH')) {
 
 final class ApiClient
 {
+    private const CHECKOUT_TRACK_ID_COOKIE = 'comfino_checkout_track_id';
+    private const CHECKOUT_TRACK_ID_COOKIE_TTL = 900;
+    private const CHECKOUT_TRACK_ID_PATTERN = '/^[A-Za-z0-9_.:-]{1,128}$/';
+
     /** @var \Comfino\Common\Api\Client */
     private static $apiClient;
 
@@ -73,6 +77,38 @@ final class ApiClient
         }
 
         return self::$apiClient;
+    }
+
+    /**
+     * Pins this instance's trackId to the checkout-scoped cookie value, so a checkout-page paywall render and the
+     * later separate order-create request share the same trackId. Checkout-only: never call this from product-page
+     * rendering, where a fresh trackId per page load is still correct behavior.
+     */
+    public static function pinCheckoutTrackId(): void
+    {
+        $client = self::getInstance();
+
+        if (isset($_COOKIE[self::CHECKOUT_TRACK_ID_COOKIE]) &&
+            preg_match(self::CHECKOUT_TRACK_ID_PATTERN, $_COOKIE[self::CHECKOUT_TRACK_ID_COOKIE]) === 1
+        ) {
+            $client->setTrackId($_COOKIE[self::CHECKOUT_TRACK_ID_COOKIE]);
+        }
+
+        $trackId = $client->getTrackId();
+
+        if (!headers_sent()) {
+            /* PHP 7.1 target: setcookie()'s array-options 4th param (needed for a clean SameSite flag) requires
+               PHP 7.3+. SameSite is set via the well-known path-suffix workaround instead. */
+            setcookie(
+                self::CHECKOUT_TRACK_ID_COOKIE,
+                $trackId,
+                time() + self::CHECKOUT_TRACK_ID_COOKIE_TTL,
+                '/; SameSite=Lax',
+                '',
+                true,
+                true
+            );
+        }
     }
 
     public static function processApiError(string $errorPrefix, \Throwable $exception): array

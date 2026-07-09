@@ -3,6 +3,7 @@
 namespace Comfino\View\Block;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
+use Comfino\Api\ApiClient;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
 use Comfino\DebugLogger;
@@ -100,6 +101,8 @@ final class PaymentGateway extends AbstractPaymentMethodType
      */
     public function get_payment_method_data(): array
     {
+        ApiClient::pinCheckoutTrackId();
+
         $wcCart = WC()->cart;
         $authToken = FrontendManager::getAuthToken();
 

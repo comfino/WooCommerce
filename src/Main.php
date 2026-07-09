@@ -245,6 +245,8 @@ final class Main
         $rendered = true;
 
         if (!$isPaymentBlock) {
+            ApiClient::pinCheckoutTrackId();
+
             $authToken = FrontendManager::getAuthToken();
             $loggingToken = FrontendManager::getLoggingToken();
             $trackId = FrontendManager::getTrackId();

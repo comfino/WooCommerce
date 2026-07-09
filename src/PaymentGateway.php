@@ -32,7 +32,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
     public const VERSION = '4.3.0';
-    public const BUILD_TS = 1783416016;
+    public const BUILD_TS = 1783621347;
 
     public function __construct()
     {
@@ -110,6 +110,9 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function process_payment($order_id): array
     {
+        // Reuse the trackId minted during this checkout session's paywall render, if any.
+        ApiClient::pinCheckoutTrackId();
+
         $cart = WC()->cart;
 
         DebugLogger::logEvent(
