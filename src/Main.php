@@ -129,7 +129,18 @@ final class Main
                     return;
                 }
 
-                FrontendManager::embedInlineScript('comfino-widget-init-script', FrontendManager::renderWidgetInitCode($wcProduct->get_id()));
+                /* Product-page widget via the CDN product widget script: emit the JSON config block in the head and
+                   enqueue the deferred per-platform script that reads it, imports the SDK, and calls sdk.bootstrapWidget().
+                   Replaces the legacy inline widget-frontend init. */
+                echo FrontendManager::renderWidgetConfigElement($wcProduct->get_id()); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
+                wp_enqueue_script(
+                    'comfino-product-widget',
+                    ConfigManager::getProductWidgetScriptUrl(),
+                    [],
+                    null,
+                    true
+                );
             }
         });
 
@@ -154,11 +165,14 @@ final class Main
             return $statuses;
         });
 
-        // Initialize cache system.
-        CacheManager::init(self::getCacheRootPath());
+        /* Isolate cached API responses (creditors, product/widget types) per site - defends against cross-site
+           leakage when the plugin filesystem is shared across a WP Multisite network with independent API keys. */
+        CacheManager::init(self::getCacheRootPath(), (string) get_current_blog_id());
 
         // Register module API endpoints.
         ApiService::registerEndpoints();
+
+        ConfigManager::refreshErrorLoggingTokenIfNeeded();
 
         self::$initialized = true;
     }

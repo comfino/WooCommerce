@@ -2,16 +2,16 @@
 
 namespace Comfino\View;
 
+use Comfino\Api\ApiClient;
 use Comfino\Api\HttpErrorExceptionInterface;
 use Comfino\Common\Frontend\FrontendHelper;
-use Comfino\Common\Frontend\WidgetInitScriptHelper;
+use Comfino\Common\Frontend\ProductWidgetScriptHelper;
 use Comfino\Configuration\ConfigManager;
 use Comfino\DebugLogger;
 use Comfino\ErrorLogger;
-use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
 use Comfino\Main;
 use Comfino\PaymentGateway;
-use Comfino\PaywallAuthTokenGenerator;
+use Comfino\Extended\Auth\PaywallAuthTokenGenerator;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -34,18 +34,18 @@ final class FrontendManager
     public static function getLoggingToken(): string
     {
         $widgetKey = ConfigManager::getWidgetKey() ?? '';
-        $apiKey = ConfigManager::getApiKey() ?? '';
+        $accessToken = ConfigManager::getErrorLoggingAccessToken();
 
-        if (empty($apiKey) || empty($widgetKey)) {
+        if (empty($accessToken) || empty($widgetKey)) {
             return '';
         }
 
-        return PaywallAuthTokenGenerator::generateLoggingToken($widgetKey, $apiKey);
+        return PaywallAuthTokenGenerator::generateLoggingToken($widgetKey, $accessToken);
     }
 
     public static function getTrackId(): string
     {
-        return \Comfino\Api\ApiClient::getInstance()->getTrackId();
+        return ApiClient::getInstance()->getTrackId();
     }
 
     public static function renderAdminLogo(): string
@@ -209,11 +209,13 @@ final class FrontendManager
         );
     }
 
-    public static function getLocalStyleUrl(string $styleFileName): string
+    public static function getLocalStyleUrl(string $styleFileName, bool $frontStyle = true): string
     {
         global $comfino_payment_gateway;
 
-        return $comfino_payment_gateway->plugin_url() . "/resources/css/front/$styleFileName";
+        $styleDirectory = ($frontStyle ? 'front' : 'admin');
+
+        return $comfino_payment_gateway->plugin_url() . "/resources/css/$styleDirectory/$styleFileName";
     }
 
     /**
@@ -222,7 +224,7 @@ final class FrontendManager
      *
      * @return string[]
      */
-    public static function includeLocalStyles(array $styles, array $dependencies = [], $version = null): array
+    public static function includeLocalStyles(array $styles, array $dependencies = [], $version = null, bool $frontStyle = true): array
     {
         $styleIds = [];
 
@@ -230,7 +232,7 @@ final class FrontendManager
             $styleId = 'comfino-style-' . str_replace('.', '-', strtolower(pathinfo($styleName, PATHINFO_FILENAME)));
             $styleIds[] = $styleId;
 
-            wp_enqueue_style($styleId, self::getLocalStyleUrl($styleName), $dependencies[$styleName] ?? [], $version);
+            wp_enqueue_style($styleId, self::getLocalStyleUrl($styleName, $frontStyle), $dependencies[$styleName] ?? [], $version);
         }
 
         return $styleIds;
@@ -255,73 +257,16 @@ final class FrontendManager
         return $comfino_payment_gateway->plugin_url() . "/resources/js/$scriptDirectory/$scriptFileName";
     }
 
-    public static function getExternalResourcesBaseUrl(): string
+    /**
+     * Base URL for SDK and checkout assets served from the dedicated sdk.* CDN host.
+     */
+    public static function getSdkCdnBaseUrl(): string
     {
-        if (ConfigManager::useDevEnvVars() && getenv('COMFINO_DEV_STATIC_RESOURCES_BASE_URL')) {
-            return sanitize_url(wp_unslash(getenv('COMFINO_DEV_STATIC_RESOURCES_BASE_URL')));
+        if (ConfigManager::useDevEnvVars() && getenv('COMFINO_DEV_SDK_CDN_BASE_URL')) {
+            return sanitize_url(wp_unslash(getenv('COMFINO_DEV_SDK_CDN_BASE_URL')));
         }
 
-        return ConfigManager::isSandboxMode() ? 'https://widget.craty.pl' : 'https://widget.comfino.pl';
-    }
-
-    public static function getExternalScriptUrl(string $scriptFileName): string
-    {
-        if (empty($scriptFileName)) {
-            return '';
-        }
-
-        if (ConfigManager::useDevEnvVars() && ConfigManager::useUnminifiedScripts()) {
-            $scriptFileName = str_replace('.min.js', '.js', $scriptFileName);
-        } elseif (strpos($scriptFileName, '.min.') === false) {
-            $scriptFileName = str_replace('.js', '.min.js', $scriptFileName);
-        }
-
-        if (ConfigManager::isSandboxMode()) {
-            $scriptPath = trim(ConfigManager::getConfigurationValue('COMFINO_JS_DEV_PATH'), '/');
-
-            if (strpos($scriptPath, '..') !== false) {
-                $scriptPath = trim(ConfigManager::getDefaultValue('js_dev_path'), '/');
-            }
-        } else {
-            $scriptPath = trim(ConfigManager::getConfigurationValue('COMFINO_JS_PROD_PATH'), '/');
-
-            if (strpos($scriptPath, '..') !== false) {
-                $scriptPath = trim(ConfigManager::getDefaultValue('js_prod_path'), '/');
-            }
-        }
-
-        if (!empty($scriptPath)) {
-            $scriptPath = "/$scriptPath";
-        }
-
-        return sanitize_url(wp_unslash(self::getExternalResourcesBaseUrl() . "$scriptPath/$scriptFileName"));
-    }
-
-    public static function getExternalStyleUrl(string $styleFileName): string
-    {
-        if (empty($styleFileName)) {
-            return '';
-        }
-
-        if (ConfigManager::isSandboxMode()) {
-            $stylePath = trim(ConfigManager::getConfigurationValue('COMFINO_CSS_DEV_PATH', 'css'), '/');
-
-            if (strpos($stylePath, '..') !== false) {
-                $stylePath = trim(ConfigManager::getDefaultValue('css_dev_path'), '/');
-            }
-        } else {
-            $stylePath = trim(ConfigManager::getConfigurationValue('COMFINO_CSS_PROD_PATH', 'css'), '/');
-
-            if (strpos($stylePath, '..') !== false) {
-                $stylePath = trim(ConfigManager::getDefaultValue('css_prod_path'), '/');
-            }
-        }
-
-        if (!empty($stylePath)) {
-            $stylePath = "/$stylePath";
-        }
-
-        return sanitize_url(wp_unslash(self::getExternalResourcesBaseUrl() . "$stylePath/$styleFileName"));
+        return ConfigManager::isSandboxMode() ? 'https://sdk.craty.pl' : 'https://sdk.comfino.pl';
     }
 
     public static function resetScripts(): void
@@ -378,52 +323,6 @@ final class FrontendManager
      *
      * @return string[]
      */
-    public static function includeExternalScripts(array $scripts, array $dependencies = [], bool $inFooter = true, $version = null): array
-    {
-        $scriptIds = [];
-
-        foreach ($scripts as $scriptName) {
-            $scriptId = 'comfino-script-' . str_replace('.', '-', strtolower(pathinfo($scriptName, PATHINFO_FILENAME)));
-            $scriptIds[] = $scriptId;
-
-            wp_enqueue_script(
-                $scriptId,
-                self::getExternalScriptUrl($scriptName),
-                $dependencies[$scriptName] ?? [],
-                $version,
-                ['in_footer' => $inFooter]
-            );
-        }
-
-        return $scriptIds;
-    }
-
-    /**
-     * @param string[] $styles
-     * @param string[][] $dependencies
-     *
-     * @return string[]
-     */
-    public static function includeExternalStyles(array $styles, array $dependencies = [], $version = null): array
-    {
-        $styleIds = [];
-
-        foreach ($styles as $styleName) {
-            $styleId = 'comfino-style-' . str_replace('.', '-', strtolower(pathinfo($styleName, PATHINFO_FILENAME)));
-            $styleIds[] = $styleId;
-
-            wp_enqueue_style($styleId, self::getExternalStyleUrl($styleName), $dependencies[$styleName] ?? [], $version);
-        }
-
-        return $styleIds;
-    }
-
-    /**
-     * @param string[] $scripts
-     * @param string[][] $dependencies
-     *
-     * @return string[]
-     */
     public static function registerLocalScripts(array $scripts, array $dependencies = [], bool $frontScript = true, bool $inFooter = true, $version = null): array
     {
         $scriptIds = [];
@@ -445,105 +344,113 @@ final class FrontendManager
     }
 
     /**
-     * @param string[] $scripts
-     * @param string[][] $dependencies
+     * Renders the product-page widget config block consumed by the CDN product widget script (`comfino-woocommerce-widget.min.js`).
+     * Emits a `<script type="application/json" id="comfino-widget-config">` element whose JSON matches the SDK's
+     * WidgetConfig contract; the deferred script reads it, imports the SDK, and calls sdk.bootstrapWidget(). Replaces
+     * the legacy inline widget-frontend init previously embedded in wp_head.
      *
-     * @return string[]
-     */
-    public static function registerExternalScripts(array $scripts, array $dependencies = [], bool $inFooter = true, $version = null): array
-    {
-        $scriptIds = [];
-
-        foreach ($scripts as $scriptName) {
-            $scriptId = 'comfino-script-' . str_replace('.', '-', strtolower(pathinfo($scriptName, PATHINFO_FILENAME)));
-            $scriptIds[] = $scriptId;
-
-            wp_register_script(
-                $scriptId,
-                self::getExternalScriptUrl($scriptName),
-                $dependencies[$scriptName] ?? [],
-                $version,
-                ['in_footer' => $inFooter]
-            );
-        }
-
-        return $scriptIds;
-    }
-
-    /**
-     * @param string[] $styles
-     * @param string[][] $dependencies
+     * The config array is filtered against the shared `ProductWidgetScriptHelper::WIDGET_CONFIG_KEYS` allowlist
+     * (also drops nulls) and JSON-encoded with the same defensive flags the SDK init helpers use, so any
+     * admin-controlled string (selectors, product names in productCartDetails) cannot terminate the script tag,
+     * escape the JSON string, or smuggle entity references.
      *
-     * @return string[]
+     * @param int|null $productId Current product id, or null when unavailable
+     *
+     * @return string The `<script type="application/json" id="comfino-widget-config">…</script>` block
      */
-    public static function registerExternalStyles(array $styles, array $dependencies = [], $version = null): array
+    public static function renderWidgetConfigElement(?int $productId): string
     {
-        $styleIds = [];
-
-        foreach ($styles as $styleName) {
-            $styleId = 'comfino-style-' . str_replace('.', '-', strtolower(pathinfo($styleName, PATHINFO_FILENAME)));
-            $styleIds[] = $styleId;
-
-            wp_register_style($styleId, self::getExternalStyleUrl($styleName), $dependencies[$styleName] ?? [], $version);
-        }
-
-        return $styleIds;
-    }
-
-    public static function renderWidgetInitCode(?int $productId): string
-    {
-        $serializer = new JsonSerializer();
-
         try {
-            return str_replace(
-                ['&#039;', '&gt;', '&amp;', '&quot;', '&#34;'],
-                ["'", '>', '&', '"', '"'],
-                WidgetInitScriptHelper::renderWidgetInitScript(
-                    ConfigManager::getCurrentWidgetCode($productId),
-                    array_combine(
-                        [
-                            'WIDGET_KEY',
-                            'WIDGET_PRICE_SELECTOR',
-                            'WIDGET_TARGET_SELECTOR',
-                            'WIDGET_PRICE_OBSERVER_SELECTOR',
-                            'WIDGET_PRICE_OBSERVER_LEVEL',
-                            'WIDGET_TYPE',
-                            'OFFER_TYPES',
-                            'EMBED_METHOD',
-                            'SHOW_PROVIDER_LOGOS',
-                            'CUSTOM_BANNER_CSS_URL',
-                            'CUSTOM_CALCULATOR_CSS_URL',
-                        ],
-                        array_map(
-                            static function ($optionValue) use ($serializer) {
-                                return is_array($optionValue) ? $serializer->serialize($optionValue) : $optionValue;
-                            },
-                            ConfigManager::getConfigurationValues(
-                                'widget_settings',
-                                [
-                                    'COMFINO_WIDGET_KEY',
-                                    'COMFINO_WIDGET_PRICE_SELECTOR',
-                                    'COMFINO_WIDGET_TARGET_SELECTOR',
-                                    'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR',
-                                    'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL',
-                                    'COMFINO_WIDGET_TYPE',
-                                    'COMFINO_WIDGET_OFFER_TYPES',
-                                    'COMFINO_WIDGET_EMBED_METHOD',
-                                    'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS',
-                                    'COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL',
-                                    'COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL',
-                                ]
-                            )
-                        )
-                    ),
-                    ConfigManager::getWidgetVariables($productId)
-                )
+            $settings = ConfigManager::getConfigurationValues(
+                'widget_settings',
+                [
+                    'COMFINO_WIDGET_KEY',
+                    'COMFINO_WIDGET_PRICE_SELECTOR',
+                    'COMFINO_WIDGET_TARGET_SELECTOR',
+                    'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR',
+                    'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL',
+                    'COMFINO_WIDGET_TYPE',
+                    'COMFINO_WIDGET_OFFER_TYPES',
+                    'COMFINO_WIDGET_EMBED_METHOD',
+                    'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS',
+                    'COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL',
+                    'COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL',
+                ]
             );
+
+            $variables = ConfigManager::getWidgetVariables($productId);
+
+            // getWidgetVariables() emits the string literal 'null' for absent fields; normalize to real null.
+            $notNull = static function ($value) {
+                return $value === 'null' ? null : $value;
+            };
+
+            $offerTypesValue = $settings['COMFINO_WIDGET_OFFER_TYPES'] ?? [];
+            $offerTypesList = is_array($offerTypesValue) ? $offerTypesValue : explode(',', (string) $offerTypesValue);
+
+            $offerTypes = array_values(array_filter(
+                array_map('trim', $offerTypesList),
+                static function (string $type): bool {
+                    return $type !== '';
+                }
+            ));
+
+            // getWidgetVariables() reports PRODUCT_PRICE as a PLN float; the SDK expects grosze (smallest unit).
+            $priceFloat = $notNull($variables['PRODUCT_PRICE'] ?? null);
+            $price = $priceFloat === null ? null : (int) round(((float) $priceFloat) * 100);
+
+            $config = [
+                'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
+                'environment' => ConfigManager::isSandboxMode() ? 'sandbox' : 'production',
+                'widgetKey' => $settings['COMFINO_WIDGET_KEY'] ?? null,
+                'loggingToken' => $variables['LOGGING_TOKEN'] ?? null,
+                'trackId' => $variables['TRACK_ID'] ?? null,
+                'widgetTargetSelector' => $settings['COMFINO_WIDGET_TARGET_SELECTOR'] ?? null,
+                'priceSelector' => $settings['COMFINO_WIDGET_PRICE_SELECTOR'] ?? null,
+                'priceObserverSelector' => ($settings['COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR'] ?? '') ?: null,
+                'priceObserverLevel' => (int) ($settings['COMFINO_WIDGET_PRICE_OBSERVER_LEVEL'] ?? 0),
+                'embedMethod' => $settings['COMFINO_WIDGET_EMBED_METHOD'] ?? null,
+                'widgetType' => $settings['COMFINO_WIDGET_TYPE'] ?? null,
+                'offerTypes' => $offerTypes !== [] ? $offerTypes : null,
+                'showProviderLogos' => (bool) ($settings['COMFINO_WIDGET_SHOW_PROVIDER_LOGOS'] ?? false),
+                'hasPriceInput' => false,
+                'bannerCssUrl' => ($settings['COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL'] ?? '') ?: null,
+                'calculatorCssUrl' => ($settings['COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL'] ?? '') ?: null,
+                'price' => $price,
+                'productId' => $notNull($variables['PRODUCT_ID'] ?? null),
+                'availableProductTypes' => $variables['AVAILABLE_PRODUCT_TYPES'] ?? null,
+                'productCartDetails' => $notNull($variables['PRODUCT_CART_DETAILS'] ?? null),
+                'language' => $variables['LANGUAGE'] ?? null,
+                'currency' => $variables['CURRENCY'] ?? null,
+                'shopEnvironment' => [
+                    'platform' => 'woocommerce',
+                    'platformName' => 'WooCommerce',
+                    'platformDomain' => Main::getShopDomain(),
+                    'theme' => ['family' => 'woocommerce'],
+                    'language' => $variables['LANGUAGE'] ?? Main::getShopLanguage(),
+                    'currency' => $variables['CURRENCY'] ?? Main::getShopCurrency(),
+                    'pageContext' => ['type' => 'product'],
+                ],
+            ];
+
+            // Drops nulls and anything outside WIDGET_CONFIG_KEYS, so omitted options fall through to the SDK / CDN-profile defaults.
+            $config = ProductWidgetScriptHelper::buildConfig($config);
+
+            $json = wp_json_encode(
+                $config,
+                JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_UNESCAPED_SLASHES
+            );
+
+            if ($json === false) {
+                return '';
+            }
+
+            return '<script type="application/json" id="' . ProductWidgetScriptHelper::CONFIG_ELEMENT_ID . '">' . $json . '</script>';
         } catch (\Throwable $e) {
-            self::processError('Widget script endpoint', $e);
+            self::processError('Widget config element', $e);
             ErrorLogger::sendError(
                 $e,
-                'Widget script endpoint',
+                'Widget config element',
                 (string) $e->getCode(),
                 $e->getMessage(),
                 $e instanceof HttpErrorExceptionInterface ? $e->getUrl() : null,

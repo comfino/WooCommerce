@@ -29,6 +29,9 @@
  * @var string $build_ts Plugin build timestamp (diagnostics tab)
  * @var string|null $github_version Latest GitHub version or null (diagnostics tab)
  * @var int|null $github_version_checked_at Timestamp of last version check (diagnostics tab)
+ * @var string $release_notes_url Release notes URL for the latest available version (diagnostics tab)
+ * @var string $update_available_message Plain-text "new version available" notice, or '' when up to date
+ * @var string $release_description Sanitized "what's new" HTML of the latest release, or '' when up to date
  * @var bool $auto_updates_enabled WordPress auto-updates enabled flag (diagnostics tab)
  * @var string $comfino_logo_img Comfino logo HTML
  * @var array $comfino_logo_allowed_html Allowed HTML tags for logo
@@ -60,6 +63,12 @@ function comfino_prepare_tab_url(string $subsection): string
 <h2><?php echo esc_html($title) ?></h2>
 <p><?php echo esc_html($description) ?></p>
 <?php echo wp_kses($comfino_logo_img, $comfino_logo_allowed_html) ?> <span style="font-weight: bold; font-size: 16px; vertical-align: bottom"><?php echo esc_html($plugin_version) ?></span>
+<?php if (!empty($update_available_message)): /* Plain-text update notice (empty when up to date). */ ?>
+    <div class="notice notice-warning inline" style="margin-top: 10px"><p><?php echo esc_html($update_available_message) ?></p></div>
+<?php endif; ?>
+<?php if (!empty($release_description)): /* "What's new" HTML of the latest available release (empty when up to date). */ ?>
+    <div class="comfino-release-description" style="margin-top: 10px"><?php echo wp_kses_post($release_description) ?></div>
+<?php endif; ?>
 <p>
     <?php echo esc_html($contact_msg1); ?>
     <a href="mailto:<?php echo esc_html($support_email_address) ?>?subject=<?php echo esc_html($support_email_subject) ?>&body=<?php echo esc_html($support_email_body) ?>">
@@ -105,7 +114,7 @@ function comfino_prepare_tab_url(string $subsection): string
                         <?php elseif ($github_version !== null): ?>
                             <b style="<?php echo version_compare($github_version, $plugin_version, '>') ? 'color: orange;' : 'color: green;'; ?>"><?php echo esc_html($github_version) ?></b>
                             <?php if (version_compare($github_version, $plugin_version, '>')): ?>
-                                (<a href="https://github.com/comfino/WooCommerce/releases" target="_blank">Download from GitHub</a>)
+                                (<a href="<?php echo esc_url($release_notes_url ?? 'https://github.com/comfino/woocommerce/releases') ?>" target="_blank">Download from GitHub</a>)
                             <?php else: ?>
                                 (up to date)
                             <?php endif; ?>
@@ -137,10 +146,7 @@ function comfino_prepare_tab_url(string $subsection): string
                                         $var_name = "COMFINO_$env_variable";
                                         return "<li><b>$var_name</b> = \"" . getenv($var_name) . '"</li>';
                                     },
-                                    [
-                                        'DEV_ENV', 'DEV_API_HOST', 'DEV_STATIC_RESOURCES_BASE_URL',
-                                        'DEV_WIDGET_SCRIPT_URL', 'DEV_USE_UNMINIFIED_SCRIPTS',
-                                    ]
+                                    ['DEV_ENV', 'DEV_API_HOST', 'DEV_SDK_CDN_BASE_URL', 'DEV_USE_UNMINIFIED_SCRIPTS']
                                 ))
                             ),
                             ['hr' => [], 'h4' => [], 'ul' => [], 'li' => [], 'b' => []]

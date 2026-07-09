@@ -211,16 +211,10 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(ConfigurationManager::OPT_VALUE_TYPE_STRING, ConfigManager::getConfigurationValueType('NON_EXISTENT'));
     }
 
-    public function testGetWidgetScriptUrl(): void
-    {
-        $this->assertContains('widget', ConfigManager::getWidgetScriptUrl());
-    }
-
     public function testGetWidgetVariables(): void
     {
         $variables = ConfigManager::getWidgetVariables();
 
-        $this->assertArrayHasKey('WIDGET_SCRIPT_URL', $variables);
         $this->assertArrayHasKey('PLATFORM', $variables);
         $this->assertArrayHasKey('PLATFORM_NAME', $variables);
         $this->assertArrayHasKey('PLATFORM_VERSION', $variables);
@@ -230,12 +224,6 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('woocommerce', $variables['PLATFORM']);
         $this->assertEquals('WooCommerce', $variables['PLATFORM_NAME']);
-    }
-
-    public function testGetCurrentWidgetCode(): void
-    {
-        $this->assertContains('productId: {PRODUCT_ID}', ConfigManager::getCurrentWidgetCode());
-        $this->assertContains('productId: {PRODUCT_ID}', ConfigManager::getCurrentWidgetCode(123));
     }
 
     public function testUpdateConfigurationValue(): void

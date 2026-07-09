@@ -7,16 +7,15 @@ use Comfino\CategoryTree\BuildStrategy;
 use Comfino\Common\Backend\Configuration\StorageAdapterInterface;
 use Comfino\Common\Backend\ConfigurationManager;
 use Comfino\Common\Frontend\FrontendHelper;
-use Comfino\Common\Frontend\WidgetInitScriptHelper;
 use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Common\Shop\Product\CategoryTree;
-use Comfino\ErrorLogger;
 use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Main;
 use Comfino\Order\OrderManager;
 use Comfino\Order\ShopStatusManager;
 use Comfino\PaymentGateway;
+use Comfino\View\FrontendManager;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -54,18 +53,11 @@ final class ConfigManager
         'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS' => 'widget_show_provider_logos',
         'COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL' => 'widget_custom_banner_css_url',
         'COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL' => 'widget_custom_calculator_css_url',
-        'COMFINO_WIDGET_CODE' => 'widget_js_code',
-        'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => 'widget_prod_script_version',
-        'COMFINO_WIDGET_DEV_SCRIPT_VERSION' => 'widget_dev_script_version',
         'COMFINO_ABANDONED_CART_ENABLED' => 'abandoned_cart_enabled',
         'COMFINO_ABANDONED_PAYMENTS' => 'abandoned_payments',
         'COMFINO_IGNORED_STATUSES' => 'ignored_statuses',
         'COMFINO_FORBIDDEN_STATUSES' => 'forbidden_statuses',
         'COMFINO_STATUS_MAP' => 'status_map',
-        'COMFINO_JS_PROD_PATH' => 'js_prod_path',
-        'COMFINO_CSS_PROD_PATH' => 'css_prod_path',
-        'COMFINO_JS_DEV_PATH' => 'js_dev_path',
-        'COMFINO_CSS_DEV_PATH' => 'css_dev_path',
         'COMFINO_API_CONNECT_TIMEOUT' => 'api_connect_timeout',
         'COMFINO_API_TIMEOUT' => 'api_timeout',
         'COMFINO_API_CONNECT_NUM_ATTEMPTS' => 'api_connect_num_attempts',
@@ -99,7 +91,6 @@ final class ConfigManager
             'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
-            'COMFINO_WIDGET_CODE' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
         ],
         'abandoned_cart_settings' => [
             'COMFINO_ABANDONED_CART_ENABLED' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
@@ -113,22 +104,18 @@ final class ConfigManager
             'COMFINO_DEV_ENV_VARS' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
         ],
         'hidden_settings' => [
-            'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
-            'COMFINO_WIDGET_DEV_SCRIPT_VERSION' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
             'COMFINO_ALLOWED_PRODUCTS_CONFIG_FORBIDDEN_PROD_TYPES' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
             'COMFINO_ALLOWED_PRODUCTS_CONFIG_ENABLED' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_IGNORED_STATUSES' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
             'COMFINO_FORBIDDEN_STATUSES' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
             'COMFINO_STATUS_MAP' => ConfigurationManager::OPT_VALUE_TYPE_JSON,
-            'COMFINO_JS_PROD_PATH' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
-            'COMFINO_CSS_PROD_PATH' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
-            'COMFINO_JS_DEV_PATH' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
-            'COMFINO_CSS_DEV_PATH' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_API_CONNECT_TIMEOUT' => ConfigurationManager::OPT_VALUE_TYPE_INT,
             'COMFINO_API_TIMEOUT' => ConfigurationManager::OPT_VALUE_TYPE_INT,
             'COMFINO_API_CONNECT_NUM_ATTEMPTS' => ConfigurationManager::OPT_VALUE_TYPE_INT,
             'COMFINO_NEW_WIDGET_ACTIVE' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
+            'COMFINO_ERROR_LOGGING_ACCESS_TOKEN' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
+            'COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT' => ConfigurationManager::OPT_VALUE_TYPE_INT,
         ],
     ];
 
@@ -156,9 +143,6 @@ final class ConfigManager
         'COMFINO_WIDGET_TYPE',
         'COMFINO_WIDGET_OFFER_TYPES',
         'COMFINO_WIDGET_EMBED_METHOD',
-        'COMFINO_WIDGET_CODE',
-        'COMFINO_WIDGET_PROD_SCRIPT_VERSION',
-        'COMFINO_WIDGET_DEV_SCRIPT_VERSION',
         'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS',
         'COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL',
         'COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL',
@@ -167,10 +151,6 @@ final class ConfigManager
         'COMFINO_IGNORED_STATUSES',
         'COMFINO_FORBIDDEN_STATUSES',
         'COMFINO_STATUS_MAP',
-        'COMFINO_JS_PROD_PATH',
-        'COMFINO_CSS_PROD_PATH',
-        'COMFINO_JS_DEV_PATH',
-        'COMFINO_CSS_DEV_PATH',
         'COMFINO_API_CONNECT_TIMEOUT',
         'COMFINO_API_TIMEOUT',
         'COMFINO_API_CONNECT_NUM_ATTEMPTS',
@@ -400,6 +380,38 @@ final class ConfigManager
         return self::getInstance()->getConfigurationValue('COMFINO_WIDGET_KEY');
     }
 
+    public static function getErrorLoggingAccessToken(): string
+    {
+        return (string) (self::getInstance()->getConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN') ?? '');
+    }
+
+    public static function getErrorLoggingAccessTokenExpiresAt(): int
+    {
+        return (int) (self::getInstance()->getConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT') ?? 0);
+    }
+
+    public static function refreshErrorLoggingTokenIfNeeded(): void
+    {
+        if (empty(self::getApiKey())) {
+            return;
+        }
+
+        if (self::getErrorLoggingAccessToken() !== '' && self::getErrorLoggingAccessTokenExpiresAt() > time() + 3600) {
+            return;
+        }
+
+        try {
+            $response = ApiClient::getInstance()->claimErrorLoggingToken();
+
+            if ($response !== null) {
+                self::updateConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN', $response->accessToken);
+                self::updateConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT', strtotime($response->expiresAt));
+            }
+        } catch (\Throwable) {
+            // Silently ignore — CETS token claim is best-effort.
+        }
+    }
+
     /**
      * @return string[]
      */
@@ -518,59 +530,6 @@ final class ConfigManager
         return delete_option(self::getStorageAdapter()->get_option_key());
     }
 
-    public static function updateWidgetCode(?string $lastWidgetCodeHash = null): bool
-    {
-        ErrorLogger::init();
-
-        try {
-            $initialWidgetCode = WidgetInitScriptHelper::getInitialWidgetCode();
-            $currentWidgetCode = self::getCurrentWidgetCode();
-
-            if ($lastWidgetCodeHash === null || md5($currentWidgetCode) === $lastWidgetCodeHash) {
-                // Widget code isn't changed since last installed version - safely replace with new one.
-                self::updateConfigurationValue('COMFINO_WIDGET_CODE', $initialWidgetCode);
-
-                return true;
-            }
-        } catch (\Throwable $e) {
-            ErrorLogger::sendError(
-                $e,
-                'Widget code update',
-                (string) $e->getCode(),
-                $e->getMessage(),
-                null,
-                null,
-                null,
-                $e->getTraceAsString()
-            );
-        }
-
-        return false;
-    }
-
-    public static function getCurrentWidgetCode(?int $productId = null): string
-    {
-        $widgetCode = trim(str_replace("\r", '', self::getConfigurationValue('COMFINO_WIDGET_CODE')));
-        $productData = self::getProductData($productId);
-
-        $optionsToInject = [];
-
-        if (strpos($widgetCode, 'productId') === false) {
-            $optionsToInject[] = "        productId: $productData[product_id]";
-        }
-        if (strpos($widgetCode, 'availableProductTypes') === false) {
-            $optionsToInject[] = '        availableProductTypes: ' . implode(',', $productData['available_product_types']);
-        }
-
-        if (count($optionsToInject) > 0) {
-            $injectedInitOptions = implode(",\n", $optionsToInject) . ",\n";
-
-            return preg_replace('/\{\n(.*widgetKey:)/', "{\n$injectedInitOptions\$1", $widgetCode);
-        }
-
-        return $widgetCode;
-    }
-
     public static function getSdkScriptUrl(): string
     {
         return self::resolveSdkScriptUrl('comfino-sdk.esm.min.js', 'COMFINO_DEV_SDK_SCRIPT_URL');
@@ -586,7 +545,21 @@ final class ConfigManager
             ? 'comfino-woocommerce.js'
             : 'comfino-woocommerce.min.js';
 
-        return sanitize_url(wp_unslash(\Comfino\View\FrontendManager::getExternalResourcesBaseUrl() . "/checkout/v1/$fileName"));
+        return sanitize_url(wp_unslash(FrontendManager::getSdkCdnBaseUrl() . "/checkout/v1/$fileName"));
+    }
+
+    /**
+     * CDN URL of the WooCommerce product-page widget script served from the SDK host at /product/v1/.
+     * The product-page sibling of getCheckoutScriptUrl(): the classic-IIFE script reads the
+     * `#comfino-widget-config` JSON block and calls sdk.bootstrapWidget().
+     */
+    public static function getProductWidgetScriptUrl(): string
+    {
+        $fileName = (self::useDevEnvVars() && self::useUnminifiedScripts())
+            ? 'comfino-woocommerce-widget.js'
+            : 'comfino-woocommerce-widget.min.js';
+
+        return sanitize_url(wp_unslash(FrontendManager::getSdkCdnBaseUrl() . "/product/v1/$fileName"));
     }
 
     public static function getBlocksCheckoutScriptUrl(): string
@@ -599,7 +572,7 @@ final class ConfigManager
             ? 'comfino-woocommerce-blocks.js'
             : 'comfino-woocommerce-blocks.min.js';
 
-        return sanitize_url(wp_unslash(\Comfino\View\FrontendManager::getExternalResourcesBaseUrl() . "/checkout/v1/$fileName"));
+        return sanitize_url(wp_unslash(FrontendManager::getSdkCdnBaseUrl() . "/checkout/v1/$fileName"));
     }
 
     public static function getCheckoutCssUrl(): string
@@ -608,15 +581,15 @@ final class ConfigManager
             return sanitize_url(wp_unslash(getenv('COMFINO_DEV_CHECKOUT_CSS_URL')));
         }
 
-        return sanitize_url(wp_unslash(\Comfino\View\FrontendManager::getExternalResourcesBaseUrl() . '/checkout/v1/css/comfino-item-gate-woocommerce.css'));
+        return sanitize_url(wp_unslash(FrontendManager::getSdkCdnBaseUrl() . '/checkout/v1/css/comfino-item-gate-woocommerce.css'));
     }
 
     /**
-     * Compose the CDN URL of an SDK bundle served from /sdk/v1/. Resolution order:
+     * Compose the CDN URL of an SDK bundle served from /sdk/v1/ on sdk.comfino.pl. Resolution order:
      *   1. An explicit full-URL dev override ($devUrlEnvVar) wins outright.
-     *   2. Otherwise, the host comes from FrontendManager::getExternalResourcesBaseUrl() — so
-     *      COMFINO_DEV_STATIC_RESOURCES_BASE_URL points the SDK at the local widget dev server,
-     *      exactly like the external widget scripts/styles.
+     *   2. Otherwise, the host comes from FrontendManager::getSdkCdnBaseUrl() — so COMFINO_DEV_SDK_CDN_BASE_URL points
+     *      the SDK at the local dev server.
+     *
      * In both branches the .min suffix is dropped when COMFINO_DEV_USE_UNMINIFIED_SCRIPTS is on.
      */
     private static function resolveSdkScriptUrl(string $scriptFileName, string $devUrlEnvVar): string
@@ -639,25 +612,7 @@ final class ConfigManager
             $scriptFileName = str_replace('.min.js', '.js', $scriptFileName);
         }
 
-        return sanitize_url(wp_unslash(\Comfino\View\FrontendManager::getExternalResourcesBaseUrl() . "/sdk/v1/$scriptFileName"));
-    }
-
-    public static function getWidgetScriptUrl(): string
-    {
-        if (self::useDevEnvVars() && getenv('COMFINO_DEV_WIDGET_SCRIPT_URL')) {
-            return sanitize_url(wp_unslash(getenv('COMFINO_DEV_WIDGET_SCRIPT_URL')));
-        }
-
-        $widgetScriptUrl = self::isSandboxMode() ? 'https://widget.craty.pl' : 'https://widget.comfino.pl';
-        $widgetProdScriptVersion = self::getConfigurationValue('COMFINO_WIDGET_PROD_SCRIPT_VERSION');
-
-        if (empty($widgetProdScriptVersion)) {
-            $widgetScriptUrl .= '/v2/widget-frontend.min.js';
-        } else {
-            $widgetScriptUrl .= ('/' . trim($widgetProdScriptVersion, '/'));
-        }
-
-        return $widgetScriptUrl;
+        return sanitize_url(wp_unslash(FrontendManager::getSdkCdnBaseUrl() . "/sdk/v1/$scriptFileName"));
     }
 
     public static function getWidgetVariables(?int $productId = null): array
@@ -665,7 +620,6 @@ final class ConfigManager
         $productData = self::getProductData($productId);
 
         return [
-            'WIDGET_SCRIPT_URL' => self::getWidgetScriptUrl(),
             'PRODUCT_ID' => $productData['product_id'],
             'PRODUCT_PRICE' => $productData['price'],
             'PLATFORM' => 'woocommerce',
@@ -677,8 +631,8 @@ final class ConfigManager
             'PRODUCT_CART_DETAILS' => $productData['product_cart_details'],
             'LANGUAGE' => Main::getShopLanguage(),
             'CURRENCY' => Main::getShopCurrency(),
-            'LOGGING_TOKEN' => \Comfino\View\FrontendManager::getLoggingToken(),
-            'TRACK_ID' => \Comfino\View\FrontendManager::getTrackId(),
+            'LOGGING_TOKEN' => FrontendManager::getLoggingToken(),
+            'TRACK_ID' => FrontendManager::getTrackId(),
         ];
     }
 
@@ -734,21 +688,14 @@ final class ConfigManager
             'COMFINO_WIDGET_TYPE' => 'standard',
             'COMFINO_WIDGET_OFFER_TYPES' => ['CONVENIENT_INSTALLMENTS'],
             'COMFINO_WIDGET_EMBED_METHOD' => 'INSERT_INTO_LAST',
-            'COMFINO_WIDGET_CODE' => WidgetInitScriptHelper::getInitialWidgetCode(),
             'COMFINO_ABANDONED_CART_ENABLED' => false,
             'COMFINO_ABANDONED_PAYMENTS' => 'comfino',
-            'COMFINO_WIDGET_PROD_SCRIPT_VERSION' => '',
-            'COMFINO_WIDGET_DEV_SCRIPT_VERSION' => '',
             'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS' => false,
             'COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL' => '',
             'COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL' => '',
             'COMFINO_IGNORED_STATUSES' => implode(',', StatusManager::DEFAULT_IGNORED_STATUSES),
             'COMFINO_FORBIDDEN_STATUSES' => implode(',', StatusManager::DEFAULT_FORBIDDEN_STATUSES),
             'COMFINO_STATUS_MAP' => wp_json_encode(ShopStatusManager::DEFAULT_STATUS_MAP),
-            'COMFINO_JS_PROD_PATH' => '',
-            'COMFINO_CSS_PROD_PATH' => 'css',
-            'COMFINO_JS_DEV_PATH' => '',
-            'COMFINO_CSS_DEV_PATH' => 'css',
             'COMFINO_API_CONNECT_TIMEOUT' => 1,
             'COMFINO_API_TIMEOUT' => 3,
             'COMFINO_API_CONNECT_NUM_ATTEMPTS' => 3,

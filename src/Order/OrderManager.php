@@ -41,7 +41,7 @@ final class OrderManager
         }
 
         if ($priceModifier > 0 && $priceModifier < $totalValue) {
-            // Add price modifier (e.g. custom commission).
+            // Add price modifier (e.g., custom commission).
             $totalValue += $priceModifier;
         }
 
@@ -59,8 +59,8 @@ final class OrderManager
 
                 $categoryIds = $product->get_category_ids();
 
-                if (empty($categoryIds) && $product instanceof \WC_Product_Variation
-                    && ($parentProduct = wc_get_product($product->get_parent_id())) instanceof \WC_Product
+                if (empty($categoryIds) && $product instanceof \WC_Product_Variation  &&
+                    ($parentProduct = wc_get_product($product->get_parent_id())) instanceof \WC_Product
                 ) {
                     $categoryIds = $parentProduct->get_category_ids();
                 }
@@ -185,8 +185,8 @@ final class OrderManager
 
         $categoryIds = $product->get_category_ids();
 
-        if (empty($categoryIds) && $product instanceof \WC_Product_Variation
-            && ($parentProduct = wc_get_product($product->get_parent_id())) instanceof \WC_Product
+        if (empty($categoryIds) && $product instanceof \WC_Product_Variation &&
+            ($parentProduct = wc_get_product($product->get_parent_id())) instanceof \WC_Product
         ) {
             $categoryIds = $parentProduct->get_category_ids();
         }

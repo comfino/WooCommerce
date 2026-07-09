@@ -452,8 +452,7 @@ final class SettingsForm
                         'widget_settings_advanced',
                         'widget_price_selector', 'widget_target_selector', 'widget_price_observer_selector',
                         'widget_price_observer_level', 'widget_embed_method', 'widget_custom_banner_css_url',
-                        'widget_custom_calculator_css_url', 'widget_js_code', 'widget_prod_script_version',
-                        'widget_dev_script_version',
+                        'widget_custom_calculator_css_url',
                     ])
                 );
                 break;
@@ -757,20 +756,6 @@ final class SettingsForm
                     'URL for the custom calculator style. Only links from your store domain are allowed.',
                     'comfino-payment-gateway'
                 ),
-            ],
-            'widget_js_code' => [
-                'title' => __('Widget initialization code', 'comfino-payment-gateway'),
-                'type' => 'textarea',
-                'css' => 'width: 800px; height: 400px',
-                'default' => ConfigManager::getDefaultValue('widget_js_code'),
-            ],
-            'widget_prod_script_version' => [
-                'type' => 'hidden',
-                'default' => '',
-            ],
-            'widget_dev_script_version' => [
-                'type' => 'hidden',
-                'default' => '',
             ],
             'abandoned_cart_enabled' => [
                 'title' => __('Enable/Disable', 'comfino-payment-gateway'),

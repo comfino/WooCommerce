@@ -128,7 +128,12 @@ final class ApiService
                     [
                         array_merge($comfino_payment_gateway->get_plugin_update_details(),
                         ConfigManager::getEnvironmentInfo(['wordpress_version'])),
-                    ] // $shopExtraVariables
+                    ], // $shopExtraVariables
+                    [
+                        static function (): ?array {
+                            return \Comfino\Telemetry\ShopEnvironmentReporter::getReportArray();
+                        },
+                    ] // $shopEnvironmentReportProvider
                 )
             )
         );

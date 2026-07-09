@@ -64,6 +64,7 @@ if (PHP_VERSION_ID < 70100) {
 
 /* Environment check passed - now safe to use PHP 7.1+ features. */
 
+use Comfino\Api\ApiClient;
 use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Configuration\ConfigManager;
 use Comfino\DebugLogger;
@@ -72,6 +73,8 @@ use Comfino\Main;
 use Comfino\Order\ShopStatusManager;
 use Comfino\PaymentGateway;
 use Comfino\PluginShared\CacheManager;
+use Comfino\Telemetry\ShopEnvironmentReporter;
+use Comfino\View\FrontendManager;
 use Comfino\View\TemplateManager;
 
 class Comfino_Payment_Gateway
@@ -420,6 +423,9 @@ class Comfino_Payment_Gateway
 
         $githubVersion = $versionData['github_version'] ?? '';
         $currentVersion = PaymentGateway::VERSION;
+        $releaseNotesUrl = !empty($versionData['release_notes_url'])
+            ? $versionData['release_notes_url']
+            : 'https://github.com/comfino/woocommerce/releases';
 
         if (version_compare($githubVersion, $currentVersion, '>')) {
             echo '<div class="notice notice-info is-dismissible">';
@@ -430,12 +436,38 @@ class Comfino_Payment_Gateway
                     __('<strong>Comfino Payment Gateway:</strong> A new version (%2$s) is available on GitHub. You are currently using version %1$s. Visit <a href="%3$s" target="_blank">GitHub Releases</a> for more information.', 'comfino-payment-gateway'),
                     esc_html($currentVersion),
                     esc_html($githubVersion),
-                    'https://github.com/comfino/WooCommerce/releases'
+                    esc_url($releaseNotesUrl)
                 ),
                 ['strong' => [], 'a' => ['href' => [], 'target' => []]]
             );
             echo '</p>';
+
+            /* "What's new" HTML of the available release. Server-sanitized already; passed through wp_kses_post so the
+               notice output stays safe per marketplace requirements. */
+            if (!empty($versionData['description_html'])) {
+                echo '<div class="comfino-release-description">' . wp_kses_post($versionData['description_html']) . '</div>';
+            }
+
             echo '</div>';
+        }
+    }
+
+    /**
+     * Enqueue the stylesheet used to render the "what's new" release description block shown by
+     * display_github_version_notice() above. Runs on admin_enqueue_scripts (before admin_notices is printed) so the
+     * <link> tag ends up in <head> as WordPress expects.
+     */
+    public function enqueue_release_description_styles(): void
+    {
+        $versionData = get_transient('comfino_github_version_check');
+
+        if (
+            is_array($versionData) &&
+            !empty($versionData['github_version']) &&
+            !empty($versionData['description_html']) &&
+            version_compare($versionData['github_version'], PaymentGateway::VERSION, '>')
+        ) {
+            FrontendManager::includeLocalStyles(['comfino-release-description.css'], [], PaymentGateway::VERSION, false);
         }
     }
 
@@ -579,11 +611,6 @@ class Comfino_Payment_Gateway
 
     private function upgrade_plugin(): void
     {
-        if (PaymentGateway::WIDGET_INIT_SCRIPT_HASH !== PaymentGateway::WIDGET_INIT_SCRIPT_LAST_HASH) {
-            // Update code of widget initialization script if changed.
-            ConfigManager::updateWidgetCode(PaymentGateway::WIDGET_INIT_SCRIPT_LAST_HASH);
-        }
-
         /* 4.2.0 */
         if (is_array($ignoredStatuses = ConfigManager::getConfigurationValue('COMFINO_IGNORED_STATUSES'))
             && in_array(StatusManager::STATUS_CANCELLED_BY_SHOP, $ignoredStatuses, true)
@@ -688,9 +715,6 @@ class Comfino_Payment_Gateway
             );
         }
 
-        // Update code of widget initialization script.
-        ConfigManager::updateWidgetCode();
-
         // Clear configuration and front cache.
         CacheManager::getCachePool()->clear();
 
@@ -710,7 +734,6 @@ class Comfino_Payment_Gateway
                 ? gmdate('Y-m-d H:i:s', get_transient('comfino_plugin_updated_at'))
                 : gmdate('Y-m-d H:i:s'),
             'operations' => [
-                ['name' => 'widget_code_update', 'success' => true],
                 ['name' => 'configuration_migration', 'success' => true],
                 ['name' => 'cache_clear', 'success' => true],
                 ['name' => 'logs_clear', 'success' => true],
@@ -718,6 +741,11 @@ class Comfino_Payment_Gateway
         ];
 
         Main::updateUpgradeLog(print_r($upgradeStats, true));
+
+        // Report the shop environment to Comfino on upgrade (fire-and-forget).
+        if (!empty(ConfigManager::getApiKey())) {
+            ShopEnvironmentReporter::report();
+        }
 
         set_transient('comfino_plugin_updated', 0);
     }
@@ -746,6 +774,8 @@ class Comfino_Payment_Gateway
 
         // Schedule the check to run in the background.
         add_action('admin_notices', [$this, 'display_github_version_notice']);
+        // Enqueue the release-description stylesheet used by the notice above (runs before admin_notices).
+        add_action('admin_enqueue_scripts', [$this, 'enqueue_release_description_styles']);
 
         // Perform version check asynchronously.
         add_action('admin_init', static function () use ($transientKey): void {
@@ -753,22 +783,18 @@ class Comfino_Payment_Gateway
                 return;
             }
 
-            // Fetch latest release info from GitHub API.
-            $response = wp_remote_get('https://api.github.com/repos/comfino/WooCommerce/releases/latest', [
-                'timeout' => 5,
-                'headers' => ['Accept' => 'application/vnd.github.v3+json']
-            ]);
-
-            if (is_wp_error($response)) {
+            /* Fetch the latest release from the centralized Comfino release API. It resolves the release of the line
+               compatible with this shop's PHP and WooCommerce version (from the client User-Agent) automatically. */
+            try {
+                $release = ApiClient::getInstance()->getLatestPluginRelease('woocommerce');
+            } catch (\Throwable $e) {
                 // Cache failure for 1 hour.
                 set_transient($transientKey, ['error' => true], HOUR_IN_SECONDS);
 
                 return;
             }
 
-            $release = json_decode(wp_remote_retrieve_body($response), true);
-
-            if (!isset($release['tag_name'])) {
+            if ($release === null) {
                 set_transient($transientKey, ['error' => true], HOUR_IN_SECONDS);
 
                 return;
@@ -777,8 +803,11 @@ class Comfino_Payment_Gateway
             set_transient(
                 $transientKey,
                 [
-                    'github_version' => ltrim($release['tag_name'], 'v'),
+                    'github_version' => $release->version,
                     'current_version' => PaymentGateway::VERSION,
+                    'download_url' => $release->downloadUrl,
+                    'release_notes_url' => $release->releaseUrl,
+                    'description_html' => $release->descriptionHtml,
                     'checked_at' => time()
                 ],
                 DAY_IN_SECONDS

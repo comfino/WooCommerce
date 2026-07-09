@@ -74,6 +74,11 @@ msgstr ""
 msgid "<strong>Comfino Payment Gateway:</strong> A new version (%2$s) is available on GitHub. You are currently using version %1$s. Visit <a href=\"%3$s\" target=\"_blank\">GitHub Releases</a> for more information."
 msgstr ""
 
+#. translators: 1: Available plugin version 2: Current plugin version
+#: src/PaymentGateway.php:322
+msgid "New Comfino %1$s plugin version is available. You are using %2$s version. Please update your Comfino plugin."
+msgstr ""
+
 #: comfino-payment-gateway.php:494
 msgid "Invalid nonce."
 msgstr ""

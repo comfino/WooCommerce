@@ -19,6 +19,7 @@ use Comfino\Order\ShopStatusManager;
 use Comfino\Shop\Order\Customer;
 use Comfino\Shop\Order\Order;
 use Comfino\Shop\Order\OrderInterface;
+use Comfino\Telemetry\ShopEnvironmentReporter;
 use Comfino\View\FrontendManager;
 use Comfino\View\SettingsForm;
 use Comfino\View\TemplateManager;
@@ -32,9 +33,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
     public const VERSION = '4.3.0';
-    public const BUILD_TS = 1781864552;
-    public const WIDGET_INIT_SCRIPT_HASH = 'f3c470be6afdb86ca1e87096f8eed622';
-    public const WIDGET_INIT_SCRIPT_LAST_HASH = '55e4306bb493ff6f99b2f8f617e18038';
+    public const BUILD_TS = 1783416016;
 
     public function __construct()
     {
@@ -65,6 +64,16 @@ class PaymentGateway extends \WC_Payment_Gateway
         add_action('admin_enqueue_scripts', [$this, 'admin_scripts']);
 
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
+        // Report the shop environment to Comfino after the gateway settings are persisted (priority 20 > 10).
+        add_action(
+            'woocommerce_update_options_payment_gateways_' . $this->id,
+            static function (): void {
+                if (!empty(ConfigManager::getApiKey())) {
+                    ShopEnvironmentReporter::report();
+                }
+            },
+            20
+        );
         add_action('woocommerce_order_status_changed', [$this, 'order_status_changed'], 10, 3);
 
         add_filter(
@@ -292,6 +301,28 @@ class PaymentGateway extends \WC_Payment_Gateway
             'cache_path' => Main::getCachePath(),
         ];
 
+        /* "What's new" HTML of the latest release, shown in the config header (all tabs) - but only when a newer
+           version is available (hidden when up to date). Server-sanitized already; passed through wp_kses_post so the
+           view output stays safe per marketplace requirements. */
+        $githubVersionData = get_transient('comfino_github_version_check');
+        $updateAvailable = (
+            is_array($githubVersionData) &&
+            !empty($githubVersionData['github_version']) &&
+            !empty($githubVersionData['description_html']) &&
+            version_compare($githubVersionData['github_version'], PaymentGateway::VERSION, '>')
+        );
+        $viewVariables['release_description'] = $updateAvailable
+            ? wp_kses_post($githubVersionData['description_html'])
+            : '';
+        $viewVariables['update_available_message'] = $updateAvailable
+            ? sprintf(
+                /* translators: 1: Available plugin version 2: Current plugin version */
+                __('New Comfino %1$s plugin version is available. You are using %2$s version. Please update your Comfino plugin.', 'comfino-payment-gateway'),
+                $githubVersionData['github_version'],
+                self::VERSION
+            )
+            : '';
+
         if ($activeTab === 'plugin_diagnostics') {
             $viewVariables['shop_info'] = sprintf(
                 'WooCommerce Comfino %1$s, WordPress %2$s, WooCommerce %3$s, PHP %4$s, web server %5$s, database %6$s',
@@ -313,10 +344,12 @@ class PaymentGateway extends \WC_Payment_Gateway
             $viewVariables['is_dev_env'] = ConfigManager::useDevEnvVars();
             $viewVariables['build_ts'] = \DateTime::createFromFormat('U', self::BUILD_TS)->format('Y-m-d H:i:s');
 
-            // Get GitHub version information.
-            $githubVersionData = get_transient('comfino_github_version_check');
+            // Get GitHub version information (reuses the transient already read above for the header description).
             $viewVariables['github_version'] = !empty($githubVersionData['github_version']) ? $githubVersionData['github_version'] : null;
             $viewVariables['github_version_checked_at'] = !empty($githubVersionData['checked_at']) ? $githubVersionData['checked_at'] : null;
+            $viewVariables['release_notes_url'] = !empty($githubVersionData['release_notes_url'])
+                ? $githubVersionData['release_notes_url']
+                : 'https://github.com/comfino/woocommerce/releases';
             $viewVariables['auto_updates_enabled'] = in_array(plugin_basename(Main::getPluginFile()), (array) get_site_option(implode('_', ['auto', 'update', 'plugins']), []), true);
         } else {
             $viewVariables['settings_html'] = $this->generate_settings_html(SettingsForm::getFormFields($activeTab), false);
@@ -403,6 +436,7 @@ class PaymentGateway extends \WC_Payment_Gateway
     {
         if ($hook === 'woocommerce_page_wc-settings') {
             FrontendManager::includeLocalScripts(['tree.min.js'], [], false, false);
+            FrontendManager::includeLocalStyles(['comfino-release-description.css'], [], self::VERSION, false);
         }
     }
 

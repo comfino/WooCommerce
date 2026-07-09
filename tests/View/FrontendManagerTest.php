@@ -114,40 +114,6 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertContains('.js', $url);
     }
 
-    public function testGetExternalResourcesBaseUrl(): void
-    {
-        $baseUrl = FrontendManager::getExternalResourcesBaseUrl();
-
-        $this->assertStringStartsWith('https://', $baseUrl);
-        $this->assertContains('widget', $baseUrl);
-    }
-
-    public function testGetExternalScriptUrl(): void
-    {
-        $url = FrontendManager::getExternalScriptUrl('test-script.js');
-
-        $this->assertContains('test-script', $url);
-        $this->assertContains('.js', $url);
-    }
-
-    public function testGetExternalScriptUrlWithEmptyFileName(): void
-    {
-        $this->assertEmpty(FrontendManager::getExternalScriptUrl(''));
-    }
-
-    public function testGetExternalStyleUrl(): void
-    {
-        $url = FrontendManager::getExternalStyleUrl('test-style.css');
-
-        $this->assertContains('test-style', $url);
-        $this->assertContains('.css', $url);
-    }
-
-    public function testGetExternalStyleUrlWithEmptyFileName(): void
-    {
-        $this->assertEmpty(FrontendManager::getExternalStyleUrl(''));
-    }
-
     public function testResetScripts(): void
     {
         // Should not throw any errors.
@@ -204,32 +170,6 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function testIncludeExternalScripts(): void
-    {
-        $scripts = ['external-script1.js', 'external-script2.js'];
-        $scriptIds = FrontendManager::includeExternalScripts($scripts);
-
-        $this->assertCount(2, $scriptIds);
-
-        foreach ($scriptIds as $scriptId) {
-            $this->assertInternalType('string', $scriptId);
-            $this->assertStringStartsWith('comfino-script-', $scriptId);
-        }
-    }
-
-    public function testIncludeExternalStyles(): void
-    {
-        $styles = ['style1.css', 'style2.css'];
-        $styleIds = FrontendManager::includeExternalStyles($styles);
-
-        $this->assertCount(2, $styleIds);
-
-        foreach ($styleIds as $styleId) {
-            $this->assertInternalType('string', $styleId);
-            $this->assertStringStartsWith('comfino-style-', $styleId);
-        }
-    }
-
     public function testRegisterLocalScripts(): void
     {
         // Mock global variable.
@@ -251,22 +191,6 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         $scriptIds = FrontendManager::registerLocalScripts($scripts);
 
         $this->assertCount(2, $scriptIds);
-    }
-
-    public function testRegisterExternalScripts(): void
-    {
-        $scripts = ['external-script1.js', 'external-script2.js'];
-        $scriptIds = FrontendManager::registerExternalScripts($scripts);
-
-        $this->assertCount(2, $scriptIds);
-    }
-
-    public function testRegisterExternalStyles(): void
-    {
-        $styles = ['style1.css', 'style2.css'];
-        $styleIds = FrontendManager::registerExternalStyles($styles);
-
-        $this->assertCount(2, $styleIds);
     }
 
     public function testGetImageAllowedHtml(): void
@@ -416,42 +340,6 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertContains('.js', $url);
     }
 
-    public function testIncludeExternalScriptsWithEmptyArray(): void
-    {
-        $scriptIds = FrontendManager::includeExternalScripts([]);
-
-        $this->assertCount(0, $scriptIds);
-        $this->assertInternalType('array', $scriptIds);
-    }
-
-    public function testIncludeExternalStylesWithEmptyArray(): void
-    {
-        $styleIds = FrontendManager::includeExternalStyles([]);
-
-        $this->assertCount(0, $styleIds);
-        $this->assertInternalType('array', $styleIds);
-    }
-
-    public function testRegisterExternalScriptsWithDependencies(): void
-    {
-        $scripts = ['external-script.js'];
-        $dependencies = ['external-script.js' => ['jquery']];
-
-        $scriptIds = FrontendManager::registerExternalScripts($scripts, $dependencies);
-
-        $this->assertCount(1, $scriptIds);
-        $this->assertStringStartsWith('comfino-script-', $scriptIds[0]);
-    }
-
-    public function testRegisterExternalStylesWithEmptyArray(): void
-    {
-        $styles = [];
-        $styleIds = FrontendManager::registerExternalStyles($styles);
-
-        $this->assertCount(0, $styleIds);
-        $this->assertInternalType('array', $styleIds);
-    }
-
     public function testEmbedInlineScriptWithMultipleDependencies(): void
     {
         $scriptId = 'multi-dep-script';
@@ -476,33 +364,6 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(true);
     }
 
-    public function testGetExternalResourcesBaseUrlFormat(): void
-    {
-        $baseUrl = FrontendManager::getExternalResourcesBaseUrl();
-
-        // Should be a valid URL format.
-        $this->assertStringStartsWith('https://', $baseUrl);
-        $this->assertNotContains(' ', $baseUrl);
-        $this->assertRegExp('#^https?://[^\s]+$#', $baseUrl);
-    }
-
-    public function testGetExternalScriptUrlWithSubdirectory(): void
-    {
-        $url = FrontendManager::getExternalScriptUrl('subdirectory/script.js');
-
-        $this->assertContains('subdirectory', $url);
-        $this->assertContains('script.min.js', $url);
-        $this->assertStringStartsWith('https://', $url);
-    }
-
-    public function testGetExternalStyleUrlWithSubdirectory(): void
-    {
-        $url = FrontendManager::getExternalStyleUrl('subdirectory/style.css');
-
-        $this->assertContains('subdirectory', $url);
-        $this->assertContains('style.css', $url);
-        $this->assertStringStartsWith('https://', $url);
-    }
 
     public function testAllowedScriptHtmlContainsRequiredAttributes(): void
     {

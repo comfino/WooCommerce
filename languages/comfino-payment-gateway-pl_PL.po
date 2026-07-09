@@ -84,6 +84,15 @@ msgstr ""
 "na GitHub. Obecnie używasz wersji %1$s. Odwiedź <a href=\"%3$s\" "
 "target=\"_blank\">GitHub Releases</a>, aby uzyskać więcej informacji."
 
+#. translators: 1: Available plugin version 2: Current plugin version
+#: src/PaymentGateway.php:322
+msgid ""
+"New Comfino %1$s plugin version is available. You are using %2$s version. "
+"Please update your Comfino plugin."
+msgstr ""
+"Nowa wersja wtyczki Comfino %1$s jest dostępna. Używasz wersji %2$s. "
+"Zaktualizuj wtyczkę Comfino."
+
 #: comfino-payment-gateway.php:494
 msgid "Invalid nonce."
 msgstr "Nieprawidłowy nonce."
