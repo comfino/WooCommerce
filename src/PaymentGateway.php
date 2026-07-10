@@ -101,6 +101,23 @@ class PaymentGateway extends \WC_Payment_Gateway
         return parent::is_available() && Main::paymentIsAvailable(WC()->cart);
     }
 
+    /**
+     * Renders the standard-rendering Comfino logo placeholder via WooCommerce's gateway-icon mechanism: `src` is the
+     * default CDN SVG, marked `data-comfino-logo` so the SDK's DefaultPaymentMethodItemRenderer adopts this same `<img>`
+     * (instead of injecting a second one) and swaps its `src` to the auth API logo while the tile is still hidden behind
+     * the loader overlay (comfino-item-gate-woocommerce.css). The loader span is rendered alongside it for the same reason.
+     */
+    public function get_icon(): string
+    {
+        $icon = '<img class="comfino-payment-method-item__logo" data-comfino-logo' .
+            ' src="' . esc_url(ConfigManager::getDefaultLogoUrl()) . '" alt="' . esc_attr($this->get_title()) . '" />' .
+            '<span class="comfino-payment-method-item__loader" aria-hidden="true">' .
+            '<span class="comfino-payment-method-item__loader-spinner"><span></span></span>' .
+            '</span>';
+
+        return apply_filters('woocommerce_gateway_icon', $icon, $this->id);
+    }
+
     /* Shop cart checkout front logic. */
 
     public function payment_fields(): void

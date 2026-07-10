@@ -585,6 +585,22 @@ final class ConfigManager
     }
 
     /**
+     * CDN URL of the single, SDK-hosted Comfino brand logo used as the default payment-tile placeholder across all
+     * shop plugins/platforms. Rendered by the plugin as the tile's initial logo (get_icon() override for classic
+     * checkout, the registered `label` node for Blocks); the SDK renderer adopts it and swaps its `src` at runtime
+     * (to the auth-gated API Comfino logo). Hosting it centrally on the SDK CDN keeps the asset controllable without
+     * plugin updates.
+     */
+    public static function getDefaultLogoUrl(): string
+    {
+        if (self::useDevEnvVars() && getenv('COMFINO_DEV_DEFAULT_LOGO_URL')) {
+            return sanitize_url(wp_unslash(getenv('COMFINO_DEV_DEFAULT_LOGO_URL')));
+        }
+
+        return sanitize_url(wp_unslash(FrontendManager::getSdkCdnBaseUrl() . '/images/comfino/comfino_logo.svg'));
+    }
+
+    /**
      * Compose the CDN URL of an SDK bundle served from /sdk/v1/ on sdk.comfino.pl. Resolution order:
      *   1. An explicit full-URL dev override ($devUrlEnvVar) wins outright.
      *   2. Otherwise, the host comes from FrontendManager::getSdkCdnBaseUrl() — so COMFINO_DEV_SDK_CDN_BASE_URL points

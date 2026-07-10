@@ -142,6 +142,10 @@ final class PaymentGateway extends AbstractPaymentMethodType
             'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
             'paymentMethodAuth' => ConfigManager::getPaywallLogoAuthHash(),
             'paymentMethodLabel' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT') ?: null,
+            /* Blocks builds its own payment-method `label` node client-side (no server-rendered markup to attach a
+               placeholder `<img>` to, unlike classic checkout's get_icon()), so the default logo URL must travel
+               through the bootstrap config instead. */
+            'defaultLogoUrl' => ConfigManager::getDefaultLogoUrl(),
             'supports' => $this->gateway ? array_filter($this->gateway->supports, [$this->gateway, 'supports']) : ['products'],
             'productTypes' => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,
             'productTypeNames' => SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL) ?: null,
