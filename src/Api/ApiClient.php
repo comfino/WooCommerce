@@ -115,7 +115,7 @@ final class ApiClient
     public static function processApiError(
         string $errorPrefix,
         \Throwable $exception,
-        OperationContext $context = OperationContext::ApiCommunication
+        string $context = OperationContext::ApiCommunication
     ): array {
         $userErrorMessage = __(
             'There was a technical problem. Please try again in a moment and it should work!',

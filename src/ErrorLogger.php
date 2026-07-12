@@ -47,7 +47,7 @@ final class ErrorLogger
 
     public static function sendError(
         \Throwable $exception,
-        OperationContext $context,
+        string $context,
         string $errorCode,
         string $errorMessage,
         ?string $apiRequestUrl = null,

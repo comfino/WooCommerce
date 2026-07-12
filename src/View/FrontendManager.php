@@ -480,7 +480,7 @@ final class FrontendManager
         ?string $userErrorMessage = null,
         ?array $parameters = null,
         string $eventPrefix = '[ERROR]',
-        OperationContext $context = OperationContext::Unknown
+        string $context = OperationContext::Unknown
     ): array
     {
         DebugLogger::logEvent(
