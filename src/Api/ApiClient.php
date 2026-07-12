@@ -9,6 +9,7 @@ use Comfino\Common\Frontend\FrontendHelper;
 use Comfino\Configuration\ConfigManager;
 use Comfino\DebugLogger;
 use Comfino\ErrorLogger;
+use Comfino\Extended\Api\Dto\Plugin\OperationContext;
 use Comfino\Main;
 use Comfino\PaymentGateway;
 use ComfinoExternal\Psr\Http\Client\NetworkExceptionInterface;
@@ -111,8 +112,11 @@ final class ApiClient
         }
     }
 
-    public static function processApiError(string $errorPrefix, \Throwable $exception): array
-    {
+    public static function processApiError(
+        string $errorPrefix,
+        \Throwable $exception,
+        OperationContext $context = OperationContext::ApiCommunication
+    ): array {
         $userErrorMessage = __(
             'There was a technical problem. Please try again in a moment and it should work!',
             'comfino-payment-gateway'
@@ -190,7 +194,7 @@ final class ApiClient
         if ($statusCode !== 404) {
             ErrorLogger::sendError(
                 $exception,
-                $errorPrefix,
+                $context,
                 (string) $exception->getCode(),
                 $exception->getMessage(),
                 $url !== '' ? $url : null,

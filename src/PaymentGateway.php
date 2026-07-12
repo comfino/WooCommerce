@@ -13,6 +13,7 @@ use Comfino\Common\Backend\Factory\OrderFactory;
 use Comfino\Common\Shop\Cart;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
+use Comfino\Extended\Api\Dto\Plugin\OperationContext;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Order\OrderManager;
 use Comfino\Order\ShopStatusManager;
@@ -32,7 +33,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
     public const VERSION = '4.3.0';
-    public const BUILD_TS = 1783621347;
+    public const BUILD_TS = 1783864342;
 
     public function __construct()
     {
@@ -163,7 +164,7 @@ class PaymentGateway extends \WC_Payment_Gateway
         try {
             $shopCart = OrderManager::getShopCart($cart);
         } catch (\Exception $e) {
-            wc_add_notice(FrontendManager::processError('Shop cart creation error', $e)['title'], 'error');
+            wc_add_notice(FrontendManager::processError('Shop cart creation error', $e, null, null, null, '[ERROR]', OperationContext::OrderCreation)['title'], 'error');
 
             return ['result' => 'failure', 'redirect' => ''];
         }
@@ -240,7 +241,8 @@ class PaymentGateway extends \WC_Payment_Gateway
         } catch (\Throwable $e) {
             ApiClient::processApiError(
                 'Order creation error on page "' . Main::getCurrentUrl() . '" (Comfino API)',
-                $e
+                $e,
+                OperationContext::OrderCreation
             );
 
             wc_add_notice($e->getMessage(), 'error');
@@ -644,7 +646,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 
             return ApiClient::getInstance()->getFinancialProducts($criteria)->financialProducts;
         } catch (ClientExceptionInterface $e) {
-            FrontendManager::processError('Emergency financial offer retrieving error.', $e);
+            FrontendManager::processError('Emergency financial offer retrieving error.', $e, null, null, null, '[ERROR]', OperationContext::PaymentProcessing);
 
             return [];
         }

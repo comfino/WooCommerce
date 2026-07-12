@@ -11,6 +11,7 @@ use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
 use Comfino\DebugLogger;
 use Comfino\ErrorLogger;
+use Comfino\Extended\Api\Dto\Plugin\OperationContext;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Main;
 use Comfino\PluginShared\CacheManager;
@@ -117,7 +118,8 @@ final class SettingsForm
                             ApiClient::processApiError(
                                 ($activeTab === 'payment_settings' ? 'Payment' : 'Developer') .
                                 ' settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)',
-                                $e
+                                $e,
+                                OperationContext::Configuration
                             );
 
                             $errorMessages[] = $e->getMessage();
@@ -138,7 +140,8 @@ final class SettingsForm
                         ApiClient::processApiError(
                             ($activeTab === 'payment_settings' ? 'Payment' : 'Developer') .
                             ' settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)',
-                            $e
+                            $e,
+                            OperationContext::Configuration
                         );
 
                         $errorMessages[] = $e->getMessage();
@@ -285,7 +288,8 @@ final class SettingsForm
                         } catch (\Throwable $e) {
                             ApiClient::processApiError(
                                 'Widget settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)',
-                                $e
+                                $e,
+                                OperationContext::Configuration
                             );
 
                             $errorMessages[] = $e->getMessage();
@@ -297,7 +301,8 @@ final class SettingsForm
                     } catch (\Throwable $e) {
                         ApiClient::processApiError(
                             'Widget settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)',
-                            $e
+                            $e,
+                            OperationContext::Configuration
                         );
 
                         $errorMessages[] = $e->getMessage();

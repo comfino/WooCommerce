@@ -9,6 +9,7 @@ use Comfino\Common\Frontend\ProductWidgetScriptHelper;
 use Comfino\Configuration\ConfigManager;
 use Comfino\DebugLogger;
 use Comfino\ErrorLogger;
+use Comfino\Extended\Api\Dto\Plugin\OperationContext;
 use Comfino\Frontend\WooCommerceShopEnvironmentBuilder;
 use Comfino\Main;
 use Comfino\PaymentGateway;
@@ -446,10 +447,10 @@ final class FrontendManager
 
             return '<script type="application/json" id="' . ProductWidgetScriptHelper::CONFIG_ELEMENT_ID . '">' . $json . '</script>';
         } catch (\Throwable $e) {
-            self::processError('Widget config element', $e);
+            self::processError('Widget config element', $e, null, null, null, '[ERROR]', OperationContext::WidgetRendering);
             ErrorLogger::sendError(
                 $e,
-                'Widget config element',
+                OperationContext::WidgetRendering,
                 (string) $e->getCode(),
                 $e->getMessage(),
                 $e instanceof HttpErrorExceptionInterface ? $e->getUrl() : null,
@@ -478,7 +479,8 @@ final class FrontendManager
         ?int $httpStatus = null,
         ?string $userErrorMessage = null,
         ?array $parameters = null,
-        string $eventPrefix = '[ERROR]'
+        string $eventPrefix = '[ERROR]',
+        OperationContext $context = OperationContext::Unknown
     ): array
     {
         DebugLogger::logEvent(
@@ -499,7 +501,7 @@ final class FrontendManager
 
         ErrorLogger::sendError(
             $exception,
-            $errorPrefix,
+            $context,
             (string) $exception->getCode(),
             $exception->getMessage(),
             $exception instanceof HttpErrorExceptionInterface ? $exception->getUrl() : null,

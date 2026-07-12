@@ -8,6 +8,7 @@ use Comfino\Common\Backend\FileUtils;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
 use Comfino\Configuration\StorageAdapter;
+use Comfino\Extended\Api\Dto\Plugin\OperationContext;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Order\OrderManager;
 use Comfino\PluginShared\CacheManager;
@@ -262,7 +263,7 @@ final class Main
                     $shopCart
                 );
             } catch (\Throwable $e) {
-                ErrorLogger::sendError($e, 'getAllowedProductTypes', (string) $e->getCode(), $e->getMessage());
+                ErrorLogger::sendError($e, OperationContext::PaymentProcessing, (string) $e->getCode(), $e->getMessage());
             }
 
             $loanAmount = $shopCart !== null ? $shopCart->getTotalAmount() : (int) round($cart->get_total('edit') * 100);
@@ -273,7 +274,7 @@ final class Main
                 try {
                     $cartPayload = PaywallCartSerializer::toArray($shopCart);
                 } catch (\Throwable $e) {
-                    ErrorLogger::sendError($e, 'serializeShopCart', (string) $e->getCode(), $e->getMessage());
+                    ErrorLogger::sendError($e, OperationContext::OrderCreation, (string) $e->getCode(), $e->getMessage());
                 }
             }
 

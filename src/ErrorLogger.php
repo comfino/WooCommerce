@@ -6,6 +6,8 @@ use Comfino\Api\ApiClient;
 use Comfino\Api\Exception\AuthorizationError;
 use Comfino\Api\Exception\ResponseValidationError;
 use Comfino\Configuration\ConfigManager;
+use Comfino\Extended\Api\Dto\Plugin\ErrorSeverity;
+use Comfino\Extended\Api\Dto\Plugin\OperationContext;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -45,7 +47,7 @@ final class ErrorLogger
 
     public static function sendError(
         \Throwable $exception,
-        string $errorPrefix,
+        OperationContext $context,
         string $errorCode,
         string $errorMessage,
         ?string $apiRequestUrl = null,
@@ -60,7 +62,9 @@ final class ErrorLogger
         }
 
         self::getLoggerInstance()->sendError(
-            $errorPrefix,
+            Common\Backend\ErrorLogger::classifyException($exception),
+            ErrorSeverity::Error,
+            $context,
             $errorCode,
             $errorMessage,
             $apiRequestUrl,

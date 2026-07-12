@@ -8,6 +8,7 @@ use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
 use Comfino\DebugLogger;
 use Comfino\ErrorLogger;
+use Comfino\Extended\Api\Dto\Plugin\OperationContext;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Main;
 use Comfino\Order\OrderManager;
@@ -117,7 +118,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
                     $shopCart
                 );
             } catch (\Throwable $e) {
-                ErrorLogger::sendError($e, 'getAllowedProductTypes', (string) $e->getCode(), $e->getMessage());
+                ErrorLogger::sendError($e, OperationContext::PaymentProcessing, (string) $e->getCode(), $e->getMessage());
             }
         }
 
@@ -129,7 +130,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
             try {
                 $cartPayload = PaywallCartSerializer::toArray($shopCart);
             } catch (\Throwable $e) {
-                ErrorLogger::sendError($e, 'serializeShopCart', (string) $e->getCode(), $e->getMessage());
+                ErrorLogger::sendError($e, OperationContext::OrderCreation, (string) $e->getCode(), $e->getMessage());
             }
         }
 

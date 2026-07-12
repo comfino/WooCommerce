@@ -6,6 +6,7 @@ use Comfino\Api\ApiClient;
 use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Configuration\ConfigManager;
 use Comfino\DebugLogger;
+use Comfino\Extended\Api\Dto\Plugin\OperationContext;
 use Comfino\Main;
 use Comfino\PaymentGateway;
 use Comfino\View\TemplateManager;
@@ -77,7 +78,7 @@ final class ShopStatusManager
                         // Send notification about canceled order paid by Comfino.
                         ApiClient::getInstance()->cancelOrder($orderId);
                     } catch (\Throwable $e) {
-                        ApiClient::processApiError('Order cancellation error on page "' . Main::getCurrentUrl() . '" (Comfino API)', $e);
+                        ApiClient::processApiError('Order cancellation error on page "' . Main::getCurrentUrl() . '" (Comfino API)', $e, OperationContext::OrderCancellation);
                     }
 
                     $order->add_order_note(__('Order cancellation sent to Comfino.', 'comfino-payment-gateway'));
