@@ -62,6 +62,8 @@ final class ConfigManager
         'COMFINO_API_TIMEOUT' => 'api_timeout',
         'COMFINO_API_CONNECT_NUM_ATTEMPTS' => 'api_connect_num_attempts',
         'COMFINO_NEW_WIDGET_ACTIVE' => 'new_widget_active',
+        'COMFINO_ERROR_LOGGING_ACCESS_TOKEN' => 'error_logging_access_token',
+        'COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT' => 'error_logging_access_token_expires_at',
     ];
 
     public const CONFIG_OPTIONS = [
