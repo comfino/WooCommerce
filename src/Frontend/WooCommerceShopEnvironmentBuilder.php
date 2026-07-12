@@ -1,18 +1,9 @@
 <?php
 
-/**
- * Comfino Payment Gateway for WooCommerce
- *
- * @package Comfino\Frontend
- * @author Artur Kozubski <akozubski@comperia.pl>
- * @copyright Copyright (c) 2026 Comfino by Comperia.pl S.A.
- * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause License
- * @link https://github.com/comfino/woocommerce
- */
-
 namespace Comfino\Frontend;
 
 use Comfino\Api\Dto\Plugin\ShopTheme;
+use Comfino\Platform\WooCommercePlatformInfo;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -22,13 +13,39 @@ if (!defined('ABSPATH')) {
  * WooCommerce implementation of AbstractShopEnvironmentBuilder.
  *
  * WooCommerce has no Magento-style theme inheritance; the active WordPress theme (and its parent, for child themes)
- * is reported as the theme code/parent chain, and the family is resolved via the registered ThemeFamilyRules,
- * defaulting to 'storefront' (the classic jQuery-based WooCommerce stack) when no rule matches.
- *
- * PHP 7.1 compatible (hand-written, not Rector-built).
+ * is reported as the theme code/parent chain, and the family is resolved via the registered ThemeFamilyRules, falling
+ * back to 'blocks' for FSE/block themes (detected via wp_is_block_theme()) and 'storefront' (the classic jQuery-based
+ * WooCommerce stack) for everything else, when no rule matches.
  */
 class WooCommerceShopEnvironmentBuilder extends AbstractShopEnvironmentBuilder
 {
+    /**
+     * Builds an instance wired with the plugin's standard platform info and theme-family rules. The single shared
+     * construction path for every call site that needs the WooCommerce shop environment (widget config, telemetry
+     * report, ...) so they all resolve the theme family identically.
+     */
+    public static function createDefault(): self
+    {
+        return new self(new WooCommercePlatformInfo(), self::createThemeRules());
+    }
+
+    private static function createThemeRules(): ThemeFamilyRules
+    {
+        $rules = new ThemeFamilyRules();
+
+        $rules->register('storefront', static function (array $themeChain): bool {
+            foreach ($themeChain as $theme) {
+                if (strpos($theme, 'storefront') !== false) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+
+        return $rules;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -68,13 +85,13 @@ class WooCommerceShopEnvironmentBuilder extends AbstractShopEnvironmentBuilder
 
         try {
             $theme = wp_get_theme();
-            $code = (string) $theme->get_stylesheet();
+            $code = $theme->get_stylesheet();
             $parents = [];
 
             $parent = $theme->parent();
 
             if ($parent !== false && $parent !== null) {
-                $parents[] = (string) $parent->get_stylesheet();
+                $parents[] = $parent->get_stylesheet();
             }
         } catch (\Throwable $e) {
             return new ShopTheme('', 'storefront', []);
@@ -83,7 +100,7 @@ class WooCommerceShopEnvironmentBuilder extends AbstractShopEnvironmentBuilder
         $family = $this->rules->resolveFamily(array_merge([$code], $parents));
 
         if ($family === 'custom') {
-            $family = 'storefront';
+            $family = (function_exists('wp_is_block_theme') && wp_is_block_theme()) ? 'blocks' : 'storefront';
         }
 
         return new ShopTheme($code, $family, $parents);

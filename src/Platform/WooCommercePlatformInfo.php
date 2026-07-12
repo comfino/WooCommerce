@@ -1,15 +1,5 @@
 <?php
 
-/**
- * Comfino Payment Gateway for WooCommerce
- *
- * @package Comfino\Platform
- * @author Artur Kozubski <akozubski@comperia.pl>
- * @copyright Copyright (c) 2026 Comfino by Comperia.pl S.A.
- * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause License
- * @link https://github.com/comfino/woocommerce
- */
-
 namespace Comfino\Platform;
 
 use Comfino\Configuration\ConfigManager;
@@ -23,8 +13,8 @@ if (!defined('ABSPATH')) {
 /**
  * WooCommerce implementation of the shared PlatformInfoInterface.
  *
- * Reads platform/shop metadata from WooCommerce/WordPress globals via the existing ConfigManager and Main helpers,
- * so the shop-environment builder can assemble a backend report. PHP 7.1 compatible (hand-written, not Rector-built).
+ * Reads platform/shop metadata from WooCommerce/WordPress globals via the existing ConfigManager and Main helpers, so
+ * the shop-environment builder can assemble a backend report.
  */
 class WooCommercePlatformInfo implements PlatformInfoInterface
 {

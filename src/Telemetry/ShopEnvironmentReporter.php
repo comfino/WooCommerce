@@ -1,22 +1,10 @@
 <?php
 
-/**
- * Comfino Payment Gateway for WooCommerce
- *
- * @package Comfino\Telemetry
- * @author Artur Kozubski <akozubski@comperia.pl>
- * @copyright Copyright (c) 2026 Comfino by Comperia.pl S.A.
- * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause License
- * @link https://github.com/comfino/woocommerce
- */
-
 namespace Comfino\Telemetry;
 
 use Comfino\Api\ApiClient;
 use Comfino\DebugLogger;
-use Comfino\Frontend\ThemeFamilyRules;
 use Comfino\Frontend\WooCommerceShopEnvironmentBuilder;
-use Comfino\Platform\WooCommercePlatformInfo;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -28,9 +16,7 @@ if (!defined('ABSPATH')) {
  * Mirrors the Magento reference (Comfino\ComfinoGateway\Model\Telemetry\ShopEnvironmentReporter): builds the report
  * via WooCommerceShopEnvironmentBuilder and posts it through the shared API client's reportShopEnvironment().
  * Triggered on payment-gateway settings save. Any failure is logged and swallowed — it must never impact checkout,
- * paywall or widget functionality.
- *
- * PHP 7.1 compatible (hand-written, not Rector-built).
+ * paywall, or widget functionality.
  */
 final class ShopEnvironmentReporter
 {
@@ -42,8 +28,8 @@ final class ShopEnvironmentReporter
     public static function report(): bool
     {
         try {
-            $builder = new WooCommerceShopEnvironmentBuilder(new WooCommercePlatformInfo(), self::createThemeRules());
-            $report = $builder->buildForBackendReport(self::resolveTestProductUrl());
+            $report = WooCommerceShopEnvironmentBuilder::createDefault()
+                ->buildForBackendReport(self::resolveTestProductUrl());
 
             $result = ApiClient::getInstance()->reportShopEnvironment($report);
 
@@ -72,9 +58,7 @@ final class ShopEnvironmentReporter
     public static function getReportArray(): ?array
     {
         try {
-            $builder = new WooCommerceShopEnvironmentBuilder(new WooCommercePlatformInfo(), self::createThemeRules());
-
-            return $builder->buildReportArray(self::resolveTestProductUrl());
+            return WooCommerceShopEnvironmentBuilder::createDefault()->buildReportArray(self::resolveTestProductUrl());
         } catch (\Throwable $e) {
             DebugLogger::logEvent(
                 '[SHOP_ENVIRONMENT]',
@@ -84,23 +68,6 @@ final class ShopEnvironmentReporter
 
             return null;
         }
-    }
-
-    private static function createThemeRules(): ThemeFamilyRules
-    {
-        $rules = new ThemeFamilyRules();
-
-        $rules->register('storefront', static function (array $themeChain): bool {
-            foreach ($themeChain as $theme) {
-                if (strpos($theme, 'storefront') !== false) {
-                    return true;
-                }
-            }
-
-            return false;
-        });
-
-        return $rules;
     }
 
     /**

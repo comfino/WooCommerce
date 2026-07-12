@@ -9,6 +9,7 @@ use Comfino\Common\Frontend\ProductWidgetScriptHelper;
 use Comfino\Configuration\ConfigManager;
 use Comfino\DebugLogger;
 use Comfino\ErrorLogger;
+use Comfino\Frontend\WooCommerceShopEnvironmentBuilder;
 use Comfino\Main;
 use Comfino\PaymentGateway;
 use Comfino\Extended\Auth\PaywallAuthTokenGenerator;
@@ -422,15 +423,13 @@ final class FrontendManager
                 'productCartDetails' => $notNull($variables['PRODUCT_CART_DETAILS'] ?? null),
                 'language' => $variables['LANGUAGE'] ?? null,
                 'currency' => $variables['CURRENCY'] ?? null,
-                'shopEnvironment' => [
-                    'platform' => 'woocommerce',
-                    'platformName' => 'WooCommerce',
-                    'platformDomain' => Main::getShopDomain(),
-                    'theme' => ['family' => 'woocommerce'],
-                    'language' => $variables['LANGUAGE'] ?? Main::getShopLanguage(),
-                    'currency' => $variables['CURRENCY'] ?? Main::getShopCurrency(),
-                    'pageContext' => ['type' => 'product'],
-                ],
+                'shopEnvironment' => array_merge(
+                    WooCommerceShopEnvironmentBuilder::createDefault()->buildForFrontend(['type' => 'product']),
+                    [
+                        'language' => $variables['LANGUAGE'] ?? Main::getShopLanguage(),
+                        'currency' => $variables['CURRENCY'] ?? Main::getShopCurrency(),
+                    ]
+                ),
             ];
 
             // Drops nulls and anything outside WIDGET_CONFIG_KEYS, so omitted options fall through to the SDK / CDN-profile defaults.
