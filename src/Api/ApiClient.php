@@ -98,17 +98,30 @@ final class ApiClient
         $trackId = $client->getTrackId();
 
         if (!headers_sent()) {
-            /* PHP 7.1 target: setcookie()'s array-options 4th param (needed for a clean SameSite flag) requires
-               PHP 7.3+. SameSite is set via the well-known path-suffix workaround instead. */
-            setcookie(
-                self::CHECKOUT_TRACK_ID_COOKIE,
-                $trackId,
-                time() + self::CHECKOUT_TRACK_ID_COOKIE_TTL,
-                '/; SameSite=Lax',
-                '',
-                true,
-                true
-            );
+            $expires = time() + self::CHECKOUT_TRACK_ID_COOKIE_TTL;
+
+            if (PHP_VERSION_ID >= 70300) {
+                setcookie(self::CHECKOUT_TRACK_ID_COOKIE, $trackId, [
+                    'expires' => $expires,
+                    'path' => '/',
+                    'secure' => true,
+                    'httponly' => true,
+                    'samesite' => 'Lax',
+                ]);
+            } else {
+                /* PHP 7.1/7.2 target: setcookie()'s array-options 4th param (needed for a clean SameSite flag) requires
+                   PHP 7.3+. SameSite is set via the well-known path-suffix workaround instead. Since PHP 8.1, setcookie()
+                   rejects ";"/" " in the "path" arg, so this branch must stay 7.3-excluded. */
+                setcookie(
+                    self::CHECKOUT_TRACK_ID_COOKIE,
+                    $trackId,
+                    $expires,
+                    '/; SameSite=Lax',
+                    '',
+                    true,
+                    true
+                );
+            }
         }
     }
 
