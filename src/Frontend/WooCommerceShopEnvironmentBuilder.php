@@ -100,7 +100,13 @@ class WooCommerceShopEnvironmentBuilder extends AbstractShopEnvironmentBuilder
         $family = $this->rules->resolveFamily(array_merge([$code], $parents));
 
         if ($family === 'custom') {
-            $family = (function_exists('wp_is_block_theme') && wp_is_block_theme()) ? 'blocks' : 'storefront';
+            $family = 'storefront';
+
+            if (function_exists('wp_is_block_theme')) {
+                if (wp_is_block_theme()) {
+                    $family = 'blocks';
+                }
+            }
         }
 
         return new ShopTheme($code, $family, $parents);
