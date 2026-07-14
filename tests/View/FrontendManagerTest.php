@@ -79,18 +79,6 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($html); // Should return empty string when no values provided.
     }
 
-    public function testRenderProductCategoryTree(): void
-    {
-        $data = [
-            'title' => 'Product Categories',
-            'id' => 'category_tree',
-            'product_type' => 'INSTALLMENTS',
-            'selected_categories' => [1, 2, 3]
-        ];
-
-        $this->assertContains('Product Categories', FrontendManager::renderProductCategoryTree($data));
-    }
-
     public function testGetLocalScriptUrl(): void
     {
         // Mock global variable.
@@ -300,21 +288,6 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertContains('Test Checkboxes', $html);
         $this->assertContains('This is a test description', $html);
-    }
-
-    public function testRenderProductCategoryTreeWithProductType(): void
-    {
-        $data = [
-            'title' => 'Category Tree',
-            'id' => 'test_tree',
-            'product_type' => 'INSTALLMENTS_ZERO_PERCENT',
-            'selected_categories' => [],
-        ];
-
-        $html = FrontendManager::renderProductCategoryTree($data);
-
-        $this->assertInternalType('string', $html);
-        $this->assertContains('Category Tree', $html);
     }
 
     public function testGetLocalScriptUrlWithVersion(): void

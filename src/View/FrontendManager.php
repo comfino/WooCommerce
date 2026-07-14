@@ -185,29 +185,57 @@ final class FrontendManager
         );
     }
 
-    public static function renderProductCategoryTree(array $data): string
+    public static function renderProductCategoryFilterGroup(array $data): string
     {
         $defaults = [
             'title' => '',
-            'disabled' => false,
-            'class' => '',
-            'css' => '',
-            'placeholder' => '',
-            'type' => 'text',
-            'desc_tip' => false,
+            'type' => 'product_category_filter_group',
+            'id' => 'product_categories',
             'description' => '',
-            'custom_attributes' => [],
-            'id' => '',
-            'product_type' => '',
-            'selected_categories' => [],
+            'product_types' => [],
         ];
 
         $data = wp_parse_args($data, $defaults);
 
         return sprintf(
-            '<tr valign="top"><td class="forminp" colspan="2"><h3>%s</h3>%s</td></tr>', // WPCS: XSS ok.
-            esc_html($data['title']),
-            SettingsForm::renderCategoryTree($data['id'], $data['product_type'], $data['selected_categories'])
+            '<tr valign="top"><td class="forminp" colspan="2">%s</td></tr>',
+            TemplateManager::renderView(
+                'product-category-filter-group',
+                'admin/_configure',
+                [
+                    'title' => $data['title'],
+                    'tree_id' => $data['id'],
+                    'description' => $data['description'],
+                    'product_types' => $data['product_types'],
+                ],
+                false
+            )
+        );
+    }
+
+    public static function renderProductIdFilter(array $data): string
+    {
+        $defaults = [
+            'title' => '',
+            'type' => 'product_id_filter',
+            'description' => '',
+            'product_ids' => [],
+        ];
+
+        $data = wp_parse_args($data, $defaults);
+
+        return sprintf(
+            '<tr valign="top"><td class="forminp" colspan="2">%s</td></tr>',
+            TemplateManager::renderView(
+                'product-id-filter',
+                'admin/_configure',
+                [
+                    'title' => $data['title'],
+                    'description' => $data['description'],
+                    'product_ids' => $data['product_ids'],
+                ],
+                false
+            )
         );
     }
 
@@ -545,8 +573,11 @@ final class FrontendManager
             wp_kses_allowed_html('post'),
             [
                 'input' => ['id' => [], 'name' => [], 'value' => [], 'class' => [], 'style' => [], 'title' => [], 'placeholder' => [], 'type' => [], 'checked' => [], 'readonly' => [], 'disabled' => [], 'required' => []],
+                'textarea' => ['id' => [], 'name' => [], 'class' => [], 'style' => [], 'title' => [], 'placeholder' => [], 'rows' => [], 'cols' => [], 'readonly' => [], 'disabled' => [], 'required' => []],
                 'select' => ['id' => [], 'name' => [], 'multiple' => [], 'disabled' => [], 'required' => []],
                 'option' => ['value' => [], 'selected' => [], 'label' => [], 'disabled' => []],
+                'details' => ['id' => [], 'class' => [], 'style' => [], 'open' => []],
+                'summary' => ['id' => [], 'class' => [], 'style' => []],
             ],
             self::getAllowedScriptHtml(),
             self::getAllowedStyleHtml()

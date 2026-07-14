@@ -35,6 +35,7 @@ final class ConfigManager
         'COMFINO_DEV_ENV_VARS' => 'dev_env_vars',
         'COMFINO_SANDBOX_API_KEY' => 'sandbox_key',
         'COMFINO_PRODUCT_CATEGORY_FILTERS' => 'product_category_filters',
+        'COMFINO_PRODUCT_ID_FILTER' => 'product_id_filter',
         'COMFINO_ALLOWED_PRODUCTS_CONFIG' => 'allowed_products_config',
         'COMFINO_ALLOWED_PRODUCTS_CONFIG_ENABLED' => 'allowed_products_config_enabled',
         'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => 'cat_filter_avail_prod_types',
@@ -79,6 +80,7 @@ final class ConfigManager
         'sale_settings' => [
             'COMFINO_ALLOWED_PRODUCTS_CONFIG'  => ConfigurationManager::OPT_VALUE_TYPE_JSON,
             'COMFINO_PRODUCT_CATEGORY_FILTERS' => ConfigurationManager::OPT_VALUE_TYPE_JSON,
+            'COMFINO_PRODUCT_ID_FILTER'        => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
         ],
         'widget_settings' => [
             'COMFINO_WIDGET_ENABLED' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
@@ -134,6 +136,7 @@ final class ConfigManager
         'COMFINO_ALLOWED_PRODUCTS_CONFIG',
         'COMFINO_ALLOWED_PRODUCTS_CONFIG_ENABLED',
         'COMFINO_PRODUCT_CATEGORY_FILTERS',
+        'COMFINO_PRODUCT_ID_FILTER',
         'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES',
         'COMFINO_ALLOWED_PRODUCTS_CONFIG_FORBIDDEN_PROD_TYPES',
         'COMFINO_WIDGET_ENABLED',
@@ -691,6 +694,7 @@ final class ConfigManager
             'COMFINO_DEBUG' => false,
             'COMFINO_SERVICE_MODE' => false,
             'COMFINO_PRODUCT_CATEGORY_FILTERS' => '',
+            'COMFINO_PRODUCT_ID_FILTER' => '',
             'COMFINO_ALLOWED_PRODUCTS_CONFIG' => null,
             'COMFINO_ALLOWED_PRODUCTS_CONFIG_ENABLED' => false,
             'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => 'INSTALLMENTS_ZERO_PERCENT,PAY_LATER,COMPANY_BNPL,COMPANY_INSTALLMENTS,LEASING,PAY_IN_PARTS',

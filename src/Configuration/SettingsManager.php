@@ -6,6 +6,7 @@ use Comfino\Api\ApiClient;
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
 use Comfino\Common\Backend\Payment\ProductTypeFilter\FilterByCartValueLowerLimit;
 use Comfino\Common\Backend\Payment\ProductTypeFilter\FilterByExcludedCategory;
+use Comfino\FinancialProduct\Filter\FilterByExcludedProductId;
 use Comfino\Common\Backend\Payment\ProductTypeFilterInterface;
 use Comfino\Common\Backend\Payment\ProductTypeFilterManager;
 use Comfino\Common\Shop\Cart;
@@ -243,6 +244,23 @@ final class SettingsManager
         return $catFilters;
     }
 
+    /**
+     * @return int[]
+     */
+    public static function getProductIdFilter(): array
+    {
+        $productIdFilter = ConfigManager::getConfigurationValue('COMFINO_PRODUCT_ID_FILTER', []);
+
+        if (!is_array($productIdFilter)) {
+            $productIdFilter = explode(',', (string) $productIdFilter);
+        }
+
+        return array_values(array_unique(array_filter(
+            array_map('intval', $productIdFilter),
+            static function (int $id): bool { return $id > 0; }
+        )));
+    }
+
     public static function getProductCategoryFiltersAvailProductTypes(): array
     {
         if (!is_array($availProds = ConfigManager::getConfigurationValue('COMFINO_CAT_FILTER_AVAIL_PROD_TYPES', []))) {
@@ -354,6 +372,10 @@ final class SettingsManager
                 new CategoryFilter(ConfigManager::getCategoriesTree()),
                 $productCategoryFilters
             );
+        }
+
+        if (!empty($excludedProductIds = self::getProductIdFilter())) {
+            $filters[] = new FilterByExcludedProductId($excludedProductIds);
         }
 
         return $filters;

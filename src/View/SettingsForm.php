@@ -183,6 +183,17 @@ final class SettingsForm
 
                 $configurationOptionsToSave['COMFINO_PRODUCT_CATEGORY_FILTERS'] = $productCategoryFilters;
 
+                $productIdFilter = [];
+
+                if (!empty($postData['comfino_product_id_filter'])) {
+                    $productIdFilter = array_values(array_unique(array_filter(
+                        array_map('intval', preg_split('/[\s,]+/', (string) $postData['comfino_product_id_filter'])),
+                        static function (int $id): bool { return $id > 0; }
+                    )));
+                }
+
+                $configurationOptionsToSave['COMFINO_PRODUCT_ID_FILTER'] = $productIdFilter;
+
                 if (!ConfigManager::getConfigurationValue('COMFINO_ALLOWED_PRODUCTS_CONFIG_ENABLED')) {
                     break;
                 }
@@ -404,14 +415,7 @@ final class SettingsForm
                 $productCategories = ConfigManager::getAllProductCategories();
                 $productCategoryFilters = SettingsManager::getProductCategoryFilters();
 
-                $formFields['sale_settings_product_categories_section'] = [
-                    'title' => __('Product categories', 'comfino-payment-gateway'),
-                    'type' => 'title',
-                    'description' => __(
-                        'Restrict the availability of each financial product type by product category. For each financial product listed below, select the categories whose products should be eligible for that payment option. If a customer\'s cart contains only products from unselected categories, that financial product will not be offered at checkout.',
-                        'comfino-payment-gateway'
-                    ),
-                ];
+                $productTypesData = [];
 
                 foreach (SettingsManager::getCatFilterAvailProdTypes() as $prodTypeCode => $prodTypeName) {
                     if (isset($productCategoryFilters[$prodTypeCode])) {
@@ -423,14 +427,32 @@ final class SettingsForm
                         $selectedCategories = array_keys($productCategories);
                     }
 
-                    $formFields['sale_settings_product_category_filter_' . $prodTypeCode] = [
-                        'title' => $prodTypeName,
-                        'type' => 'product_category_tree',
-                        'product_type' => $prodTypeCode,
-                        'id' => 'product_categories',
-                        'selected_categories' => $selectedCategories,
+                    $productTypesData[$prodTypeCode] = [
+                        'name' => $prodTypeName,
+                        'selected_categories' => array_values($selectedCategories),
                     ];
                 }
+
+                $formFields['sale_settings_product_category_filter'] = [
+                    'title' => __('Product categories', 'comfino-payment-gateway'),
+                    'type' => 'product_category_filter_group',
+                    'id' => 'product_categories',
+                    'description' => __(
+                        'Restrict the availability of each financial product type by product category. For each financial product listed below, select the categories whose products should be eligible for that payment option. If a customer\'s cart contains only products from unselected categories, that financial product will not be offered at checkout.',
+                        'comfino-payment-gateway'
+                    ),
+                    'product_types' => $productTypesData,
+                ];
+
+                $formFields['sale_settings_product_id_filter'] = [
+                    'title' => __('Filter by product ID', 'comfino-payment-gateway'),
+                    'type' => 'product_id_filter',
+                    'description' => __(
+                        'Enter product IDs (separated by commas) for which Comfino payment options should not be offered. If the cart contains any of the listed products, all Comfino financial products will be hidden at checkout.',
+                        'comfino-payment-gateway'
+                    ),
+                    'product_ids' => SettingsManager::getProductIdFilter(),
+                ];
 
                 if ($allowedProductsConfigEnabled) {
                     $savedConfig = ConfigManager::getConfigurationValue('COMFINO_ALLOWED_PRODUCTS_CONFIG');

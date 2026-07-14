@@ -479,9 +479,14 @@ class PaymentGateway extends \WC_Payment_Gateway
         );
     }
 
-    public function generate_product_category_tree_html(string $key, array $data): string
+    public function generate_product_category_filter_group_html(string $key, array $data): string
     {
-        return FrontendManager::renderProductCategoryTree($data);
+        return FrontendManager::renderProductCategoryFilterGroup($data);
+    }
+
+    public function generate_product_id_filter_html(string $key, array $data): string
+    {
+        return FrontendManager::renderProductIdFilter($data);
     }
 
     public function generate_allowed_products_config_html(string $key, array $data): string
