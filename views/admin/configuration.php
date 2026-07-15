@@ -24,7 +24,6 @@
  * @var string $api_host Comfino API host URL (diagnostics tab)
  * @var string $shop_domain Shop domain name (diagnostics tab)
  * @var string $widget_key Widget key (diagnostics tab)
- * @var string $new_widget_status New widget API status (diagnostics tab)
  * @var bool $is_dev_env Development environment flag (diagnostics tab)
  * @var string $build_ts Plugin build timestamp (diagnostics tab)
  * @var string|null $github_version Latest GitHub version or null (diagnostics tab)
@@ -106,7 +105,6 @@ function comfino_prepare_tab_url(string $subsection): string
                     <p><b>Plugin build time:</b> <?php echo esc_html($build_ts) ?> UTC</p>
                     <p><b>Shop domain:</b> <?php echo esc_html($shop_domain) ?></p>
                     <p><b>Widget key:</b> <?php echo esc_html($widget_key) ?></p>
-                    <p><b>New widget API:</b> <?php echo esc_html($new_widget_status) ?></p>
                     <p>
                         <b>Latest available version:</b>
                         <?php if ($auto_updates_enabled): ?>

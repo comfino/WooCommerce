@@ -644,8 +644,7 @@ class Comfino_Payment_Gateway
 
         ConfigManager::initConfigurationValues([
             'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS' => false,
-            'COMFINP_NEW_WIDGET_ACTIVE' => true,
-            'COMFINP_DEV_ENV_VARS' => false,
+            'COMFINO_DEV_ENV_VARS' => false,
         ]);
 
         if (is_array($catFilterAvailProdTypes = ConfigManager::getConfigurationValue('COMFINO_CAT_FILTER_AVAIL_PROD_TYPES'))

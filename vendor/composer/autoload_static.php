@@ -483,6 +483,7 @@ class ComposerStaticInit116d5c55f52c1dd381de94d6b503e7ef
         'Comfino\\Extended\\Api\\Response\\GetSupportedPlatforms' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Extended/Api/Response/GetSupportedPlatforms.php',
         'Comfino\\Extended\\Api\\Serializer\\Json' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Extended/Api/Serializer/Json.php',
         'Comfino\\Extended\\Auth\\PaywallAuthTokenGenerator' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Extended/Auth/PaywallAuthTokenGenerator.php',
+        'Comfino\\FinancialProduct\\Filter\\FilterByExcludedProductId' => __DIR__ . '/../..' . '/src/FinancialProduct/Filter/FilterByExcludedProductId.php',
         'Comfino\\FinancialProduct\\ProductTypesListTypeEnum' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/FinancialProduct/ProductTypesListTypeEnum.php',
         'Comfino\\Frontend\\AbstractShopEnvironmentBuilder' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Frontend/AbstractShopEnvironmentBuilder.php',
         'Comfino\\Frontend\\CapabilityResolver' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Frontend/CapabilityResolver.php',

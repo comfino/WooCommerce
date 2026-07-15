@@ -9,6 +9,12 @@
  * Added per-product-type installment term limits (allowedProductsConfig): admins can now restrict available installment terms per financial product type in the sale settings. Limits are enforced on both the paywall (financial products listing) and order creation.
  * Added direct redirect mode: when enabled, the full paywall offer browser is skipped and the customer is redirected straight to the Comfino payment gateway with the default financial product.
  * Added a custom paywall CSS style option: admins can inject a custom CSS file into the paywall iframe (only URLs within the store domain are accepted).
+ * Added a custom payment method text option, and centralized default logo handling for the Comfino payment method.
+ * Added a widget price attribute setting to fix cases where the installment widget showed a stale or incorrect price on pages that render the price asynchronously.
+ * Improved delivery/shipping tax handling in cart calculations for more accurate offer amounts.
+ * Payment tracking is now more reliable across the checkout flow (tracking ID kept consistent from cart to order), improving diagnostics when investigating payment issues.
+ * Enhanced error logging sent to Comfino with more context (severity level, error category, shop environment details), speeding up support and troubleshooting.
+ * Improved compatibility with WooCommerce Blocks checkout and block-based themes.
 
 4.2.8
  * Fixed a bug in webhook (payment status notifications): order not found error when "Use order reference as external ID" option is active, fixed a frontend bug concerned with Gutenberg blocks (empty comfino_loan_type error).

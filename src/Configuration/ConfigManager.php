@@ -63,7 +63,6 @@ final class ConfigManager
         'COMFINO_API_CONNECT_TIMEOUT' => 'api_connect_timeout',
         'COMFINO_API_TIMEOUT' => 'api_timeout',
         'COMFINO_API_CONNECT_NUM_ATTEMPTS' => 'api_connect_num_attempts',
-        'COMFINO_NEW_WIDGET_ACTIVE' => 'new_widget_active',
         'COMFINO_ERROR_LOGGING_ACCESS_TOKEN' => 'error_logging_access_token',
         'COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT' => 'error_logging_access_token_expires_at',
     ];
@@ -119,7 +118,6 @@ final class ConfigManager
             'COMFINO_API_CONNECT_TIMEOUT' => ConfigurationManager::OPT_VALUE_TYPE_INT,
             'COMFINO_API_TIMEOUT' => ConfigurationManager::OPT_VALUE_TYPE_INT,
             'COMFINO_API_CONNECT_NUM_ATTEMPTS' => ConfigurationManager::OPT_VALUE_TYPE_INT,
-            'COMFINO_NEW_WIDGET_ACTIVE' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_ERROR_LOGGING_ACCESS_TOKEN' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT' => ConfigurationManager::OPT_VALUE_TYPE_INT,
         ],
@@ -162,7 +160,6 @@ final class ConfigManager
         'COMFINO_API_CONNECT_TIMEOUT',
         'COMFINO_API_TIMEOUT',
         'COMFINO_API_CONNECT_NUM_ATTEMPTS',
-        'COMFINO_NEW_WIDGET_ACTIVE',
         'COMFINO_DEV_ENV_VARS',
     ];
 
@@ -725,7 +722,6 @@ final class ConfigManager
             'COMFINO_API_CONNECT_TIMEOUT' => 1,
             'COMFINO_API_TIMEOUT' => 3,
             'COMFINO_API_CONNECT_NUM_ATTEMPTS' => 3,
-            'COMFINO_NEW_WIDGET_ACTIVE' => true,
             'COMFINO_DEV_ENV_VARS' => false,
         ];
     }

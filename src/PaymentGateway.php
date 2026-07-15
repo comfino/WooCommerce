@@ -33,7 +33,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
     public const VERSION = '4.3.0';
-    public const BUILD_TS = 1784011463;
+    public const BUILD_TS = 1784106431;
 
     public function __construct()
     {
@@ -351,7 +351,6 @@ class PaymentGateway extends \WC_Payment_Gateway
             $viewVariables['api_host'] = ApiClient::getInstance()->getApiHost();
             $viewVariables['shop_domain'] = Main::getShopDomain();
             $viewVariables['widget_key'] = ConfigManager::getWidgetKey();
-            $viewVariables['new_widget_status'] = ConfigManager::getConfigurationValue('COMFINO_NEW_WIDGET_ACTIVE') ? 'Active' : 'Inactive';
             $viewVariables['is_dev_env'] = ConfigManager::useDevEnvVars();
             $viewVariables['build_ts'] = \DateTime::createFromFormat('U', self::BUILD_TS)->format('Y-m-d H:i:s');
 

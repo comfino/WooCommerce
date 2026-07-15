@@ -161,10 +161,8 @@ final class SettingsManager
             return $returnErrors ? ['error' => 'API key is required.'] : [];
         }
 
-        $useNewApi = ConfigManager::getConfigurationValue('COMFINO_NEW_WIDGET_ACTIVE');
-
         try {
-            $widgetTypes = ApiClient::getInstance()->getWidgetTypes($useNewApi);
+            $widgetTypes = ApiClient::getInstance()->getWidgetTypes();
             $widgetTypesList = $widgetTypes->widgetTypesWithNames;
             $cacheTtl = (int) $widgetTypes->getHeader('Cache-TTL', '0');
 
