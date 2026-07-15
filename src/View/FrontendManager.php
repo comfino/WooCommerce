@@ -396,6 +396,7 @@ final class FrontendManager
                 [
                     'COMFINO_WIDGET_KEY',
                     'COMFINO_WIDGET_PRICE_SELECTOR',
+                    'COMFINO_WIDGET_PRICE_ATTRIBUTE',
                     'COMFINO_WIDGET_TARGET_SELECTOR',
                     'COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR',
                     'COMFINO_WIDGET_PRICE_OBSERVER_LEVEL',
@@ -437,6 +438,7 @@ final class FrontendManager
                 'trackId' => $variables['TRACK_ID'] ?? null,
                 'widgetTargetSelector' => $settings['COMFINO_WIDGET_TARGET_SELECTOR'] ?? null,
                 'priceSelector' => $settings['COMFINO_WIDGET_PRICE_SELECTOR'] ?? null,
+                'priceAttribute' => ($settings['COMFINO_WIDGET_PRICE_ATTRIBUTE'] ?? '') ?: null,
                 'priceObserverSelector' => ($settings['COMFINO_WIDGET_PRICE_OBSERVER_SELECTOR'] ?? '') ?: null,
                 'priceObserverLevel' => (int) ($settings['COMFINO_WIDGET_PRICE_OBSERVER_LEVEL'] ?? 0),
                 'embedMethod' => $settings['COMFINO_WIDGET_EMBED_METHOD'] ?? null,

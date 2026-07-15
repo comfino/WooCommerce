@@ -483,7 +483,8 @@ final class SettingsForm
                         'widget_settings_basic',
                         'widget_enabled', 'widget_key', 'widget_type', 'widget_offer_types', 'widget_show_provider_logos',
                         'widget_settings_advanced',
-                        'widget_price_selector', 'widget_target_selector', 'widget_price_observer_selector',
+                        'widget_price_selector', 'widget_price_attribute', 'widget_target_selector',
+                        'widget_price_observer_selector',
                         'widget_price_observer_level', 'widget_embed_method', 'widget_custom_banner_css_url',
                         'widget_custom_calculator_css_url',
                     ])
@@ -738,6 +739,15 @@ final class SettingsForm
                 'title' => __('Widget price element selector', 'comfino-payment-gateway'),
                 'type' => 'text',
                 'default' => ConfigManager::getDefaultValue('widget_price_selector'),
+            ],
+            'widget_price_attribute' => [
+                'title' => __('Widget price element attribute', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'default' => ConfigManager::getDefaultValue('widget_price_attribute'),
+                'description' => __(
+                    'Attribute of the price element holding the numeric price value. When set, the widget reads the price from this attribute instead of parsing the element text, which avoids a race with asynchronous price rendering. Leave empty to parse text (WooCommerce core exposes no such attribute by default).',
+                    'comfino-payment-gateway'
+                ),
             ],
             'widget_target_selector' => [
                 'title' => __('Widget anchor element selector', 'comfino-payment-gateway'),
