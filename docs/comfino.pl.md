@@ -53,6 +53,14 @@ Reguły dostępności produktów finansowych (filtry kategorii produktowych) umo
 
 Domyślnie płatności Comfino są dostępne bezwarunkowo dla wszystkich typów produktów. W celu wyłączenia Comfino dla wybranych typów produktów należy odznaczyć odpowiednie kategorie w drzewie kategorii dla każdego typu oferty finansowej i kliknąć "Zapisz".
 
+**Filtruj według ID produktu**
+
+Filtr po ID produktu umożliwia wykluczenie płatności Comfino dla konkretnych produktów, niezależnie od ich kategorii. W polu tekstowym należy wpisać identyfikatory (ID) produktów oddzielone przecinkami (np. `15, 17`) i kliknąć "Zapisz". Jest to jedna wspólna lista obowiązująca wszystkie typy produktów finansowych.
+
+Jeśli w koszyku klienta znajdzie się którykolwiek z wymienionych produktów, wszystkie płatności Comfino zostaną ukryte, zarówno podczas finalizacji zamówienia (paywall), jak i w widgecie promocyjnym na stronie produktu. Pozostawienie pola pustego oznacza, że filtr jest nieaktywny i żaden produkt nie jest wykluczany na jego podstawie.
+
+Filtr po ID produktu działa niezależnie od filtrów kategorii produktowych.
+
 ![Konfiguracja](images/pl/configuration2b.png "Konfiguracja")
 
 **USTAWIENIA WIDGETU**
