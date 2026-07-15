@@ -54,6 +54,14 @@ Financial product availability rules (product category filters) enable Comfino p
 
 By default, Comfino payments are available unconditionally for all product types. To disable Comfino for selected product types, uncheck the appropriate categories in the category tree for each type of financial offer and click "Save".
 
+**Filter by product ID**
+
+The product ID filter lets you exclude Comfino payments for specific products, regardless of their category. In the text field, enter the product IDs separated by commas (e.g. `15, 17`) and click "Save". This is a single shared list that applies to all financial product types.
+
+If the customer's cart contains any of the listed products, all Comfino payments will be hidden, both at checkout (paywall) and in the promotional widget on the product page. Leaving the field empty means the filter is inactive and no product is excluded based on it.
+
+The product ID filter works independently of the product category filters.
+
 ![Configuration](images/en/configuration2b.png "Konfiguracja")
 
 **WIDGET SETTINGS**
