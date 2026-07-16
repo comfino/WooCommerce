@@ -6,7 +6,7 @@ use Comfino\Api\ApiClient;
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
 use Comfino\Common\Backend\Payment\ProductTypeFilter\FilterByCartValueLowerLimit;
 use Comfino\Common\Backend\Payment\ProductTypeFilter\FilterByExcludedCategory;
-use Comfino\FinancialProduct\Filter\FilterByExcludedProductId;
+use Comfino\Common\Backend\Payment\ProductTypeFilter\FilterByExcludedProductId;
 use Comfino\Common\Backend\Payment\ProductTypeFilterInterface;
 use Comfino\Common\Backend\Payment\ProductTypeFilterManager;
 use Comfino\Common\Shop\Cart;

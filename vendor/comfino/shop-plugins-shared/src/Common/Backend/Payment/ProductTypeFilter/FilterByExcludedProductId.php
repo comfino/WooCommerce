@@ -2,22 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Comfino\FinancialProduct\Filter;
+namespace Comfino\Common\Backend\Payment\ProductTypeFilter;
 
 use Comfino\Common\Backend\Payment\ProductTypeFilterInterface;
 use Comfino\Common\Shop\Cart;
 
-if (!defined('ABSPATH')) {
-    exit;
-}
-
-/**
- * Global product ID blacklist filter.
- *
- * If the cart contains any product whose ID is on the excluded list, all Comfino
- * financial product types are hidden (no payment option is offered). When the list
- * is empty or no cart item matches, all available product types are returned unchanged.
- */
 class FilterByExcludedProductId implements ProductTypeFilterInterface
 {
     /**
