@@ -38,3 +38,4 @@ Comfino is an innovative payment method for customers of e-commerce stores! Thes
  * Payment tracking is now more reliable across the checkout flow (tracking ID kept consistent from cart to order), improving diagnostics when investigating payment issues.
  * Enhanced error logging sent to Comfino with more context (severity level, error category, shop environment details), speeding up support and troubleshooting.
  * Improved compatibility with WooCommerce Blocks checkout and block-based themes.
+ * Added product-level exclusion: admins can now exclude specific products by ID from Comfino availability, in addition to existing category-based filtering.
