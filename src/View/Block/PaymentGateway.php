@@ -3,11 +3,17 @@
 namespace Comfino\View\Block;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
-use Comfino\Api\ApiService;
+use Comfino\Api\ApiClient;
 use Comfino\Configuration\ConfigManager;
+use Comfino\Configuration\SettingsManager;
 use Comfino\DebugLogger;
+use Comfino\ErrorLogger;
+use Comfino\Extended\Api\Dto\Plugin\OperationContext;
+use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Main;
+use Comfino\Order\OrderManager;
 use Comfino\View\FrontendManager;
+use Comfino\View\PaywallCartSerializer;
 
 final class PaymentGateway extends AbstractPaymentMethodType
 {
@@ -61,35 +67,28 @@ final class PaymentGateway extends AbstractPaymentMethodType
         /** @var \Comfino_Payment_Gateway $comfino_payment_gateway */
         global $comfino_payment_gateway;
 
-        $iframeRenderer = FrontendManager::getPaywallIframeRenderer();
+        wp_enqueue_style('comfino-item-gate', ConfigManager::getCheckoutCssUrl());
 
-        $styleIds = FrontendManager::includeExternalStyles($iframeRenderer->getStyles());
-        $scriptIds = FrontendManager::registerExternalScripts($iframeRenderer->getScripts());
+        wp_register_script(
+            'comfino-blocks',
+            ConfigManager::getBlocksCheckoutScriptUrl(),
+            ['wc-blocks-registry', 'wc-settings', 'wp-element', 'wp-html-entities', 'wp-i18n'],
+            null,
+            true
+        );
+        wp_script_add_data('comfino-blocks', 'crossorigin', 'anonymous');
+        wp_enqueue_script('comfino-blocks');
 
-        $scriptIds = array_merge($scriptIds, FrontendManager::registerLocalScripts(
-            ['paywall-block.js'],
-            [
-                'paywall-block.js' => array_merge(
-                    [
-                        'wc-blocks-registry',
-                        'wc-settings',
-                        'wp-element',
-                        'wp-html-entities',
-                        'wp-i18n',
-                    ],
-                    $scriptIds
-                )
-            ]
-        ));
+        $scriptIds = ['comfino-blocks'];
 
         DebugLogger::logEvent(
-            '[PAYWALL]', 'get_payment_method_script_handles registered styles and scripts.',
-            ['$styleIds' => $styleIds, '$scriptIds' => $scriptIds]
+            '[PAYWALL]', 'get_payment_method_script_handles registered scripts.',
+            ['$scriptIds' => $scriptIds]
         );
 
         if (function_exists('wp_set_script_translations')) {
             wp_set_script_translations(
-                $scriptIds[0],
+                'comfino-blocks',
                 'comfino-payment-gateway',
                 $comfino_payment_gateway->plugin_abspath() . 'languages/'
             );
@@ -103,17 +102,77 @@ final class PaymentGateway extends AbstractPaymentMethodType
      */
     public function get_payment_method_data(): array
     {
+        ApiClient::pinCheckoutTrackId();
+
+        $wcCart = WC()->cart;
+        $authToken = FrontendManager::getAuthToken();
+
+        $allowedProductTypes = null;
+        $shopCart = null;
+
+        if ($wcCart !== null) {
+            try {
+                $shopCart = OrderManager::getShopCart($wcCart);
+                $allowedProductTypes = SettingsManager::getAllowedProductTypes(
+                    ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
+                    $shopCart
+                );
+            } catch (\Throwable $e) {
+                ErrorLogger::sendError($e, OperationContext::PaymentProcessing, (string) $e->getCode(), $e->getMessage());
+            }
+        }
+
+        $loanAmount = $shopCart !== null ? $shopCart->getTotalAmount() : ($wcCart !== null ? (int) round($wcCart->get_total('edit') * 100) : 0);
+
+        $cartPayload = null;
+
+        if ($shopCart !== null) {
+            try {
+                $cartPayload = PaywallCartSerializer::toArray($shopCart);
+            } catch (\Throwable $e) {
+                ErrorLogger::sendError($e, OperationContext::OrderCreation, (string) $e->getCode(), $e->getMessage());
+            }
+        }
+
         return [
-            'title' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT'),
-            'description' => $this->gateway->get_description(),
-            'icon' => ConfigManager::getConfigurationValue('COMFINO_SHOW_LOGO') ? ConfigManager::getPaywallLogoUrl() : '',
-            'iframeTemplate' => $this->is_active() ? $this->gateway->generatePaywallIframe(true) : '',
-            'paywallUrl' => ApiService::getEndpointUrl('paywall'),
-            'paywallOptions' => array_merge(
-                Main::getPaywallOptions($this->gateway->getTotal()),
-                ['wcBlocks' => true, 'attachClickHandler' => false]
-            ),
-            'supports' => array_filter($this->gateway->supports, [$this->gateway, 'supports']),
+            'authToken' => $authToken,
+            'loggingToken' => FrontendManager::getLoggingToken(),
+            'trackId' => FrontendManager::getTrackId(),
+            'loanAmount' => $loanAmount,
+            'environment' => ConfigManager::isSandboxMode() ? 'sandbox' : 'production',
+            'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
+            'paymentMethodAuth' => ConfigManager::getPaywallLogoAuthHash(),
+            'paymentMethodLabel' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT') ?: null,
+            /* Blocks builds its own payment-method `label` node client-side (no server-rendered markup to attach a
+               placeholder `<img>` to, unlike classic checkout's get_icon()), so the default logo URL must travel
+               through the bootstrap config instead. */
+            'defaultLogoUrl' => ConfigManager::getDefaultLogoUrl(),
+            'supports' => $this->gateway ? array_filter($this->gateway->supports, [$this->gateway, 'supports']) : ['products'],
+            'productTypes' => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,
+            'productTypeNames' => SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL) ?: null,
+            'cart' => $cartPayload,
+            'paywallSettings' => [
+                'language' => Main::getShopLanguage(),
+                'currency' => Main::getShopCurrency(),
+                'customPaywallCss' => ConfigManager::getConfigurationValue('COMFINO_PAYWALL_CUSTOM_CSS_URL') ?: null,
+            ],
+            /* Browser-safe shop environment payload — mirrors the shape produced by
+               AbstractShopEnvironmentBuilder::buildForFrontend() in php-sdk. Replaces the deprecated
+               `shopInfo` field. Kept in sync with the legacy-checkout payload built in Main::renderPaywallIframe();
+               candidate for refactor into a shared WooCommerceShopEnvironmentBuilder. */
+            'shopEnvironment' => [
+                'platform' => 'woocommerce',
+                'platformName' => 'WooCommerce',
+                'platformDomain' => Main::getShopDomain(),
+                'theme' => ['family' => 'woocommerce'],
+                'language' => Main::getShopLanguage(),
+                'currency' => Main::getShopCurrency(),
+                'pageContext' => ['type' => 'checkout'],
+            ],
+            'directRedirect' => (bool) ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
+            'creditors' => SettingsManager::getCreditors() ?: null,
+            'allowedProductsConfig' => SettingsManager::getAllowedProductsConfigForFrontend(),
+            'scriptNonce' => (string) apply_filters('comfino_csp_script_nonce', ''),
         ];
     }
 }

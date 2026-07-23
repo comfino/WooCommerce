@@ -44,8 +44,6 @@ class PaymentGatewayTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('comfino', PaymentGateway::GATEWAY_ID);
         $this->assertInternalType('string', PaymentGateway::VERSION);
         $this->assertInternalType("int", PaymentGateway::BUILD_TS);
-        $this->assertInternalType('string', PaymentGateway::WIDGET_INIT_SCRIPT_HASH);
-        $this->assertInternalType('string', PaymentGateway::WIDGET_INIT_SCRIPT_LAST_HASH);
     }
 
     public function testGetTotal(): void

@@ -192,6 +192,9 @@ class ShopStatusManagerTest extends \PHPUnit_Framework_TestCase
         $method = $reflection->getMethod('sendEmail');
         $method->setAccessible(true);
 
+        // sendEmail calls renderView with display=true which echoes via wc_get_template mock.
+        $this->expectOutputString('<div>Template: failed-order.php</div>');
+
         // Should execute without throwing errors in test environment.
         try {
             $method->invoke(null, $order);

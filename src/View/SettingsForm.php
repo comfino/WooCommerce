@@ -4,15 +4,18 @@ namespace Comfino\View;
 
 use Comfino\Api\ApiClient;
 use Comfino\Api\ApiService;
+use Comfino\Api\Dto\Payment\LoanTypeEnum;
 use Comfino\Api\Exception\AccessDenied;
 use Comfino\Api\Exception\AuthorizationError;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
 use Comfino\DebugLogger;
 use Comfino\ErrorLogger;
+use Comfino\Extended\Api\Dto\Plugin\OperationContext;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Main;
 use Comfino\PluginShared\CacheManager;
+use Comfino\Telemetry\ShopEnvironmentReporter;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -62,13 +65,27 @@ final class SettingsForm
                     if (empty($configurationOptionsToSave['COMFINO_API_KEY'])) {
                         $errorMessages[] = sprintf($errorEmptyMsg, __('Production environment API key', 'comfino-payment-gateway'));
                     }
-                    if (empty($configurationOptionsToSave['COMFINO_PAYMENT_TEXT'])) {
-                        $errorMessages[] = sprintf($errorEmptyMsg, __('Payment text', 'comfino-payment-gateway'));
-                    }
                     if (empty($configurationOptionsToSave['COMFINO_MINIMAL_CART_AMOUNT'])) {
                         $errorMessages[] = sprintf($errorEmptyMsg, __('Minimal amount in cart', 'comfino-payment-gateway'));
                     } elseif (!is_numeric($configurationOptionsToSave['COMFINO_MINIMAL_CART_AMOUNT'])) {
                         $errorMessages[] = sprintf($errorNumericFormatMsg, __('Minimal amount in cart', 'comfino-payment-gateway'));
+                    }
+
+                    if (!empty($customCssUrl = $configurationOptionsToSave['COMFINO_PAYWALL_CUSTOM_CSS_URL'] ?? '')) {
+                        if (!wp_http_validate_url($customCssUrl)) {
+                            /* translators: s%: Custom CSS URL */
+                            $errorMessages[] = sprintf(__('Custom CSS URL "%s" is not valid.', 'comfino-payment-gateway'), $customCssUrl);
+                        } elseif (wp_parse_url($customCssUrl, PHP_URL_SCHEME) === null) {
+                            /* translators: s%: Custom CSS URL */
+                            $errorMessages[] = sprintf(__('Custom CSS URL "%s" is not absolute.', 'comfino-payment-gateway'), $customCssUrl);
+                        } elseif (stripos($customCssUrl, Main::getShopDomain()) === false) {
+                            $errorMessages[] = sprintf(
+                                /* translators: 1: Custom CSS URL 2: Shop domain */
+                                __('Custom CSS URL "%1$s" is not in shop domain "%2$s".', 'comfino-payment-gateway'),
+                                $customCssUrl,
+                                Main::getShopDomain()
+                            );
+                        }
                     }
                 } else {
                     $sandboxMode = (bool) $configurationOptionsToSave['COMFINO_IS_SANDBOX'];
@@ -101,7 +118,8 @@ final class SettingsForm
                             ApiClient::processApiError(
                                 ($activeTab === 'payment_settings' ? 'Payment' : 'Developer') .
                                 ' settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)',
-                                $e
+                                $e,
+                                OperationContext::Configuration
                             );
 
                             $errorMessages[] = $e->getMessage();
@@ -122,7 +140,8 @@ final class SettingsForm
                         ApiClient::processApiError(
                             ($activeTab === 'payment_settings' ? 'Payment' : 'Developer') .
                             ' settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)',
-                            $e
+                            $e,
+                            OperationContext::Configuration
                         );
 
                         $errorMessages[] = $e->getMessage();
@@ -163,6 +182,71 @@ final class SettingsForm
                 }
 
                 $configurationOptionsToSave['COMFINO_PRODUCT_CATEGORY_FILTERS'] = $productCategoryFilters;
+
+                $productIdFilter = [];
+
+                if (!empty($postData['comfino_product_id_filter'])) {
+                    $productIdFilter = array_values(array_unique(array_filter(
+                        array_map('intval', preg_split('/[\s,]+/', (string) $postData['comfino_product_id_filter'])),
+                        static function (int $id): bool { return $id > 0; }
+                    )));
+                }
+
+                $configurationOptionsToSave['COMFINO_PRODUCT_ID_FILTER'] = $productIdFilter;
+
+                if (!ConfigManager::getConfigurationValue('COMFINO_ALLOWED_PRODUCTS_CONFIG_ENABLED')) {
+                    break;
+                }
+
+                $allowedProductsConfig = [];
+                $termLimitsData = $postData['comfino_term_limits'] ?? [];
+                $validProductTypes = LoanTypeEnum::values();
+
+                foreach ($termLimitsData as $productType => $limits) {
+                    $productType = sanitize_text_field($productType);
+
+                    if (!in_array($productType, $validProductTypes, true)) {
+                        /* translators: %s: Unknown product type code submitted in term-limits form */
+                        $errorMessages[] = sprintf(__('Unknown product type "%s" in term limits — entry skipped.', 'comfino-payment-gateway'), $productType);
+
+                        continue;
+                    }
+
+                    $maxTerm = isset($limits['maxTerm']) && $limits['maxTerm'] !== '' ? (int) $limits['maxTerm'] : null;
+                    $minTerm = isset($limits['minTerm']) && $limits['minTerm'] !== '' ? (int) $limits['minTerm'] : null;
+                    $termsRaw = isset($limits['terms']) && $limits['terms'] !== '' ? $limits['terms'] : null;
+                    $terms = null;
+
+                    if ($termsRaw !== null) {
+                        $terms = array_values(array_filter(
+                            array_map('intval', explode(',', $termsRaw)),
+                            static function (int $term): bool { return $term > 0; }
+                        ));
+
+                        if (empty($terms)) {
+                            $terms = null;
+                        }
+                    }
+
+                    if ($minTerm !== null && $maxTerm !== null && $minTerm > $maxTerm) {
+                        /* translators: %s: Product type code */
+                        $errorMessages[] = sprintf(__('Term limits for "%s": minTerm must not exceed maxTerm.', 'comfino-payment-gateway'), $productType);
+
+                        continue;
+                    }
+
+                    if ($maxTerm !== null || $minTerm !== null || $terms !== null) {
+                        $allowedProductsConfig[] = array_filter(
+                            ['type' => $productType, 'maxTerm' => $maxTerm, 'minTerm' => $minTerm, 'terms' => $terms],
+                            static function ($v): bool { return $v !== null; }
+                        );
+                    }
+                }
+
+                $configurationOptionsToSave['COMFINO_ALLOWED_PRODUCTS_CONFIG'] = !empty($allowedProductsConfig)
+                    ? $allowedProductsConfig
+                    : null;
+
                 break;
 
             case 'widget_settings':
@@ -215,7 +299,8 @@ final class SettingsForm
                         } catch (\Throwable $e) {
                             ApiClient::processApiError(
                                 'Widget settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)',
-                                $e
+                                $e,
+                                OperationContext::Configuration
                             );
 
                             $errorMessages[] = $e->getMessage();
@@ -227,7 +312,8 @@ final class SettingsForm
                     } catch (\Throwable $e) {
                         ApiClient::processApiError(
                             'Widget settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)',
-                            $e
+                            $e,
+                            OperationContext::Configuration
                         );
 
                         $errorMessages[] = $e->getMessage();
@@ -265,6 +351,11 @@ final class SettingsForm
         } else {
             // Update plugin configuration.
             ConfigManager::updateConfiguration($configurationOptionsToSave, false);
+
+            // Report the shop environment to Comfino after a successful settings save (fire-and-forget).
+            if (!empty(ConfigManager::getApiKey())) {
+                ShopEnvironmentReporter::report();
+            }
 
             $success = true;
         }
@@ -304,18 +395,27 @@ final class SettingsForm
             case 'payment_settings':
                 $formFields = array_intersect_key(
                     self::getFormFieldsDefinitions(),
-                    array_flip(['enabled', 'production_key', 'title', 'min_cart_amount', 'show_logo', 'use_order_reference'])
+                    array_flip([
+                        'enabled', 'production_key', 'payment_text', 'min_cart_amount', 'use_order_reference',
+                        'paywall_settings_section', 'paywall_direct_redirect', 'paywall_custom_css_url',
+                    ])
                 );
                 break;
 
             case 'sale_settings':
-                $formFields = array_intersect_key(
-                    self::getFormFieldsDefinitions(),
-                    array_flip(['cat_filter_avail_prod_types', 'sale_settings_fin_prods_avail_rules'])
-                );
+                $allowedProductsConfigEnabled = (bool) ConfigManager::getConfigurationValue('COMFINO_ALLOWED_PRODUCTS_CONFIG_ENABLED');
+                $saleSettingsFieldKeys = ['cat_filter_avail_prod_types', 'sale_settings_fin_prods_avail_rules'];
+
+                if ($allowedProductsConfigEnabled) {
+                    $saleSettingsFieldKeys[] = 'allowed_products_config';
+                }
+
+                $formFields = array_intersect_key(self::getFormFieldsDefinitions(), array_flip($saleSettingsFieldKeys));
 
                 $productCategories = ConfigManager::getAllProductCategories();
                 $productCategoryFilters = SettingsManager::getProductCategoryFilters();
+
+                $productTypesData = [];
 
                 foreach (SettingsManager::getCatFilterAvailProdTypes() as $prodTypeCode => $prodTypeName) {
                     if (isset($productCategoryFilters[$prodTypeCode])) {
@@ -327,12 +427,50 @@ final class SettingsForm
                         $selectedCategories = array_keys($productCategories);
                     }
 
-                    $formFields['sale_settings_product_category_filter_' . $prodTypeCode] = [
-                        'title' => $prodTypeName,
-                        'type' => 'product_category_tree',
-                        'product_type' => $prodTypeCode,
-                        'id' => 'product_categories',
-                        'selected_categories' => $selectedCategories,
+                    $productTypesData[$prodTypeCode] = [
+                        'name' => $prodTypeName,
+                        'selected_categories' => array_values($selectedCategories),
+                    ];
+                }
+
+                $formFields['sale_settings_product_category_filter'] = [
+                    'title' => __('Product categories', 'comfino-payment-gateway'),
+                    'type' => 'product_category_filter_group',
+                    'id' => 'product_categories',
+                    'description' => __(
+                        'Restrict the availability of each financial product type by product category. For each financial product listed below, select the categories whose products should be eligible for that payment option. If a customer\'s cart contains only products from unselected categories, that financial product will not be offered at checkout.',
+                        'comfino-payment-gateway'
+                    ),
+                    'product_types' => $productTypesData,
+                ];
+
+                $formFields['sale_settings_product_id_filter'] = [
+                    'title' => __('Filter by product ID', 'comfino-payment-gateway'),
+                    'type' => 'product_id_filter',
+                    'description' => __(
+                        'Enter product IDs (separated by commas) for which Comfino payment options should not be offered. If the cart contains any of the listed products, all Comfino financial products will be hidden at checkout.',
+                        'comfino-payment-gateway'
+                    ),
+                    'product_ids' => SettingsManager::getProductIdFilter(),
+                ];
+
+                if ($allowedProductsConfigEnabled) {
+                    $savedConfig = ConfigManager::getConfigurationValue('COMFINO_ALLOWED_PRODUCTS_CONFIG');
+                    $savedConfigByType = [];
+
+                    if (is_array($savedConfig)) {
+                        foreach ($savedConfig as $entry) {
+                            if (isset($entry['type'])) {
+                                $savedConfigByType[$entry['type']] = $entry;
+                            }
+                        }
+                    }
+
+                    $formFields['allowed_products_config'] = [
+                        'title' => __('Installment term limits', 'comfino-payment-gateway'),
+                        'type' => 'allowed_products_config',
+                        'product_types' => SettingsManager::getAllowedProductsConfigAvailProdTypes(),
+                        'saved_config' => $savedConfigByType,
                     ];
                 }
 
@@ -345,10 +483,10 @@ final class SettingsForm
                         'widget_settings_basic',
                         'widget_enabled', 'widget_key', 'widget_type', 'widget_offer_types', 'widget_show_provider_logos',
                         'widget_settings_advanced',
-                        'widget_price_selector', 'widget_target_selector', 'widget_price_observer_selector',
+                        'widget_price_selector', 'widget_price_attribute', 'widget_target_selector',
+                        'widget_price_observer_selector',
                         'widget_price_observer_level', 'widget_embed_method', 'widget_custom_banner_css_url',
-                        'widget_custom_calculator_css_url', 'widget_js_code', 'widget_prod_script_version',
-                        'widget_dev_script_version',
+                        'widget_custom_calculator_css_url',
                     ])
                 );
                 break;
@@ -445,11 +583,11 @@ final class SettingsForm
     /**
      * Returns complete form field definitions for all configuration tabs.
      *
-     * Defines all available form fields with their properties including:
-     * - Field type (checkbox, text, textarea, select, etc.)
-     * - Labels and descriptions
-     * - Default values
-     * - Validation rules
+     * Defines all available form fields with their properties, including:
+     * - Field type (checkbox, text, textarea, select, etc.).
+     * - Labels and descriptions.
+     * - Default values.
+     * - Validation rules.
      *
      * @return array Complete form field definitions
      */
@@ -468,21 +606,16 @@ final class SettingsForm
                 'type' => 'text',
                 'placeholder' => __('Please enter the key provided during registration', 'comfino-payment-gateway'),
             ],
-            'title' => [
-                'title' => __('Title', 'comfino-payment-gateway'),
+            'payment_text' => [
+                'title' => __('Payment text', 'comfino-payment-gateway'),
                 'type' => 'text',
-                'default' => ConfigManager::getDefaultValue('title'),
+                'default' => (string) ConfigManager::getDefaultValue('payment_text'),
+                'description' => __('Label displayed for Comfino in the checkout payment method list.', 'comfino-payment-gateway'),
             ],
             'min_cart_amount' => [
                 'title' => __('Minimal amount in cart', 'comfino-payment-gateway'),
                 'type' => 'text',
                 'default' => (string) ConfigManager::getDefaultValue('min_cart_amount'),
-            ],
-            'show_logo' => [
-                'title' => __('Show logo', 'comfino-payment-gateway'),
-                'type' => 'checkbox',
-                'label' => __('Show logo on payment method', 'comfino-payment-gateway'),
-                'default' => ConfigManager::getDefaultValue('show_logo') === true ? 'yes' : 'no',
             ],
             'use_order_reference' => [
                 'title' => __('Order number', 'comfino-payment-gateway'),
@@ -491,6 +624,29 @@ final class SettingsForm
                 'default' => ConfigManager::getDefaultValue('use_order_reference') === true ? 'yes' : 'no',
                 'description' => __(
                     'Use customer-visible order reference instead of numeric order ID for Comfino API integration. New orders only.',
+                    'comfino-payment-gateway'
+                ),
+            ],
+            'paywall_settings_section' => [
+                'title' => __('Paywall settings', 'comfino-payment-gateway'),
+                'type' => 'title',
+            ],
+            'paywall_direct_redirect' => [
+                'title' => __('Direct redirect mode', 'comfino-payment-gateway'),
+                'type' => 'checkbox',
+                'label' => __('Enable direct redirect to Comfino payment gateway', 'comfino-payment-gateway'),
+                'default' => ConfigManager::getDefaultValue('paywall_direct_redirect') === true ? 'yes' : 'no',
+                'description' => __(
+                    'When enabled, the full paywall offer browser is not displayed. The order is submitted with the default financial product and the customer is redirected directly to the Comfino payment gateway.',
+                    'comfino-payment-gateway'
+                ),
+            ],
+            'paywall_custom_css_url' => [
+                'title' => __('Custom paywall CSS style', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'default' => ConfigManager::getDefaultValue('paywall_custom_css_url'),
+                'description' => __(
+                    'URL for a custom CSS file injected into the paywall iframe. Only links from your store domain are allowed.',
                     'comfino-payment-gateway'
                 ),
             ],
@@ -529,13 +685,18 @@ final class SettingsForm
                     'comfino-payment-gateway'
                 ),
             ],
-            'cat_filter_avail_prod_types' => [
-                'type' => 'hidden',
-                'default' => ConfigManager::getDefaultValue('cat_filter_avail_prod_types'),
-            ],
             'sale_settings_fin_prods_avail_rules' => [
                 'title' => __('Rules for the availability of financial products', 'comfino-payment-gateway'),
                 'type' => 'title',
+            ],
+            'allowed_products_config' => [
+                'title' => __('Installment term limits', 'comfino-payment-gateway'),
+                'type' => 'allowed_products_config',
+            ],
+            'cat_filter_avail_prod_types' => [
+                'title' => __('Product categories', 'comfino-payment-gateway'),
+                'type' => 'hidden',
+                'default' => ConfigManager::getDefaultValue('cat_filter_avail_prod_types'),
             ],
             'widget_settings_basic' => [
                 'title' => __('Basic settings', 'comfino-payment-gateway'),
@@ -578,6 +739,15 @@ final class SettingsForm
                 'title' => __('Widget price element selector', 'comfino-payment-gateway'),
                 'type' => 'text',
                 'default' => ConfigManager::getDefaultValue('widget_price_selector'),
+            ],
+            'widget_price_attribute' => [
+                'title' => __('Widget price element attribute', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'default' => ConfigManager::getDefaultValue('widget_price_attribute'),
+                'description' => __(
+                    'Attribute of the price element holding the numeric price value. When set, the widget reads the price from this attribute instead of parsing the element text, which avoids a race with asynchronous price rendering. Leave empty to parse text (WooCommerce core exposes no such attribute by default).',
+                    'comfino-payment-gateway'
+                ),
             ],
             'widget_target_selector' => [
                 'title' => __('Widget anchor element selector', 'comfino-payment-gateway'),
@@ -630,24 +800,10 @@ final class SettingsForm
                     'comfino-payment-gateway'
                 ),
             ],
-            'widget_js_code' => [
-                'title' => __('Widget initialization code', 'comfino-payment-gateway'),
-                'type' => 'textarea',
-                'css' => 'width: 800px; height: 400px',
-                'default' => ConfigManager::getDefaultValue('widget_js_code'),
-            ],
-            'widget_prod_script_version' => [
-                'type' => 'hidden',
-                'default' => '',
-            ],
-            'widget_dev_script_version' => [
-                'type' => 'hidden',
-                'default' => '',
-            ],
             'abandoned_cart_enabled' => [
                 'title' => __('Enable/Disable', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
-                'label' => __('By enabling "Saving shopping cart", you agree and accept <a href="https://cdn.comfino.pl/regulamin/Regulamin-Ratowanie-Koszyka.pdf">Regulations</a>', 'comfino-payment-gateway'),
+                'label' => __('By enabling "Saving shopping cart", you agree and accept <a target="_blank" href="https://cdn.comfino.pl/regulamin/Regulamin-Ratowanie-Koszyka.pdf">Regulations</a>', 'comfino-payment-gateway'),
                 'default' => ConfigManager::getDefaultValue('abandoned_cart_enabled') === true ? 'yes' : 'no',
                 'description' => __('With the "Cart Rescue" feature, you will effectively minimize the problem of abandoned carts that all sellers face. When a customer adds products to the cart but abandons it, also due to an unsuccessful payment, they will automatically receive a reminder e-mail with a direct link leading to payment. This service allows you to effectively recover potential transactions and increase order conversions.', 'comfino-payment-gateway'),
             ],

@@ -4,7 +4,6 @@
     "description": "WooCommerce payment module for Comfino deferred payments gateway.",
     "homepage": "https://github.com/comfino/WooCommerce",
     "license": "OSL-3.0",
-    "author": "WooCommerce",
     "authors": [
         {
             "name": "Artur Kozubski",
@@ -13,16 +12,28 @@
         }
     ],
     "config": {
-        "preferred-install": "dist",
+        "preferred-install": {
+            "comfino/*": "source",
+            "*": "dist"
+        },
         "platform-check": false,
         "platform": {
             "php": "7.1.3"
         },
-        "classmap-authoritative": true,
         "optimize-autoloader": true,
         "prepend-autoloader": false,
         "allow-plugins": {
             "php-http/discovery": true
+        },
+        "audit": {
+            "ignore": [
+                "PKSA-pwh8-d4fr-nywn",
+                "PKSA-z3gr-8qht-p93v",
+                "PKSA-v5yj-8nmz-sk2q",
+                "PKSA-ft77-7h5f-p3r6",
+                "PKSA-b14r-zh1d-vdrc",
+                "PKSA-xxgb-wq2d-7gpg"
+            ]
         }
     },
     "autoload": {
@@ -76,6 +87,7 @@
         "cache/hierarchical-cache": "~1.1.0",
         "league/flysystem": "~1.0.70",
         "monolog/monolog": "^1.27",
+        "psr/http-factory": "^1.0",
         "psr/log": "^1.1",
         "symfony/deprecation-contracts": "<3.0",
         "symfony/options-resolver": "~4.4.0",
@@ -85,19 +97,17 @@
         "symfony/yaml": "~4.4.0"
     },
     "require-dev": {
-        "nyholm/psr7": "^1.6",
-        "php-http/mock-client": "^1.6",
-        "phpdocumentor/reflection-common": "~2.1.0",
-        "phpdocumentor/reflection-docblock": "~4.3.4",
-        "phpdocumentor/type-resolver": "~1.0.1",
-        "phpspec/prophecy-phpunit": "^1.1",
-        "phpunit/phpunit": "^5.7",
-        "webmozart/assert": "<1.10"
+        "phpunit/phpunit": "^5.7.27"
     },
     "repositories": [
         {
+            "type": "artifact",
+            "url": "packages/sunrise"
+        },
+        {
             "type": "vcs",
-            "url": "git@github.com:comfino/shop-plugins-shared.git"
+            "url": "git@github.com:comfino/shop-plugins-shared.git",
+            "no-api": true
         }
     ]
 }

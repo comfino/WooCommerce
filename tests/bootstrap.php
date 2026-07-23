@@ -14,6 +14,12 @@ namespace Automattic\WooCommerce\Blocks\Payments\Integrations {
 }
 
 namespace {
+    /* On PHP 7.4+, PHPUnit 5.7's mock generator triggers ReflectionType::__toString()
+       deprecations that turn into PHPUnit warnings (failOnWarning="true"). Mask
+       E_DEPRECATED there; keep full reporting on older PHP so prefer-lowest fatals
+      stay visible in CI. */
+    error_reporting(PHP_VERSION_ID >= 70400 ? (E_ALL & ~E_DEPRECATED) : E_ALL);
+
     // Define WordPress constants for testing.
     if (!defined('ABSPATH')) {
         define('ABSPATH', __DIR__ . '/../../../../');
@@ -1049,4 +1055,38 @@ namespace {
 
     // Load Composer autoloader.
     require_once dirname(__DIR__) . '/vendor/autoload.php';
+
+    // Bridge ComfinoExternal\* to unscoped originals for the test environment.
+    //
+    // In production, vendor is pre-scoped by PHP-Scoper (ComfinoExternal\* namespaces).
+    // In CI, `composer update` installs the original unscoped packages, while the
+    // git-committed vendor may still contain scoped code.  This bridge prevents two
+    // failure modes:
+    //
+    //  1. Scoped interface not found: e.g. ComfinoExternal\Psr\Http\Message\ResponseFactoryInterface
+    //     exists only as Psr\Http\Message\ResponseFactoryInterface after a fresh install.
+    //     The bridge creates an alias so the scoped reference resolves.
+    //
+    //  2. "Cannot declare ... already in use": the PSR-4 loader for ComfinoExternal\Psr\Http\Message\
+    //     points to the same files as Psr\Http\Message\.  If the standard class is loaded first
+    //     (via classmap) and then the ComfinoExternal alias is requested, the PSR-4 loader would
+    //     try to include the same file again.  With prepend=true the bridge intercepts first,
+    //     checks/loads the original via class_exists(), then creates the alias — the PSR-4
+    //     loader is never invoked for the already-defined class.
+    spl_autoload_register(static function (string $class): void {
+        if (strpos($class, 'ComfinoExternal\\') !== 0) {
+            return;
+        }
+        $originalClass = substr($class, strlen('ComfinoExternal\\'));
+        if (!class_exists($originalClass, false) && !interface_exists($originalClass, false) && !trait_exists($originalClass, false)) {
+            // Trigger loading the original class; suppress warnings for classes that
+            // genuinely don't exist in the unscoped vendor (scoped vendor covers them).
+            @class_exists($originalClass, true);
+        }
+        if (!class_exists($class, false) && !interface_exists($class, false) && !trait_exists($class, false)) {
+            if (class_exists($originalClass, false) || interface_exists($originalClass, false) || trait_exists($originalClass, false)) {
+                class_alias($originalClass, $class);
+            }
+        }
+    }, false, true); // prepend=true: run before Composer so it never double-includes a file
 }

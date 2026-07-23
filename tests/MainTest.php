@@ -112,21 +112,6 @@ class MainTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse(Main::paymentIsAvailable(null));
     }
 
-    public function testGetPaywallOptions(): void
-    {
-        $total = 150.50;
-        $options = Main::getPaywallOptions($total);
-
-        $this->assertEquals('woocommerce', $options['platform']);
-        $this->assertEquals('WooCommerce', $options['platformName']);
-        $this->assertEquals($total, $options['cartTotal']);
-        $this->assertArrayHasKey('language', $options);
-        $this->assertArrayHasKey('currency', $options);
-        $this->assertArrayHasKey('pluginVersion', $options);
-        $this->assertArrayHasKey('platformVersion', $options);
-        $this->assertArrayHasKey('platformDomain', $options);
-    }
-
     public function testUninstall(): void
     {
         $testDir = '/test/uninstall/dir';

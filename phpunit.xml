@@ -9,29 +9,17 @@
          beStrictAboutOutputDuringTests="true"
          beStrictAboutTestsThatDoNotTestAnything="true">
     <php>
-        <ini name="error_reporting" value="-1"/>
+        <!-- error_reporting is set per PHP version in tests/bootstrap.php:
+             E_ALL & ~E_DEPRECATED on 7.4+ (mock-generator deprecation noise),
+             full E_ALL on 7.1–7.3 so prefer-lowest fatals stay visible. -->
         <ini name="display_errors" value="true"/>
-        <env name="XDEBUG_MODE" value="coverage"/>
+        <ini name="display_startup_errors" value="true"/>
+        <!-- Prevent ErrorLogger from sending errors to the production endpoint during tests. -->
+        <env name="COMFINO_DEV_ENV" value="TRUE"/>
     </php>
-
     <testsuites>
         <testsuite name="Comfino WooCommerce plugin tests">
             <directory suffix="Test.php">tests</directory>
         </testsuite>
     </testsuites>
-
-    <filter>
-        <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory suffix=".php">src</directory>
-            <exclude>
-                <directory>vendor</directory>
-            </exclude>
-        </whitelist>
-    </filter>
-
-    <logging>
-        <log type="coverage-html" target="coverage"/>
-        <log type="coverage-clover" target="coverage.xml"/>
-        <log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>
-    </logging>
 </phpunit>

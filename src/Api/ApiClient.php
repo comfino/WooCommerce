@@ -9,6 +9,7 @@ use Comfino\Common\Frontend\FrontendHelper;
 use Comfino\Configuration\ConfigManager;
 use Comfino\DebugLogger;
 use Comfino\ErrorLogger;
+use Comfino\Extended\Api\Dto\Plugin\OperationContext;
 use Comfino\Main;
 use Comfino\PaymentGateway;
 use ComfinoExternal\Psr\Http\Client\NetworkExceptionInterface;
@@ -19,6 +20,10 @@ if (!defined('ABSPATH')) {
 
 final class ApiClient
 {
+    private const CHECKOUT_TRACK_ID_COOKIE = 'comfino_checkout_track_id';
+    private const CHECKOUT_TRACK_ID_COOKIE_TTL = 900;
+    private const CHECKOUT_TRACK_ID_PATTERN = '/^[A-Za-z0-9_.:-]{1,128}$/';
+
     /** @var \Comfino\Common\Api\Client */
     private static $apiClient;
 
@@ -58,6 +63,7 @@ final class ApiClient
                 ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_NUM_ATTEMPTS', 3)
             );
 
+            self::$apiClient->setClientHostName(Main::getShopDomain());
             self::$apiClient->addCustomHeader('Comfino-Build-Timestamp', (string) PaymentGateway::BUILD_TS);
         } else {
             self::$apiClient->setCustomApiHost(ConfigManager::getApiHost());
@@ -74,8 +80,56 @@ final class ApiClient
         return self::$apiClient;
     }
 
-    public static function processApiError(string $errorPrefix, \Throwable $exception): array
+    /**
+     * Pins this instance's trackId to the checkout-scoped cookie value, so a checkout-page paywall render and the
+     * later separate order-create request share the same trackId. Checkout-only: never call this from product-page
+     * rendering, where a fresh trackId per page load is still correct behavior.
+     */
+    public static function pinCheckoutTrackId(): void
     {
+        $client = self::getInstance();
+
+        if (isset($_COOKIE[self::CHECKOUT_TRACK_ID_COOKIE]) &&
+            preg_match(self::CHECKOUT_TRACK_ID_PATTERN, $_COOKIE[self::CHECKOUT_TRACK_ID_COOKIE]) === 1
+        ) {
+            $client->setTrackId($_COOKIE[self::CHECKOUT_TRACK_ID_COOKIE]);
+        }
+
+        $trackId = $client->getTrackId();
+
+        if (!headers_sent()) {
+            $expires = time() + self::CHECKOUT_TRACK_ID_COOKIE_TTL;
+
+            if (PHP_VERSION_ID >= 70300) {
+                setcookie(self::CHECKOUT_TRACK_ID_COOKIE, $trackId, [
+                    'expires' => $expires,
+                    'path' => '/',
+                    'secure' => true,
+                    'httponly' => true,
+                    'samesite' => 'Lax',
+                ]);
+            } else {
+                /* PHP 7.1/7.2 target: setcookie()'s array-options 4th param (needed for a clean SameSite flag) requires
+                   PHP 7.3+. SameSite is set via the well-known path-suffix workaround instead. Since PHP 8.1, setcookie()
+                   rejects ";"/" " in the "path" arg, so this branch must stay 7.3-excluded. */
+                setcookie(
+                    self::CHECKOUT_TRACK_ID_COOKIE,
+                    $trackId,
+                    $expires,
+                    '/; SameSite=Lax',
+                    '',
+                    true,
+                    true
+                );
+            }
+        }
+    }
+
+    public static function processApiError(
+        string $errorPrefix,
+        \Throwable $exception,
+        string $context = OperationContext::ApiCommunication
+    ): array {
         $userErrorMessage = __(
             'There was a technical problem. Please try again in a moment and it should work!',
             'comfino-payment-gateway'
@@ -153,7 +207,7 @@ final class ApiClient
         if ($statusCode !== 404) {
             ErrorLogger::sendError(
                 $exception,
-                $errorPrefix,
+                $context,
                 (string) $exception->getCode(),
                 $exception->getMessage(),
                 $url !== '' ? $url : null,

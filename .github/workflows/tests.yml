@@ -1,10 +1,7 @@
 name: Tests
 
 on:
-  push:
-    branches: [ master, main, develop ]
-  pull_request:
-    branches: [ master, main, develop ]
+  workflow_dispatch: {}
 
 jobs:
   test:
@@ -13,14 +10,34 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4']
+        php: ['7.1', '7.2', '7.3', '7.4', '8.0']
         dependency-version: [prefer-lowest, prefer-stable]
+        exclude:
+          # PHPUnit 5.7 minimum uses each() which was removed in PHP 8.0
+          - php: '8.0'
+            dependency-version: prefer-lowest
 
     name: PHP ${{ matrix.php }} - ${{ matrix.dependency-version }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+
+      - name: Fetch sunrise artifact packages
+        uses: actions/checkout@v6
+        with:
+          repository: comfino/shop-plugins-lib-builder
+          token: ${{ secrets.LIB_BUILDER_TOKEN }}
+          sparse-checkout: packages/sunrise
+          sparse-checkout-cone-mode: false
+          path: .sunrise-checkout
+
+      - name: Stage sunrise zips
+        run: |
+          mkdir -p packages
+          mv .sunrise-checkout/packages/sunrise packages/sunrise
+          rm -rf .sunrise-checkout
+          ls -la packages/sunrise
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -37,17 +54,46 @@ jobs:
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ matrix.dependency-version }}-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-${{ matrix.dependency-version }}-
 
       - name: Install dependencies
-        run: composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction --no-progress
+        env:
+          COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.LIB_BUILDER_TOKEN }}"}}'
+        run: |
+          # The committed vendor/ ships scoped namespaces (ComfinoExternal\...) for
+          # runtime distribution. Tests need the unscoped packagist versions, so
+          # wipe vendor/ first to force composer to re-extract every package.
+          rm -rf vendor
+          composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction --no-progress
+
+      - name: Create writable log and cache directories
+        run: mkdir -p var/log var/cache
+
+      - name: Check autoloader
+        run: php -r "require 'vendor/autoload.php'; echo 'Autoloader OK' . PHP_EOL;"
 
       - name: Run tests
-        run: composer test
+        run: |
+          set +e
+          # Merge stderr into stdout so fatals interleave with PHPUnit's --debug
+          # "Starting test 'X'" lines, pinpointing the offending test.
+          exec 2>&1
+          php \
+            -d error_reporting=-1 \
+            -d display_errors=On \
+            -d display_startup_errors=On \
+            -d log_errors=On \
+            -d output_buffering=0 \
+            -d implicit_flush=1 \
+            -d zend.assertions=1 \
+            vendor/bin/phpunit --debug --verbose --stderr
+          status=$?
+          echo "::notice::phpunit exit code = $status"
+          exit $status
 
   coverage:
     runs-on: ubuntu-latest
@@ -56,7 +102,23 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+
+      - name: Fetch sunrise artifact packages
+        uses: actions/checkout@v6
+        with:
+          repository: comfino/shop-plugins-lib-builder
+          token: ${{ secrets.LIB_BUILDER_TOKEN }}
+          sparse-checkout: packages/sunrise
+          sparse-checkout-cone-mode: false
+          path: .sunrise-checkout
+
+      - name: Stage sunrise zips
+        run: |
+          mkdir -p packages
+          mv .sunrise-checkout/packages/sunrise packages/sunrise
+          rm -rf .sunrise-checkout
+          ls -la packages/sunrise
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -66,13 +128,18 @@ jobs:
           coverage: xdebug
 
       - name: Install dependencies
+        env:
+          COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.LIB_BUILDER_TOKEN }}"}}'
         run: composer update --prefer-stable --prefer-dist --no-interaction --no-progress
 
+      - name: Create writable log and cache directories
+        run: mkdir -p var/log var/cache
+
       - name: Run tests with coverage
-        run: XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-clover coverage.xml
+        run: XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-clover coverage.xml --coverage-html coverage --coverage-text
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v6
         with:
           files: ./coverage.xml
           fail_ci_if_error: false

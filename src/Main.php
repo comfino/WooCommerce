@@ -8,10 +8,12 @@ use Comfino\Common\Backend\FileUtils;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
 use Comfino\Configuration\StorageAdapter;
+use Comfino\Extended\Api\Dto\Plugin\OperationContext;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Order\OrderManager;
 use Comfino\PluginShared\CacheManager;
 use Comfino\View\FrontendManager;
+use Comfino\View\PaywallCartSerializer;
 use Comfino\View\TemplateManager;
 
 if (!defined('ABSPATH')) {
@@ -82,7 +84,7 @@ final class Main
                     WC()->session->init();
                 }
 
-                // For logged in customers, pull data from their account rather than the session which may contain incomplete data.
+                // For logged-in customers, pull data from their account rather than the session which may contain incomplete data.
                 if (WC()->customer === null) {
                     try {
                         if (is_user_logged_in()) {
@@ -128,7 +130,18 @@ final class Main
                     return;
                 }
 
-                FrontendManager::embedInlineScript('comfino-widget-init-script', FrontendManager::renderWidgetInitCode($wcProduct->get_id()));
+                /* Product-page widget via the CDN product widget script: emit the JSON config block in the head and
+                   enqueue the deferred per-platform script that reads it, imports the SDK, and calls sdk.bootstrapWidget().
+                   Replaces the legacy inline widget-frontend init. */
+                echo FrontendManager::renderWidgetConfigElement($wcProduct->get_id()); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
+                wp_enqueue_script(
+                    'comfino-product-widget',
+                    ConfigManager::getProductWidgetScriptUrl(),
+                    [],
+                    null,
+                    true
+                );
             }
         });
 
@@ -153,11 +166,14 @@ final class Main
             return $statuses;
         });
 
-        // Initialize cache system.
-        CacheManager::init(self::getCacheRootPath());
+        /* Isolate cached API responses (creditors, product/widget types) per site - defends against cross-site
+           leakage when the plugin filesystem is shared across a WP Multisite network with independent API keys. */
+        CacheManager::init(self::getCacheRootPath(), (string) get_current_blog_id());
 
         // Register module API endpoints.
         ApiService::registerEndpoints();
+
+        ConfigManager::refreshErrorLoggingTokenIfNeeded();
 
         self::$initialized = true;
     }
@@ -210,6 +226,14 @@ final class Main
 
     public static function renderPaywallIframe(\WC_Cart $cart, float $total, bool $isPaymentBlock): string
     {
+        static $rendered = false;
+
+        /* Prevent duplicate render when page-builders (Elementor etc.) call payment_fields() more than once per
+           request; only the first invocation should produce the container. */
+        if ($rendered) {
+            return '';
+        }
+
         if (!self::paymentIsAvailable($cart)) {
             DebugLogger::logEvent(
                 '[PAYWALL]',
@@ -219,30 +243,105 @@ final class Main
             return '';
         }
 
+        $rendered = true;
+
         if (!$isPaymentBlock) {
-            $iframeRenderer = FrontendManager::getPaywallIframeRenderer();
+            ApiClient::pinCheckoutTrackId();
 
-            $styleIds = FrontendManager::includeExternalStyles($iframeRenderer->getStyles());
-            $scriptIds = FrontendManager::includeExternalScripts($iframeRenderer->getScripts());
+            $authToken = FrontendManager::getAuthToken();
+            $loggingToken = FrontendManager::getLoggingToken();
+            $trackId = FrontendManager::getTrackId();
+            $environment = ConfigManager::isSandboxMode() ? 'sandbox' : 'production';
 
-            $scriptIds = array_merge(
-                $scriptIds,
-                FrontendManager::includeLocalScripts(['paywall-init.js'], ['paywall-init.js' => $scriptIds])
+            $allowedProductTypes = null;
+            $shopCart = null;
+
+            try {
+                $shopCart = OrderManager::getShopCart($cart);
+                $allowedProductTypes = SettingsManager::getAllowedProductTypes(
+                    ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
+                    $shopCart
+                );
+            } catch (\Throwable $e) {
+                ErrorLogger::sendError($e, OperationContext::PaymentProcessing, (string) $e->getCode(), $e->getMessage());
+            }
+
+            $loanAmount = $shopCart !== null ? $shopCart->getTotalAmount() : (int) round($cart->get_total('edit') * 100);
+
+            $cartPayload = null;
+
+            if ($shopCart !== null) {
+                try {
+                    $cartPayload = PaywallCartSerializer::toArray($shopCart);
+                } catch (\Throwable $e) {
+                    ErrorLogger::sendError($e, OperationContext::OrderCreation, (string) $e->getCode(), $e->getMessage());
+                }
+            }
+
+            wp_enqueue_style('comfino-item-gate', ConfigManager::getCheckoutCssUrl());
+            wp_enqueue_script(
+                'comfino-checkout',
+                ConfigManager::getCheckoutScriptUrl(),
+                [],
+                null,
+                ['in_footer' => true]
             );
+            wp_script_add_data('comfino-checkout', 'crossorigin', 'anonymous');
+
+            /* Browser-safe shop environment payload — mirrors the shape produced by
+               AbstractShopEnvironmentBuilder::buildForFrontend() in php-sdk (used by Magento via
+               MagentoShopEnvironmentBuilder). Built inline here because WC has no concrete builder
+               subclass yet; can be refactored to WooCommerceShopEnvironmentBuilder later for parity
+               with Magento and PrestaShop. Replaces the deprecated `shopInfo` field — the SDK accepts
+               this directly as PaywallOptions.shopEnvironment with no compat shim involved. */
+            $shopEnvironment = [
+                'platform' => 'woocommerce',
+                'platformName' => 'WooCommerce',
+                'platformDomain' => self::getShopDomain(),
+                'theme' => ['family' => 'woocommerce'],
+                'language' => self::getShopLanguage(),
+                'currency' => self::getShopCurrency(),
+                'pageContext' => ['type' => 'checkout'],
+            ];
+
+            $comfinoConfig = [
+                'authToken' => $authToken,
+                'loggingToken' => $loggingToken,
+                'trackId' => $trackId,
+                'loanAmount' => $loanAmount,
+                'paymentMethodAuth' => ConfigManager::getPaywallLogoAuthHash(),
+                'paymentMethodLabel' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT') ?: null,
+                'environment' => $environment,
+                'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
+                'productTypes' => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,
+                'productTypeNames' => SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL) ?: null,
+                'cart' => $cartPayload,
+                'paywallSettings' => [
+                    'language' => self::getShopLanguage(),
+                    'currency' => self::getShopCurrency(),
+                    'customPaywallCss' => ConfigManager::getConfigurationValue('COMFINO_PAYWALL_CUSTOM_CSS_URL') ?: null,
+                ],
+                'shopEnvironment' => $shopEnvironment,
+                'directRedirect' => (bool) ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
+                'creditors' => SettingsManager::getCreditors() ?: null,
+                'allowedProductsConfig' => SettingsManager::getAllowedProductsConfigForFrontend(),
+            ];
 
             DebugLogger::logEvent(
-                '[PAYWALL]', 'renderPaywallIframe registered styles and scripts.',
-                ['$styleIds' => $styleIds, '$scriptIds' => $scriptIds]
+                '[PAYWALL]', 'renderPaywallIframe registered scripts.',
+                ['$loanAmount' => $loanAmount]
             );
         }
 
-        $templateVariables = [
-            'render_init_script' => !$isPaymentBlock,
-            'paywall_url' => ApiService::getEndpointUrl('paywall'),
-            'paywall_options' => self::getPaywallOptions($total),
-        ];
-
-        return TemplateManager::renderView('payment', 'front', $templateVariables, !$isPaymentBlock);
+        return TemplateManager::renderView(
+            'payment',
+            'front',
+            [
+                'comfino_total_amount' => $loanAmount ?? 0,
+                'comfino_checkout_config' => $comfinoConfig ?? null,
+            ],
+            !$isPaymentBlock
+        );
     }
 
     public static function paymentIsAvailable(?\WC_Cart $cart): bool
@@ -465,22 +564,6 @@ final class Main
         CacheManager::getCachePool()->clear();
 
         return $resultStats;
-    }
-
-    public static function getPaywallOptions(float $total): array
-    {
-        return [
-            'platform' => 'woocommerce',
-            'platformName' => 'WooCommerce',
-            'platformVersion' => WC_VERSION,
-            'platformDomain' => self::getShopDomain(),
-            'pluginVersion' => PaymentGateway::VERSION,
-            'language' => self::getShopLanguage(),
-            'currency' => self::getShopCurrency(),
-            'cartTotal' => $total,
-            'cartTotalFormatted' => wc_price($total, ['currency' => self::getShopCurrency()]),
-            'productDetailsApiPath' => ApiService::getEndpointPath('paywallItemDetails'),
-        ];
     }
 
     public static function updateUpgradeLog(string $logContents): void

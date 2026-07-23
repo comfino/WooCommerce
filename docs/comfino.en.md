@@ -32,17 +32,37 @@ Configuration parameter fields:
 * **Show logo** — visibility status of the Comfino logo next to the title at the list of payment methods (default: enabled)
 * **Order number** — Use customer-visible order reference instead of numeric order ID for Comfino API integration. New orders only.
 
+**Paywall settings**
+* **Direct redirect mode** — Do not display the Comfino paywall. Disables the automatic display of the paywall on the payment summary, allowing you to proceed to the application without having to select one of Comfino's financial products.
+* **Custom paywall CSS style** — Link to a CSS file with styles that override the paywall's appearance (only absolute addresses from the store's domain are accepted).
+
 ![Configuration](images/en/configuration1.png "Configuration")
 
 **SALE SETTINGS**
 
+**Rules for the availability of financial products**
+
+The financial product availability rules section allows you to narrow down the available terms for each type of financial product, corresponding to the available financing methods for purchases under your Comfino contract. For each type, you can specify a minimum and maximum repayment term, and specify specific terms (separated by commas). To avoid applying any restrictions to a given product type, simply leave the fields blank. All restrictions are cumulative: if "Specific terms" are set, only those specific terms are offered; "Min/Max" values further narrow them. Restrictions are applied to both the paywall and the application.
+
+![Configuration](images/en/configuration2a.png "Konfiguracja")
+
+**Product categories**
+
 The tab contains settings related to sales management.
 
-Financial product availability rules (product category filters) enable Comfino payments to be assigned to specific product categories. Category filters are divided into sections corresponding to available methods of financing purchases under the contract concluded with Comfino. Moreover, managing the availability of Comfino payments is only possible for the following types of financial products: "Zero percent installments", "Pay later", "Leasing". If the concluded contract does not include one or all of these items, the tab will contain a list of trees limited to this one financing method or it will contain a list of trees for other types of products from the contract, if the contract does not include the "Zero percent installments", "Pay later" and "Leasing" products.
+Financial product availability rules (product category filters) enable Comfino payments to be assigned to specific product categories. Category filters are divided into sections corresponding to available methods of financing purchases under the contract concluded with Comfino. Moreover, managing the availability of Comfino payments is only possible for the following types of financial products: "Zero percent installments", "Pay later", "Installments for companies", "Deferred payments for companies", "Divide into 3", "Leasing". If the concluded contract does not include one or all of these items, the tab will contain a list of trees limited to this one financing method or it will contain a list of trees for other types of products from the contract, if the contract does not include the "Zero percent installments", "Pay later", "Installments for companies", "Deferred payments for companies", "Divide into 3" and "Leasing" products.
 
 By default, Comfino payments are available unconditionally for all product types. To disable Comfino for selected product types, uncheck the appropriate categories in the category tree for each type of financial offer and click "Save".
 
-![Configuration](images/en/configuration2.png "Konfiguracja")
+**Filter by product ID**
+
+The product ID filter lets you exclude Comfino payments for specific products, regardless of their category. In the text field, enter the product IDs separated by commas (e.g. `15, 17`) and click "Save". This is a single shared list that applies to all financial product types.
+
+If the customer's cart contains any of the listed products, all Comfino payments will be hidden, both at checkout (paywall) and in the promotional widget on the product page. Leaving the field empty means the filter is inactive and no product is excluded based on it.
+
+The product ID filter works independently of the product category filters.
+
+![Configuration](images/en/configuration2b.png "Konfiguracja")
 
 **WIDGET SETTINGS**
 

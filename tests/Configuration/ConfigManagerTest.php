@@ -27,6 +27,22 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
         Main::setPluginFile(__DIR__ . '/../../comfino-payment-gateway.php');
     }
 
+    public function tearDown(): void
+    {
+        // Reset ConfigManager and ConfigurationManager singletons so that any
+        // configuration mutations in this test class (e.g. COMFINO_DEBUG=true in
+        // testUpdateConfigurationValue) don't leak into subsequent test classes.
+        $cmProp = new \ReflectionProperty(ConfigManager::class, 'configurationManager');
+        $cmProp->setAccessible(true);
+        $cmProp->setValue(null, null);
+
+        $baseProp = new \ReflectionProperty(ConfigurationManager::class, 'instance');
+        $baseProp->setAccessible(true);
+        $baseProp->setValue(null, null);
+
+        parent::tearDown();
+    }
+
     public function testGetInstance(): void
     {
         $instance1 = ConfigManager::getInstance();
@@ -42,6 +58,8 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('COMFINO_API_KEY', ConfigManager::CONFIG_OPTIONS_MAP);
         $this->assertEquals('enabled', ConfigManager::CONFIG_OPTIONS_MAP['COMFINO_ENABLED']);
         $this->assertEquals('production_key', ConfigManager::CONFIG_OPTIONS_MAP['COMFINO_API_KEY']);
+        $this->assertArrayHasKey('COMFINO_ALLOWED_PRODUCTS_CONFIG', ConfigManager::CONFIG_OPTIONS_MAP);
+        $this->assertEquals('allowed_products_config', ConfigManager::CONFIG_OPTIONS_MAP['COMFINO_ALLOWED_PRODUCTS_CONFIG']);
     }
 
     public function testConfigOptionsConstants(): void
@@ -57,7 +75,14 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertInternalType('array', ConfigManager::ACCESSIBLE_CONFIG_OPTIONS);
         $this->assertContains('COMFINO_ENABLED', ConfigManager::ACCESSIBLE_CONFIG_OPTIONS);
         // COMFINO_API_KEY is not in accessible options for security reasons.
-        $this->assertContains('COMFINO_PAYMENT_TEXT', ConfigManager::ACCESSIBLE_CONFIG_OPTIONS);
+        $this->assertContains('COMFINO_ALLOWED_PRODUCTS_CONFIG', ConfigManager::ACCESSIBLE_CONFIG_OPTIONS);
+    }
+
+    public function testAllowedProductsConfigDefaultIsNull(): void
+    {
+        $defaults = ConfigManager::getDefaultConfigurationValues();
+        $this->assertArrayHasKey('COMFINO_ALLOWED_PRODUCTS_CONFIG', $defaults);
+        $this->assertNull($defaults['COMFINO_ALLOWED_PRODUCTS_CONFIG']);
     }
 
     public function testGetEnvironmentInfo(): void
@@ -154,20 +179,15 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
         $defaults = ConfigManager::getDefaultConfigurationValues();
 
         $this->assertArrayHasKey('COMFINO_ENABLED', $defaults);
-        $this->assertArrayHasKey('COMFINO_PAYMENT_TEXT', $defaults);
-        $this->assertArrayHasKey('COMFINO_SHOW_LOGO', $defaults);
         $this->assertArrayHasKey('COMFINO_MINIMAL_CART_AMOUNT', $defaults);
 
         $this->assertFalse($defaults['COMFINO_ENABLED']);
-        $this->assertEquals('Comfino', $defaults['COMFINO_PAYMENT_TEXT']);
-        $this->assertTrue($defaults['COMFINO_SHOW_LOGO']);
         $this->assertEquals(30, $defaults['COMFINO_MINIMAL_CART_AMOUNT']);
     }
 
     public function testGetDefaultValue(): void
     {
         $this->assertFalse(ConfigManager::getDefaultValue('enabled'));
-        $this->assertEquals('Comfino', ConfigManager::getDefaultValue('title'));
         $this->assertNull(ConfigManager::getDefaultValue('non_existent'));
     }
 
@@ -175,7 +195,6 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
     {
         // Test with default value.
         $this->assertInternalType('bool', ConfigManager::getConfigurationValue('COMFINO_ENABLED', true));
-        $this->assertInternalType('string', ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT', 'Default Title'));
     }
 
     public function testGetConfigurationValueByInternalName(): void
@@ -192,21 +211,10 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(ConfigurationManager::OPT_VALUE_TYPE_STRING, ConfigManager::getConfigurationValueType('NON_EXISTENT'));
     }
 
-    public function testGetPaywallLogoUrl(): void
-    {
-        $this->assertContains('get-paywall-logo', ConfigManager::getPaywallLogoUrl());
-    }
-
-    public function testGetWidgetScriptUrl(): void
-    {
-        $this->assertContains('widget', ConfigManager::getWidgetScriptUrl());
-    }
-
     public function testGetWidgetVariables(): void
     {
         $variables = ConfigManager::getWidgetVariables();
 
-        $this->assertArrayHasKey('WIDGET_SCRIPT_URL', $variables);
         $this->assertArrayHasKey('PLATFORM', $variables);
         $this->assertArrayHasKey('PLATFORM_NAME', $variables);
         $this->assertArrayHasKey('PLATFORM_VERSION', $variables);
@@ -216,12 +224,6 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('woocommerce', $variables['PLATFORM']);
         $this->assertEquals('WooCommerce', $variables['PLATFORM_NAME']);
-    }
-
-    public function testGetCurrentWidgetCode(): void
-    {
-        $this->assertContains('productId: {PRODUCT_ID}', ConfigManager::getCurrentWidgetCode());
-        $this->assertContains('productId: {PRODUCT_ID}', ConfigManager::getCurrentWidgetCode(123));
     }
 
     public function testUpdateConfigurationValue(): void

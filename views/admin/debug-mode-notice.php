@@ -15,8 +15,8 @@ if (!defined('ABSPATH')) {
 ?>
 <div class="notice notice-warning is-dismissible" id="comfino-debug-mode-notice">
     <p>
-        <strong><?php echo esc_html__('Comfino Debug Mode Active', 'comfino-payment-gateway'); ?>:</strong>
-        <?php echo esc_html__('Detailed logging is enabled. This may impact performance and should not be used in production environments.', 'comfino-payment-gateway'); ?>
+        <strong><?php echo esc_html__('Comfino Debug Mode Active', 'comfino-payment-gateway') ?>:</strong>
+        <?php echo esc_html__('Detailed logging is enabled. This may impact performance and should not be used in production environments.', 'comfino-payment-gateway') ?>
         <?php
         echo wp_kses(
             sprintf(
@@ -34,7 +34,7 @@ jQuery(document).ready(function($) {
     $('#comfino-debug-mode-notice').on('click', '.notice-dismiss', function() {
         $.post(ajaxurl, {
             action: 'comfino_dismiss_debug_notice',
-            nonce: '<?php echo esc_js($nonce_value); ?>'
+            nonce: '<?php echo esc_js($nonce_value) ?>'
         });
     });
 });

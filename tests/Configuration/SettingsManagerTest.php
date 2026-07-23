@@ -117,29 +117,22 @@ class SettingsManagerTest extends \PHPUnit_Framework_TestCase
 
     public function testIsProductTypeAllowedWithNullCart(): void
     {
-        // Create a mock cart (this would need to be a proper Cart object in real usage).
-        $mockCart = $this->createMock(Cart::class);
-        $mockCart->method('getTotalValue')->willReturn(10000);
-        
+        $cart = new Cart(10000, null, null, 0, null, null, null, []);
         $listType = ProductTypesListTypeEnum::LIST_TYPE_PAYWALL;
-        $mockProductType = $this->createMock(LoanTypeEnum::class);
+        $productType = new LoanTypeEnum(LoanTypeEnum::INSTALLMENTS_ZERO_PERCENT);
 
-        $this->assertTrue(SettingsManager::isProductTypeAllowed($listType, $mockProductType, $mockCart));
+        $this->assertTrue(SettingsManager::isProductTypeAllowed($listType, $productType, $cart));
     }
 
     public function testGetAllowedProductTypesWithNullCart(): void
     {
-        // Create a mock cart.
-        $mockCart = $this->createMock(Cart::class);
-        $mockCart->method('getTotalValue')->willReturn(10000);
-        $mockCart->method('getCartItems')->willReturn([]);
-
+        $cart = new Cart(10000, null, null, 0, null, null, null, []);
         $listType = ProductTypesListTypeEnum::LIST_TYPE_PAYWALL;
 
-        $this->assertNull(SettingsManager::getAllowedProductTypes($listType, $mockCart));
+        $this->assertNull(SettingsManager::getAllowedProductTypes($listType, $cart));
 
         // Test with returnOnlyArray flag.
-        $this->assertCount(0, SettingsManager::getAllowedProductTypes($listType, $mockCart, true));
+        $this->assertCount(0, SettingsManager::getAllowedProductTypes($listType, $cart, true));
     }
 
     public function testConstantsExist(): void

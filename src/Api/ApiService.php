@@ -2,8 +2,6 @@
 
 namespace Comfino\Api;
 
-use Comfino\Api\Dto\Payment\LoanQueryCriteria;
-use Comfino\Api\Dto\Payment\LoanTypeEnum;
 use Comfino\Common\Backend\Factory\ApiServiceFactory;
 use Comfino\Common\Backend\RestEndpoint\CacheInvalidate;
 use Comfino\Common\Backend\RestEndpoint\Configuration;
@@ -11,18 +9,11 @@ use Comfino\Common\Backend\RestEndpoint\StatusNotification;
 use Comfino\Common\Backend\RestEndpointManager;
 use Comfino\Common\Shop\Order\StatusManager;
 use Comfino\Configuration\ConfigManager;
-use Comfino\Configuration\SettingsManager;
 use Comfino\DebugLogger;
-use Comfino\FinancialProduct\ProductTypesListTypeEnum;
-use Comfino\Main;
-use Comfino\Order\OrderManager;
 use Comfino\Order\StatusAdapter;
 use Comfino\PaymentGateway;
 use Comfino\PluginShared\CacheManager;
-use Comfino\Shop\Order\Cart;
-use Comfino\View\FrontendManager;
 use Comfino\View\SettingsForm;
-use Comfino\View\TemplateManager;
 use ComfinoExternal\Psr\Http\Message\ServerRequestInterface;
 
 if (!defined('ABSPATH')) {
@@ -38,10 +29,7 @@ final class ApiService
     /** @var string[] */
     private static $endpointUrls = [];
     /** @var callable[] */
-    private static $requestCallbacks = [
-        'paywall' => [self::class, 'getPaywall'],
-        'paywallItemDetails' => [self::class, 'getPaywallItemDetails'],
-    ];
+    private static $requestCallbacks = [];
 
     public static function init(): void
     {
@@ -74,46 +62,6 @@ final class ApiService
                         return self::processRequest('availableOfferTypes', $request);
                     },
                     'args' => ['product_id' => ['sanitize_callback' => 'absint']],
-                    'permission_callback' => '__return_true',
-                ],
-            ]
-        );
-
-        self::registerWordPressApiEndpoint(
-            'paywall',
-            [
-                [
-                    'methods' => \WP_REST_Server::READABLE,
-                    'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
-                        return self::processRequest('paywall', $request);
-                    },
-                    'permission_callback' => '__return_true',
-                ],
-            ]
-        );
-
-        self::registerWordPressApiEndpoint(
-            'paywallItemDetails',
-            [
-                [
-                    'methods' => \WP_REST_Server::READABLE,
-                    'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
-                        return self::processRequest('paywallItemDetails', $request);
-                    },
-                    'permission_callback' => '__return_true',
-                ],
-            ]
-        );
-
-        self::registerWordPressApiEndpoint(
-            'productDetails',
-            [
-                [
-                    'methods' => \WP_REST_Server::READABLE,
-                    'callback' => function (\WP_REST_Request $request): \WP_REST_Response {
-                        return self::processRequest('productDetails', $request);
-                    },
-                    'args' => ['loanTypeSelected' => ['sanitize_callback' => 'sanitize_text_field']],
                     'permission_callback' => '__return_true',
                 ],
             ]
@@ -180,7 +128,12 @@ final class ApiService
                     [
                         array_merge($comfino_payment_gateway->get_plugin_update_details(),
                         ConfigManager::getEnvironmentInfo(['wordpress_version'])),
-                    ] // $shopExtraVariables
+                    ], // $shopExtraVariables
+                    [
+                        static function (): ?array {
+                            return \Comfino\Telemetry\ShopEnvironmentReporter::getReportArray();
+                        },
+                    ] // $shopEnvironmentReportProvider
                 )
             )
         );
@@ -209,9 +162,6 @@ final class ApiService
     {
         self::$endpointUrls = [
             'availableOfferTypes' => '/availableoffertypes(?:/(?P<product_id>\d+))?',
-            'paywall' => '/paywall',
-            'paywallItemDetails' => '/paywallitemdetails',
-            'productDetails' => '/productdetails(?:/(?P<product_id>\d+))?(?:/(?P<loanTypeSelected>[A-Z_]+))?',
             'transactionStatus' => '/transactionstatus',
             'configuration' => '/configuration(?:/(?P<vkey>[a-f0-9]+))?',
             'cacheInvalidate' => '/cacheinvalidate',
@@ -380,185 +330,4 @@ final class ApiService
             : null;
     }
 
-    private static function getPaywall(\WP_REST_Request $request): void
-    {
-        header('Content-Type: text/html');
-
-        FrontendManager::resetScripts();
-        FrontendManager::resetStyles();
-
-        if (!ConfigManager::isEnabled()) {
-            TemplateManager::renderView('plugin-disabled', 'front');
-
-            exit;
-        }
-
-        if ($request->has_param('priceModifier') && is_numeric($request->get_param('priceModifier'))) {
-            $priceModifier = (int) filter_var($request->get_param('priceModifier'), FILTER_VALIDATE_INT);
-        } else {
-            $priceModifier = 0;
-        }
-
-        $loanAmount = (int) round(WC()->cart->get_total('edit') * 100);
-
-        try {
-            $shopCart = OrderManager::getShopCart(WC()->cart, $priceModifier);
-        } catch (\Exception $e) {
-            TemplateManager::renderView(
-                'paywall-disabled',
-                'front',
-                array_merge(FrontendManager::processError('Shop cart creation error', $e, 400), ['styles' => []])
-            );
-
-            exit;
-        }
-
-        $allowedProductTypes = SettingsManager::getAllowedProductTypes(
-            ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
-            $shopCart
-        );
-
-        if ($allowedProductTypes === []) {
-            // Filters active - all product types disabled.
-            TemplateManager::renderView('paywall-disabled', 'front');
-
-            exit;
-        }
-
-        DebugLogger::logEvent(
-            '[PAYWALL]',
-            'renderPaywall',
-            [
-                '$loanAmount' => $loanAmount,
-                '$priceModifier' => $priceModifier,
-                '$cartTotalValue' => $shopCart->getTotalValue(),
-                '$allowedProductTypes' => $allowedProductTypes,
-                '$shopCart' => $shopCart->getAsArray(),
-            ]
-        );
-
-        $paywallRenderer = FrontendManager::getPaywallRenderer();
-        $paywallUrl = self::getEndpointUrl('paywall');
-        $templateVariables = [
-            'language' => Main::getShopLanguage(),
-            'styles' => FrontendManager::registerExternalStyles($paywallRenderer->getStyles()),
-            'scripts' => FrontendManager::includeExternalScripts($paywallRenderer->getScripts()),
-            'shop_url' => Main::getShopUrl(),
-        ];
-
-        try {
-            $paywallContents = ApiClient::getInstance()->getPaywall(
-                new LoanQueryCriteria($loanAmount, null, null, $allowedProductTypes),
-                $paywallUrl
-            );
-
-            $templateName = 'paywall';
-            $templateVariables['paywall_hash'] = $paywallRenderer->getPaywallHash(
-                $paywallContents->paywallBody,
-                ConfigManager::getApiKey()
-            );
-            $templateVariables['frontend_elements'] = [
-                'paywallBody' => $paywallContents->paywallBody,
-                'paywallHash' => $paywallContents->paywallHash,
-            ];
-        } catch (\Throwable $e) {
-            http_response_code($e instanceof HttpErrorExceptionInterface ? $e->getStatusCode() : 500);
-
-            $templateVariables = array_merge($templateVariables, ApiClient::processApiError('Paywall endpoint', $e));
-            $templateName = 'api-error';
-        } finally {
-            if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
-                DebugLogger::logEvent(
-                    '[PAYWALL_API_REQUEST]',
-                    'renderPaywall',
-                    [
-                        '$paywallUrl' => $paywallUrl,
-                        '$request' => $apiRequest->getRequestBody(),
-                        '$templateVariables' => $templateVariables
-                    ]
-                );
-            }
-        }
-
-        TemplateManager::renderView($templateName, 'front', $templateVariables);
-
-        exit;
-    }
-
-    private static function getPaywallItemDetails(\WP_REST_Request $request): \WP_REST_Response
-    {
-        if (!ConfigManager::isEnabled()) {
-            TemplateManager::renderView('plugin-disabled', 'front');
-
-            exit;
-        }
-
-        $loanAmount = (int) round(WC()->cart->get_total('edit') * 100);
-        $loanTypeSelected = $request->get_param('loanTypeSelected');
-        $loadProductCategories = ($request->get_param('reqProdCat') === 'yes');
-
-        if ($request->has_param('priceModifier') && is_numeric($request->get_param('priceModifier'))) {
-            $priceModifier = (int) filter_var($request->get_param('priceModifier'), FILTER_VALIDATE_INT);
-        } else {
-            $priceModifier = 0;
-        }
-
-        try {
-            $shopCart = OrderManager::getShopCart(WC()->cart, $priceModifier);
-        } catch (\Exception $e) {
-            FrontendManager::processError('Shop cart creation error', $e);
-
-            return new \WP_REST_Response(['listItemData' => '', 'productDetails' => ''], 400);
-        }
-
-        DebugLogger::logEvent(
-            '[PAYWALL_ITEM_DETAILS]',
-            'getPaywallItemDetails',
-            [
-                '$loanAmount' => $loanAmount,
-                '$loanTypeSelected' => $loanTypeSelected,
-                '$priceModifier' => $priceModifier,
-                '$loadProductCategories' => $loadProductCategories,
-                '$shopCart' => $shopCart->getAsArray(),
-            ]
-        );
-
-        if (empty($loanTypeSelected)) {
-            // Financial product type not passed - return empty response.
-            return new \WP_REST_Response(['listItemData' => '', 'productDetails' => '']);
-        }
-
-        try {
-            $paywallItemDetails = ApiClient::getInstance()->getPaywallItemDetails(
-                $loanAmount,
-                LoanTypeEnum::from($loanTypeSelected),
-                new Cart(
-                    $shopCart->getCartItems(),
-                    $shopCart->getTotalValue(),
-                    $shopCart->getDeliveryCost(),
-                    $shopCart->getDeliveryNetCost(),
-                    $shopCart->getDeliveryTaxRate(),
-                    $shopCart->getDeliveryTaxValue()
-                )
-            );
-        } catch (\Throwable $e) {
-            return new \WP_REST_Response(
-                ApiClient::processApiError('Paywall item details endpoint', $e)['error_details'],
-                $e instanceof HttpErrorExceptionInterface ? $e->getStatusCode() : 500
-            );
-        } finally {
-            if (($apiRequest = ApiClient::getInstance()->getRequest()) !== null) {
-                DebugLogger::logEvent(
-                    '[PAYWALL_ITEM_DETAILS_API_REQUEST]',
-                    'getPaywallItemDetails',
-                    ['$request' => $apiRequest->getRequestBody()]
-                );
-            }
-        }
-
-        return new \WP_REST_Response([
-            'listItemData' => $paywallItemDetails->listItemData,
-            'productDetails' => $paywallItemDetails->productDetails
-        ]);
-    }
 }

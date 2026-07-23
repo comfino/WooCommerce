@@ -6,6 +6,7 @@ namespace Comfino\Api\Request;
 
 use Comfino\Api\Dto\Payment\LoanQueryCriteria;
 use Comfino\Api\Request;
+use Comfino\Api\UrlValidator;
 
 class GetPaywall extends Request
 {
@@ -23,6 +24,7 @@ class GetPaywall extends Request
                     'loanAmount' => $queryCriteria->loanAmount,
                     'loanTerm' => $queryCriteria->loanTerm,
                     'loanTypeSelected' => $queryCriteria->loanType,
+                    'priceModifier' => $queryCriteria->priceModifier,
                     'productTypes' => ($queryCriteria->productTypes !== null ? implode(',', $queryCriteria->productTypes) : null),
                     'taxId' => $queryCriteria->taxId,
                 ],
@@ -33,6 +35,8 @@ class GetPaywall extends Request
         );
 
         if ($recalculationUrl !== null) {
+            UrlValidator::assertValidCallbackUrl($recalculationUrl, 'Comfino-Recalculation-Url');
+
             $this->setRequestHeaders(['Comfino-Recalculation-Url' => $recalculationUrl]);
         }
     }

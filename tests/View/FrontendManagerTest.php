@@ -24,20 +24,11 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         // Mock functions are handled in bootstrap.php
     }
 
-    public function testGetPaywallRenderer(): void
+    public function testGetAuthTokenReturnsString(): void
     {
-        $renderer1 = FrontendManager::getPaywallRenderer();
-        $renderer2 = FrontendManager::getPaywallRenderer();
+        $token = FrontendManager::getAuthToken();
 
-        $this->assertSame($renderer1, $renderer2); // Should be singleton.
-    }
-
-    public function testGetPaywallIframeRenderer(): void
-    {
-        $renderer1 = FrontendManager::getPaywallIframeRenderer();
-        $renderer2 = FrontendManager::getPaywallIframeRenderer();
-
-        $this->assertSame($renderer1, $renderer2); // Should be singleton.
+        $this->assertInternalType('string', $token);
     }
 
     public function testRenderHiddenInput(): void
@@ -45,7 +36,7 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         $fieldKey = 'test_field';
         $fieldValue = 'test_value';
         $data = ['title' => 'Test Field', 'type' => 'hidden'];
-        $wcSettings = new WC_Settings_API();
+        $wcSettings = $this->getMockForAbstractClass(WC_Settings_API::class);
 
         $html = FrontendManager::renderHiddenInput($fieldKey, $fieldValue, $data, $wcSettings);
 
@@ -66,7 +57,7 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
                 'option3' => 'Option 3'
             ]
         ];
-        $wcSettings = new WC_Settings_API();
+        $wcSettings = $this->getMockForAbstractClass(WC_Settings_API::class);
 
         $html = FrontendManager::renderCheckboxSet($fieldKey, $fieldValue, $data, $wcSettings);
 
@@ -81,23 +72,11 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         $fieldKey = 'test_checkboxes';
         $fieldValue = [];
         $data = ['title' => 'Test Checkboxes']; // No 'values' key.
-        $wcSettings = new WC_Settings_API();
+        $wcSettings = $this->getMockForAbstractClass(WC_Settings_API::class);
 
         $html = FrontendManager::renderCheckboxSet($fieldKey, $fieldValue, $data, $wcSettings);
 
         $this->assertEmpty($html); // Should return empty string when no values provided.
-    }
-
-    public function testRenderProductCategoryTree(): void
-    {
-        $data = [
-            'title' => 'Product Categories',
-            'id' => 'category_tree',
-            'product_type' => 'INSTALLMENTS',
-            'selected_categories' => [1, 2, 3]
-        ];
-
-        $this->assertContains('Product Categories', FrontendManager::renderProductCategoryTree($data));
     }
 
     public function testGetLocalScriptUrl(): void
@@ -121,40 +100,6 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertContains('test-script', $url);
         $this->assertContains('.js', $url);
-    }
-
-    public function testGetExternalResourcesBaseUrl(): void
-    {
-        $baseUrl = FrontendManager::getExternalResourcesBaseUrl();
-
-        $this->assertStringStartsWith('https://', $baseUrl);
-        $this->assertContains('widget', $baseUrl);
-    }
-
-    public function testGetExternalScriptUrl(): void
-    {
-        $url = FrontendManager::getExternalScriptUrl('test-script.js');
-
-        $this->assertContains('test-script', $url);
-        $this->assertContains('.js', $url);
-    }
-
-    public function testGetExternalScriptUrlWithEmptyFileName(): void
-    {
-        $this->assertEmpty(FrontendManager::getExternalScriptUrl(''));
-    }
-
-    public function testGetExternalStyleUrl(): void
-    {
-        $url = FrontendManager::getExternalStyleUrl('test-style.css');
-
-        $this->assertContains('test-style', $url);
-        $this->assertContains('.css', $url);
-    }
-
-    public function testGetExternalStyleUrlWithEmptyFileName(): void
-    {
-        $this->assertEmpty(FrontendManager::getExternalStyleUrl(''));
     }
 
     public function testResetScripts(): void
@@ -213,32 +158,6 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function testIncludeExternalScripts(): void
-    {
-        $scripts = ['external-script1.js', 'external-script2.js'];
-        $scriptIds = FrontendManager::includeExternalScripts($scripts);
-
-        $this->assertCount(2, $scriptIds);
-
-        foreach ($scriptIds as $scriptId) {
-            $this->assertInternalType('string', $scriptId);
-            $this->assertStringStartsWith('comfino-script-', $scriptId);
-        }
-    }
-
-    public function testIncludeExternalStyles(): void
-    {
-        $styles = ['style1.css', 'style2.css'];
-        $styleIds = FrontendManager::includeExternalStyles($styles);
-
-        $this->assertCount(2, $styleIds);
-
-        foreach ($styleIds as $styleId) {
-            $this->assertInternalType('string', $styleId);
-            $this->assertStringStartsWith('comfino-style-', $styleId);
-        }
-    }
-
     public function testRegisterLocalScripts(): void
     {
         // Mock global variable.
@@ -260,22 +179,6 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         $scriptIds = FrontendManager::registerLocalScripts($scripts);
 
         $this->assertCount(2, $scriptIds);
-    }
-
-    public function testRegisterExternalScripts(): void
-    {
-        $scripts = ['external-script1.js', 'external-script2.js'];
-        $scriptIds = FrontendManager::registerExternalScripts($scripts);
-
-        $this->assertCount(2, $scriptIds);
-    }
-
-    public function testRegisterExternalStyles(): void
-    {
-        $styles = ['style1.css', 'style2.css'];
-        $styleIds = FrontendManager::registerExternalStyles($styles);
-
-        $this->assertCount(2, $styleIds);
     }
 
     public function testGetImageAllowedHtml(): void
@@ -330,15 +233,6 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertContains('<img', $logo);
     }
 
-    public function testRenderPaywallLogo(): void
-    {
-        $logo = FrontendManager::renderPaywallLogo();
-
-        $this->assertInternalType('string', $logo);
-        // Logo rendering depends on configuration, may be empty.
-        $this->assertInternalType('string', $logo);
-    }
-
     public function testRenderHiddenInputWithCustomAttributes(): void
     {
         $fieldKey = 'test_field';
@@ -351,7 +245,7 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
                 'data-id' => '123',
             ],
         ];
-        $wcSettings = new WC_Settings_API();
+        $wcSettings = $this->getMockForAbstractClass(WC_Settings_API::class);
 
         $html = FrontendManager::renderHiddenInput($fieldKey, $fieldValue, $data, $wcSettings);
 
@@ -369,7 +263,7 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
             'type' => 'hidden',
             'disabled' => true,
         ];
-        $wcSettings = new WC_Settings_API();
+        $wcSettings = $this->getMockForAbstractClass(WC_Settings_API::class);
 
         $html = FrontendManager::renderHiddenInput($fieldKey, $fieldValue, $data, $wcSettings);
 
@@ -388,27 +282,12 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
                 'option2' => 'Option 2',
             ]
         ];
-        $wcSettings = new WC_Settings_API();
+        $wcSettings = $this->getMockForAbstractClass(WC_Settings_API::class);
 
         $html = FrontendManager::renderCheckboxSet($fieldKey, $fieldValue, $data, $wcSettings);
 
         $this->assertContains('Test Checkboxes', $html);
         $this->assertContains('This is a test description', $html);
-    }
-
-    public function testRenderProductCategoryTreeWithProductType(): void
-    {
-        $data = [
-            'title' => 'Category Tree',
-            'id' => 'test_tree',
-            'product_type' => 'INSTALLMENTS_ZERO_PERCENT',
-            'selected_categories' => [],
-        ];
-
-        $html = FrontendManager::renderProductCategoryTree($data);
-
-        $this->assertInternalType('string', $html);
-        $this->assertContains('Category Tree', $html);
     }
 
     public function testGetLocalScriptUrlWithVersion(): void
@@ -432,42 +311,6 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         // Should contain version parameter or hash.
         $this->assertContains('test-script', $url);
         $this->assertContains('.js', $url);
-    }
-
-    public function testIncludeExternalScriptsWithEmptyArray(): void
-    {
-        $scriptIds = FrontendManager::includeExternalScripts([]);
-
-        $this->assertCount(0, $scriptIds);
-        $this->assertInternalType('array', $scriptIds);
-    }
-
-    public function testIncludeExternalStylesWithEmptyArray(): void
-    {
-        $styleIds = FrontendManager::includeExternalStyles([]);
-
-        $this->assertCount(0, $styleIds);
-        $this->assertInternalType('array', $styleIds);
-    }
-
-    public function testRegisterExternalScriptsWithDependencies(): void
-    {
-        $scripts = ['external-script.js'];
-        $dependencies = ['external-script.js' => ['jquery']];
-
-        $scriptIds = FrontendManager::registerExternalScripts($scripts, $dependencies);
-
-        $this->assertCount(1, $scriptIds);
-        $this->assertStringStartsWith('comfino-script-', $scriptIds[0]);
-    }
-
-    public function testRegisterExternalStylesWithEmptyArray(): void
-    {
-        $styles = [];
-        $styleIds = FrontendManager::registerExternalStyles($styles);
-
-        $this->assertCount(0, $styleIds);
-        $this->assertInternalType('array', $styleIds);
     }
 
     public function testEmbedInlineScriptWithMultipleDependencies(): void
@@ -494,33 +337,6 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(true);
     }
 
-    public function testGetExternalResourcesBaseUrlFormat(): void
-    {
-        $baseUrl = FrontendManager::getExternalResourcesBaseUrl();
-
-        // Should be a valid URL format.
-        $this->assertStringStartsWith('https://', $baseUrl);
-        $this->assertNotContains(' ', $baseUrl);
-        $this->assertRegExp('#^https?://[^\s]+$#', $baseUrl);
-    }
-
-    public function testGetExternalScriptUrlWithSubdirectory(): void
-    {
-        $url = FrontendManager::getExternalScriptUrl('subdirectory/script.js');
-
-        $this->assertContains('subdirectory', $url);
-        $this->assertContains('script.min.js', $url);
-        $this->assertStringStartsWith('https://', $url);
-    }
-
-    public function testGetExternalStyleUrlWithSubdirectory(): void
-    {
-        $url = FrontendManager::getExternalStyleUrl('subdirectory/style.css');
-
-        $this->assertContains('subdirectory', $url);
-        $this->assertContains('style.css', $url);
-        $this->assertStringStartsWith('https://', $url);
-    }
 
     public function testAllowedScriptHtmlContainsRequiredAttributes(): void
     {
@@ -547,26 +363,19 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('option', $allowedHtml);
     }
 
-    public function testGetPaywallRendererReturnsSameInstance(): void
+    public function testGetAuthTokenIsBase64EncodedWhenConfigured(): void
     {
-        // Test singleton pattern.
-        $renderer1 = FrontendManager::getPaywallRenderer();
-        $renderer2 = FrontendManager::getPaywallRenderer();
-        $renderer3 = FrontendManager::getPaywallRenderer();
+        // In unconfigured test environment, token is empty.
+        // When credentials are set, token should be valid base64.
+        $token = FrontendManager::getAuthToken();
 
-        $this->assertSame($renderer1, $renderer2);
-        $this->assertSame($renderer2, $renderer3);
-    }
-
-    public function testGetPaywallIframeRendererReturnsSameInstance(): void
-    {
-        // Test singleton pattern.
-        $renderer1 = FrontendManager::getPaywallIframeRenderer();
-        $renderer2 = FrontendManager::getPaywallIframeRenderer();
-        $renderer3 = FrontendManager::getPaywallIframeRenderer();
-
-        $this->assertSame($renderer1, $renderer2);
-        $this->assertSame($renderer2, $renderer3);
+        if (!empty($token)) {
+            $decoded = base64_decode($token, true);
+            $this->assertNotFalse($decoded);
+            $this->assertEquals($token, base64_encode($decoded));
+        } else {
+            $this->assertInternalType('string', $token);
+        }
     }
 
     public function testResetScriptsCanBeCalledMultipleTimes(): void
