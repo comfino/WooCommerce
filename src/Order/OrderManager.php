@@ -302,6 +302,17 @@ final class OrderManager
         /** @see https://woocommerce.com/document/eu-vat-number/ */
         $customerTaxId = function_exists('wc_eu_vat_get_vat_from_order') ? trim(str_replace('-', '', wc_eu_vat_get_vat_from_order($order))) : '';
 
+        $city = self::resolveAddressField(
+            $order->get_billing_city(),
+            $order->get_shipping_city(),
+            ['billing_city', 'shipping_city']
+        );
+        $postcode = self::resolveAddressField(
+            $order->get_billing_postcode(),
+            $order->get_shipping_postcode(),
+            ['billing_postcode', 'shipping_postcode']
+        );
+
         return new Customer(
             $firstName,
             $lastName,
@@ -315,8 +326,8 @@ final class OrderManager
                 $street,
                 $buildingNumber,
                 null,
-                $order->get_billing_postcode(),
-                $order->get_billing_city(),
+                $postcode,
+                $city,
                 $order->get_billing_country()
             )
         );
@@ -668,5 +679,49 @@ final class OrderManager
         }
 
         return [$firstName, $lastName];
+    }
+
+    /**
+     * Resolves an address field value with fallbacks for checkout plugins/themes that disrupt WooCommerce's standard
+     * billing/shipping field persistence on the order object (e.g., FunnelKit Checkout saving fields after payment
+     * gateway processing already ran).
+     *
+     * Tries, in order: the primary (billing) order field, the secondary (shipping) order field, then the raw checkout
+     * POST data under the given field names. Falling back to $_POST is a last resort for cases where the order object
+     * hasn't been fully persisted yet by a third-party checkout flow, but the customer did submit the data.
+     *
+     * @param string $primaryValue Value from the order's primary (billing) getter
+     * @param string $secondaryValue Value from the order's secondary (shipping) getter
+     * @param string[] $postFieldNames POST field names to check, in priority order
+     *
+     * @return string Resolved field value, or empty string if not found anywhere
+     */
+    private static function resolveAddressField(string $primaryValue, string $secondaryValue, array $postFieldNames): string
+    {
+        if (!empty(trim($primaryValue))) {
+            return trim($primaryValue);
+        }
+
+        if (!empty(trim($secondaryValue))) {
+            return trim($secondaryValue);
+        }
+
+        foreach ($postFieldNames as $postFieldName) {
+            if (!empty($_POST[$postFieldName])) {
+                $postValue = trim(sanitize_text_field(wp_unslash($_POST[$postFieldName])));
+
+                if ($postValue !== '') {
+                    DebugLogger::logEvent(
+                        '[ORDER]',
+                        'resolveAddressField - used POST fallback',
+                        ['field' => $postFieldName]
+                    );
+
+                    return $postValue;
+                }
+            }
+        }
+
+        return '';
     }
 }
