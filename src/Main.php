@@ -310,7 +310,7 @@ final class Main
                 'trackId' => $trackId,
                 'loanAmount' => $loanAmount,
                 'paymentMethodAuth' => ConfigManager::getPaywallLogoAuthHash(),
-                'paymentMethodLabel' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT') ?: null,
+                'paymentMethodLabel' => ConfigManager::getPaymentMethodLabel(),
                 'environment' => $environment,
                 'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
                 'productTypes' => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,
@@ -325,6 +325,7 @@ final class Main
                 'directRedirect' => (bool) ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
                 'creditors' => SettingsManager::getCreditors() ?: null,
                 'allowedProductsConfig' => SettingsManager::getAllowedProductsConfigForFrontend(),
+                'flags' => ConfigManager::getRemoteFlags(),
             ];
 
             DebugLogger::logEvent(

@@ -574,7 +574,7 @@ final class FrontendManager
         return array_merge(
             wp_kses_allowed_html('post'),
             [
-                'input' => ['id' => [], 'name' => [], 'value' => [], 'class' => [], 'style' => [], 'title' => [], 'placeholder' => [], 'type' => [], 'checked' => [], 'readonly' => [], 'disabled' => [], 'required' => []],
+                'input' => ['id' => [], 'name' => [], 'value' => [], 'class' => [], 'style' => [], 'title' => [], 'placeholder' => [], 'type' => [], 'checked' => [], 'readonly' => [], 'disabled' => [], 'required' => [], 'data-comfino-max-select' => []],
                 'textarea' => ['id' => [], 'name' => [], 'class' => [], 'style' => [], 'title' => [], 'placeholder' => [], 'rows' => [], 'cols' => [], 'readonly' => [], 'disabled' => [], 'required' => []],
                 'select' => ['id' => [], 'name' => [], 'multiple' => [], 'disabled' => [], 'required' => []],
                 'option' => ['value' => [], 'selected' => [], 'label' => [], 'disabled' => []],

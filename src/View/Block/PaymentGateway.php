@@ -142,7 +142,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
             'environment' => ConfigManager::isSandboxMode() ? 'sandbox' : 'production',
             'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
             'paymentMethodAuth' => ConfigManager::getPaywallLogoAuthHash(),
-            'paymentMethodLabel' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT') ?: null,
+            'paymentMethodLabel' => ConfigManager::getPaymentMethodLabel(),
             /* Blocks builds its own payment-method `label` node client-side (no server-rendered markup to attach a
                placeholder `<img>` to, unlike classic checkout's get_icon()), so the default logo URL must travel
                through the bootstrap config instead. */

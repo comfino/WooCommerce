@@ -39,6 +39,41 @@ final class SettingsManager
     }
 
     /**
+     * Reorders a product type code => name map by ConfigManager::getCheckoutProductTypesOrder(): entries whose code
+     * appears in that priority list come first (in its order), followed by any remaining entries in their original
+     * order.
+     *
+     * @param array $productTypes Product type code => name map, as returned by getProductTypesSelectList()
+     *
+     * @return array
+     */
+    public static function sortProductTypesByPriority(array $productTypes): array
+    {
+        $sortedProductTypes = [];
+
+        foreach (ConfigManager::getCheckoutProductTypesOrder() as $productTypeCode) {
+            if (array_key_exists($productTypeCode, $productTypes)) {
+                $sortedProductTypes[$productTypeCode] = $productTypes[$productTypeCode];
+            }
+        }
+
+        return $sortedProductTypes + $productTypes;
+    }
+
+    /**
+     * Preselects up to two checkout payment label product types from the shop's available financial products,
+     * following the priority order from ConfigManager::getCheckoutProductTypesOrder().
+     *
+     * @param array $availableProductTypes Product type code => name map, as returned by getProductTypesSelectList()
+     *
+     * @return string[]
+     */
+    public static function getDefaultCheckoutProductTypes(array $availableProductTypes): array
+    {
+        return array_slice(array_keys(self::sortProductTypesByPriority($availableProductTypes)), 0, 2);
+    }
+
+    /**
      * @return string[]
      */
     public static function getProductTypes(string $listType, bool $returnErrors = false): array

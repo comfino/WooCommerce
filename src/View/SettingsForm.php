@@ -65,6 +65,13 @@ final class SettingsForm
                     if (empty($configurationOptionsToSave['COMFINO_API_KEY'])) {
                         $errorMessages[] = sprintf($errorEmptyMsg, __('Production environment API key', 'comfino-payment-gateway'));
                     }
+                    if (is_array($configurationOptionsToSave['COMFINO_CHECKOUT_PRODUCT_TYPES'] ?? null)) {
+                        $configurationOptionsToSave['COMFINO_CHECKOUT_PRODUCT_TYPES'] = array_slice(
+                            array_values(array_filter($configurationOptionsToSave['COMFINO_CHECKOUT_PRODUCT_TYPES'])),
+                            0,
+                            2
+                        );
+                    }
                     if (empty($configurationOptionsToSave['COMFINO_MINIMAL_CART_AMOUNT'])) {
                         $errorMessages[] = sprintf($errorEmptyMsg, __('Minimal amount in cart', 'comfino-payment-gateway'));
                     } elseif (!is_numeric($configurationOptionsToSave['COMFINO_MINIMAL_CART_AMOUNT'])) {
@@ -396,8 +403,9 @@ final class SettingsForm
                 $formFields = array_intersect_key(
                     self::getFormFieldsDefinitions(),
                     array_flip([
-                        'enabled', 'production_key', 'payment_text', 'min_cart_amount', 'use_order_reference',
-                        'paywall_settings_section', 'paywall_direct_redirect', 'paywall_custom_css_url',
+                        'enabled', 'production_key', 'payment_text_enabled', 'payment_text',  'checkout_product_types',
+                        'min_cart_amount', 'use_order_reference',  'paywall_settings_section', 'paywall_direct_redirect',
+                        'paywall_custom_css_url',
                     ])
                 );
                 break;
@@ -606,11 +614,35 @@ final class SettingsForm
                 'type' => 'text',
                 'placeholder' => __('Please enter the key provided during registration', 'comfino-payment-gateway'),
             ],
+            'payment_text_enabled' => [
+                'title' => __('Custom payment label', 'comfino-payment-gateway'),
+                'type' => 'checkbox',
+                'label' => __('Use custom payment label text', 'comfino-payment-gateway'),
+                'default' => ConfigManager::getDefaultValue('payment_text_enabled') === true ? 'yes' : 'no',
+                'description' => __(
+                    'When disabled, the text below is ignored and the checkout item label is built from the financial product types selected below instead.',
+                    'comfino-payment-gateway'
+                ),
+            ],
             'payment_text' => [
                 'title' => __('Payment text', 'comfino-payment-gateway'),
                 'type' => 'text',
                 'default' => (string) ConfigManager::getDefaultValue('payment_text'),
+                'disabled' => !ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT_ENABLED'),
                 'description' => __('Label displayed for Comfino in the checkout payment method list.', 'comfino-payment-gateway'),
+            ],
+            'checkout_product_types' => [
+                'title' => __('Payment label product types', 'comfino-payment-gateway'),
+                'type' => 'checkboxset',
+                'values' => $checkoutProductTypes = SettingsManager::sortProductTypesByPriority(
+                    SettingsManager::getProductTypesSelectList(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL)
+                ),
+                'default' => SettingsManager::getDefaultCheckoutProductTypes($checkoutProductTypes),
+                'custom_attributes' => ['data-comfino-max-select' => '2'],
+                'description' => __(
+                    'Used only when the custom payment label above is disabled. Select up to two financial product types to show their names in the checkout payment method label.',
+                    'comfino-payment-gateway'
+                ),
             ],
             'min_cart_amount' => [
                 'title' => __('Minimal amount in cart', 'comfino-payment-gateway'),

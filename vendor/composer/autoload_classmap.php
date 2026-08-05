@@ -327,7 +327,6 @@ return array(
     'Comfino\\Extended\\Api\\Response\\GetSupportedPlatforms' => $vendorDir . '/comfino/shop-plugins-shared/src/Extended/Api/Response/GetSupportedPlatforms.php',
     'Comfino\\Extended\\Api\\Serializer\\Json' => $vendorDir . '/comfino/shop-plugins-shared/src/Extended/Api/Serializer/Json.php',
     'Comfino\\Extended\\Auth\\PaywallAuthTokenGenerator' => $vendorDir . '/comfino/shop-plugins-shared/src/Extended/Auth/PaywallAuthTokenGenerator.php',
-    'Comfino\\FinancialProduct\\Filter\\FilterByExcludedProductId' => $baseDir . '/src/FinancialProduct/Filter/FilterByExcludedProductId.php',
     'Comfino\\FinancialProduct\\ProductTypesListTypeEnum' => $vendorDir . '/comfino/shop-plugins-shared/src/FinancialProduct/ProductTypesListTypeEnum.php',
     'Comfino\\Frontend\\AbstractShopEnvironmentBuilder' => $vendorDir . '/comfino/shop-plugins-shared/src/Frontend/AbstractShopEnvironmentBuilder.php',
     'Comfino\\Frontend\\CapabilityResolver' => $vendorDir . '/comfino/shop-plugins-shared/src/Frontend/CapabilityResolver.php',
