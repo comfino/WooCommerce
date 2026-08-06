@@ -172,6 +172,7 @@ final class ConfigManager
         'COMFINO_API_TIMEOUT',
         'COMFINO_API_CONNECT_NUM_ATTEMPTS',
         'COMFINO_DEV_ENV_VARS',
+        'COMFINO_REMOTE_FLAGS',
     ];
 
     private const CONFIG_MANAGER_OPTIONS = 0;

@@ -266,6 +266,11 @@ final class Main
                 ErrorLogger::sendError($e, OperationContext::PaymentProcessing, (string) $e->getCode(), $e->getMessage());
             }
 
+            [$sortedProductTypes, $sortedProductTypeNames] = SettingsManager::sortPaywallProductTypes(
+                $allowedProductTypes,
+                SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL)
+            );
+
             $loanAmount = $shopCart !== null ? $shopCart->getTotalAmount() : (int) round($cart->get_total('edit') * 100);
 
             $cartPayload = null;
@@ -313,8 +318,8 @@ final class Main
                 'paymentMethodLabel' => ConfigManager::getPaymentMethodLabel(),
                 'environment' => $environment,
                 'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
-                'productTypes' => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,
-                'productTypeNames' => SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL) ?: null,
+                'productTypes' => $sortedProductTypes,
+                'productTypeNames' => $sortedProductTypeNames ?: null,
                 'cart' => $cartPayload,
                 'paywallSettings' => [
                     'language' => self::getShopLanguage(),

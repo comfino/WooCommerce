@@ -74,6 +74,34 @@ final class SettingsManager
     }
 
     /**
+     * Sorts the product types passed to the paywall SDK config (`productTypes`/`productTypeNames`) using the same
+     * priority order as the "Payment label product types" admin setting (ConfigManager::getCheckoutProductTypesOrder()),
+     * so the SDK receives product types in the order configured in payment settings.
+     *
+     * @param LoanTypeEnum[]|null $allowedProductTypes
+     * @param array $productTypeNames Product type code => name map, as returned by getProductTypes()
+     *
+     * @return array{0: string[]|null, 1: array}
+     */
+    public static function sortPaywallProductTypes(?array $allowedProductTypes, array $productTypeNames): array
+    {
+        if (isset($productTypeNames['error'])) {
+            return [$allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null, $productTypeNames];
+        }
+
+        $sortedProductTypeNames = self::sortProductTypesByPriority($productTypeNames);
+
+        if ($allowedProductTypes === null) {
+            return [null, $sortedProductTypeNames];
+        }
+
+        $allowedCodes = array_map('strval', $allowedProductTypes);
+        $sortedAllowedCodes = array_values(array_intersect(array_keys($sortedProductTypeNames), $allowedCodes));
+
+        return [$sortedAllowedCodes, $sortedProductTypeNames];
+    }
+
+    /**
      * @return string[]
      */
     public static function getProductTypes(string $listType, bool $returnErrors = false): array
@@ -417,7 +445,7 @@ final class SettingsManager
     /**
      * Returns the normalized `COMFINO_ALLOWED_PRODUCTS_CONFIG` payload ready for both the paywall iframe bootstrap
      * (frontend) and the backend `AllowedProductConfig` DTO builder. Drops entries whose `type` is missing or not
-     * a known `LoanTypeEnum`, ensures `terms` are positive ints, returns `null` when the result is empty so the
+     * a known `LoanTypeEnum`, ensures `terms` are positive ints, returns `null` when the result is empty, so the
      * SDK's `?.length` short-circuit matches the "no restrictions" semantics.
      *
      * @return array[]|null

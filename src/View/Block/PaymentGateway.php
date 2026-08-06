@@ -122,6 +122,11 @@ final class PaymentGateway extends AbstractPaymentMethodType
             }
         }
 
+        [$sortedProductTypes, $sortedProductTypeNames] = SettingsManager::sortPaywallProductTypes(
+            $allowedProductTypes,
+            SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL)
+        );
+
         $loanAmount = $shopCart !== null ? $shopCart->getTotalAmount() : ($wcCart !== null ? (int) round($wcCart->get_total('edit') * 100) : 0);
 
         $cartPayload = null;
@@ -148,8 +153,8 @@ final class PaymentGateway extends AbstractPaymentMethodType
                through the bootstrap config instead. */
             'defaultLogoUrl' => ConfigManager::getDefaultLogoUrl(),
             'supports' => $this->gateway ? array_filter($this->gateway->supports, [$this->gateway, 'supports']) : ['products'],
-            'productTypes' => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,
-            'productTypeNames' => SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL) ?: null,
+            'productTypes' => $sortedProductTypes,
+            'productTypeNames' => $sortedProductTypeNames ?: null,
             'cart' => $cartPayload,
             'paywallSettings' => [
                 'language' => Main::getShopLanguage(),
@@ -172,6 +177,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
             'directRedirect' => (bool) ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
             'creditors' => SettingsManager::getCreditors() ?: null,
             'allowedProductsConfig' => SettingsManager::getAllowedProductsConfigForFrontend(),
+            'flags' => ConfigManager::getRemoteFlags(),
             'scriptNonce' => (string) apply_filters('comfino_csp_script_nonce', ''),
         ];
     }
