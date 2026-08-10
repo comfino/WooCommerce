@@ -277,6 +277,7 @@ return array(
     'Comfino\\Common\\Backend\\Payment\\ProductTypeFilter\\FilterByExcludedCategory' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Backend/Payment/ProductTypeFilter/FilterByExcludedCategory.php',
     'Comfino\\Common\\Backend\\Payment\\ProductTypeFilter\\FilterByExcludedProductId' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Backend/Payment/ProductTypeFilter/FilterByExcludedProductId.php',
     'Comfino\\Common\\Backend\\Payment\\ProductTypeFilter\\FilterByProductType' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Backend/Payment/ProductTypeFilter/FilterByProductType.php',
+    'Comfino\\Common\\Backend\\Payment\\ProductTypeFilter\\FilterByProductTypeCartValueLimits' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Backend/Payment/ProductTypeFilter/FilterByProductTypeCartValueLimits.php',
     'Comfino\\Common\\Backend\\Payment\\ProductTypeTools' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Backend/Payment/ProductTypeTools.php',
     'Comfino\\Common\\Backend\\RestEndpoint' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Backend/RestEndpoint.php',
     'Comfino\\Common\\Backend\\RestEndpointInterface' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Backend/RestEndpointInterface.php',
