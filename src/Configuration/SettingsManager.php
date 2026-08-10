@@ -4,9 +4,9 @@ namespace Comfino\Configuration;
 
 use Comfino\Api\ApiClient;
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
-use Comfino\Common\Backend\Payment\ProductTypeFilter\FilterByCartValueLowerLimit;
 use Comfino\Common\Backend\Payment\ProductTypeFilter\FilterByExcludedCategory;
 use Comfino\Common\Backend\Payment\ProductTypeFilter\FilterByExcludedProductId;
+use Comfino\Common\Backend\Payment\ProductTypeFilter\FilterByProductTypeCartValueLimits;
 use Comfino\Common\Backend\Payment\ProductTypeFilterInterface;
 use Comfino\Common\Backend\Payment\ProductTypeFilterManager;
 use Comfino\Common\Shop\Cart;
@@ -400,6 +400,16 @@ final class SettingsManager
         return $availProductTypes;
     }
 
+    /**
+     * @return array[]
+     */
+    public static function getCartValueLimitsConfig(): array
+    {
+        $rawConfig = ConfigManager::getConfigurationValue('COMFINO_CART_VALUE_LIMITS_CONFIG');
+
+        return is_array($rawConfig) ? $rawConfig : [];
+    }
+
     private static function getFilterManager(string $listType): ProductTypeFilterManager
     {
         if (self::$filterManager === null) {
@@ -420,12 +430,32 @@ final class SettingsManager
     {
         $filters = [];
         $minAmount = (int) (round(ConfigManager::getConfigurationValue('COMFINO_MINIMAL_CART_AMOUNT', 0), 2) * 100);
+        $minLimitsByProductType = [];
+        $maxLimitsByProductType = [];
 
         if ($minAmount > 0) {
             $availableProductTypes = self::getProductTypesStrings($listType);
-            $filters[] = new FilterByCartValueLowerLimit(
-                array_combine($availableProductTypes, array_fill(0, count($availableProductTypes), $minAmount))
-            );
+            $minLimitsByProductType = array_fill_keys($availableProductTypes, $minAmount);
+        }
+
+        foreach (self::getCartValueLimitsConfig() as $entry) {
+            if (empty($entry['type'])) {
+                continue;
+            }
+
+            $productType = (string) $entry['type'];
+
+            if (isset($entry['minAmount'])) {
+                $minLimitsByProductType[$productType] = (int) round(((float) $entry['minAmount']) * 100);
+            }
+
+            if (isset($entry['maxAmount'])) {
+                $maxLimitsByProductType[$productType] = (int) round(((float) $entry['maxAmount']) * 100);
+            }
+        }
+
+        if (!empty($minLimitsByProductType) || !empty($maxLimitsByProductType)) {
+            $filters[] = new FilterByProductTypeCartValueLimits(null, $minLimitsByProductType, $maxLimitsByProductType);
         }
 
         if (self::productCategoryFiltersActive($productCategoryFilters = self::getProductCategoryFilters())) {

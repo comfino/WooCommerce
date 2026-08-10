@@ -27,6 +27,7 @@ Comfino is an innovative payment method for customers of e-commerce stores! Thes
  * Improved billing/shipping address fallback handling for shops using third-party checkout plugins that delay saving address fields on the order (e.g., FunnelKit Checkout).
  * Randomized (jittered) the daily GitHub version check interval and added a short-lived lock to prevent duplicate/bursted checks under concurrent admin requests.
  * Added an option to disable the custom payment method text and instead select up to two financial product types whose names are shown in the checkout payment method label.
+ * Added per-product-type cart value limits: admins can now define a minimum and maximum cart value for each financial product type separately (in addition to the global minimum cart amount), with a new management UI in the sale settings.
 
 4.3.0
  * Paywall frontend migrated to V3 API and new frontend Comfino SDK — faster loading, improved stability.

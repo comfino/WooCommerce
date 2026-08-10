@@ -499,6 +499,16 @@ class PaymentGateway extends \WC_Payment_Gateway
         return FrontendManager::renderAllowedProductsConfig($data);
     }
 
+    public function generate_cart_value_limits_config_html(string $key, array $data): string
+    {
+        return FrontendManager::renderCartValueLimitsConfig($data);
+    }
+
+    public function generate_hr_html(string $key, array $data): string
+    {
+        return '<tr><td colspan="2"><hr style="margin: 1.5em 0"></td></tr>';
+    }
+
     public function generatePaywallIframe(bool $isPaymentBlock): string
     {
         return WC()->cart !== null ? Main::renderPaywallIframe(WC()->cart, $this->get_order_total(), $isPaymentBlock) : '';

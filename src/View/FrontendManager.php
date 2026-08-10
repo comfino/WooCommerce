@@ -185,6 +185,34 @@ final class FrontendManager
         );
     }
 
+    public static function renderCartValueLimitsConfig(array $data): string
+    {
+        $defaults = [
+            'title' => '',
+            'type' => 'cart_value_limits_config',
+            'description' => '',
+            'product_types' => [],
+            'saved_config' => [],
+        ];
+
+        $data = wp_parse_args($data, $defaults);
+
+        return sprintf(
+            '<tr valign="top"><td class="forminp" colspan="2">%s</td></tr>',
+            TemplateManager::renderView(
+                'cart-value-limits-config',
+                'admin/_configure',
+                [
+                    'title' => $data['title'],
+                    'description' => $data['description'],
+                    'product_types' => $data['product_types'],
+                    'saved_config' => $data['saved_config'],
+                ],
+                false
+            )
+        );
+    }
+
     public static function renderProductCategoryFilterGroup(array $data): string
     {
         $defaults = [
