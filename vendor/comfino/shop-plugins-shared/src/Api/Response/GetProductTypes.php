@@ -11,6 +11,8 @@ class GetProductTypes extends Base
     public $productTypes;
     
     public $productTypesWithNames;
+    
+    public $productTypesWithPublicNames;
 
     /**
      * @param mixed[]|string|bool|null|float|int $deserializedResponseBody
@@ -19,7 +21,20 @@ class GetProductTypes extends Base
     {
         $this->checkResponseType($deserializedResponseBody, 'array');
 
-        $this->productTypesWithNames = $deserializedResponseBody;
+        $productTypesWithNames = [];
+        $productTypesWithPublicNames = [];
+
+        foreach ($deserializedResponseBody as $productType => $names) {
+            $this->checkResponseType($names, 'array', $productType);
+
+            [$internalName, $publicName] = $names;
+
+            $productTypesWithNames[$productType] = $internalName;
+            $productTypesWithPublicNames[$productType] = $publicName;
+        }
+
+        $this->productTypesWithNames = $productTypesWithNames;
+        $this->productTypesWithPublicNames = $productTypesWithPublicNames;
         $this->productTypes = array_map(
             static function (string $productType) : LoanTypeEnum {
                 return LoanTypeEnum::from($productType, false);
