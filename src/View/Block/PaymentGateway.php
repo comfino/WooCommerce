@@ -178,6 +178,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
             'creditors' => SettingsManager::getCreditors() ?: null,
             'allowedProductsConfig' => SettingsManager::getAllowedProductsConfigForFrontend(),
             'flags' => ConfigManager::getRemoteFlags(),
+            'flagAttributes' => ConfigManager::getRemoteFlagAttributes(),
             'scriptNonce' => (string) apply_filters('comfino_csp_script_nonce', ''),
         ];
     }

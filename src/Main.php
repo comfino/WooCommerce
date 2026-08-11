@@ -331,6 +331,7 @@ final class Main
                 'creditors' => SettingsManager::getCreditors() ?: null,
                 'allowedProductsConfig' => SettingsManager::getAllowedProductsConfigForFrontend(),
                 'flags' => ConfigManager::getRemoteFlags(),
+                'flagAttributes' => ConfigManager::getRemoteFlagAttributes(),
             ];
 
             DebugLogger::logEvent(

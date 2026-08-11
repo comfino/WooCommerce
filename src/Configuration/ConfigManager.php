@@ -70,6 +70,7 @@ final class ConfigManager
         'COMFINO_ERROR_LOGGING_ACCESS_TOKEN' => 'error_logging_access_token',
         'COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT' => 'error_logging_access_token_expires_at',
         'COMFINO_REMOTE_FLAGS' => 'remote_flags',
+        'COMFINO_REMOTE_FLAG_ATTRIBUTES' => 'remote_flag_attributes',
     ];
 
     public const CONFIG_OPTIONS = [
@@ -130,6 +131,7 @@ final class ConfigManager
             'COMFINO_ERROR_LOGGING_ACCESS_TOKEN' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT' => ConfigurationManager::OPT_VALUE_TYPE_INT,
             'COMFINO_REMOTE_FLAGS' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
+            'COMFINO_REMOTE_FLAG_ATTRIBUTES' => ConfigurationManager::OPT_VALUE_TYPE_JSON,
         ],
     ];
 
@@ -176,6 +178,7 @@ final class ConfigManager
         'COMFINO_API_CONNECT_NUM_ATTEMPTS',
         'COMFINO_DEV_ENV_VARS',
         'COMFINO_REMOTE_FLAGS',
+        'COMFINO_REMOTE_FLAG_ATTRIBUTES',
     ];
 
     private const CONFIG_MANAGER_OPTIONS = 0;
@@ -445,7 +448,14 @@ final class ConfigManager
                 self::updateConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN', $response->accessToken);
                 self::updateConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT', strtotime($response->expiresAt));
 
-                self::updateRemoteFlagsIfChanged($response->getHeader('Comfino-Flags', ''));
+                if (self::updateRemoteFlagsIfChanged($response->getHeader('Comfino-Flags', ''))) {
+                    /* Attributes are only ever set/changed together with their flag, so it's enough to re-fetch them
+                       when the flag list itself changed - saves an extra API call on every other refresh. */
+                    self::updateConfigurationValue(
+                        'COMFINO_REMOTE_FLAG_ATTRIBUTES',
+                        ApiClient::getInstance()->getUserSettings()->flags
+                    );
+                }
             }
         } catch (\Throwable) {
             // Silently ignore — CETS token claim is best-effort.
@@ -465,6 +475,18 @@ final class ConfigManager
     }
 
     /**
+     * @return array<string, array<string, mixed>>
+     */
+    public static function getRemoteFlagAttributes(): array
+    {
+        if (!is_array($flagAttributes = self::getConfigurationValue('COMFINO_REMOTE_FLAG_ATTRIBUTES'))) {
+            return [];
+        }
+
+        return $flagAttributes;
+    }
+
+    /**
      * Priority order of financial product type codes for the checkout payment label: preselection and the checkboxes
      * list both follow it. Stored as a plain configuration value (not hardcoded) so Comfino can update it remotely via
      * the /configuration endpoint without a plugin code change or upgrade.
@@ -480,7 +502,7 @@ final class ConfigManager
         return $order;
     }
 
-    private static function updateRemoteFlagsIfChanged(string $flagsHeaderValue): void
+    private static function updateRemoteFlagsIfChanged(string $flagsHeaderValue): bool
     {
         $remoteFlags = array_values(array_unique(array_filter(array_map('trim', explode(',', $flagsHeaderValue)))));
 
@@ -490,9 +512,13 @@ final class ConfigManager
 
         sort($storedFlags);
 
-        if ($remoteFlags !== $storedFlags) {
-            self::updateConfigurationValue('COMFINO_REMOTE_FLAGS', $remoteFlags);
+        if ($remoteFlags === $storedFlags) {
+            return false;
         }
+
+        self::updateConfigurationValue('COMFINO_REMOTE_FLAGS', $remoteFlags);
+
+        return true;
     }
 
     /**
@@ -816,6 +842,7 @@ final class ConfigManager
             'COMFINO_API_CONNECT_NUM_ATTEMPTS' => 3,
             'COMFINO_DEV_ENV_VARS' => false,
             'COMFINO_REMOTE_FLAGS' => [],
+            'COMFINO_REMOTE_FLAG_ATTRIBUTES' => null,
         ];
     }
 
