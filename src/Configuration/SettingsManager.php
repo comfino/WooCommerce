@@ -79,7 +79,7 @@ final class SettingsManager
      * so the SDK receives product types in the order configured in payment settings.
      *
      * @param LoanTypeEnum[]|null $allowedProductTypes
-     * @param array $productTypeNames Product type code => name map, as returned by getProductTypes()
+     * @param array $productTypeNames Product type code => public name map, as returned by getProductTypes() with $usePublicNames = true
      *
      * @return array{0: string[]|null, 1: array}
      */
@@ -104,10 +104,10 @@ final class SettingsManager
     /**
      * @return string[]
      */
-    public static function getProductTypes(string $listType, bool $returnErrors = false): array
+    public static function getProductTypes(string $listType, bool $returnErrors = false, bool $usePublicNames = false): array
     {
         $language = Main::getShopLanguage();
-        $cacheKey = "product_types.$listType.$language";
+        $cacheKey = "product_types.$listType" . ($usePublicNames ? '.public' : '') . ".$language";
         $listTypeEnum = new ProductTypesListTypeEnum($listType);
 
         if (($productTypes = CacheManager::get($cacheKey)) !== null) {
@@ -120,7 +120,9 @@ final class SettingsManager
 
         try {
             $productTypes = ApiClient::getInstance()->getProductTypes($listTypeEnum);
-            $productTypesList = $productTypes->productTypesWithNames;
+            $productTypesList = $usePublicNames
+                ? $productTypes->productTypesWithPublicNames
+                : $productTypes->productTypesWithNames;
             $cacheTtl = (int) $productTypes->getHeader('Cache-TTL', '0');
 
             CacheManager::set($cacheKey, $productTypesList, $cacheTtl, ['admin_product_types']);

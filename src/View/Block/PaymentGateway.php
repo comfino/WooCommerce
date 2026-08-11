@@ -124,7 +124,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
 
         [$sortedProductTypes, $sortedProductTypeNames] = SettingsManager::sortPaywallProductTypes(
             $allowedProductTypes,
-            SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL)
+            SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL, false, true)
         );
 
         $loanAmount = $shopCart !== null ? $shopCart->getTotalAmount() : ($wcCart !== null ? (int) round($wcCart->get_total('edit') * 100) : 0);
