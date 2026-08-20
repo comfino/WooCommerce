@@ -233,8 +233,7 @@ final class ApiService
                 'processRequest',
                 [
                     '$endpointName' => $endpointName,
-                    'RECEIVED-CR-SIGNATURE' => $endpointManager->getReceivedCrSignature(),
-                    'CALCULATED-CR-SIGNATURE' => $endpointManager->getCalculatedCrSignature(),
+                    'RECEIVED-CR-SIGNATURE-PREFIX' => substr((string) $endpointManager->getReceivedCrSignature(), 0, 8),
                     'HEADERS' => $response->getHeaders(),
                     'STATUS' => $response->getStatusCode(),
                     'BODY' => $response->getBody()->getContents(),

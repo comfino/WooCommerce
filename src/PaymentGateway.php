@@ -136,7 +136,12 @@ class PaymentGateway extends \WC_Payment_Gateway
         DebugLogger::logEvent(
             '[PAYMENT GATEWAY]',
             'process_payment',
-            ['cart_id' => $cart->get_cart_hash(), '$order_id' => $order_id, '$_POST' => $_POST]
+            [
+                'cart_id' => $cart->get_cart_hash(),
+                '$order_id' => $order_id,
+                'comfino_loan_type' => $_POST['comfino_loan_type'] ?? 'undefined',
+                'comfino_loan_term' => $_POST['comfino_loan_term'] ?? 'undefined',
+            ]
         );
 
         $wcOrder = wc_get_order($order_id);
@@ -253,7 +258,7 @@ class PaymentGateway extends \WC_Payment_Gateway
                 DebugLogger::logEvent(
                     '[CREATE_ORDER_API_REQUEST]',
                     'createOrder',
-                    ['$request' => $apiRequest->getRequestBody()]
+                    ['order_id' => $order_id, 'request_body_length' => strlen($apiRequest->getRequestBody())]
                 );
             }
         }
