@@ -31,10 +31,6 @@ final class RestEndpointManager
      */
     protected $pluginVersion;
     /**
-     * @var string[]
-     */
-    protected $apiKeys;
-    /**
      * @var \ComfinoExternal\Psr\Http\Message\ServerRequestFactoryInterface
      */
     protected $serverRequestFactory;
@@ -111,19 +107,35 @@ final class RestEndpointManager
     }
 
     /**
+     * @var mixed[]
+     */
+    protected $apiKeys;
+
+    /**
      * @param string[] $apiKeys
      */
-    private function __construct(string $platformName, string $platformVersion, string $pluginVersion, array $apiKeys, ServerRequestFactoryInterface $serverRequestFactory, StreamFactoryInterface $streamFactory, UriFactoryInterface $uriFactory, ResponseFactoryInterface $responseFactory, SerializerInterface $serializer)
-    {
+    private function __construct(
+        string $platformName,
+        string $platformVersion,
+        string $pluginVersion,
+        array $apiKeys,
+        ServerRequestFactoryInterface $serverRequestFactory,
+        StreamFactoryInterface $streamFactory,
+        UriFactoryInterface $uriFactory,
+        ResponseFactoryInterface $responseFactory,
+        SerializerInterface $serializer
+    ) {
         $this->platformName = $platformName;
         $this->platformVersion = $platformVersion;
         $this->pluginVersion = $pluginVersion;
-        $this->apiKeys = $apiKeys;
         $this->serverRequestFactory = $serverRequestFactory;
         $this->streamFactory = $streamFactory;
         $this->uriFactory = $uriFactory;
         $this->responseFactory = $responseFactory;
         $this->serializer = $serializer;
+        $this->apiKeys = array_values(array_filter($apiKeys, static function ($apiKey) {
+            return is_string($apiKey) && $apiKey !== '';
+        }));
     }
 
     /**
@@ -327,6 +339,10 @@ final class RestEndpointManager
 
         if (empty($this->crSignature)) {
             throw new AuthorizationError('Unauthorized request.');
+        }
+
+        if (empty($this->apiKeys)) {
+            throw new AccessDenied('Access not allowed. No API key configured.');
         }
 
         $requestAuthorized = false;
