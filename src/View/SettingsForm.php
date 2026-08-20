@@ -547,6 +547,7 @@ final class SettingsForm
                     array_flip([
                         'widget_settings_basic',
                         'widget_enabled', 'widget_key', 'widget_type', 'widget_offer_types', 'widget_show_provider_logos',
+                        'widget_disable_banner', 'widget_calculator_trigger_selector',
                         'widget_settings_divider',
                         'widget_settings_advanced',
                         'widget_price_selector', 'widget_price_attribute', 'widget_target_selector',
@@ -832,6 +833,22 @@ final class SettingsForm
                 'type' => 'checkbox',
                 'label' => __('Show logos of financial services providers', 'comfino-payment-gateway'),
                 'default' => ConfigManager::getDefaultValue('widget_show_provider_logos') === true ? 'yes' : 'no',
+            ],
+            'widget_disable_banner' => [
+                'title' => __('Disable banner', 'comfino-payment-gateway'),
+                'type' => 'checkbox',
+                'label' => __('Disable standard widget banner (standalone calculator)', 'comfino-payment-gateway'),
+                'default' => ConfigManager::getDefaultValue('widget_disable_banner') === true ? 'yes' : 'no',
+                'description' => __('Do not embed the installment banner on the product page. The Comfino calculator overlay can still be opened from your own button/link using the trigger element selector below.', 'comfino-payment-gateway'),
+            ],
+            'widget_calculator_trigger_selector' => [
+                'title' => __('Calculator trigger element selector', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'default' => ConfigManager::getDefaultValue('widget_calculator_trigger_selector'),
+                'description' => __(
+                    'Selector of the element (e.g. a button or link) whose click opens the Comfino calculator overlay when the banner is disabled. Leave empty to open it yourself via window.comfinoWidget.open() or the comfino:widget:ready event.',
+                    'comfino-payment-gateway'
+                ),
             ],
             'widget_settings_divider' => [
                 'type' => 'hr',
