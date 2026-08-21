@@ -460,9 +460,13 @@ final class SettingsForm
                     }
                 }
 
-                $formFields['cart_value_limits_config']['product_types'] = SettingsManager::getProductTypesSelectList(
+                $cartLimitsProductTypes = SettingsManager::getProductTypesSelectList(
                     ProductTypesListTypeEnum::LIST_TYPE_PAYWALL
                 );
+
+                $formFields['cart_value_limits_config']['product_types'] = isset($cartLimitsProductTypes['error'])
+                    ? []
+                    : $cartLimitsProductTypes;
                 $formFields['cart_value_limits_config']['saved_config'] = $savedCartValueLimitsByType;
 
                 break;
