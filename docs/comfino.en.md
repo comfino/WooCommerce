@@ -27,9 +27,11 @@ Configuration parameter fields:
 
 * **Enable/Disable** — activity status of the Comfino module (visibility on the list of payment methods in the basket)
 * **Production environment API key** — a unique access key that allows the module to communicate with the Comfino API (you will receive it from a Comfino representative)
-* **Title** — text displayed on the list of payment methods (default `"Comfino"`)
+* **Custom payment label** — switch enabling a custom payment label text; when disabled, the checkout item label is built from the payment label product types selected instead
+* **Payment text** — label displayed for Comfino in the checkout payment method list (used only when the custom payment label is enabled)
+* **Payment label product types** — financial product types whose names are shown in the checkout payment method label when the custom payment label is disabled (up to two financial product types can be selected)
 * **Minimal amount in cart** — amount above which the Comfino payment and widget will be displayed
-* **Show logo** — visibility status of the Comfino logo next to the title at the list of payment methods (default: enabled)
+* **Cart value limits per financial product type** — optional minimum/maximum cart value limits for each financial product type, applied on top of the global minimal cart amount
 * **Order number** — Use customer-visible order reference instead of numeric order ID for Comfino API integration. New orders only.
 
 **Paywall settings**
@@ -69,9 +71,11 @@ The product ID filter works independently of the product category filters.
 **Basic Settings**
 
 * **Widget enable** — promotional widget activation/deactivation switch on the product page
-* **Widget type** — way of presenting the widget [`Standard widget`, `Classic widget`]
+* **Widget type** — way of presenting the widget [`Standard widget`, `Classic widget`, `Blank widget`]
 * **Offer types** — types of financing offers promoted [`Zero percent installments`, `Convenient installments`, `Pay later`, `Installments for companies`, `Deferred payments for companies`, `Leasing`]
 * **Show logos** — switch enabling to display the logo of each available financial provider
+* **Disable banner** — do not embed the installment banner on the product page (standalone calculator mode); the Comfino calculator overlay can still be opened from your own button/link using the trigger element selector
+* **Calculator trigger element selector** — selector of the element (e.g. a button or link) whose click opens the Comfino calculator overlay when the banner is disabled
 
 The availability of offer types on the list depends on the individual contract and may differ from that described in the documentation.
 
@@ -80,13 +84,13 @@ The availability of offer types on the list depends on the individual contract a
 **Advanced settings**
 
 * **Widget price element selector** — HTML document element containing the price of the product
+* **Widget price element attribute** — attribute of the price element holding the numeric price value; when set, the widget reads the price from this attribute instead of parsing the element text, which avoids a race with asynchronous price rendering
 * **Widget anchor element selector** — widget container element (widget is embedded in it)
 * **Price change detection — container selector** — HTML document element containing a price element directly or indirectly used to track price changes and recalculate offers
 * **Price change detection — container hierarchy level** — DOM hierarchy level used to track price changes and recalculate offers
 * **Embedding method** — how the widget is oriented relative to the container element [`INSERT_INTO_FIRST`, `INSERT_INTO_LAST`, `INSERT_BEFORE`, `INSERT_AFTER`]
 * **Custom banner CSS style** — Link to a CSS file with styles overriding the banner's appearance (only absolute addresses from the store's domain are accepted)
 * **Custom calculator CSS style** — Link to a CSS file with styles overriding the calculator's appearance (only absolute addresses from the store's domain are accepted)
-* **Widget initialization code** — JavaScript script to initialize the widget on the product page (making changes not recommended for non-advanced users without JavaScript knowledge)
 
 Detailed information on the operation of the widget and its configuration options can be found in a separate [Comfino widget documentation](https://comfino.pl/widgets/comfino-woocommerce/en).
 
