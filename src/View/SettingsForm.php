@@ -843,14 +843,14 @@ final class SettingsForm
                 'type' => 'checkbox',
                 'label' => __('Disable standard widget banner (standalone calculator)', 'comfino-payment-gateway'),
                 'default' => ConfigManager::getDefaultValue('widget_disable_banner') === true ? 'yes' : 'no',
-                'description' => __('Do not embed the installment banner on the product page. The Comfino calculator overlay can still be opened from your own button/link using the trigger element selector below.', 'comfino-payment-gateway'),
+                'description' => __('Do not embed the installment banner on the product page. The Comfino calculator window can still be opened from your own button/link using the trigger element selector below.', 'comfino-payment-gateway'),
             ],
             'widget_calculator_trigger_selector' => [
                 'title' => __('Calculator trigger element selector', 'comfino-payment-gateway'),
                 'type' => 'text',
                 'default' => ConfigManager::getDefaultValue('widget_calculator_trigger_selector'),
                 'description' => __(
-                    'Selector of the element (e.g. a button or link) whose click opens the Comfino calculator overlay when the banner is disabled. Leave empty to open it yourself via window.comfinoWidget.open() or the comfino:widget:ready event.',
+                    'Selector of the element (e.g. a button or link) whose click opens the Comfino calculator window when the banner is disabled. Leave empty to open it yourself via window.comfinoWidget.open() or the comfino:widget:ready event.',
                     'comfino-payment-gateway'
                 ),
             ],

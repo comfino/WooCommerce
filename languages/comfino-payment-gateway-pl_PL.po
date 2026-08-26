@@ -676,6 +676,40 @@ msgstr "Wyświetlanie logotypów"
 msgid "Show logos of financial services providers"
 msgstr "Pokaż loga dostawców usług finansowych"
 
+#: src/View/SettingsForm.php:837
+msgid "Disable banner"
+msgstr "Wyłącz baner"
+
+#: src/View/SettingsForm.php:839
+msgid "Disable standard widget banner (standalone calculator)"
+msgstr "Wyłącz standardowy baner widgetu (samodzielny kalkulator)"
+
+#: src/View/SettingsForm.php:841
+msgid ""
+"Do not embed the installment banner on the product page. The Comfino "
+"calculator window can still be opened from your own button/link using the "
+"trigger element selector below."
+msgstr ""
+"Nie osadzaj banera ratalnego na stronie produktu. Okno kalkulatora "
+"Comfino nadal można otworzyć za pomocą własnego przycisku/linku, korzystając "
+"z selektora elementu wyzwalającego poniżej."
+
+#: src/View/SettingsForm.php:845
+msgid "Calculator trigger element selector"
+msgstr "Selektor elementu wyzwalającego kalkulator"
+
+#: src/View/SettingsForm.php:848
+msgid ""
+"Selector of the element (e.g. a button or link) whose click opens the "
+"Comfino calculator window when the banner is disabled. Leave empty to open "
+"it yourself via window.comfinoWidget.open() or the comfino:widget:ready "
+"event."
+msgstr ""
+"Selektor elementu (np. przycisku lub linku), którego kliknięcie otwiera "
+"okno kalkulatora Comfino, gdy baner jest wyłączony. Pozostaw puste, aby "
+"otworzyć go samodzielnie za pomocą window.comfinoWidget.open() lub "
+"zdarzenia comfino:widget:ready."
+
 #: src/View/SettingsForm.php:840
 msgid "Advanced settings"
 msgstr "Ustawienia zaawansowane"

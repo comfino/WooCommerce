@@ -478,7 +478,7 @@ final class FrontendManager
                 'hasPriceInput' => false,
                 'bannerCssUrl' => ($settings['COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL'] ?? '') ?: null,
                 'calculatorCssUrl' => ($settings['COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL'] ?? '') ?: null,
-                /* Standalone calculator (no banner): the shop's own button/link opens the Comfino calculator overlay,
+                /* Standalone calculator (no banner): the shop's own button/link opens the Comfino calculator window,
                    either via triggerSelector (config bridge wires the click) or window.comfinoWidget.open() / the
                    comfino:widget:ready event. */
                 'components' => !empty($settings['COMFINO_WIDGET_DISABLE_BANNER']) ? 'calculator' : null,
