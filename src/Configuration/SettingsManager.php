@@ -4,9 +4,9 @@ namespace Comfino\Configuration;
 
 use Comfino\Api\ApiClient;
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
-use Comfino\Common\Backend\Payment\ProductTypeFilter\FilterByCartValueLowerLimit;
 use Comfino\Common\Backend\Payment\ProductTypeFilter\FilterByExcludedCategory;
 use Comfino\Common\Backend\Payment\ProductTypeFilter\FilterByExcludedProductId;
+use Comfino\Common\Backend\Payment\ProductTypeFilter\FilterByProductTypeCartValueLimits;
 use Comfino\Common\Backend\Payment\ProductTypeFilterInterface;
 use Comfino\Common\Backend\Payment\ProductTypeFilterManager;
 use Comfino\Common\Shop\Cart;
@@ -39,12 +39,75 @@ final class SettingsManager
     }
 
     /**
+     * Reorders a product type code => name map by ConfigManager::getCheckoutProductTypesOrder(): entries whose code
+     * appears in that priority list come first (in its order), followed by any remaining entries in their original
+     * order.
+     *
+     * @param array $productTypes Product type code => name map, as returned by getProductTypesSelectList()
+     *
+     * @return array
+     */
+    public static function sortProductTypesByPriority(array $productTypes): array
+    {
+        $sortedProductTypes = [];
+
+        foreach (ConfigManager::getCheckoutProductTypesOrder() as $productTypeCode) {
+            if (array_key_exists($productTypeCode, $productTypes)) {
+                $sortedProductTypes[$productTypeCode] = $productTypes[$productTypeCode];
+            }
+        }
+
+        return $sortedProductTypes + $productTypes;
+    }
+
+    /**
+     * Preselects up to two checkout payment label product types from the shop's available financial products,
+     * following the priority order from ConfigManager::getCheckoutProductTypesOrder().
+     *
+     * @param array $availableProductTypes Product type code => name map, as returned by getProductTypesSelectList()
+     *
      * @return string[]
      */
-    public static function getProductTypes(string $listType, bool $returnErrors = false): array
+    public static function getDefaultCheckoutProductTypes(array $availableProductTypes): array
+    {
+        return array_slice(array_keys(self::sortProductTypesByPriority($availableProductTypes)), 0, 2);
+    }
+
+    /**
+     * Sorts the product types passed to the paywall SDK config (`productTypes`/`productTypeNames`) using the same
+     * priority order as the "Payment label product types" admin setting (ConfigManager::getCheckoutProductTypesOrder()),
+     * so the SDK receives product types in the order configured in payment settings.
+     *
+     * @param LoanTypeEnum[]|null $allowedProductTypes
+     * @param array $productTypeNames Product type code => public name map, as returned by getProductTypes() with $usePublicNames = true
+     *
+     * @return array{0: string[]|null, 1: array}
+     */
+    public static function sortPaywallProductTypes(?array $allowedProductTypes, array $productTypeNames): array
+    {
+        if (isset($productTypeNames['error'])) {
+            return [$allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null, $productTypeNames];
+        }
+
+        $sortedProductTypeNames = self::sortProductTypesByPriority($productTypeNames);
+
+        if ($allowedProductTypes === null) {
+            return [null, $sortedProductTypeNames];
+        }
+
+        $allowedCodes = array_map('strval', $allowedProductTypes);
+        $sortedAllowedCodes = array_values(array_intersect(array_keys($sortedProductTypeNames), $allowedCodes));
+
+        return [$sortedAllowedCodes, $sortedProductTypeNames];
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function getProductTypes(string $listType, bool $returnErrors = false, bool $usePublicNames = false): array
     {
         $language = Main::getShopLanguage();
-        $cacheKey = "product_types.$listType.$language";
+        $cacheKey = "product_types.$listType" . ($usePublicNames ? '.public' : '') . ".$language";
         $listTypeEnum = new ProductTypesListTypeEnum($listType);
 
         if (($productTypes = CacheManager::get($cacheKey)) !== null) {
@@ -57,7 +120,9 @@ final class SettingsManager
 
         try {
             $productTypes = ApiClient::getInstance()->getProductTypes($listTypeEnum);
-            $productTypesList = $productTypes->productTypesWithNames;
+            $productTypesList = $usePublicNames
+                ? $productTypes->productTypesWithPublicNames
+                : $productTypes->productTypesWithNames;
             $cacheTtl = (int) $productTypes->getHeader('Cache-TTL', '0');
 
             CacheManager::set($cacheKey, $productTypesList, $cacheTtl, ['admin_product_types']);
@@ -337,6 +402,16 @@ final class SettingsManager
         return $availProductTypes;
     }
 
+    /**
+     * @return array[]
+     */
+    public static function getCartValueLimitsConfig(): array
+    {
+        $rawConfig = ConfigManager::getConfigurationValue('COMFINO_CART_VALUE_LIMITS_CONFIG');
+
+        return is_array($rawConfig) ? $rawConfig : [];
+    }
+
     private static function getFilterManager(string $listType): ProductTypeFilterManager
     {
         if (self::$filterManager === null) {
@@ -357,12 +432,32 @@ final class SettingsManager
     {
         $filters = [];
         $minAmount = (int) (round(ConfigManager::getConfigurationValue('COMFINO_MINIMAL_CART_AMOUNT', 0), 2) * 100);
+        $minLimitsByProductType = [];
+        $maxLimitsByProductType = [];
 
         if ($minAmount > 0) {
             $availableProductTypes = self::getProductTypesStrings($listType);
-            $filters[] = new FilterByCartValueLowerLimit(
-                array_combine($availableProductTypes, array_fill(0, count($availableProductTypes), $minAmount))
-            );
+            $minLimitsByProductType = array_fill_keys($availableProductTypes, $minAmount);
+        }
+
+        foreach (self::getCartValueLimitsConfig() as $entry) {
+            if (empty($entry['type'])) {
+                continue;
+            }
+
+            $productType = (string) $entry['type'];
+
+            if (isset($entry['minAmount'])) {
+                $minLimitsByProductType[$productType] = (int) round(((float) $entry['minAmount']) * 100);
+            }
+
+            if (isset($entry['maxAmount'])) {
+                $maxLimitsByProductType[$productType] = (int) round(((float) $entry['maxAmount']) * 100);
+            }
+        }
+
+        if (!empty($minLimitsByProductType) || !empty($maxLimitsByProductType)) {
+            $filters[] = new FilterByProductTypeCartValueLimits(null, $minLimitsByProductType, $maxLimitsByProductType);
         }
 
         if (self::productCategoryFiltersActive($productCategoryFilters = self::getProductCategoryFilters())) {
@@ -382,7 +477,7 @@ final class SettingsManager
     /**
      * Returns the normalized `COMFINO_ALLOWED_PRODUCTS_CONFIG` payload ready for both the paywall iframe bootstrap
      * (frontend) and the backend `AllowedProductConfig` DTO builder. Drops entries whose `type` is missing or not
-     * a known `LoanTypeEnum`, ensures `terms` are positive ints, returns `null` when the result is empty so the
+     * a known `LoanTypeEnum`, ensures `terms` are positive ints, returns `null` when the result is empty, so the
      * SDK's `?.length` short-circuit matches the "no restrictions" semantics.
      *
      * @return array[]|null

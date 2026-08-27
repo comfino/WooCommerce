@@ -22,6 +22,7 @@ use Comfino\Api\Dto\Plugin\ShopEnvironmentReport;
 use Comfino\Api\Request\GetCreditors as GetCreditorsRequest;
 use Comfino\Api\Request\ReportShopEnvironment as ReportShopEnvironmentRequest;
 use Comfino\Api\Request\GetProductTypes as GetProductTypesRequest;
+use Comfino\Api\Request\GetUserSettings as GetUserSettingsRequest;
 use Comfino\Api\Request\GetWidgetKey as GetWidgetKeyRequest;
 use Comfino\Api\Request\GetWidgetTypes as GetWidgetTypesRequest;
 use Comfino\Api\Request\IsShopAccountActive as IsShopAccountActiveRequest;
@@ -34,6 +35,7 @@ use Comfino\Api\Response\GetPaywall as GetPaywallResponse;
 use Comfino\Api\Response\GetPaywallItemDetails as GetPaywallItemDetailsResponse;
 use Comfino\Api\Response\GetCreditors as GetCreditorsResponse;
 use Comfino\Api\Response\GetProductTypes as GetProductTypesResponse;
+use Comfino\Api\Response\GetUserSettings as GetUserSettingsResponse;
 use Comfino\Api\Response\GetWidgetKey as GetWidgetKeyResponse;
 use Comfino\Api\Response\GetWidgetTypes as GetWidgetTypesResponse;
 use Comfino\Api\Response\IsShopAccountActive as IsShopAccountActiveResponse;
@@ -314,6 +316,21 @@ class Client
     }
 
     /**
+     * @throws RequestValidationError
+     * @throws ResponseValidationError
+     * @throws AuthorizationError
+     * @throws AccessDenied
+     * @throws ServiceUnavailable
+     * @throws ClientExceptionInterface
+     */
+    public function getUserSettings(): GetUserSettingsResponse
+    {
+        $this->request = (new GetUserSettingsRequest())->setSerializer($this->serializer);
+
+        return new GetUserSettingsResponse($this->request, $this->sendRequest($this->request), $this->serializer);
+    }
+
+    /**
      * @param LoanQueryCriteria $queryCriteria
      * @param CartInterface $cart
      * @return GetFinancialProductDetailsResponse
@@ -448,7 +465,7 @@ class Client
     {
         $this->request = (new GetProductTypesRequest($listType))->setSerializer($this->serializer);
 
-        return new GetProductTypesResponse($this->request, $this->sendRequest($this->request), $this->serializer);
+        return new GetProductTypesResponse($this->request, $this->sendRequest($this->request, 2), $this->serializer);
     }
 
     /**

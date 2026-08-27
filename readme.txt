@@ -4,7 +4,7 @@ Donate link: https://comfino.pl/
 Tags: comfino, woocommerce, gateway, payment, bank
 WC tested up to: 10.7.0
 WC requires at least: 3.0
-Stable tag: 4.3.0
+Stable tag: 4.3.1
 Tested up to: 7.0
 Requires at least: 5.0
 Requires PHP: 7.1
@@ -20,6 +20,14 @@ Comfino is an innovative payment method for customers of e-commerce stores! Thes
 * You will reach new customers.
 
 === Changelog ===
+
+4.3.1
+ * Multisite: network activation is now refused with a clear message, and installations that are already network activated show a warning in the admin. Comfino only configures the site it is activated from, so it must be activated individually on each site in a network.
+ * Added shop environment metadata to diagnostic reports sent to Comfino, improving support and troubleshooting.
+ * Improved billing/shipping address fallback handling for shops using third-party checkout plugins that delay saving address fields on the order (e.g., FunnelKit Checkout).
+ * Randomized (jittered) the daily GitHub version check interval and added a short-lived lock to prevent duplicate/bursted checks under concurrent admin requests.
+ * Added an option to disable the custom payment method text and instead select up to two financial product types whose names are shown in the checkout payment method label.
+ * Added per-product-type cart value limits: admins can now define a minimum and maximum cart value for each financial product type separately (in addition to the global minimum cart amount), with a new management UI in the sale settings.
 
 4.3.0
  * Paywall frontend migrated to V3 API and new frontend Comfino SDK — faster loading, improved stability.

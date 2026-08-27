@@ -26,9 +26,11 @@ Pola parametrów konfiguracyjnych:
 
 * **Włączony/Wyłączony** — status aktywności modułu Comfino (widoczność na liście metod płatności w koszyku)
 * **Klucz API środowiska produkcyjnego** — unikalny klucz dostępowy umożliwiający komunikację modułu z API Comfino (otrzymasz go od przedstawiciela Comfino)
-* **Tytuł** — tekst wyświetlany na liście metod płatności (domyślnie `"Comfino"`)
+* **Niestandardowa etykieta płatności** — przełącznik włączający niestandardowy tekst etykiety płatności; gdy wyłączony, etykieta pozycji płatności w zamówieniu jest budowana na podstawie wybranych rodzajów produktów finansowych
+* **Tekst płatności** — etykieta wyświetlana dla Comfino na liście metod płatności w zamówieniu (używana tylko, gdy niestandardowa etykieta płatności jest włączona)
+* **Rodzaje produktów w etykiecie płatności** — rodzaje produktów finansowych, których nazwy zostaną wyświetlone w etykiecie metody płatności w zamówieniu, gdy niestandardowa etykieta płatności jest wyłączona (do wyboru maksymalnie dwa rodzaje produktów finansowych)
 * **Minimalna kwota w koszyku** — kwota, powyżej której będzie wyświetlana płatność i widget Comfino
-* **Wyświetlanie logo** — status widoczności logo Comfino obok tytułu na liście metod płatności (domyślnie: włączone)
+* **Limity wartości koszyka dla poszczególnych typów produktów finansowych** — opcjonalne ograniczenia minimalnej/maksymalnej wartości koszyka dla każdego typu produktu finansowego, stosowane dodatkowo do globalnej minimalnej kwoty w koszyku
 * **Numer zamówienia** — Używaj numeru zamówienia widocznego dla klienta zamiast numerycznego ID zamówienia w komunikacji z API Comfino. Dotyczy tylko nowych zamówień.
 
 **Ustawienia paywalla**
@@ -68,9 +70,11 @@ Filtr po ID produktu działa niezależnie od filtrów kategorii produktowych.
 **Ustawienia podstawowe**
 
 * **Widget włączony** — przełącznik aktywacji/deaktywacji widgetu promocyjnego na stronie produktu
-* **Typ widgetu** — sposób prezentacji widgetu [`Widget standardowy`, `Widget klasyczny`]
+* **Typ widgetu** — sposób prezentacji widgetu [`Widget standardowy`, `Widget klasyczny`, `Widget pusty`]
 * **Typy ofert** — typy promowanych ofert finansowania [`Raty zero procent`, `Niskie raty`, `Zapłać później`, `Raty dla firm`, `Odroczone płatności dla firm`, `Leasing`]
 * **Wyświetlanie logotypów** — przełącznik umożliwiający pokazanie loga każdego z dostępnych dostawców finansowych
+* **Wyłącz banner** — nie umieszczaj banneru rat na stronie produktu (tryb samodzielnego kalkulatora); nakładka kalkulatora Comfino może być wciąż otwierana z własnego przycisku/linku przy użyciu selektora elementu wyzwalającego
+* **Selektor elementu wyzwalającego kalkulator** — selektor elementu (np. przycisku lub linku), którego kliknięcie otwiera nakładkę kalkulatora Comfino, gdy banner jest wyłączony
 
 Dostępność typów ofert na liście jest uzależniona od indywidualnej umowy i może różnić się od tej opisanej w dokumentacji.
 
@@ -79,13 +83,13 @@ Dostępność typów ofert na liście jest uzależniona od indywidualnej umowy i
 **Ustawienia zaawansowane**
 
 * **Selektor elementu ceny widgetu** — element dokumentu HTML zawierający cenę produktu
+* **Atrybut elementu ceny widgetu** — atrybut elementu ceny zawierający liczbową wartość ceny; po ustawieniu widget odczytuje cenę z tego atrybutu zamiast analizować tekst elementu, co pozwala uniknąć sytuacji wyścigu przy asynchronicznym renderowaniu ceny
 * **Selektor elementu zakotwiczenia widgetu** — element kontenera widgetu (w nim jest osadzany widget)
 * **Wykrywanie zmian ceny — selektor kontenera** — element dokumentu HTML zawierający w sobie element ceny bezpośrednio lub pośrednio używany do śledzenia zmian cen i przeliczania ofert
 * **Wykrywanie zmian ceny — poziom hierarchii kontenera** — poziom hierarchii DOM używany do śledzenia zmian cen i przeliczania ofert
 * **Metoda osadzania** — sposób orientacji widgetu względem elementu kontenera [`INSERT_INTO_FIRST`, `INSERT_INTO_LAST`, `INSERT_BEFORE`, `INSERT_AFTER`]
 * **Niestandardowy styl CSS banera** — Odnośnik do pliku CSS ze stylami nadpisującymi wygląd banera (akceptowane są tylko adresy bezwzględne z domeny sklepu)
 * **Niestandardowy styl CSS kalkulatora** — Odnośnik do pliku CSS ze stylami nadpisującymi wygląd kalkulatora (akceptowane są tylko adresy bezwzględne z domeny sklepu)
-* **Kod inicjalizacji widgetu** — skrypt JavaScript inicjalizujący widget na stronie produktu (wprowadzanie zmian niezalecane dla niezaawansowanych użytkowników bez znajomości JavaScript)
 
 Szczegółowe informacje o działaniu widgetu i jego opcjach konfiguracyjnych znajdziesz w osobnej [dokumentacji widgetu Comfino](https://comfino.pl/widgets/comfino-woocommerce/pl).
 

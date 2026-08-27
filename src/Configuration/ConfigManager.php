@@ -26,8 +26,12 @@ final class ConfigManager
     public const CONFIG_OPTIONS_MAP = [
         'COMFINO_ENABLED' => 'enabled',
         'COMFINO_API_KEY' => 'production_key',
+        'COMFINO_PAYMENT_TEXT_ENABLED' => 'payment_text_enabled',
         'COMFINO_PAYMENT_TEXT' => 'payment_text',
+        'COMFINO_CHECKOUT_PRODUCT_TYPES' => 'checkout_product_types',
+        'COMFINO_CHECKOUT_PRODUCT_TYPES_ORDER' => 'checkout_product_types_order',
         'COMFINO_MINIMAL_CART_AMOUNT' => 'min_cart_amount',
+        'COMFINO_CART_VALUE_LIMITS_CONFIG' => 'cart_value_limits_config',
         'COMFINO_USE_ORDER_REFERENCE' => 'use_order_reference',
         'COMFINO_IS_SANDBOX' => 'sandbox_mode',
         'COMFINO_DEBUG' => 'debug_mode',
@@ -55,6 +59,8 @@ final class ConfigManager
         'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS' => 'widget_show_provider_logos',
         'COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL' => 'widget_custom_banner_css_url',
         'COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL' => 'widget_custom_calculator_css_url',
+        'COMFINO_WIDGET_DISABLE_BANNER' => 'widget_disable_banner',
+        'COMFINO_WIDGET_CALCULATOR_TRIGGER_SELECTOR' => 'widget_calculator_trigger_selector',
         'COMFINO_ABANDONED_CART_ENABLED' => 'abandoned_cart_enabled',
         'COMFINO_ABANDONED_PAYMENTS' => 'abandoned_payments',
         'COMFINO_IGNORED_STATUSES' => 'ignored_statuses',
@@ -65,14 +71,20 @@ final class ConfigManager
         'COMFINO_API_CONNECT_NUM_ATTEMPTS' => 'api_connect_num_attempts',
         'COMFINO_ERROR_LOGGING_ACCESS_TOKEN' => 'error_logging_access_token',
         'COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT' => 'error_logging_access_token_expires_at',
+        'COMFINO_REMOTE_FLAGS' => 'remote_flags',
+        'COMFINO_REMOTE_FLAG_ATTRIBUTES' => 'remote_flag_attributes',
     ];
 
     public const CONFIG_OPTIONS = [
         'payment_settings' => [
             'COMFINO_ENABLED' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_API_KEY' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
+            'COMFINO_PAYMENT_TEXT_ENABLED' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_PAYMENT_TEXT' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
+            'COMFINO_CHECKOUT_PRODUCT_TYPES' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
+            'COMFINO_CHECKOUT_PRODUCT_TYPES_ORDER' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
             'COMFINO_MINIMAL_CART_AMOUNT' => ConfigurationManager::OPT_VALUE_TYPE_FLOAT,
+            'COMFINO_CART_VALUE_LIMITS_CONFIG' => ConfigurationManager::OPT_VALUE_TYPE_JSON,
             'COMFINO_USE_ORDER_REFERENCE' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_PAYWALL_DIRECT_REDIRECT' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_PAYWALL_CUSTOM_CSS_URL' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
@@ -96,6 +108,8 @@ final class ConfigManager
             'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
+            'COMFINO_WIDGET_DISABLE_BANNER' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
+            'COMFINO_WIDGET_CALCULATOR_TRIGGER_SELECTOR' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
         ],
         'abandoned_cart_settings' => [
             'COMFINO_ABANDONED_CART_ENABLED' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
@@ -120,13 +134,19 @@ final class ConfigManager
             'COMFINO_API_CONNECT_NUM_ATTEMPTS' => ConfigurationManager::OPT_VALUE_TYPE_INT,
             'COMFINO_ERROR_LOGGING_ACCESS_TOKEN' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
             'COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT' => ConfigurationManager::OPT_VALUE_TYPE_INT,
+            'COMFINO_REMOTE_FLAGS' => ConfigurationManager::OPT_VALUE_TYPE_STRING_ARRAY,
+            'COMFINO_REMOTE_FLAG_ATTRIBUTES' => ConfigurationManager::OPT_VALUE_TYPE_JSON,
         ],
     ];
 
     public const ACCESSIBLE_CONFIG_OPTIONS = [
         'COMFINO_ENABLED',
+        'COMFINO_PAYMENT_TEXT_ENABLED',
         'COMFINO_PAYMENT_TEXT',
+        'COMFINO_CHECKOUT_PRODUCT_TYPES',
+        'COMFINO_CHECKOUT_PRODUCT_TYPES_ORDER',
         'COMFINO_MINIMAL_CART_AMOUNT',
+        'COMFINO_CART_VALUE_LIMITS_CONFIG',
         'COMFINO_USE_ORDER_REFERENCE',
         'COMFINO_PAYWALL_DIRECT_REDIRECT',
         'COMFINO_PAYWALL_CUSTOM_CSS_URL',
@@ -152,6 +172,8 @@ final class ConfigManager
         'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS',
         'COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL',
         'COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL',
+        'COMFINO_WIDGET_DISABLE_BANNER',
+        'COMFINO_WIDGET_CALCULATOR_TRIGGER_SELECTOR',
         'COMFINO_ABANDONED_CART_ENABLED',
         'COMFINO_ABANDONED_PAYMENTS',
         'COMFINO_IGNORED_STATUSES',
@@ -161,6 +183,8 @@ final class ConfigManager
         'COMFINO_API_TIMEOUT',
         'COMFINO_API_CONNECT_NUM_ATTEMPTS',
         'COMFINO_DEV_ENV_VARS',
+        'COMFINO_REMOTE_FLAGS',
+        'COMFINO_REMOTE_FLAG_ATTRIBUTES',
     ];
 
     private const CONFIG_MANAGER_OPTIONS = 0;
@@ -364,6 +388,24 @@ final class ConfigManager
         );
     }
 
+    /**
+     * Returns the checkout payment method item label sent to the frontend SDK: either the merchant's custom text
+     * (COMFINO_PAYMENT_TEXT) when COMFINO_PAYMENT_TEXT_ENABLED is on, or the list of selected financial product
+     * type codes (COMFINO_CHECKOUT_PRODUCT_TYPES) so the SDK renders its own localized label/names for them.
+     *
+     * @return string|string[]|null
+     */
+    public static function getPaymentMethodLabel()
+    {
+        if (self::getConfigurationValue('COMFINO_PAYMENT_TEXT_ENABLED')) {
+            return self::getConfigurationValue('COMFINO_PAYMENT_TEXT') ?: null;
+        }
+
+        $productTypes = self::getConfigurationValue('COMFINO_CHECKOUT_PRODUCT_TYPES');
+
+        return !empty($productTypes) ? array_values($productTypes) : null;
+    }
+
     public static function getApiHost(?string $apiHost = null): ?string
     {
         if (self::useDevEnvVars() && getenv('COMFINO_DEV_API_HOST')) {
@@ -411,10 +453,78 @@ final class ConfigManager
             if ($response !== null) {
                 self::updateConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN', $response->accessToken);
                 self::updateConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT', strtotime($response->expiresAt));
+
+                if (self::updateRemoteFlagsIfChanged($response->getHeader('Comfino-Flags', ''))) {
+                    /* Attributes are only ever set/changed together with their flag, so it's enough to re-fetch them
+                       when the flag list itself changed - saves an extra API call on every other refresh. */
+                    self::updateConfigurationValue(
+                        'COMFINO_REMOTE_FLAG_ATTRIBUTES',
+                        ApiClient::getInstance()->getUserSettings()->flags
+                    );
+                }
             }
         } catch (\Throwable) {
             // Silently ignore — CETS token claim is best-effort.
         }
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function getRemoteFlags(): array
+    {
+        if (!is_array($remoteFlags = self::getConfigurationValue('COMFINO_REMOTE_FLAGS'))) {
+            return [];
+        }
+
+        return $remoteFlags;
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    public static function getRemoteFlagAttributes(): array
+    {
+        if (!is_array($flagAttributes = self::getConfigurationValue('COMFINO_REMOTE_FLAG_ATTRIBUTES'))) {
+            return [];
+        }
+
+        return $flagAttributes;
+    }
+
+    /**
+     * Priority order of financial product type codes for the checkout payment label: preselection and the checkboxes
+     * list both follow it. Stored as a plain configuration value (not hardcoded) so Comfino can update it remotely via
+     * the /configuration endpoint without a plugin code change or upgrade.
+     *
+     * @return string[]
+     */
+    public static function getCheckoutProductTypesOrder(): array
+    {
+        if (!is_array($order = self::getConfigurationValue('COMFINO_CHECKOUT_PRODUCT_TYPES_ORDER'))) {
+            return [];
+        }
+
+        return $order;
+    }
+
+    private static function updateRemoteFlagsIfChanged(string $flagsHeaderValue): bool
+    {
+        $remoteFlags = array_values(array_unique(array_filter(array_map('trim', explode(',', $flagsHeaderValue)))));
+
+        sort($remoteFlags);
+
+        $storedFlags = self::getRemoteFlags();
+
+        sort($storedFlags);
+
+        if ($remoteFlags === $storedFlags) {
+            return false;
+        }
+
+        self::updateConfigurationValue('COMFINO_REMOTE_FLAGS', $remoteFlags);
+
+        return true;
     }
 
     /**
@@ -687,8 +797,22 @@ final class ConfigManager
     {
         return [
             'COMFINO_ENABLED' => false,
+            'COMFINO_PAYMENT_TEXT_ENABLED' => false,
             'COMFINO_PAYMENT_TEXT' => 'Comfino',
+            'COMFINO_CHECKOUT_PRODUCT_TYPES' => ['INSTALLMENTS_ZERO_PERCENT', 'PAY_LATER'],
+            'COMFINO_CHECKOUT_PRODUCT_TYPES_ORDER' => [
+                'INSTALLMENTS_ZERO_PERCENT',
+                'PAY_LATER',
+                'CONVENIENT_INSTALLMENTS',
+                'COMPANY_INSTALLMENTS',
+                'COMPANY_BNPL',
+                'PAY_IN_PARTS',
+                'INSTANT_PAYMENTS',
+                'LEASING',
+                'BLIK',
+            ],
             'COMFINO_MINIMAL_CART_AMOUNT' => 30,
+            'COMFINO_CART_VALUE_LIMITS_CONFIG' => null,
             'COMFINO_USE_ORDER_REFERENCE' => false,
             'COMFINO_IS_SANDBOX' => false,
             'COMFINO_DEBUG' => false,
@@ -716,6 +840,8 @@ final class ConfigManager
             'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS' => false,
             'COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL' => '',
             'COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL' => '',
+            'COMFINO_WIDGET_DISABLE_BANNER' => false,
+            'COMFINO_WIDGET_CALCULATOR_TRIGGER_SELECTOR' => '',
             'COMFINO_IGNORED_STATUSES' => implode(',', StatusManager::DEFAULT_IGNORED_STATUSES),
             'COMFINO_FORBIDDEN_STATUSES' => implode(',', StatusManager::DEFAULT_FORBIDDEN_STATUSES),
             'COMFINO_STATUS_MAP' => wp_json_encode(ShopStatusManager::DEFAULT_STATUS_MAP),
@@ -723,6 +849,8 @@ final class ConfigManager
             'COMFINO_API_TIMEOUT' => 3,
             'COMFINO_API_CONNECT_NUM_ATTEMPTS' => 3,
             'COMFINO_DEV_ENV_VARS' => false,
+            'COMFINO_REMOTE_FLAGS' => [],
+            'COMFINO_REMOTE_FLAG_ATTRIBUTES' => null,
         ];
     }
 

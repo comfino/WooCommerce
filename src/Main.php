@@ -266,6 +266,11 @@ final class Main
                 ErrorLogger::sendError($e, OperationContext::PaymentProcessing, (string) $e->getCode(), $e->getMessage());
             }
 
+            [$sortedProductTypes, $sortedProductTypeNames] = SettingsManager::sortPaywallProductTypes(
+                $allowedProductTypes,
+                SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL, false, true)
+            );
+
             $loanAmount = $shopCart !== null ? $shopCart->getTotalAmount() : (int) round($cart->get_total('edit') * 100);
 
             $cartPayload = null;
@@ -310,11 +315,11 @@ final class Main
                 'trackId' => $trackId,
                 'loanAmount' => $loanAmount,
                 'paymentMethodAuth' => ConfigManager::getPaywallLogoAuthHash(),
-                'paymentMethodLabel' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT') ?: null,
+                'paymentMethodLabel' => ConfigManager::getPaymentMethodLabel(),
                 'environment' => $environment,
                 'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
-                'productTypes' => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,
-                'productTypeNames' => SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL) ?: null,
+                'productTypes' => $sortedProductTypes,
+                'productTypeNames' => $sortedProductTypeNames ?: null,
                 'cart' => $cartPayload,
                 'paywallSettings' => [
                     'language' => self::getShopLanguage(),
@@ -325,6 +330,8 @@ final class Main
                 'directRedirect' => (bool) ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
                 'creditors' => SettingsManager::getCreditors() ?: null,
                 'allowedProductsConfig' => SettingsManager::getAllowedProductsConfigForFrontend(),
+                'flags' => ConfigManager::getRemoteFlags(),
+                'flagAttributes' => ConfigManager::getRemoteFlagAttributes(),
             ];
 
             DebugLogger::logEvent(

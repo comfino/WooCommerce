@@ -122,6 +122,11 @@ final class PaymentGateway extends AbstractPaymentMethodType
             }
         }
 
+        [$sortedProductTypes, $sortedProductTypeNames] = SettingsManager::sortPaywallProductTypes(
+            $allowedProductTypes,
+            SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL, false, true)
+        );
+
         $loanAmount = $shopCart !== null ? $shopCart->getTotalAmount() : ($wcCart !== null ? (int) round($wcCart->get_total('edit') * 100) : 0);
 
         $cartPayload = null;
@@ -142,14 +147,14 @@ final class PaymentGateway extends AbstractPaymentMethodType
             'environment' => ConfigManager::isSandboxMode() ? 'sandbox' : 'production',
             'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
             'paymentMethodAuth' => ConfigManager::getPaywallLogoAuthHash(),
-            'paymentMethodLabel' => ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT') ?: null,
+            'paymentMethodLabel' => ConfigManager::getPaymentMethodLabel(),
             /* Blocks builds its own payment-method `label` node client-side (no server-rendered markup to attach a
                placeholder `<img>` to, unlike classic checkout's get_icon()), so the default logo URL must travel
                through the bootstrap config instead. */
             'defaultLogoUrl' => ConfigManager::getDefaultLogoUrl(),
             'supports' => $this->gateway ? array_filter($this->gateway->supports, [$this->gateway, 'supports']) : ['products'],
-            'productTypes' => $allowedProductTypes !== null ? array_map('strval', $allowedProductTypes) : null,
-            'productTypeNames' => SettingsManager::getProductTypes(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL) ?: null,
+            'productTypes' => $sortedProductTypes,
+            'productTypeNames' => $sortedProductTypeNames ?: null,
             'cart' => $cartPayload,
             'paywallSettings' => [
                 'language' => Main::getShopLanguage(),
@@ -172,6 +177,8 @@ final class PaymentGateway extends AbstractPaymentMethodType
             'directRedirect' => (bool) ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
             'creditors' => SettingsManager::getCreditors() ?: null,
             'allowedProductsConfig' => SettingsManager::getAllowedProductsConfigForFrontend(),
+            'flags' => ConfigManager::getRemoteFlags(),
+            'flagAttributes' => ConfigManager::getRemoteFlagAttributes(),
             'scriptNonce' => (string) apply_filters('comfino_csp_script_nonce', ''),
         ];
     }

@@ -185,6 +185,34 @@ final class FrontendManager
         );
     }
 
+    public static function renderCartValueLimitsConfig(array $data): string
+    {
+        $defaults = [
+            'title' => '',
+            'type' => 'cart_value_limits_config',
+            'description' => '',
+            'product_types' => [],
+            'saved_config' => [],
+        ];
+
+        $data = wp_parse_args($data, $defaults);
+
+        return sprintf(
+            '<tr valign="top"><td class="forminp" colspan="2">%s</td></tr>',
+            TemplateManager::renderView(
+                'cart-value-limits-config',
+                'admin/_configure',
+                [
+                    'title' => $data['title'],
+                    'description' => $data['description'],
+                    'product_types' => $data['product_types'],
+                    'saved_config' => $data['saved_config'],
+                ],
+                false
+            )
+        );
+    }
+
     public static function renderProductCategoryFilterGroup(array $data): string
     {
         $defaults = [
@@ -406,6 +434,8 @@ final class FrontendManager
                     'COMFINO_WIDGET_SHOW_PROVIDER_LOGOS',
                     'COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL',
                     'COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL',
+                    'COMFINO_WIDGET_DISABLE_BANNER',
+                    'COMFINO_WIDGET_CALCULATOR_TRIGGER_SELECTOR',
                 ]
             );
 
@@ -448,6 +478,11 @@ final class FrontendManager
                 'hasPriceInput' => false,
                 'bannerCssUrl' => ($settings['COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL'] ?? '') ?: null,
                 'calculatorCssUrl' => ($settings['COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL'] ?? '') ?: null,
+                /* Standalone calculator (no banner): the shop's own button/link opens the Comfino calculator window,
+                   either via triggerSelector (config bridge wires the click) or window.comfinoWidget.open() / the
+                   comfino:widget:ready event. */
+                'components' => !empty($settings['COMFINO_WIDGET_DISABLE_BANNER']) ? 'calculator' : null,
+                'triggerSelector' => ($settings['COMFINO_WIDGET_CALCULATOR_TRIGGER_SELECTOR'] ?? '') ?: null,
                 'price' => $price,
                 'productId' => $notNull($variables['PRODUCT_ID'] ?? null),
                 'availableProductTypes' => $variables['AVAILABLE_PRODUCT_TYPES'] ?? null,
@@ -574,7 +609,7 @@ final class FrontendManager
         return array_merge(
             wp_kses_allowed_html('post'),
             [
-                'input' => ['id' => [], 'name' => [], 'value' => [], 'class' => [], 'style' => [], 'title' => [], 'placeholder' => [], 'type' => [], 'checked' => [], 'readonly' => [], 'disabled' => [], 'required' => []],
+                'input' => ['id' => [], 'name' => [], 'value' => [], 'class' => [], 'style' => [], 'title' => [], 'placeholder' => [], 'type' => [], 'checked' => [], 'readonly' => [], 'disabled' => [], 'required' => [], 'data-comfino-max-select' => []],
                 'textarea' => ['id' => [], 'name' => [], 'class' => [], 'style' => [], 'title' => [], 'placeholder' => [], 'rows' => [], 'cols' => [], 'readonly' => [], 'disabled' => [], 'required' => []],
                 'select' => ['id' => [], 'name' => [], 'multiple' => [], 'disabled' => [], 'required' => []],
                 'option' => ['value' => [], 'selected' => [], 'label' => [], 'disabled' => []],

@@ -65,11 +65,58 @@ final class SettingsForm
                     if (empty($configurationOptionsToSave['COMFINO_API_KEY'])) {
                         $errorMessages[] = sprintf($errorEmptyMsg, __('Production environment API key', 'comfino-payment-gateway'));
                     }
+                    if (is_array($configurationOptionsToSave['COMFINO_CHECKOUT_PRODUCT_TYPES'] ?? null)) {
+                        $configurationOptionsToSave['COMFINO_CHECKOUT_PRODUCT_TYPES'] = array_slice(
+                            array_values(array_filter($configurationOptionsToSave['COMFINO_CHECKOUT_PRODUCT_TYPES'])),
+                            0,
+                            2
+                        );
+                    }
                     if (empty($configurationOptionsToSave['COMFINO_MINIMAL_CART_AMOUNT'])) {
                         $errorMessages[] = sprintf($errorEmptyMsg, __('Minimal amount in cart', 'comfino-payment-gateway'));
                     } elseif (!is_numeric($configurationOptionsToSave['COMFINO_MINIMAL_CART_AMOUNT'])) {
                         $errorMessages[] = sprintf($errorNumericFormatMsg, __('Minimal amount in cart', 'comfino-payment-gateway'));
                     }
+
+                    $cartValueLimitsConfig = [];
+                    $cartValueLimitsData = $postData['comfino_cart_value_limits'] ?? [];
+                    $validProductTypes = LoanTypeEnum::values();
+
+                    foreach ($cartValueLimitsData as $productType => $limits) {
+                        $productType = sanitize_text_field($productType);
+
+                        if (!in_array($productType, $validProductTypes, true)) {
+                            /* translators: %s: Unknown product type code submitted in cart value limits form */
+                            $errorMessages[] = sprintf(__('Unknown product type "%s" in cart value limits — entry skipped.', 'comfino-payment-gateway'), $productType);
+
+                            continue;
+                        }
+
+                        $minAmount = isset($limits['minAmount']) && $limits['minAmount'] !== '' && is_numeric($limits['minAmount'])
+                            ? (float) $limits['minAmount']
+                            : null;
+                        $maxAmount = isset($limits['maxAmount']) && $limits['maxAmount'] !== '' && is_numeric($limits['maxAmount'])
+                            ? (float) $limits['maxAmount']
+                            : null;
+
+                        if ($minAmount !== null && $maxAmount !== null && $minAmount > $maxAmount) {
+                            /* translators: %s: Product type code */
+                            $errorMessages[] = sprintf(__('Cart value limits for "%s": min cart value must not exceed max cart value.', 'comfino-payment-gateway'), $productType);
+
+                            continue;
+                        }
+
+                        if ($minAmount !== null || $maxAmount !== null) {
+                            $cartValueLimitsConfig[] = array_filter(
+                                ['type' => $productType, 'minAmount' => $minAmount, 'maxAmount' => $maxAmount],
+                                static function ($itemValue): bool { return $itemValue !== null; }
+                            );
+                        }
+                    }
+
+                    $configurationOptionsToSave['COMFINO_CART_VALUE_LIMITS_CONFIG'] = !empty($cartValueLimitsConfig)
+                        ? $cartValueLimitsConfig
+                        : null;
 
                     if (!empty($customCssUrl = $configurationOptionsToSave['COMFINO_PAYWALL_CUSTOM_CSS_URL'] ?? '')) {
                         if (!wp_http_validate_url($customCssUrl)) {
@@ -396,10 +443,32 @@ final class SettingsForm
                 $formFields = array_intersect_key(
                     self::getFormFieldsDefinitions(),
                     array_flip([
-                        'enabled', 'production_key', 'payment_text', 'min_cart_amount', 'use_order_reference',
-                        'paywall_settings_section', 'paywall_direct_redirect', 'paywall_custom_css_url',
+                        'enabled', 'production_key', 'payment_text_enabled', 'payment_text',  'checkout_product_types',
+                        'min_cart_amount', 'cart_value_limits_config', 'use_order_reference',  'paywall_settings_section',
+                        'paywall_direct_redirect', 'paywall_custom_css_url',
                     ])
                 );
+
+                $savedCartValueLimits = ConfigManager::getConfigurationValue('COMFINO_CART_VALUE_LIMITS_CONFIG');
+                $savedCartValueLimitsByType = [];
+
+                if (is_array($savedCartValueLimits)) {
+                    foreach ($savedCartValueLimits as $entry) {
+                        if (isset($entry['type'])) {
+                            $savedCartValueLimitsByType[$entry['type']] = $entry;
+                        }
+                    }
+                }
+
+                $cartLimitsProductTypes = SettingsManager::getProductTypesSelectList(
+                    ProductTypesListTypeEnum::LIST_TYPE_PAYWALL
+                );
+
+                $formFields['cart_value_limits_config']['product_types'] = isset($cartLimitsProductTypes['error'])
+                    ? []
+                    : $cartLimitsProductTypes;
+                $formFields['cart_value_limits_config']['saved_config'] = $savedCartValueLimitsByType;
+
                 break;
 
             case 'sale_settings':
@@ -482,6 +551,8 @@ final class SettingsForm
                     array_flip([
                         'widget_settings_basic',
                         'widget_enabled', 'widget_key', 'widget_type', 'widget_offer_types', 'widget_show_provider_logos',
+                        'widget_disable_banner', 'widget_calculator_trigger_selector',
+                        'widget_settings_divider',
                         'widget_settings_advanced',
                         'widget_price_selector', 'widget_price_attribute', 'widget_target_selector',
                         'widget_price_observer_selector',
@@ -606,16 +677,52 @@ final class SettingsForm
                 'type' => 'text',
                 'placeholder' => __('Please enter the key provided during registration', 'comfino-payment-gateway'),
             ],
+            'payment_text_enabled' => [
+                'title' => __('Custom payment label', 'comfino-payment-gateway'),
+                'type' => 'checkbox',
+                'label' => __('Use custom payment label text', 'comfino-payment-gateway'),
+                'default' => ConfigManager::getDefaultValue('payment_text_enabled') === true ? 'yes' : 'no',
+                'description' => __(
+                    'When disabled, the text below is ignored and the checkout item label is built from the financial product types selected below instead.',
+                    'comfino-payment-gateway'
+                ),
+            ],
             'payment_text' => [
                 'title' => __('Payment text', 'comfino-payment-gateway'),
                 'type' => 'text',
                 'default' => (string) ConfigManager::getDefaultValue('payment_text'),
+                'disabled' => !ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT_ENABLED'),
                 'description' => __('Label displayed for Comfino in the checkout payment method list.', 'comfino-payment-gateway'),
+            ],
+            'checkout_product_types' => [
+                'title' => __('Payment label product types', 'comfino-payment-gateway'),
+                'type' => 'checkboxset',
+                'values' => $checkoutProductTypes = SettingsManager::sortProductTypesByPriority(
+                    SettingsManager::getProductTypesSelectList(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL)
+                ),
+                'default' => SettingsManager::getDefaultCheckoutProductTypes($checkoutProductTypes),
+                'custom_attributes' => ['data-comfino-max-select' => '2'],
+                'description' => __(
+                    'Used only when the custom payment label above is disabled. Select up to two financial product types to show their names in the checkout payment method label.',
+                    'comfino-payment-gateway'
+                ),
             ],
             'min_cart_amount' => [
                 'title' => __('Minimal amount in cart', 'comfino-payment-gateway'),
                 'type' => 'text',
                 'default' => (string) ConfigManager::getDefaultValue('min_cart_amount'),
+                'description' => __(
+                    'Applied to all financial product types unless overridden below.',
+                    'comfino-payment-gateway'
+                ),
+            ],
+            'cart_value_limits_config' => [
+                'title' => __('Cart value limits per financial product type', 'comfino-payment-gateway'),
+                'type' => 'cart_value_limits_config',
+                'description' => __(
+                    'Leave fields empty to apply no restriction for that product type. These limits apply on top of the global minimal cart amount above: min/max cart value further narrows the availability of each financial product.',
+                    'comfino-payment-gateway'
+                ),
             ],
             'use_order_reference' => [
                 'title' => __('Order number', 'comfino-payment-gateway'),
@@ -730,6 +837,25 @@ final class SettingsForm
                 'type' => 'checkbox',
                 'label' => __('Show logos of financial services providers', 'comfino-payment-gateway'),
                 'default' => ConfigManager::getDefaultValue('widget_show_provider_logos') === true ? 'yes' : 'no',
+            ],
+            'widget_disable_banner' => [
+                'title' => __('Disable banner', 'comfino-payment-gateway'),
+                'type' => 'checkbox',
+                'label' => __('Disable standard widget banner (standalone calculator)', 'comfino-payment-gateway'),
+                'default' => ConfigManager::getDefaultValue('widget_disable_banner') === true ? 'yes' : 'no',
+                'description' => __('Do not embed the installment banner on the product page. The Comfino calculator window can still be opened from your own button/link using the trigger element selector below.', 'comfino-payment-gateway'),
+            ],
+            'widget_calculator_trigger_selector' => [
+                'title' => __('Calculator trigger element selector', 'comfino-payment-gateway'),
+                'type' => 'text',
+                'default' => ConfigManager::getDefaultValue('widget_calculator_trigger_selector'),
+                'description' => __(
+                    'Selector of the element (e.g. a button or link) whose click opens the Comfino calculator window when the banner is disabled. Leave empty to open it yourself via window.comfinoWidget.open() or the comfino:widget:ready event.',
+                    'comfino-payment-gateway'
+                ),
+            ],
+            'widget_settings_divider' => [
+                'type' => 'hr',
             ],
             'widget_settings_advanced' => [
                 'title' => __('Advanced settings', 'comfino-payment-gateway'),

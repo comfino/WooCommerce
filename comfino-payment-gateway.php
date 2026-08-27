@@ -3,7 +3,7 @@
  * Plugin Name: Comfino Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
  * Description: Comfino Payment Gateway for WooCommerce.
- * Version: 4.3.0
+ * Version: 4.3.1
  * Author: Comfino
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
@@ -248,9 +248,32 @@ class Comfino_Payment_Gateway
 
     /**
      * Automatically disables the plugin on activation if it doesn't meet minimum requirements.
+     *
+     * @param bool $network_wide True when a Multisite Super Admin used "Network Activate" instead of activating the
+     *                           plugin on a single site. WordPress passes this to every activation hook; the absence of
+     *                           a `Network: true` plugin header does not prevent network activation, it only means we do
+     *                           not force it - so this case is reachable without any change on our side.
      */
-    public function activation_check(): void
+    public function activation_check($network_wide = false): void
     {
+        if ($network_wide) {
+            /* Network activation is not supported. WordPress fires this hook only once for the whole network, so
+               per-site provisioning (Main::install() and, from 5.0.0, the outbound request queue table) would run for
+               the current site alone, leaving every other site in the network - and every site created later - without
+               it. Supporting this properly means iterating get_sites() with switch_to_blog() here plus a
+               'wp_initialize_site' handler for new sites; until that exists, refuse loudly instead of activating into a
+               half-provisioned state. Comfino is designed to be activated per site, which is also how WooCommerce
+               itself is normally run under Multisite. */
+            deactivate_plugins(plugin_basename(__FILE__), false, true);
+            /** @noinspection ForgottenDebugOutputInspection */
+            wp_die(
+                esc_html__(
+                    'The Comfino plugin could not be network activated. Comfino does not support network activation - activate it individually on each site in the network that should offer Comfino payments.',
+                    'comfino-payment-gateway'
+                )
+            );
+        }
+
         $environmentWarning = Main::getEnvironmentWarning(true);
 
         if ($environmentWarning) {
@@ -308,6 +331,27 @@ class Comfino_Payment_Gateway
     public function check_environment()
     {
         $environmentWarning = Main::getEnvironmentWarning();
+
+        /* The activation-time guard in activation_check() cannot catch an installation already network activated before
+           that guard shipped - WordPress does not re-fire the activation hook for it. Warn on every admin page instead
+           of silently running half-provisioned, but do not force a deactivation here: that would take Comfino payments
+           offline across the whole network without the Super Admin asking for it. */
+        if (is_multisite()) {
+            if (!function_exists('is_plugin_active_for_network')) {
+                require_once ABSPATH . 'wp-admin/includes/plugin.php';
+            }
+
+            if (is_plugin_active_for_network(plugin_basename(__FILE__))) {
+                $this->add_admin_notice(
+                    'network_activated',
+                    'error',
+                    esc_html__(
+                        'The Comfino plugin is network activated, which is not supported. Only the site it was activated from is fully configured; other sites in the network may be missing Comfino settings and database tables. Deactivate it for the network and activate it individually on each site that should offer Comfino payments.',
+                        'comfino-payment-gateway'
+                    )
+                );
+            }
+        }
 
         if ($environmentWarning) {
             // Ensure is_plugin_active() is available.

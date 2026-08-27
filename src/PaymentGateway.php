@@ -32,8 +32,8 @@ if (!defined('ABSPATH')) {
 class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
-    public const VERSION = '4.3.0';
-    public const BUILD_TS = 1784961850;
+    public const VERSION = '4.3.1';
+    public const BUILD_TS = 1787213643;
 
     public function __construct()
     {
@@ -136,7 +136,12 @@ class PaymentGateway extends \WC_Payment_Gateway
         DebugLogger::logEvent(
             '[PAYMENT GATEWAY]',
             'process_payment',
-            ['cart_id' => $cart->get_cart_hash(), '$order_id' => $order_id, '$_POST' => $_POST]
+            [
+                'cart_id' => $cart->get_cart_hash(),
+                '$order_id' => $order_id,
+                'comfino_loan_type' => $_POST['comfino_loan_type'] ?? 'undefined',
+                'comfino_loan_term' => $_POST['comfino_loan_term'] ?? 'undefined',
+            ]
         );
 
         $wcOrder = wc_get_order($order_id);
@@ -253,7 +258,7 @@ class PaymentGateway extends \WC_Payment_Gateway
                 DebugLogger::logEvent(
                     '[CREATE_ORDER_API_REQUEST]',
                     'createOrder',
-                    ['$request' => $apiRequest->getRequestBody()]
+                    ['order_id' => $order_id, 'request_body_length' => strlen($apiRequest->getRequestBody())]
                 );
             }
         }
@@ -410,7 +415,7 @@ class PaymentGateway extends \WC_Payment_Gateway
                 try {
                     if ($configurationOptions[$fieldKey] === 'yes' || $configurationOptions[$fieldKey] === 'no') {
                         $configurationOptionsToSave[$optionsMap[$key]] = ($configurationOptions[$fieldKey] === 'yes');
-                    } elseif ($key === 'widget_offer_types') {
+                    } elseif ($key === 'widget_offer_types' || $key === 'checkout_product_types') {
                         $configurationOptions[$fieldKey] = implode(',', $configurationOptions[$fieldKey]);
                         $configurationOptionsToSave[$optionsMap[$key]] = explode(',', $this->get_field_value($key, $field, $configurationOptions));
                     } else {
@@ -419,7 +424,7 @@ class PaymentGateway extends \WC_Payment_Gateway
                 } catch (\Exception $e) {
                     $errorMessages[] = $e->getMessage();
                 }
-            } elseif ($key === 'widget_offer_types') {
+            } elseif ($key === 'widget_offer_types' || $key === 'checkout_product_types') {
                 $configurationOptionsToSave[$optionsMap[$key]] = [];
             }
         }
@@ -445,7 +450,13 @@ class PaymentGateway extends \WC_Payment_Gateway
     public function admin_scripts($hook): void
     {
         if ($hook === 'woocommerce_page_wc-settings') {
-            FrontendManager::includeLocalScripts(['tree.min.js'], [], false, false);
+            FrontendManager::includeLocalScripts(
+                ['tree.min.js', 'payment-settings.js'],
+                ['payment-settings.js' => ['jquery']],
+                false,
+                false,
+                self::VERSION
+            );
             FrontendManager::includeLocalStyles(['comfino-release-description.css'], [], self::VERSION, false);
         }
     }
@@ -491,6 +502,16 @@ class PaymentGateway extends \WC_Payment_Gateway
     public function generate_allowed_products_config_html(string $key, array $data): string
     {
         return FrontendManager::renderAllowedProductsConfig($data);
+    }
+
+    public function generate_cart_value_limits_config_html(string $key, array $data): string
+    {
+        return FrontendManager::renderCartValueLimitsConfig($data);
+    }
+
+    public function generate_hr_html(string $key, array $data): string
+    {
+        return '<tr><td colspan="2"><hr style="margin: 1.5em 0"></td></tr>';
     }
 
     public function generatePaywallIframe(bool $isPaymentBlock): string
@@ -585,34 +606,19 @@ class PaymentGateway extends \WC_Payment_Gateway
             $errors[] = __('Last name is required.', 'comfino-payment-gateway');
         }
 
-        // 4. Validate customer address.
-        $address = $order->getCustomer()->getAddress();
-
-        if ($address === null) {
-            $errors[] = __('Delivery address is required.', 'comfino-payment-gateway');
-        } else {
-            if (empty(trim($address->getCity()))) {
-                $errors[] = __('City/Town is required.', 'comfino-payment-gateway');
-            }
-
-            if (empty(trim($address->getPostalCode()))) {
-                $errors[] = __('Postal code is required.', 'comfino-payment-gateway');
-            }
-        }
-
-        // 5. Validate cart data.
+        // 4. Validate cart data.
         $cartItems = $order->getCart()->getItems();
 
         if (empty($cartItems)) {
             $errors[] = __('Cart is empty. Please add products to your cart.', 'comfino-payment-gateway');
         }
 
-        // 6. Validate order amount.
+        // 5. Validate order amount.
         if ($order->getCart()->getTotalAmount() <= 0) {
             $errors[] = __('Cart total amount must be greater than zero.', 'comfino-payment-gateway');
         }
 
-        // 7. Validate payment availability.
+        // 6. Validate payment availability.
         if (!Main::paymentIsAvailable($cart)) {
             $errors[] = __(
                 'Comfino payment is not available for this cart. Please check cart amount and product types.',
