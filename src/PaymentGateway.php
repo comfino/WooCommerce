@@ -32,8 +32,8 @@ if (!defined('ABSPATH')) {
 class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
-    public const VERSION = '4.3.1';
-    public const BUILD_TS = 1787213643;
+    public const VERSION = '4.3.2';
+    public const BUILD_TS = 1787901290;
 
     public function __construct()
     {
@@ -228,6 +228,27 @@ class PaymentGateway extends \WC_Payment_Gateway
 
         try {
             $response = ApiClient::getInstance()->createOrder($order);
+
+            if (!$this->isAllowedApplicationUrl($response->applicationUrl)) {
+                DebugLogger::logEvent(
+                    '[CREATE_ORDER_APPLICATION_URL_REJECTED]',
+                    'process_payment',
+                    [
+                        'order_id' => $orderId,
+                        '$applicationUrl' => $response->applicationUrl,
+                        '$apiHost' => ApiClient::getInstance()->getApiHost(),
+                    ]
+                );
+
+                /* Thrown before the cart is emptied and the stock reduced, so that the customer keeps a usable
+                   cart and can retry the payment - the catch block below reports the error and shows a notice. */
+                throw new \RuntimeException(
+                    __(
+                        'Invalid payment address received from the payment gateway. Please try again or choose another payment method.',
+                        'comfino-payment-gateway'
+                    )
+                );
+            }
 
             if ($wcOrder->get_status() === 'failed') {
                 $wcOrder->update_status('pending');
@@ -546,6 +567,73 @@ class PaymentGateway extends \WC_Payment_Gateway
         }
 
         return $active_tab;
+    }
+
+    /**
+     * Checks whether an API supplied payment application URL is safe to redirect the customer to.
+     *
+     * The URL is taken from the Comfino API response, so it is only as trustworthy as that response. To be
+     * accepted, it must be an absolute HTTPS URL pointing at the same registrable domain as the configured API
+     * host, which keeps a spoofed or tampered response from turning the shop checkout into an open redirect.
+     *
+     * @param string|null $applicationUrl
+     */
+    private function isAllowedApplicationUrl($applicationUrl): bool
+    {
+        if (empty($applicationUrl) || !is_string($applicationUrl)) {
+            return false;
+        }
+
+        $urlParts = wp_parse_url($applicationUrl);
+
+        if (!is_array($urlParts) || empty($urlParts['host']) || empty($urlParts['scheme'])) {
+            return false;
+        }
+
+        /* Plain HTTP is tolerated only in a local development environment, where the API host is usually
+           an unencrypted service running on the developer machine. */
+        if (strtolower($urlParts['scheme']) !== 'https' && !ConfigManager::useDevEnvVars()) {
+            return false;
+        }
+
+        /* In a local development environment the API host, paywall host and application URL host are
+           typically separate ad-hoc container/tunnel hostnames that share no common registrable domain,
+           so the same-domain check below does not apply there. */
+        if (ConfigManager::useDevEnvVars()) {
+            return true;
+        }
+
+        $host = strtolower($urlParts['host']);
+        $allowedDomain = $this->getApplicationUrlDomain(ApiClient::getInstance()->getApiHost());
+
+        if ($allowedDomain === '') {
+            return false;
+        }
+
+        return $host === $allowedDomain || substr($host, -(strlen($allowedDomain) + 1)) === '.' . $allowedDomain;
+    }
+
+    /**
+     * Reduces an API host to the registrable domain every Comfino service of that environment shares,
+     * so that the payment gateway host does not have to be configured separately from the API host.
+     */
+    private function getApplicationUrlDomain(string $apiHost): string
+    {
+        $host = wp_parse_url($apiHost, PHP_URL_HOST);
+
+        if (!is_string($host) || $host === '') {
+            // A bare host name without a scheme is not recognized by wp_parse_url() as a host component.
+            $host = preg_replace('#^.*://|[:/].*$#', '', $apiHost);
+        }
+
+        $host = strtolower(trim((string) $host));
+        $labels = explode('.', $host);
+
+        if (count($labels) < 2) {
+            return $host;
+        }
+
+        return implode('.', array_slice($labels, -2));
     }
 
     /**

@@ -1,3 +1,7 @@
+4.3.2
+ * Security: the address a customer is sent to after placing an order is now verified to be a genuine Comfino payment address before the customer is redirected there. If it is not, the payment is stopped with an error message, and the cart and stock are left untouched so the customer can try again or pay another way.
+ * Security: hardened the verification of requests coming from Comfino. Requests are now rejected when the store has no matching payment key saved, and the test environment key is accepted only while test mode is switched on.
+
 4.3.1
  * Multisite: network activation is now refused with a clear message, and installations that are already network activated show a warning in the admin. Comfino only configures the site it is activated from, so it must be activated individually on each site in a network.
  * Added shop environment metadata to diagnostic reports sent to Comfino, improving support and troubleshooting.
