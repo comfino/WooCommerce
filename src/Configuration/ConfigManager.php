@@ -799,7 +799,7 @@ final class ConfigManager
             'COMFINO_ENABLED' => false,
             'COMFINO_PAYMENT_TEXT_ENABLED' => false,
             'COMFINO_PAYMENT_TEXT' => 'Comfino',
-            'COMFINO_CHECKOUT_PRODUCT_TYPES' => ['INSTALLMENTS_ZERO_PERCENT', 'PAY_LATER'],
+            'COMFINO_CHECKOUT_PRODUCT_TYPES' => [],
             'COMFINO_CHECKOUT_PRODUCT_TYPES_ORDER' => [
                 'INSTALLMENTS_ZERO_PERCENT',
                 'PAY_LATER',
