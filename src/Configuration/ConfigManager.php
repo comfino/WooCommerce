@@ -463,7 +463,7 @@ final class ConfigManager
                     );
                 }
             }
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
             // Silently ignore — CETS token claim is best-effort.
         }
     }
