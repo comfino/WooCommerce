@@ -697,10 +697,9 @@ final class SettingsForm
             'checkout_product_types' => [
                 'title' => __('Payment label product types', 'comfino-payment-gateway'),
                 'type' => 'checkboxset',
-                'values' => $checkoutProductTypes = SettingsManager::sortProductTypesByPriority(
+                'values' => SettingsManager::sortProductTypesByPriority(
                     SettingsManager::getProductTypesSelectList(ProductTypesListTypeEnum::LIST_TYPE_PAYWALL)
                 ),
-                'default' => SettingsManager::getDefaultCheckoutProductTypes($checkoutProductTypes),
                 'custom_attributes' => ['data-comfino-max-select' => '2'],
                 'description' => __(
                     'Used only when the custom payment label above is disabled. Select up to two financial product types to show their names in the checkout payment method label.',
