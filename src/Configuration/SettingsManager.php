@@ -61,19 +61,6 @@ final class SettingsManager
     }
 
     /**
-     * Preselects up to two checkout payment label product types from the shop's available financial products,
-     * following the priority order from ConfigManager::getCheckoutProductTypesOrder().
-     *
-     * @param array $availableProductTypes Product type code => name map, as returned by getProductTypesSelectList()
-     *
-     * @return string[]
-     */
-    public static function getDefaultCheckoutProductTypes(array $availableProductTypes): array
-    {
-        return array_slice(array_keys(self::sortProductTypesByPriority($availableProductTypes)), 0, 2);
-    }
-
-    /**
      * Sorts the product types passed to the paywall SDK config (`productTypes`/`productTypeNames`) using the same
      * priority order as the "Payment label product types" admin setting (ConfigManager::getCheckoutProductTypesOrder()),
      * so the SDK receives product types in the order configured in payment settings.

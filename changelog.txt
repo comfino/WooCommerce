@@ -1,3 +1,6 @@
+4.3.3
+ * Minor fixes and improvements.
+
 4.3.2
  * Security: the address a customer is sent to after placing an order is now verified to be a genuine Comfino payment address before the customer is redirected there. If it is not, the payment is stopped with an error message, and the cart and stock are left untouched so the customer can try again or pay another way.
  * Security: hardened the verification of requests coming from Comfino. Requests are now rejected when the store has no matching payment key saved, and the test environment key is accepted only while test mode is switched on.

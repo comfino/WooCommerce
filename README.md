@@ -4,7 +4,7 @@
 [![PHP Version](https://img.shields.io/badge/php-7.1%20to%208.4-blue.svg)](https://www.php.net/)
 [![License](https://img.shields.io/badge/license-OSL--3.0-green.svg)](LICENSE)
 
-> **Notice:** Version 4.3.2 is the **last release compatible with PHP 7.1**. The upcoming version 5.0.0 will require **PHP 8.1 or higher**, **WooCommerce 7.0.0 or higher**, and **WordPress 6.1 or higher**. Please plan your environment upgrade accordingly.
+> **Notice:** Version 4.3.3 is the **last release compatible with PHP 7.1**. The upcoming version 5.0.0 will require **PHP 8.1 or higher**, **WooCommerce 7.0.0 or higher**, and **WordPress 6.1 or higher**. Please plan your environment upgrade accordingly.
 
 WooCommerce payment module for Comfino deferred payments gateway - installment payments, buy now pay later (BNPL) and corporate payments.
 
@@ -20,7 +20,7 @@ WooCommerce payment module for Comfino deferred payments gateway - installment p
 
 ## Compatibility
 
-### Current version (4.3.2 — last PHP 7.1 compatible release)
+### Current version (4.3.3 — last PHP 7.1 compatible release)
 
 - **WooCommerce**: 3.0.0 or higher
 - **WordPress**: 4.7 or higher
