@@ -117,6 +117,8 @@ final class PaymentGateway extends AbstractPaymentMethodType
                     ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
                     $shopCart
                 );
+            } catch (\InvalidArgumentException $e) {
+                DebugLogger::logEvent('[PAYWALL]', 'get_payment_method_data: cart validation failed.', ['error_message' => $e->getMessage()]);
             } catch (\Throwable $e) {
                 ErrorLogger::sendError($e, OperationContext::PaymentProcessing, (string) $e->getCode(), $e->getMessage());
             }
@@ -160,7 +162,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
             'paywallSettings' => [
                 'language' => Main::getShopLanguage(),
                 'currency' => Main::getShopCurrency(),
-                'customPaywallCss' => ConfigManager::getConfigurationValue('COMFINO_PAYWALL_CUSTOM_CSS_URL') ?: null,
+                'customPaywallCss' => ConfigManager::getCustomCssUrl('COMFINO_PAYWALL_CUSTOM_CSS_URL'),
             ],
             /* Browser-safe shop environment payload — mirrors the shape produced by
                AbstractShopEnvironmentBuilder::buildForFrontend() in php-sdk. Replaces the deprecated
@@ -178,8 +180,9 @@ final class PaymentGateway extends AbstractPaymentMethodType
             'directRedirect' => (bool) ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
             'creditors' => SettingsManager::getCreditors() ?: null,
             'allowedProductsConfig' => SettingsManager::getAllowedProductsConfigForFrontend(),
-            'flags' => ConfigManager::getRemoteFlags(),
-            'flagAttributes' => ConfigManager::getRemoteFlagAttributes(),
+            'flags' => ConfigManager::getRemoteFlags() ?: null,
+            // Forwarded as received (raw PROMO included): the SDK interprets the attributes and gates on `flags`.
+            'flagAttributes' => ConfigManager::getCheckoutFlagAttributes() ?: null,
             'scriptNonce' => (string) apply_filters('comfino_csp_script_nonce', ''),
         ];
     }

@@ -39,6 +39,13 @@ class StorageAdapter extends \WC_Payment_Gateway implements StorageAdapterInterf
 
     public function save($configurationOptions): void
     {
+        // Single write choke point of the admin form and the remote configuration endpoint: validate both the same way.
+        $configurationOptions = RemoteValueValidator::sanitizeForStorage($configurationOptions, $this->optTypeFlags);
+
+        if (empty($configurationOptions)) {
+            return;
+        }
+
         $this->init_settings();
 
         foreach ($configurationOptions as $optName => $optValue) {

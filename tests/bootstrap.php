@@ -45,7 +45,8 @@ namespace {
     if (!function_exists('__')) {
         function __($text, $domain = 'default')
         {
-            return $text;
+            // Tests can load a translation map (e.g. Polish strings) through $GLOBALS['comfino_test_translations'].
+            return $GLOBALS['comfino_test_translations'][$text] ?? $text;
         }
     }
 
@@ -437,24 +438,55 @@ namespace {
         }
     }
 
+    // Transients are kept in memory for the duration of the test run (tests reset $GLOBALS['comfino_test_transients']).
+    $GLOBALS['comfino_test_transients'] = [];
+
     if (!function_exists('delete_transient')) {
         function delete_transient($transient): bool
         {
-            return delete_option('_transient_' . $transient);
+            unset($GLOBALS['comfino_test_transients'][$transient]);
+
+            return true;
         }
     }
 
     if (!function_exists('get_transient')) {
         function get_transient($transient)
         {
-            return get_option('_transient_' . $transient, false);
+            return $GLOBALS['comfino_test_transients'][$transient] ?? false;
         }
     }
 
     if (!function_exists('set_transient')) {
         function set_transient($transient, $value, $expiration = 0): bool
         {
-            return update_option('_transient_' . $transient, $value);
+            $GLOBALS['comfino_test_transients'][$transient] = $value;
+
+            return true;
+        }
+    }
+
+    if (!function_exists('wp_delete_file')) {
+        function wp_delete_file($file): void
+        {
+            if (is_file($file)) {
+                unlink($file);
+            }
+        }
+    }
+
+    if (!function_exists('wc_get_order_statuses')) {
+        function wc_get_order_statuses(): array
+        {
+            return [
+                'wc-pending' => 'Pending payment',
+                'wc-processing' => 'Processing',
+                'wc-on-hold' => 'On hold',
+                'wc-completed' => 'Completed',
+                'wc-cancelled' => 'Cancelled',
+                'wc-refunded' => 'Refunded',
+                'wc-failed' => 'Failed',
+            ];
         }
     }
 
@@ -714,6 +746,16 @@ namespace {
             {
                 $this->method = $method;
             }
+
+            public function set_headers(array $headers): void
+            {
+                $this->headers = $headers;
+            }
+
+            public function set_body($body): void
+            {
+                $this->body = (string) $body;
+            }
         }
     }
 
@@ -901,6 +943,10 @@ namespace {
             private $id = 123;
             private $payment_method = 'comfino';
             private $billing_email = 'test@comfino-wc-store.test';
+            private $meta = [];
+            private $status = 'pending';
+            /** @var string[] Notes added during the test. */
+            public $notes = [];
 
             public function get_id(): int
             {
@@ -919,6 +965,53 @@ namespace {
 
             public function add_order_note($note): bool
             {
+                $this->notes[] = $note;
+
+                return true;
+            }
+
+            public function get_meta($key = '', $single = true, $context = 'view')
+            {
+                return $this->meta[$key] ?? '';
+            }
+
+            public function update_meta_data($key, $value, $meta_id = 0): void
+            {
+                $this->meta[$key] = $value;
+            }
+
+            public function save(): int
+            {
+                return $this->id;
+            }
+
+            public function get_status($context = 'view'): string
+            {
+                return $this->status;
+            }
+
+            public function get_order_number(): string
+            {
+                return (string) $this->id;
+            }
+
+            public function update_status($new_status, $note = '', $manual = false): bool
+            {
+                $oldStatus = $this->status;
+                $this->status = $new_status;
+
+                // Mirrors WooCommerce: the status change hook fires synchronously, inside the same request.
+                if (isset($GLOBALS['comfino_test_order_status_changed']) && is_callable($GLOBALS['comfino_test_order_status_changed'])) {
+                    call_user_func($GLOBALS['comfino_test_order_status_changed'], $this, $oldStatus, $new_status);
+                }
+
+                return true;
+            }
+
+            public function payment_complete($transaction_id = ''): bool
+            {
+                $this->status = 'processing';
+
                 return true;
             }
 
@@ -934,6 +1027,7 @@ namespace {
         class WooCommerce_Mock
         {
             public $cart;
+            public $session;
 
             public function __construct()
             {
@@ -983,6 +1077,10 @@ namespace {
     if (!function_exists('wc_get_order_notes')) {
         function wc_get_order_notes($args): array
         {
+            if (isset($GLOBALS['comfino_test_order_notes'])) {
+                return $GLOBALS['comfino_test_order_notes'];
+            }
+
             return [
                 (object) [
                     'added_by' => 'system',

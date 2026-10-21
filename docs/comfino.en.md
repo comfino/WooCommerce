@@ -16,7 +16,7 @@ Go to the `"Plugins"` tab, then click the `"Add Plugin -> Upload plugin"` button
 The configuration parameters of the module are grouped by categories corresponding to the tabs of the configuration panel: `"Payment settings"`, `"Sale settings"`, `"Widget settings"`, `"Abandoned cart settings"`, `"Developer settings"`.
 The last tab `"Plugin diagnostics"` does not contain any parameters to be set and has an information-diagnostic function. It contains, among other things, a local error log and a list of the plugin's internal operations recorded in debug mode (debug mode log), additionally includes plugin installation, update and uninstallation logs.
 
-Before using Comfino payments, the module must be configured. You can do this by clicking `"Settings"` in the module info panel.
+Before using ComfinoPay payments, the module must be configured. You can do this by clicking `"Settings"` in the module info panel.
 
 The most important field that must be filled in is the "Production Environment API Key" field from the `"Payment settings"` tab.
 In the `"Developer settings"` tab, there is a second key field - `"Test environment API key"`.
@@ -25,17 +25,17 @@ Configuration parameter fields:
 
 **PAYMENT SETTINGS**
 
-* **Enable/Disable** — activity status of the Comfino module (visibility on the list of payment methods in the basket)
-* **Production environment API key** — a unique access key that allows the module to communicate with the Comfino API (you will receive it from a Comfino representative)
+* **Enable/Disable** — activity status of the ComfinoPay module (visibility on the list of payment methods in the basket)
+* **Production environment API key** — a unique access key that allows the module to communicate with the ComfinoPay API (you will receive it from a ComfinoPay representative)
 * **Custom payment label** — switch enabling a custom payment label text; when disabled, the checkout item label is built from the payment label product types selected instead
-* **Payment text** — label displayed for Comfino in the checkout payment method list (used only when the custom payment label is enabled)
+* **Payment text** — label displayed for ComfinoPay in the checkout payment method list (used only when the custom payment label is enabled)
 * **Payment label product types** — financial product types whose names are shown in the checkout payment method label when the custom payment label is disabled (up to two financial product types can be selected)
-* **Minimal amount in cart** — amount above which the Comfino payment and widget will be displayed
+* **Minimal amount in cart** — amount above which the ComfinoPay payment and widget will be displayed
 * **Cart value limits per financial product type** — optional minimum/maximum cart value limits for each financial product type, applied on top of the global minimal cart amount
-* **Order number** — Use customer-visible order reference instead of numeric order ID for Comfino API integration. New orders only.
+* **Order number** — Use customer-visible order reference instead of numeric order ID for ComfinoPay API integration. New orders only.
 
 **Paywall settings**
-* **Direct redirect mode** — Do not display the Comfino paywall. Disables the automatic display of the paywall on the payment summary, allowing you to proceed to the application without having to select one of Comfino's financial products.
+* **Direct redirect mode** — Do not display the ComfinoPay paywall. Disables the automatic display of the paywall on the payment summary, allowing you to proceed to the application without having to select one of ComfinoPay's financial products.
 * **Custom paywall CSS style** — Link to a CSS file with styles that override the paywall's appearance (only absolute addresses from the store's domain are accepted).
 
 ![Configuration](images/en/configuration1.png "Configuration")
@@ -44,7 +44,7 @@ Configuration parameter fields:
 
 **Rules for the availability of financial products**
 
-The financial product availability rules section allows you to narrow down the available terms for each type of financial product, corresponding to the available financing methods for purchases under your Comfino contract. For each type, you can specify a minimum and maximum repayment term, and specify specific terms (separated by commas). To avoid applying any restrictions to a given product type, simply leave the fields blank. All restrictions are cumulative: if "Specific terms" are set, only those specific terms are offered; "Min/Max" values further narrow them. Restrictions are applied to both the paywall and the application.
+The financial product availability rules section allows you to narrow down the available terms for each type of financial product, corresponding to the available financing methods for purchases under your ComfinoPay contract. For each type, you can specify a minimum and maximum repayment term, and specify specific terms (separated by commas). To avoid applying any restrictions to a given product type, simply leave the fields blank. All restrictions are cumulative: if "Specific terms" are set, only those specific terms are offered; "Min/Max" values further narrow them. Restrictions are applied to both the paywall and the application.
 
 ![Configuration](images/en/configuration2a.png "Konfiguracja")
 
@@ -52,15 +52,15 @@ The financial product availability rules section allows you to narrow down the a
 
 The tab contains settings related to sales management.
 
-Financial product availability rules (product category filters) enable Comfino payments to be assigned to specific product categories. Category filters are divided into sections corresponding to available methods of financing purchases under the contract concluded with Comfino. Moreover, managing the availability of Comfino payments is only possible for the following types of financial products: "Zero percent installments", "Pay later", "Installments for companies", "Deferred payments for companies", "Divide into 3", "Leasing". If the concluded contract does not include one or all of these items, the tab will contain a list of trees limited to this one financing method or it will contain a list of trees for other types of products from the contract, if the contract does not include the "Zero percent installments", "Pay later", "Installments for companies", "Deferred payments for companies", "Divide into 3" and "Leasing" products.
+Financial product availability rules (product category filters) enable ComfinoPay payments to be assigned to specific product categories. Category filters are divided into sections corresponding to available methods of financing purchases under the contract concluded with ComfinoPay. Moreover, managing the availability of ComfinoPay payments is only possible for the following types of financial products: "Zero percent installments", "Pay later", "Installments for companies", "Deferred payments for companies", "Divide into 3", "Leasing". If the concluded contract does not include one or all of these items, the tab will contain a list of trees limited to this one financing method or it will contain a list of trees for other types of products from the contract, if the contract does not include the "Zero percent installments", "Pay later", "Installments for companies", "Deferred payments for companies", "Divide into 3" and "Leasing" products.
 
-By default, Comfino payments are available unconditionally for all product types. To disable Comfino for selected product types, uncheck the appropriate categories in the category tree for each type of financial offer and click "Save".
+By default, ComfinoPay payments are available unconditionally for all product types. To disable ComfinoPay for selected product types, uncheck the appropriate categories in the category tree for each type of financial offer and click "Save".
 
 **Filter by product ID**
 
-The product ID filter lets you exclude Comfino payments for specific products, regardless of their category. In the text field, enter the product IDs separated by commas (e.g. `15, 17`) and click "Save". This is a single shared list that applies to all financial product types.
+The product ID filter lets you exclude ComfinoPay payments for specific products, regardless of their category. In the text field, enter the product IDs separated by commas (e.g. `15, 17`) and click "Save". This is a single shared list that applies to all financial product types.
 
-If the customer's cart contains any of the listed products, all Comfino payments will be hidden, both at checkout (paywall) and in the promotional widget on the product page. Leaving the field empty means the filter is inactive and no product is excluded based on it.
+If the customer's cart contains any of the listed products, all ComfinoPay payments will be hidden, both at checkout (paywall) and in the promotional widget on the product page. Leaving the field empty means the filter is inactive and no product is excluded based on it.
 
 The product ID filter works independently of the product category filters.
 
@@ -74,8 +74,8 @@ The product ID filter works independently of the product category filters.
 * **Widget type** — way of presenting the widget [`Standard widget`, `Classic widget`, `Blank widget`]
 * **Offer types** — types of financing offers promoted [`Zero percent installments`, `Convenient installments`, `Pay later`, `Installments for companies`, `Deferred payments for companies`, `Leasing`]
 * **Show logos** — switch enabling to display the logo of each available financial provider
-* **Disable banner** — do not embed the installment banner on the product page (standalone calculator mode); the Comfino calculator overlay can still be opened from your own button/link using the trigger element selector
-* **Calculator trigger element selector** — selector of the element (e.g. a button or link) whose click opens the Comfino calculator overlay when the banner is disabled
+* **Disable banner** — do not embed the installment banner on the product page (standalone calculator mode); the ComfinoPay calculator overlay can still be opened from your own button/link using the trigger element selector
+* **Calculator trigger element selector** — selector of the element (e.g. a button or link) whose click opens the ComfinoPay calculator overlay when the banner is disabled
 
 The availability of offer types on the list depends on the individual contract and may differ from that described in the documentation.
 
@@ -92,7 +92,7 @@ The availability of offer types on the list depends on the individual contract a
 * **Custom banner CSS style** — Link to a CSS file with styles overriding the banner's appearance (only absolute addresses from the store's domain are accepted)
 * **Custom calculator CSS style** — Link to a CSS file with styles overriding the calculator's appearance (only absolute addresses from the store's domain are accepted)
 
-Detailed information on the operation of the widget and its configuration options can be found in a separate [Comfino widget documentation](https://comfino.pl/widgets/comfino-woocommerce/en).
+Detailed information on the operation of the widget and its configuration options can be found in a separate [ComfinoPay widget documentation](https://comfino.pl/widgets/comfino-woocommerce/en).
 
 ![Configuration](images/en/configuration3b.png "Configuration")
 
@@ -105,19 +105,19 @@ The "Abandoned cart rescue" feature allows you to minimize the problem of abando
 **DEVELOPER SETTINGS**
 
 * **Test environment** — developer mode activation/deactivation switch
-* **Test environment API key** — a unique access key enabling the module to communicate with the Comfino test API
+* **Test environment API key** — a unique access key enabling the module to communicate with the ComfinoPay test API
 * **Debug mode** — debug mode activation/deactivation switch
 * **Service mode** — service mode activation/deactivation switch
 
-Debug mode is useful in case of problems with Comfino payment availability. In this mode module logs details of internal process responsible for displaying of Comfino payment option at the payment methods list. It is recommended to use this option together with activating the second option `"Service mode"` to minimize the saved logs.
+Debug mode is useful in case of problems with ComfinoPay payment availability. In this mode module logs details of internal process responsible for displaying of ComfinoPay payment option at the payment methods list. It is recommended to use this option together with activating the second option `"Service mode"` to minimize the saved logs.
 
-Debug mode is useful in case of problems with Comfino payment availability. In this mode module logs details of internal process responsible for displaying of Comfino payment option at the payment methods list.
+Debug mode is useful in case of problems with ComfinoPay payment availability. In this mode module logs details of internal process responsible for displaying of ComfinoPay payment option at the payment methods list.
 
 ![Configuration](images/en/configuration5.png "Configuration")
 
 **Note**
 
-Before launching payments on the production store, disable developer mode to block the use of the Comfino payment test environment.
+Before launching payments on the production store, disable developer mode to block the use of the ComfinoPay payment test environment.
 
 **PLUGIN DIAGNOSTICS**
 
@@ -159,14 +159,14 @@ Uninstallation log:
 ![Configuration](images/en/configuration6c.png "Konfiguracja")
 
 Information about developer mode activity is displayed in the tabs `"PAYMENT SETTINGS"` and `"PLUGIN DIAGNOSTICS"`.
-In this mode, the plugin uses the key from the `"DEVELOPER SETTINGS"` tab to communicate with the Comfino test API. You will also receive a test environment key from a Comfino representative.
+In this mode, the plugin uses the key from the `"DEVELOPER SETTINGS"` tab to communicate with the ComfinoPay test API. You will also receive a test environment key from a ComfinoPay representative.
 
 
 ## REMARKS
 
-* The Comfino payment module requires you to set the customer's phone number as required in the process of entering the customer's contact details. The phone number is used to send codes and inform the customer about the status of the transaction, at a later stage of Comfino payment processing. In case of absence of a telephone number, the Comfino payment transaction will end with an error displayed on the store's website.
-* The module notification system requires the availability of the HTTP "PUT" method. The module receives information about changes in the status of Comfino transactions and changes the internal order status in WooCommerce accordingly. In case of problems with notifications, check the web server settings in your hosting panel.
-* Customer and order data required by the Comfino module:
+* The ComfinoPay payment module requires you to set the customer's phone number as required in the process of entering the customer's contact details. The phone number is used to send codes and inform the customer about the status of the transaction, at a later stage of ComfinoPay payment processing. In case of absence of a telephone number, the ComfinoPay payment transaction will end with an error displayed on the store's website.
+* The module notification system requires the availability of the HTTP "PUT" method. The module receives information about changes in the status of ComfinoPay transactions and changes the internal order status in WooCommerce accordingly. In case of problems with notifications, check the web server settings in your hosting panel.
+* Customer and order data required by the ComfinoPay module:
     * Customer:
         * first name - 2-63 characters
         * last name - 2-63 characters
@@ -185,12 +185,21 @@ In this mode, the plugin uses the key from the `"DEVELOPER SETTINGS"` tab to com
         * postal code
         * city
         * country code
+* If your shop sends a Content Security Policy (CSP) header, allow the ComfinoPay hosts: `script-src`, `connect-src` and `img-src` must include `https://sdk.comfino.pl`, and `frame-src`, `connect-src` and `img-src` must include `https://api-ecommerce.comfino.pl` (the API host also serves the payment method logo). In the test environment use `https://sdk.craty.pl` and `https://api-ecommerce.craty.pl` instead.
+* The plugin protects its log and cache directory (`wp-content/plugins/comfino-payment-gateway/var/`) with `.htaccess` files, which only Apache reads. On Nginx, deny access to that directory yourself, for example:
+
+```nginx
+location ~* /wp-content/plugins/comfino-payment-gateway/var/ {
+    deny all;
+    return 404;
+}
+```
 
 ## SAMPLE CART VIEW WITH A LIST OF PAYMENT METHODS
 
 ![Cart](images/en/cart_payment_view_folded.png "Cart")
 ![Cart](images/en/cart_payment_view_unfolded.png "Cart")
 
-## COMFINO PROCESS FLOW
+## COMFINOPAY PROCESS FLOW
 
 ![Flow](images/comfino-flow.png "Flow")

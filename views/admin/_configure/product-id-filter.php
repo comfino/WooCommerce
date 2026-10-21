@@ -3,7 +3,7 @@
  * Template for the collapsible product ID filter (global blacklist).
  *
  * A single text field where the admin enters comma-separated product IDs that should
- * disable all Comfino financial products when present in the cart. Uses a native
+ * disable all ComfinoPay financial products when present in the cart. Uses a native
  * <details> accordion (no JS required).
  *
  * @var string $title Accordion label

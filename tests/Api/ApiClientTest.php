@@ -9,6 +9,8 @@ use Comfino\Common\Backend\Factory\ApiClientFactory;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Main;
 use Comfino\Api\Exception\AccessDenied;
+use Comfino\Api\Exception\Conflict;
+use Comfino\Api\Exception\TooManyRequests;
 use Comfino\Common\Exception\ConnectionTimeout;
 
 class ApiClientTest extends \PHPUnit_Framework_TestCase
@@ -207,6 +209,26 @@ class ApiClientTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('error_details', $result);
         $this->assertContains('technical problem', $result['title']);
         $this->assertInternalType('array', $result['error_details']);
+    }
+
+    public function testProcessApiErrorShowsOutageMessageForRateLimit(): void
+    {
+        // A 429 is a temporary outage for the customer, not a "configuration problem".
+        $result = ApiClient::processApiError('HTTP 429 Error', new TooManyRequests('Too Many Requests', 429));
+
+        $this->assertContains('outage', $result['title']);
+    }
+
+    public function testProcessApiErrorWithIdempotentConflictReturnsResult(): void
+    {
+        // A 409 on an already cancelled order is an idempotent failure: handled like a 404, not reported.
+        $conflict = new Conflict('Conflict', 409);
+        $conflict->setIdempotentFailure(true);
+
+        $result = ApiClient::processApiError('Order cancellation error', $conflict);
+
+        $this->assertArrayHasKey('title', $result);
+        $this->assertTrue($conflict->isIdempotentFailure());
     }
 
     public function testPinCheckoutTrackIdPrefersJourneyCookieWhenTrackingConsentEnabled(): void

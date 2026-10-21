@@ -6,6 +6,9 @@ use Comfino\Configuration\SettingsManager;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
 use Comfino\Main;
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
+use Comfino\PluginShared\CacheManager;
+use Comfino\Tests\Stub\StubApiClient;
+use Comfino\Tests\TestState;
 use Comfino\Common\Shop\Cart;
 
 class SettingsManagerTest extends \PHPUnit_Framework_TestCase
@@ -158,5 +161,41 @@ class SettingsManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(method_exists(SettingsManager::class, 'getProductCategoryFilters'));
         $this->assertTrue(method_exists(SettingsManager::class, 'productCategoryFiltersActive'));
         $this->assertTrue(method_exists(SettingsManager::class, 'getCatFilterAvailProdTypes'));
+    }
+
+    public function testFailedListReadServesStaleCopyAndIsNotRetried(): void
+    {
+        TestState::reset();
+
+        $apiClient = new StubApiClient();
+        $apiClient->productTypesException = new \RuntimeException('API down');
+        TestState::setApiClient($apiClient);
+
+        $cacheKey = 'product_types.paywall.' . \Comfino\Main::getShopLanguage();
+
+        // Last good list, kept without expiry; the regular entry has expired.
+        CacheManager::set("$cacheKey.stale", ['PAY_LATER' => 'Pay later']);
+
+        $this->assertSame(['PAY_LATER' => 'Pay later'], SettingsManager::getProductTypes('paywall'));
+        $this->assertSame(['PAY_LATER' => 'Pay later'], SettingsManager::getProductTypes('paywall'));
+        $this->assertSame(1, $apiClient->getCallCount('getProductTypes'), 'A failure is negative-cached, not retried on every read.');
+
+        TestState::reset();
+    }
+
+    public function testFailedListReadWithoutStaleCopyReportsErrorOnce(): void
+    {
+        TestState::reset();
+
+        $apiClient = new StubApiClient();
+        $apiClient->productTypesException = new \RuntimeException('API down');
+        TestState::setApiClient($apiClient);
+
+        $this->assertSame(['error' => 'API down'], SettingsManager::getProductTypes('paywall', true));
+        $this->assertSame(['error' => 'API down'], SettingsManager::getProductTypes('paywall', true));
+        $this->assertSame([], SettingsManager::getProductTypes('paywall'));
+        $this->assertSame(1, $apiClient->getCallCount('getProductTypes'));
+
+        TestState::reset();
     }
 }

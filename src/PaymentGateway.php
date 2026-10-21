@@ -4,6 +4,7 @@ namespace Comfino;
 
 use Comfino\Api\ApiClient;
 use Comfino\Api\ApiService;
+use Comfino\Api\InvalidApplicationUrl;
 use Comfino\Api\Dto\Payment\AllowedProductConfig;
 use Comfino\Api\Dto\Payment\FinancialProduct;
 use Comfino\Api\Dto\Payment\LoanQueryCriteria;
@@ -15,6 +16,7 @@ use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
 use Comfino\Extended\Api\Dto\Plugin\OperationContext;
 use Comfino\FinancialProduct\ProductTypesListTypeEnum;
+use Comfino\Order\LoanSelection;
 use Comfino\Order\OrderManager;
 use Comfino\Order\ShopStatusManager;
 use Comfino\Shop\Order\Customer;
@@ -23,7 +25,6 @@ use Comfino\Shop\Order\OrderInterface;
 use Comfino\View\FrontendManager;
 use Comfino\View\SettingsForm;
 use Comfino\View\TemplateManager;
-use ComfinoExternal\Psr\Http\Client\ClientExceptionInterface;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -33,7 +34,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
     public const VERSION = '4.4.0';
-    public const BUILD_TS = 1792586806;
+    public const BUILD_TS = 1792604487;
 
     public function __construct()
     {
@@ -41,11 +42,11 @@ class PaymentGateway extends \WC_Payment_Gateway
         $this->has_fields = true;
         $this->method_title = __('Comfino payments', 'comfino-payment-gateway');
         $this->method_description = __(
-            'Comfino is an innovative payment method for customers of e-commerce stores! These are installment payments, deferred (buy now, pay later) and corporate payments available on one platform with the help of quick integration. Grow your business with Comfino!',
+            'ComfinoPay is an innovative payment method for customers of e-commerce stores! These are installment payments, deferred (buy now, pay later) and corporate payments available on one platform with the help of quick integration. Grow your business with ComfinoPay!',
             'comfino-payment-gateway'
         );
         $this->description = __(
-            'The wide range of Comfino installment payments means fast and safe shopping without burdening your budget here and now. Unexpected expenses, larger purchases, or maybe you just prefer to pay later? With Comfino you have a choice! 0% installments, Convenient Installments and deferred payments "Buy now, pay later". All so that you can enjoy shopping without worrying about your finances.',
+            'The wide range of ComfinoPay installment payments means fast and safe shopping without burdening your budget here and now. Unexpected expenses, larger purchases, or maybe you just prefer to pay later? With ComfinoPay you have a choice! 0% installments, Convenient Installments and deferred payments "Buy now, pay later". All so that you can enjoy shopping without worrying about your finances.',
             'comfino-payment-gateway'
         );
         $this->supports = ['products'];
@@ -55,7 +56,7 @@ class PaymentGateway extends \WC_Payment_Gateway
             return;
         }
 
-        // Initialize Comfino plugin.
+        // Initialize ComfinoPay plugin.
         Main::init();
 
         $this->init_form_fields();
@@ -103,7 +104,7 @@ class PaymentGateway extends \WC_Payment_Gateway
     }
 
     /**
-     * Renders the standard-rendering Comfino logo placeholder via WooCommerce's gateway-icon mechanism: `src` is the
+     * Renders the standard-rendering ComfinoPay logo placeholder via WooCommerce's gateway-icon mechanism: `src` is the
      * default CDN SVG, marked `data-comfino-logo` so the SDK's DefaultPaymentMethodItemRenderer adopts this same `<img>`
      * (instead of injecting a second one) and swaps its `src` to the auth API logo while the tile is still hidden behind
      * the loader overlay (comfino-item-gate-woocommerce.css). The loader span is rendered alongside it for the same reason.
@@ -155,7 +156,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 
         DebugLogger::logEvent(
             '[PAYMENT]',
-            'Order identifier for Comfino API',
+            'Order identifier for ComfinoPay API',
             [
                 'use_reference' => $useOrderReference,
                 'order_id' => $orderId,
@@ -163,48 +164,70 @@ class PaymentGateway extends \WC_Payment_Gateway
             ]
         );
 
-        $loanType = sanitize_text_field(wp_unslash($_POST['comfino_loan_type'] ?? 'undefined'));
+        $loanType = sanitize_text_field(wp_unslash($_POST['comfino_loan_type'] ?? ''));
         $loanTerm = (int) filter_var(sanitize_text_field(wp_unslash($_POST['comfino_loan_term'] ?? '0')), FILTER_VALIDATE_INT);
+
+        if ($loanType === 'undefined') {
+            $loanType = '';
+        }
 
         try {
             $shopCart = OrderManager::getShopCart($cart);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             wc_add_notice(FrontendManager::processError('Shop cart creation error', $e, null, null, null, '[ERROR]', OperationContext::OrderCreation)['title'], 'error');
 
             return ['result' => 'failure', 'redirect' => ''];
         }
 
-        if (empty($loanType) || empty($loanTerm)) {
-            // Preselected financial offer data incomplete - load financial offer again and set default product as first user choice before redirection.
-            if (empty($financialProducts = $this->getFinancialProducts($shopCart->getTotalValue(), $shopCart))) {
-                // Emergency offer loading failed - return error to the user and prevent redirection to avoid transaction failure.
-                wc_add_notice(__('Preselected financial offer data incomplete. Please try again.', 'comfino-payment-gateway'));
+        // The selection posted by the paywall, validated against the allowed product types and term bounds.
+        $allowedProductTypes = LoanSelection::getAllowedProductTypes($shopCart);
+        $directRedirect = (bool) ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT');
+        $selection = LoanSelection::validate(
+            $loanType,
+            $loanTerm,
+            $allowedProductTypes,
+            SettingsManager::getAllowedProductsConfigForFrontend()
+        );
+
+        if ($selection === null) {
+            $missingFields = array_keys(array_filter([
+                'comfino_loan_type' => $loanType === '',
+                'comfino_loan_term' => $loanTerm === 0,
+            ]));
+
+            if (empty($missingFields)) {
+                // Both fields were posted, but the selection is not acceptable (tampered or disallowed).
+                $missingFields = ['comfino_loan_type', 'comfino_loan_term'];
+            }
+
+            /* Emergency path: a safe default product is better than a lost order, because the shopper can still
+               change the financing offer on the ComfinoPay application page after the redirect. Direct redirect
+               mode renders no paywall and fires no selection event, so it is the documented behaviour there. */
+            $financialProducts = $this->getFinancialProducts($shopCart->getTotalValue(), $shopCart, $apiErrorMessage);
+            $defaultProduct = LoanSelection::selectDefaultProduct($financialProducts);
+
+            if ($defaultProduct !== null) {
+                // The default is checked against the allowlist too; its term comes from the API's own offer.
+                $selection = LoanSelection::validate((string) $defaultProduct->type, (int) $defaultProduct->loanTerm, $allowedProductTypes);
+            }
+
+            if ($selection === null) {
+                wc_add_notice(
+                    $apiErrorMessage ?? __('Preselected financial offer data incomplete. Please try again.', 'comfino-payment-gateway'),
+                    'error'
+                );
 
                 return ['result' => 'failure', 'redirect' => ''];
             }
 
-            /* Use the first offer with its default term as an emergency preselection before redirection to the external
-               ComfinoPay page. INSTANT_PAYMENTS (a different payment path that cannot be changed later) and BLIK are never
-               used as the default: the first offer of any other type is taken. */
-            $defaultProduct = null;
-
-            foreach ($financialProducts as $financialProduct) {
-                if (!in_array((string) $financialProduct->type, ['INSTANT_PAYMENTS', 'BLIK'], true)) {
-                    $defaultProduct = $financialProduct;
-
-                    break;
-                }
+            if (!$directRedirect) {
+                LoanSelection::reportNotPosted(LoanSelection::CODE_DEFAULTED, $missingFields, $this->isBlocksCheckout());
             }
-
-            if ($defaultProduct === null) {
-                wc_add_notice(__('Preselected financial offer data incomplete. Please try again.', 'comfino-payment-gateway'));
-
-                return ['result' => 'failure', 'redirect' => ''];
-            }
-
-            $loanType = (string) $defaultProduct->type;
-            $loanTerm = $defaultProduct->loanTerm;
         }
+
+        // Every null branch above either assigned a selection or returned.
+        $loanType = (string) $selection[0];
+        $loanTerm = (int) $selection[1];
 
         $shopCustomer = OrderManager::getShopCustomerFromOrder($wcOrder);
         $returnUrl = $this->get_return_url($wcOrder);
@@ -260,7 +283,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 
                 /* Thrown before the cart is emptied and the stock reduced, so that the customer keeps a usable
                    cart and can retry the payment - the catch block below reports the error and shows a notice. */
-                throw new \RuntimeException(
+                throw new InvalidApplicationUrl(
                     __(
                         'Invalid payment address received from the payment gateway. Please try again or choose another payment method.',
                         'comfino-payment-gateway'
@@ -272,7 +295,7 @@ class PaymentGateway extends \WC_Payment_Gateway
                 $wcOrder->update_status('pending');
             }
 
-            $wcOrder->add_order_note(__("Comfino create order", 'comfino-payment-gateway'));
+            $wcOrder->add_order_note(__("ComfinoPay create order", 'comfino-payment-gateway'));
 
             wc_reduce_stock_levels($wcOrder);
 
@@ -283,13 +306,15 @@ class PaymentGateway extends \WC_Payment_Gateway
 
             $result = ['result' => 'success', 'redirect' => $response->applicationUrl];
         } catch (\Throwable $e) {
-            ApiClient::processApiError(
-                'Order creation error on page "' . Main::getCurrentUrl() . '" (Comfino API)',
+            $apiError = ApiClient::processApiError(
+                'Order creation error on page "' . Main::getCurrentUrl() . '" (ComfinoPay API)',
                 $e,
                 OperationContext::OrderCreation
             );
 
-            wc_add_notice($e->getMessage(), 'error');
+            /* Never show raw exception text (cURL errors, API responses) to the customer. The rejected application URL
+               carries its own translated customer message. */
+            wc_add_notice($e instanceof InvalidApplicationUrl ? $e->getMessage() : $apiError['title'], 'error');
 
             $result = ['result' => 'failure', 'redirect' => ''];
         } finally {
@@ -330,7 +355,7 @@ class PaymentGateway extends \WC_Payment_Gateway
             'active_tab' => $activeTab,
             'support_email_address' => SettingsForm::COMFINO_SUPPORT_EMAIL,
             'support_email_subject' => sprintf(
-            /* translators: 1: WordPress version 2: WooCommerce version 3: Comfino plugin version */
+            /* translators: 1: WordPress version 2: WooCommerce version 3: ComfinoPay plugin version */
                 __('WordPress %1$s WooCommerce %2$s Comfino %3$s - question', 'comfino-payment-gateway'),
                 $wp_version,
                 WC_VERSION,
@@ -345,7 +370,7 @@ class PaymentGateway extends \WC_Payment_Gateway
             ),
             'contact_msg1' => __('Do you want to ask about something? Write to us at', 'comfino-payment-gateway'),
             'contact_msg2' => sprintf(
-            /* translators: s%: Comfino support telephone */
+            /* translators: s%: ComfinoPay support telephone */
                 __('or contact us by phone. We are waiting on the number: %s. We will answer all your questions!', 'comfino-payment-gateway'),
                 SettingsForm::COMFINO_SUPPORT_PHONE
             ),
@@ -372,7 +397,7 @@ class PaymentGateway extends \WC_Payment_Gateway
         $viewVariables['update_available_message'] = $updateAvailable
             ? sprintf(
                 /* translators: 1: Available plugin version 2: Current plugin version */
-                __('New Comfino %1$s plugin version is available. You are using %2$s version. Please update your Comfino plugin.', 'comfino-payment-gateway'),
+                __('New ComfinoPay %1$s plugin version is available. You are using %2$s version. Please update your ComfinoPay plugin.', 'comfino-payment-gateway'),
                 $githubVersionData['github_version'],
                 self::VERSION
             )
@@ -590,7 +615,7 @@ class PaymentGateway extends \WC_Payment_Gateway
     /**
      * Checks whether an API supplied payment application URL is safe to redirect the customer to.
      *
-     * The URL is taken from the Comfino API response, so it is only as trustworthy as that response. To be
+     * The URL is taken from the ComfinoPay API response, so it is only as trustworthy as that response. To be
      * accepted, it must be an absolute HTTPS URL pointing at the same registrable domain as the configured API
      * host, which keeps a spoofed or tampered response from turning the shop checkout into an open redirect.
      *
@@ -632,7 +657,7 @@ class PaymentGateway extends \WC_Payment_Gateway
     }
 
     /**
-     * Reduces an API host to the registrable domain every Comfino service of that environment shares,
+     * Reduces an API host to the registrable domain every ComfinoPay service of that environment shares,
      * so that the payment gateway host does not have to be configured separately from the API host.
      */
     private function getApplicationUrlDomain(string $apiHost): string
@@ -727,18 +752,28 @@ class PaymentGateway extends \WC_Payment_Gateway
         // 6. Validate payment availability.
         if (!Main::paymentIsAvailable($cart)) {
             $errors[] = __(
-                'Comfino payment is not available for this cart. Please check cart amount and product types.',
+                'ComfinoPay payment is not available for this cart. Please check cart amount and product types.',
                 'comfino-payment-gateway'
             );
         }
 
         if (!empty($errors)) {
-            // Do not call validation at Comfino API side if any errors detected locally.
+            // Do not call validation at ComfinoPay API side if any errors detected locally.
             return $errors;
         }
 
-        // Call Comfino API validation as a second step of order validation if no errors detected locally.
-        $validationResult = ApiClient::getInstance()->validateOrder($order);
+        try {
+            // Call ComfinoPay API validation as a second step of order validation if no errors detected locally.
+            $validationResult = ApiClient::getInstance()->validateOrder($order);
+        } catch (\Throwable $e) {
+            return [
+                ApiClient::processApiError(
+                    'Order validation error on page "' . Main::getCurrentUrl() . '" (ComfinoPay API)',
+                    $e,
+                    OperationContext::OrderCreation
+                )['title'],
+            ];
+        }
 
         if (!$validationResult->success) {
             $errors = array_values($validationResult->errors);
@@ -748,10 +783,14 @@ class PaymentGateway extends \WC_Payment_Gateway
     }
 
     /**
+     * @param string|null $errorMessage Set to the customer-facing error title when the API call fails.
+     *
      * @return FinancialProduct[]
      */
-    private function getFinancialProducts(int $loanAmount, Cart $shopCart): array
+    private function getFinancialProducts(int $loanAmount, Cart $shopCart, ?string &$errorMessage = null): array
     {
+        $errorMessage = null;
+
         try {
             $allowedProductTypes = SettingsManager::getAllowedProductTypes(
                 ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
@@ -761,8 +800,12 @@ class PaymentGateway extends \WC_Payment_Gateway
             $criteria = new LoanQueryCriteria($loanAmount, null, null, null, $allowedProductTypes, null, $allowedProductsConfig);
 
             return ApiClient::getInstance()->getFinancialProducts($criteria)->financialProducts;
-        } catch (ClientExceptionInterface $e) {
-            FrontendManager::processError('Emergency financial offer retrieving error.', $e, null, null, null, '[ERROR]', OperationContext::PaymentProcessing);
+        } catch (\Throwable $e) {
+            $errorMessage = ApiClient::processApiError(
+                'Emergency financial offer retrieving error on page "' . Main::getCurrentUrl() . '" (ComfinoPay API)',
+                $e,
+                OperationContext::PaymentProcessing
+            )['title'];
 
             return [];
         }

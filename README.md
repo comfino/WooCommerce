@@ -1,4 +1,8 @@
-# Comfino Payment Gateway for WooCommerce
+<a href="https://developers.comfino.pl">
+  <img src="docs/assets/comfinopay_logo.svg" alt="ComfinoPay" width="220">
+</a>
+
+# ComfinoPay Payment Gateway for WooCommerce
 
 [![Tests](https://github.com/comfino/WooCommerce/workflows/Tests/badge.svg)](https://github.com/comfino/WooCommerce/actions)
 [![PHP Version](https://img.shields.io/badge/php-7.1%20to%208.4-blue.svg)](https://www.php.net/)
@@ -6,7 +10,7 @@
 
 > **Notice:** Version 4.4.0 is the **last release compatible with PHP 7.1**. The upcoming version 5.0.0 will require **PHP 8.1 or higher**, **WooCommerce 7.0.0 or higher**, and **WordPress 6.1 or higher**. Please plan your environment upgrade accordingly.
 
-WooCommerce payment module for Comfino deferred payments gateway - installment payments, buy now pay later (BNPL) and corporate payments.
+WooCommerce payment module for ComfinoPay deferred payments gateway - installment payments, buy now pay later (BNPL) and corporate payments.
 
 ## Installation
 
@@ -108,7 +112,7 @@ This project is licensed under the Open Software License 3.0 - see the LICENSE f
 
 ## Support
 
-- Documentation (Polish): [Comfino WooCommerce plugin documentation](https://comfino.pl/plugins/WooCommerce/pl)
-- Documentation (English): [Comfino WooCommerce plugin documentation](https://comfino.pl/plugins/WooCommerce/en)
+- Documentation (Polish): [ComfinoPay WooCommerce plugin documentation](https://comfino.pl/plugins/WooCommerce/pl)
+- Documentation (English): [ComfinoPay WooCommerce plugin documentation](https://comfino.pl/plugins/WooCommerce/en)
 - Issues: [GitHub Issues](https://github.com/comfino/WooCommerce/issues)
 - Website: https://comfino.pl

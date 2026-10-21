@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Fire-and-forget service that reports the full shop environment to the Comfino API.
+ * Fire-and-forget service that reports the full shop environment to the ComfinoPay API.
  *
  * Mirrors the Magento reference (Comfino\ComfinoGateway\Model\Telemetry\ShopEnvironmentReporter): builds the report
  * via WooCommerceShopEnvironmentBuilder and posts it through the shared API client's reportShopEnvironment().
@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
 final class ShopEnvironmentReporter
 {
     /**
-     * Builds and sends the current shop environment report to the Comfino API.
+     * Builds and sends the current shop environment report to the ComfinoPay API.
      *
      * @return bool True if the report was accepted, false on any failure.
      */
@@ -295,7 +295,7 @@ final class ShopEnvironmentReporter
      * Detects well-known WordPress URL-hiding/security-hardening plugins that rewrite or block default WordPress
      * URLs (plugin asset paths, the REST API base) - e.g., WP Hide & Security Enhancer can rename the plugin's own
      * asset URLs and optionally disable/clean the REST API (wp-json) entirely, which could break the paywall widget's
-     * script loading or Comfino's webhook callback endpoint if not explicitly excluded by the merchant.
+     * script loading or ComfinoPay's webhook callback endpoint if not explicitly excluded by the merchant.
      *
      * Detection is best-effort and matches by the plugin's main file path; this data is diagnostic only and feeds
      * into the shop environment report's 'meta' field.
@@ -327,7 +327,7 @@ final class ShopEnvironmentReporter
      * Detects well-known WooCommerce product-options/custom-fields and dynamic-pricing plugins. These can alter a
      * product's final price or line-item structure outside WooCommerce's standard cart/order pipeline (custom
      * per-item price add-ons, quantity-based discounts, formula-based pricing), which is diagnostically relevant
-     * since it affects the order total reported to the Comfino API for installment/paywall calculation.
+     * since it affects the order total reported to the ComfinoPay API for installment/paywall calculation.
      *
      * Detection is best-effort and matches by the plugin's main file path; this data is diagnostic only and feeds
      * into the shop environment report's 'meta' field.

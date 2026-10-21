@@ -26,7 +26,7 @@ final class ApiService
      * Minimal length of an API key accepted as a request signature secret.
      *
      * The error reporting request builder already refuses to key a MAC with anything shorter
-     * (ReportShopPluginError::MIN_HASH_KEY_LENGTH), so a value below this length cannot be a real Comfino API key.
+     * (ReportShopPluginError::MIN_HASH_KEY_LENGTH), so a value below this length cannot be a real ComfinoPay API key.
      */
     private const MIN_API_KEY_LENGTH = 16;
 
@@ -98,8 +98,8 @@ final class ApiService
             ]
         );
 
-        /* Comfino API callback endpoints - require CR-Signature authentication.
-           These are server-to-server requests from Comfino API (no WordPress user context).
+        /* ComfinoPay API callback endpoints - require CR-Signature authentication.
+           These are server-to-server requests from ComfinoPay API (no WordPress user context).
            Authentication is performed by RestEndpointManager::verifyRequest() using SHA3-256 HMAC signature verification. */
 
         self::getEndpointManager()->registerEndpoint(
@@ -223,17 +223,19 @@ final class ApiService
     {
         $endpointManager = self::getEndpointManager();
 
-        DebugLogger::logEvent(
-            '[REST API request]',
-            'processRequest',
-            [
-                '$endpointName' => $endpointName,
-                'METHOD' => $request->get_method(),
-                'PARAMS' => $request->get_params(),
-                'HEADERS' => $request->get_headers(),
-                'BODY' => $request->get_body(),
-            ]
-        );
+        if (ConfigManager::isDebugMode()) {
+            DebugLogger::logEvent(
+                '[REST API request]',
+                'processRequest',
+                [
+                    '$endpointName' => $endpointName,
+                    'METHOD' => $request->get_method(),
+                    'PARAMS' => $request->get_params(),
+                    'HEADERS' => self::getLoggableHeaders($request->get_headers()),
+                    'BODY' => self::getLoggableBody($request->get_body()),
+                ]
+            );
+        }
 
         if (isset(self::$endpoints[$endpointName], self::$requestCallbacks[$endpointName])) {
             return call_user_func(self::$requestCallbacks[$endpointName], $request);
@@ -253,7 +255,9 @@ final class ApiService
             }
         }
 
-        $responseBody = json_decode($response->getBody()->getContents(), true);
+        // The body stream is read once: a second getContents() returns an empty string.
+        $responseBodyContents = $response->getBody()->getContents();
+        $responseBody = json_decode($responseBodyContents, true);
 
         $apiResponse->set_status($response->getStatusCode());
         $apiResponse->set_data(!empty($responseBody) ? $responseBody : $response->getReasonPhrase());
@@ -264,15 +268,59 @@ final class ApiService
                 'processRequest',
                 [
                     '$endpointName' => $endpointName,
-                    'RECEIVED-CR-SIGNATURE-PREFIX' => substr((string) $endpointManager->getReceivedCrSignature(), 0, 8),
+                    'RECEIVED-CR-SIGNATURE-FINGERPRINT' => $endpointManager->getReceivedCrSignatureFingerprint(),
+                    'CALCULATED-CR-SIGNATURE-FINGERPRINT' => $endpointManager->getCalculatedCrSignature(),
                     'HEADERS' => $response->getHeaders(),
                     'STATUS' => $response->getStatusCode(),
-                    'BODY' => $response->getBody()->getContents(),
+                    'BODY' => self::getLoggableBody($responseBodyContents),
                 ]
             );
         }
 
         return $apiResponse;
+    }
+
+    /**
+     * Request headers for the debug log: the signature headers are reduced to a fingerprint (WordPress normalizes
+     * header names to lower case with underscores, e.g. "cr_signature").
+     *
+     * @param array<string, string[]> $headers
+     *
+     * @return array<string, string[]>
+     */
+    private static function getLoggableHeaders(array $headers): array
+    {
+        foreach ($headers as $headerName => $headerValues) {
+            if (in_array(str_replace('-', '_', strtolower((string) $headerName)), ['cr_signature', 'x_cr_signature'], true)) {
+                $headers[$headerName] = array_map(
+                    static function ($headerValue): string {
+                        return 'fingerprint:' . substr(hash('sha256', (string) $headerValue), 0, 12);
+                    },
+                    (array) $headerValues
+                );
+            }
+        }
+
+        return $headers;
+    }
+
+    /**
+     * Request or response body for the debug log: a JSON body is logged as structured data, so the log processor
+     * redacts sensitive keys; any other body is logged by length only.
+     *
+     * @return array|string
+     */
+    private static function getLoggableBody(string $body)
+    {
+        if ($body === '') {
+            return '';
+        }
+
+        if (is_array($decodedBody = json_decode($body, true))) {
+            return $decodedBody;
+        }
+
+        return sprintf('[non-JSON body, %d bytes]', strlen($body));
     }
 
     /**

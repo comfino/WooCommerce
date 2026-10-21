@@ -270,4 +270,44 @@ class OrderManagerTest extends \PHPUnit_Framework_TestCase
         // Note: In production, it gets cleared before wc_get_order() call.
         $this->assertInternalType('string', $wpdb->last_error);
     }
+
+    /**
+     * @throws \Exception
+     */
+    public function testGetShopCartSkipsItemsWithoutProduct(): void
+    {
+        // Cart items of deleted products carry no product object (null or false): skipped, not a fatal error.
+        $cart = new class extends \WC_Cart {
+            public function get_cart(): array
+            {
+                return [
+                    'a' => ['data' => null, 'quantity' => 1],
+                    'b' => ['data' => false, 'quantity' => 1],
+                    'c' => ['data' => new \WC_Product(), 'quantity' => 2],
+                ];
+            }
+        };
+
+        $shopCart = OrderManager::getShopCart($cart);
+
+        $this->assertCount(1, $shopCart->getCartItems());
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function testNegativeCartTotalMessage(): void
+    {
+        $cart = new class extends \WC_Cart {
+            public function get_total($context = 'view'): float
+            {
+                return -1.0;
+            }
+        };
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Total value must not be negative.');
+
+        OrderManager::getShopCart($cart);
+    }
 }

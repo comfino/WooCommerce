@@ -16,11 +16,11 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Adapter for handling order status updates from Comfino API webhooks.
+ * Adapter for handling order status updates from ComfinoPay API webhooks.
  *
  * This class implements the OrderStatusAdapterInterface from the shared library
  * and provides WooCommerce-specific logic for updating order statuses based on
- * payment status changes received from Comfino API.
+ * payment status changes received from ComfinoPay API.
  *
  * Supports two order identification modes:
  * - Legacy: Numeric order ID (e.g., "12345")
@@ -28,8 +28,8 @@ if (!defined('ABSPATH')) {
  *
  * Status update flow:
  * 1. Loads order by ID or reference.
- * 2. Validates order is paid via Comfino.
- * 3. Maps Comfino status to internal WooCommerce status.
+ * 2. Validates order is paid via ComfinoPay.
+ * 3. Maps ComfinoPay status to internal WooCommerce status.
  * 4. Applies custom status if not already in history.
  * 5. Maps to standard WooCommerce status and applies if configured.
  */
@@ -44,32 +44,32 @@ class StatusAdapter implements OrderStatusAdapterInterface
     ];
 
     /**
-     * Updates WooCommerce order status based on Comfino payment status.
+     * Updates WooCommerce order status based on ComfinoPay payment status.
      *
      * This method is called by StatusNotification REST endpoint when receiving
-     * status update webhooks from Comfino API. It:
+     * status update webhooks from ComfinoPay API. It:
      * - Determines order lookup method (by ID or reference).
-     * - Validates order belongs to Comfino payment module.
-     * - Converts Comfino status to WooCommerce internal status.
+     * - Validates order belongs to ComfinoPay payment module.
+     * - Converts ComfinoPay status to WooCommerce internal status.
      * - Applies standard statuses if not already in history.
      *
      * The method avoids creating duplicate status history entries by checking
      * if the status was already applied to the order.
      *
      * @param string|int $orderId Order identifier - either numeric ID or reference string
-     * @param string $status Comfino payment status (e.g., "ACCEPTED", "REJECTED", "CANCELLED")
+     * @param string $status ComfinoPay payment status (e.g., "ACCEPTED", "REJECTED", "CANCELLED")
      *
      * @return void
      *
      * @throws NotFound If order not found by provided ID or reference
-     * @throws RequestValidationError If order exists but is not a Comfino order
+     * @throws RequestValidationError If order exists but is not a ComfinoPay order
      * @throws ServiceUnavailable If database error occurs during order loading
      */
     public function setStatus($orderId, $status): void
     {
         DebugLogger::logEvent(
             '[ORDER_STATUS_UPDATE]',
-            'StatusAdapter::setStatus: Order status update from Comfino API.',
+            'StatusAdapter::setStatus: Order status update from ComfinoPay API.',
             ['orderId' => $orderId, 'status' => $status]
         );
 
@@ -97,8 +97,8 @@ class StatusAdapter implements OrderStatusAdapterInterface
         }
 
         if ($order->get_payment_method() !== PaymentGateway::GATEWAY_ID) {
-            // Process orders paid by Comfino only.
-            throw new RequestValidationError(esc_html(sprintf('Order %s is not a valid Comfino order.', $orderId)));
+            // Process orders paid by ComfinoPay only.
+            throw new RequestValidationError(esc_html(sprintf('Order %s is not a valid ComfinoPay order.', $orderId)));
         }
 
         $inputStatus = strtoupper($status);
@@ -119,7 +119,14 @@ class StatusAdapter implements OrderStatusAdapterInterface
         }
 
         if (in_array($inputStatus, self::$loggedStates, true)) {
-            $order->add_order_note(__('Comfino status', 'comfino-payment-gateway') . ": $inputStatus");
+            $order->add_order_note(__('ComfinoPay status', 'comfino-payment-gateway') . ": $inputStatus");
+        }
+
+        if (in_array($inputStatus, ShopStatusManager::TERMINAL_STATUSES, true)) {
+            /* ComfinoPay already treats the order as closed - remember it on the order, so a later shop cancellation
+               (separate request, any site language) is never sent back. */
+            $order->update_meta_data(ShopStatusManager::TERMINAL_STATUS_META_KEY, $inputStatus);
+            $order->save();
         }
 
         DebugLogger::logEvent(

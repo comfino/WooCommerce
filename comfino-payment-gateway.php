@@ -162,7 +162,10 @@ class Comfino_Payment_Gateway
 
         // Overwrite hook
         add_action('upgrader_overwrote_package', static function (string $package, array $data, string $package_type): void {
-            if ($package_type === 'plugin' && $data['Name'] === 'Comfino Payment Gateway' && ($previousVersion = get_option('comfino_plugin_current_version', 'unknown')) !== PaymentGateway::VERSION) {
+            // Both the pre-rebrand and the ComfinoPay plugin names are recognized, so the header rename can't break upgrades.
+            if ($package_type === 'plugin' && in_array($data['Name'] ?? '', ['Comfino Payment Gateway', 'ComfinoPay Payment Gateway'], true) &&
+                ($previousVersion = get_option('comfino_plugin_current_version', 'unknown')) !== PaymentGateway::VERSION
+            ) {
                 // Only set transient if version actually changed.
                 set_transient('comfino_plugin_updated', 1);
                 set_transient('comfino_plugin_prev_version', $previousVersion);
@@ -170,7 +173,7 @@ class Comfino_Payment_Gateway
             }
         }, 10, 3);
 
-        // Add a Comfino gateway to the WooCommerce payment methods available for customer.
+        // Add a ComfinoPay gateway to the WooCommerce payment methods available for customer.
         add_filter('woocommerce_payment_gateways', static function (array $methods): array {
             $methods[] = PaymentGateway::class;
 
@@ -179,7 +182,7 @@ class Comfino_Payment_Gateway
 
         /* Add loaded script tag filter for adding a custom attribute which prevents blocking by Google CMP scripts.
            Also prevent Cloudflare RocketLoader and JS bundlers (PhastPress, Autoptimize, WP Rocket) from deferring
-           Comfino frontend scripts asynchronously. These scripts depend on the wp_add_inline_script data block that
+           ComfinoPay frontend scripts asynchronously. These scripts depend on the wp_add_inline_script data block that
            immediately precedes them in the HTML; async delivery breaks that ordering guarantee. */
         add_filter('script_loader_tag', static function (string $tag, string $handle): string {
             if (strpos($handle, PaymentGateway::GATEWAY_ID) !== 0) {
@@ -213,7 +216,7 @@ class Comfino_Payment_Gateway
             return $attributes;
         });
 
-        // Add admin URL filter for adding custom nonce parameter to Comfino plugin links which redirect to the settings panel.
+        // Add admin URL filter for adding custom nonce parameter to ComfinoPay plugin links which redirect to the settings panel.
         add_filter('admin_url', static function (string $url): string {
             if (strpos($url, 'section=comfino') === false || strpos($url, 'comfino_nonce') !== false) {
                 return $url;
@@ -262,13 +265,13 @@ class Comfino_Payment_Gateway
                the current site alone, leaving every other site in the network - and every site created later - without
                it. Supporting this properly means iterating get_sites() with switch_to_blog() here plus a
                'wp_initialize_site' handler for new sites; until that exists, refuse loudly instead of activating into a
-               half-provisioned state. Comfino is designed to be activated per site, which is also how WooCommerce
+               half-provisioned state. ComfinoPay is designed to be activated per site, which is also how WooCommerce
                itself is normally run under Multisite. */
             deactivate_plugins(plugin_basename(__FILE__), false, true);
             /** @noinspection ForgottenDebugOutputInspection */
             wp_die(
                 esc_html__(
-                    'The Comfino plugin could not be network activated. Comfino does not support network activation - activate it individually on each site in the network that should offer Comfino payments.',
+                    'The ComfinoPay plugin could not be network activated. ComfinoPay does not support network activation - activate it individually on each site in the network that should offer ComfinoPay payments.',
                     'comfino-payment-gateway'
                 )
             );
@@ -286,7 +289,7 @@ class Comfino_Payment_Gateway
             add_action('admin_notices', static function () {
                 echo '<div class="notice notice-error"><p>'
                     . esc_html__(
-                        'Comfino requires OpenSSL >= 1.1.0 (SHA-3 support) for the V3 paywall.',
+                        'ComfinoPay requires OpenSSL >= 1.1.0 (SHA-3 support) for the V3 paywall.',
                         'comfino-payment-gateway'
                     )
                     . '</p></div>';
@@ -321,7 +324,7 @@ class Comfino_Payment_Gateway
             return;
         }
 
-        // Initialize Comfino plugin.
+        // Initialize ComfinoPay plugin.
         Main::init();
     }
 
@@ -334,7 +337,7 @@ class Comfino_Payment_Gateway
 
         /* The activation-time guard in activation_check() cannot catch an installation already network activated before
            that guard shipped - WordPress does not re-fire the activation hook for it. Warn on every admin page instead
-           of silently running half-provisioned, but do not force a deactivation here: that would take Comfino payments
+           of silently running half-provisioned, but do not force a deactivation here: that would take ComfinoPay payments
            offline across the whole network without the Super Admin asking for it. */
         if (is_multisite()) {
             if (!function_exists('is_plugin_active_for_network')) {
@@ -346,7 +349,7 @@ class Comfino_Payment_Gateway
                     'network_activated',
                     'error',
                     esc_html__(
-                        'The Comfino plugin is network activated, which is not supported. Only the site it was activated from is fully configured; other sites in the network may be missing Comfino settings and database tables. Deactivate it for the network and activate it individually on each site that should offer Comfino payments.',
+                        'The ComfinoPay plugin is network activated, which is not supported. Only the site it was activated from is fully configured; other sites in the network may be missing ComfinoPay settings and database tables. Deactivate it for the network and activate it individually on each site that should offer ComfinoPay payments.',
                         'comfino-payment-gateway'
                     )
                 );
@@ -382,7 +385,7 @@ class Comfino_Payment_Gateway
         if (get_transient('comfino_plugin_updated')) {
             echo '<div class="notice notice-success">' . wp_kses(sprintf(
                 /* translators: 1: Previous plugin version 2: Current plugin version */
-                __('Comfino plugin updated from version %1$s to %2$s.', 'comfino-payment-gateway'),
+                __('ComfinoPay plugin updated from version %1$s to %2$s.', 'comfino-payment-gateway'),
                 get_transient('comfino_plugin_prev_version'),
                 PaymentGateway::VERSION
             ), 'user_description') . '</div>';
@@ -758,6 +761,19 @@ class Comfino_Payment_Gateway
             );
         }
 
+        /* 4.4.0 */
+        /* Flag attributes moved from the COMFINO_REMOTE_FLAG_ATTRIBUTES option to the tagged file cache (tag
+           "remote_flags", invalidated by the backend) - remove the stored value of the retired option. */
+        $comfinoSettings = get_option('woocommerce_comfino_settings', []);
+
+        if (is_array($comfinoSettings) && array_key_exists('remote_flag_attributes', $comfinoSettings)) {
+            unset($comfinoSettings['remote_flag_attributes']);
+            update_option('woocommerce_comfino_settings', $comfinoSettings);
+        }
+
+        // The tracking consent switch is hidden in 4.4.0: persist its default so the stored state matches the form.
+        ConfigManager::initConfigurationValues(['COMFINO_PAYWALL_TRACKING_CONSENT' => false]);
+
         // Clear configuration and front cache.
         CacheManager::getCachePool()->clear();
 
@@ -785,7 +801,7 @@ class Comfino_Payment_Gateway
 
         Main::updateUpgradeLog(print_r($upgradeStats, true));
 
-        // Report the shop environment to Comfino on upgrade (fire-and-forget).
+        // Report the shop environment to ComfinoPay on upgrade (fire-and-forget).
         if (!empty(ConfigManager::getApiKey())) {
             ShopEnvironmentReporter::report();
         }
@@ -838,7 +854,7 @@ class Comfino_Payment_Gateway
 
             set_transient($lockKey, true, 5 * MINUTE_IN_SECONDS);
 
-            /* Fetch the latest release from the centralized Comfino release API. It resolves the release of the line
+            /* Fetch the latest release from the centralized ComfinoPay release API. It resolves the release of the line
                compatible with this shop's PHP and WooCommerce version (from the client User-Agent) automatically. */
             try {
                 $release = ApiClient::getInstance()->getLatestPluginRelease('woocommerce');

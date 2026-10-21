@@ -3,6 +3,7 @@
 namespace Comfino\Api;
 
 use Comfino\Api\Exception\AccessDenied;
+use Comfino\Api\Exception\TooManyRequests;
 use Comfino\Common\Backend\Factory\ApiClientFactory;
 use Comfino\Common\Backend\Log\ResponseBodySummarizer;
 use Comfino\Common\Exception\ConnectionTimeout;
@@ -26,6 +27,12 @@ final class ApiClient
     private const CHECKOUT_TRACK_ID_PATTERN = '/^[A-Za-z0-9_.:-]{1,128}$/';
     private const JOURNEY_TRACK_ID_COOKIE = 'comfino_journey_track_id';
 
+    /* Plugin bounds for the remotely writable transport options, tighter than the shared client's own floor. Retries
+       double the timeouts, so the limits keep a single API call from stalling a page for minutes. */
+    public const MAX_CONNECT_TIMEOUT = 5;
+    public const MAX_TRANSFER_TIMEOUT = 15;
+    public const MAX_CONNECT_ATTEMPTS = 3;
+
     /** @var \Comfino\Common\Api\Client */
     private static $apiClient;
 
@@ -44,6 +51,8 @@ final class ApiClient
         }
 
         if (self::$apiClient === null) {
+            [$connectionTimeout, $transferTimeout, $connectionMaxNumAttempts] = self::getTransportSettings();
+
             self::$apiClient = (new ApiClientFactory())->createClient(
                 $apiKey,
                 sprintf(
@@ -60,9 +69,9 @@ final class ApiClient
                 ),
                 ConfigManager::getApiHost(),
                 Main::getShopLanguage(),
-                ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_TIMEOUT', 1),
-                ConfigManager::getConfigurationValue('COMFINO_API_TIMEOUT', 3),
-                ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_NUM_ATTEMPTS', 3),
+                $connectionTimeout,
+                $transferTimeout,
+                $connectionMaxNumAttempts,
                 self::getDevEnvCurlOptions()
             );
 
@@ -81,6 +90,63 @@ final class ApiClient
         }
 
         return self::$apiClient;
+    }
+
+    /**
+     * Clamps the transport options to the plugin bounds, whatever value is stored (the options are remotely writable).
+     * The transfer timeout always stays above the connect timeout, so the shared client does not rewrite it. Requests
+     * that only render storefront pages make a single attempt: a failed read is cached and must not stall the page.
+     *
+     * @return int[] [connect timeout, transfer timeout, connect attempts]
+     */
+    public static function getTransportSettings(?bool $storefrontRequest = null): array
+    {
+        $connectionTimeout = max(1, min(self::MAX_CONNECT_TIMEOUT, (int) ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_TIMEOUT', 1)));
+        $transferTimeout = max(
+            $connectionTimeout + 1,
+            min(self::MAX_TRANSFER_TIMEOUT, (int) ConfigManager::getConfigurationValue('COMFINO_API_TIMEOUT', 3))
+        );
+        $connectionMaxNumAttempts = max(
+            1,
+            min(self::MAX_CONNECT_ATTEMPTS, (int) ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_NUM_ATTEMPTS', 3))
+        );
+
+        if ($storefrontRequest ?? self::isStorefrontRenderRequest()) {
+            $connectionMaxNumAttempts = 1;
+        }
+
+        return [$connectionTimeout, $transferTimeout, $connectionMaxNumAttempts];
+    }
+
+    /**
+     * Tells whether the current request only renders storefront pages or fragments (product page, cart, checkout
+     * refresh). Order submission, the admin panel, cron and the plugin's own REST endpoints keep the configured retries.
+     */
+    private static function isStorefrontRenderRequest(): bool
+    {
+        if ((function_exists('is_admin') && is_admin()) || (function_exists('wp_doing_cron') && wp_doing_cron())) {
+            return false;
+        }
+
+        $requestUri = Main::getCurrentUrl();
+
+        if ($requestUri === '' || strpos($requestUri, '/' . PaymentGateway::GATEWAY_ID . '/') !== false) {
+            return false;
+        }
+
+        // Read-only routing checks, no state change: no nonce involved.
+        $wcAjaxAction = sanitize_key(wp_unslash($_GET['wc-ajax'] ?? '')); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $requestMethod = sanitize_text_field(wp_unslash($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+
+        if ($wcAjaxAction === 'checkout' || isset($_POST['woocommerce_pay'])) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+            return false;
+        }
+
+        if ($requestMethod === 'POST' && strpos($requestUri, '/wc/store/') !== false && strpos($requestUri, '/checkout') !== false) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -162,8 +228,7 @@ final class ApiClient
         $statusCode = 500;
         $isTimeout = false;
         $connectAttemptIdx = 1;
-        $connectionTimeout = ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_TIMEOUT', 1);
-        $transferTimeout = ConfigManager::getConfigurationValue('COMFINO_API_TIMEOUT', 3);
+        [$connectionTimeout, $transferTimeout] = self::getTransportSettings(false);
 
         if ($exception instanceof HttpErrorExceptionInterface) {
             $statusCode = $exception->getStatusCode();
@@ -190,12 +255,13 @@ final class ApiClient
                         'transfer_timeout' => $exception->getTransferTimeout(),
                     ]
                 );
-            } elseif ($statusCode < 500) {
+            } elseif ($statusCode < 500 && !$exception instanceof TooManyRequests) {
                 $userErrorMessage = __(
                     'We have a configuration problem. The store is already working on a solution!',
                     'comfino-payment-gateway'
                 );
-            } elseif ($statusCode < 504) {
+            } elseif ($statusCode < 504 || $exception instanceof TooManyRequests) {
+                // A rate-limited request (429) is a temporary outage for the customer, not a shop misconfiguration.
                 $userErrorMessage = __(
                     'It looks like we have an outage. We\'ll fix it as soon as possible!',
                     'comfino-payment-gateway'
@@ -204,7 +270,7 @@ final class ApiClient
         } elseif ($exception instanceof NetworkExceptionInterface) {
             $exception->getRequest()->getBody()->rewind();
 
-            DebugLogger::logEvent('[API_NETWORK_ERROR]', $errorPrefix . " [{$exception->getMessage()}]");
+            DebugLogger::logEvent('[API_NETWORK_ERROR]', $errorPrefix, ['error_message' => $exception->getMessage()]);
 
             $url = $exception->getRequest()->getRequestTarget();
             $requestBody = $exception->getRequest()->getBody()->getContents();
@@ -230,7 +296,9 @@ final class ApiClient
             ]
         );
 
-        if ($statusCode !== 404) {
+        /* A 404 and an idempotent failure (e.g. a 409 on an order already cancelled at ComfinoPay) need no report: the
+           requested state already holds or the resource is gone. */
+        if ($statusCode !== 404 && !($exception instanceof AccessDenied && $exception->isIdempotentFailure())) {
             ErrorLogger::sendError(
                 $exception,
                 $context,

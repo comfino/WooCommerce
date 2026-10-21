@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 ?>
 <div class="notice notice-warning is-dismissible" id="comfino-debug-mode-notice">
     <p>
-        <strong><?php echo esc_html__('Comfino Debug Mode Active', 'comfino-payment-gateway') ?>:</strong>
+        <strong><?php echo esc_html__('ComfinoPay Debug Mode Active', 'comfino-payment-gateway') ?>:</strong>
         <?php echo esc_html__('Detailed logging is enabled. This may impact performance and should not be used in production environments.', 'comfino-payment-gateway') ?>
         <?php
         echo wp_kses(

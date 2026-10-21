@@ -25,6 +25,8 @@ if (!defined('ABSPATH')) {
 
 final class SettingsManager
 {
+    private const NEGATIVE_CACHE_TTL = 300;
+
     /** @var ProductTypeFilterManager */
     private static $filterManager;
 
@@ -94,40 +96,22 @@ final class SettingsManager
     public static function getProductTypes(string $listType, bool $returnErrors = false, bool $usePublicNames = false): array
     {
         $language = Main::getShopLanguage();
-        $cacheKey = "product_types.$listType" . ($usePublicNames ? '.public' : '') . ".$language";
         $listTypeEnum = new ProductTypesListTypeEnum($listType);
 
-        if (($productTypes = CacheManager::get($cacheKey)) !== null) {
-            return is_array($productTypes) ? $productTypes : [];
-        }
+        return self::getCachedApiList(
+            "product_types.$listType" . ($usePublicNames ? '.public' : '') . ".$language",
+            'admin_product_types',
+            static function () use ($listTypeEnum, $usePublicNames): array {
+                $productTypes = ApiClient::getInstance()->getProductTypes($listTypeEnum);
 
-        if (empty(ApiClient::getInstance()->getApiKey())) {
-            return $returnErrors ? ['error' => 'API key is required.'] : [];
-        }
-
-        try {
-            $productTypes = ApiClient::getInstance()->getProductTypes($listTypeEnum);
-            $productTypesList = $usePublicNames
-                ? $productTypes->productTypesWithPublicNames
-                : $productTypes->productTypesWithNames;
-            $cacheTtl = (int) $productTypes->getHeader('Comfino-Cache-TTL', '0');
-
-            CacheManager::set($cacheKey, $productTypesList, $cacheTtl, ['admin_product_types']);
-
-            return $productTypesList;
-        } catch (FilesystemException $e) {
-            ErrorLogger::getLoggerInstance()->logError('Product types cache error', $e->getMessage());
-
-            return $productTypesList ?? [];
-        } catch (\Throwable $e) {
-            ApiClient::processApiError('Settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)', $e, OperationContext::Configuration);
-
-            if ($returnErrors) {
-                return ['error' => $e->getMessage()];
-            }
-        }
-
-        return [];
+                return [
+                    $usePublicNames ? $productTypes->productTypesWithPublicNames : $productTypes->productTypesWithNames,
+                    (int) $productTypes->getHeader('Comfino-Cache-TTL', '0'),
+                ];
+            },
+            $returnErrors,
+            'Product types cache error'
+        );
     }
 
     /**
@@ -137,33 +121,17 @@ final class SettingsManager
      */
     public static function getCreditors(): array
     {
-        $cacheKey = 'creditors';
+        return self::getCachedApiList(
+            'creditors',
+            'admin_product_types',
+            static function (): array {
+                $response = ApiClient::getInstance()->getCreditors();
 
-        if (($creditors = CacheManager::get($cacheKey)) !== null) {
-            return is_array($creditors) ? $creditors : [];
-        }
-
-        if (empty(ApiClient::getInstance()->getApiKey())) {
-            return [];
-        }
-
-        try {
-            $response = ApiClient::getInstance()->getCreditors();
-            $creditorsList = $response->creditors;
-            $cacheTtl = (int) $response->getHeader('Comfino-Cache-TTL', '0');
-
-            CacheManager::set($cacheKey, $creditorsList, $cacheTtl, ['admin_product_types']);
-
-            return $creditorsList;
-        } catch (FilesystemException $e) {
-            ErrorLogger::getLoggerInstance()->logError('Creditors cache error', $e->getMessage());
-
-            return $creditorsList ?? [];
-        } catch (\Throwable $e) {
-            ApiClient::processApiError('Settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)', $e, OperationContext::Configuration);
-        }
-
-        return [];
+                return [$response->creditors, (int) $response->getHeader('Comfino-Cache-TTL', '0')];
+            },
+            false,
+            'Creditors cache error'
+        );
     }
 
     /**
@@ -202,38 +170,17 @@ final class SettingsManager
      */
     public static function getWidgetTypes(bool $returnErrors = false): array
     {
-        $language = Main::getShopLanguage();
-        $cacheKey = "widget_types.$language";
+        return self::getCachedApiList(
+            'widget_types.' . Main::getShopLanguage(),
+            'admin_widget_types',
+            static function (): array {
+                $widgetTypes = ApiClient::getInstance()->getWidgetTypes();
 
-        if (($widgetTypes = CacheManager::get($cacheKey)) !== null) {
-            return is_array($widgetTypes) ? $widgetTypes : [];
-        }
-
-        if (empty(ApiClient::getInstance()->getApiKey())) {
-            return $returnErrors ? ['error' => 'API key is required.'] : [];
-        }
-
-        try {
-            $widgetTypes = ApiClient::getInstance()->getWidgetTypes();
-            $widgetTypesList = $widgetTypes->widgetTypesWithNames;
-            $cacheTtl = (int) $widgetTypes->getHeader('Comfino-Cache-TTL', '0');
-
-            CacheManager::set($cacheKey, $widgetTypesList, $cacheTtl, ['admin_widget_types']);
-
-            return $widgetTypesList;
-        } catch (FilesystemException $e) {
-            ErrorLogger::getLoggerInstance()->logError('Widget types cache error', $e->getMessage());
-
-            return $widgetTypesList ?? [];
-        } catch (\Throwable $e) {
-            ApiClient::processApiError('Settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)', $e, OperationContext::Configuration);
-
-            if ($returnErrors) {
-                return ['error' => $e->getMessage()];
-            }
-        }
-
-        return [];
+                return [$widgetTypes->widgetTypesWithNames, (int) $widgetTypes->getHeader('Comfino-Cache-TTL', '0')];
+            },
+            $returnErrors,
+            'Widget types cache error'
+        );
     }
 
     public static function isProductTypeAllowed(string $listType, LoanTypeEnum $productType, Cart $cart): bool
@@ -242,7 +189,8 @@ final class SettingsManager
             return true;
         }
 
-        return in_array($productType, $allowedProductTypes, true);
+        // Enum objects are distinct instances: compare their string values.
+        return in_array((string) $productType, array_map('strval', $allowedProductTypes), true);
     }
 
     /**
@@ -397,6 +345,66 @@ final class SettingsManager
         $rawConfig = ConfigManager::getConfigurationValue('COMFINO_CART_VALUE_LIMITS_CONFIG');
 
         return is_array($rawConfig) ? $rawConfig : [];
+    }
+
+    /**
+     * Reads an API-backed list through the cache. A failed API call is not repeated for NEGATIVE_CACHE_TTL seconds
+     * (one report per window instead of one per page view), and meanwhile the last good list is served as a stale copy.
+     *
+     * @param callable $fetchList Returns [list, cache TTL from the Comfino-Cache-TTL header]
+     */
+    private static function getCachedApiList(
+        string $cacheKey,
+        string $cacheTag,
+        callable $fetchList,
+        bool $returnErrors,
+        string $cacheErrorPrefix
+    ): array {
+        if (($list = CacheManager::get($cacheKey)) !== null) {
+            return is_array($list) ? $list : [];
+        }
+
+        if (empty(ApiClient::getInstance()->getApiKey())) {
+            return $returnErrors ? ['error' => 'API key is required.'] : [];
+        }
+
+        $staleList = CacheManager::get("$cacheKey.stale");
+
+        if (($failureMessage = CacheManager::get("$cacheKey.failed")) !== null) {
+            if (is_array($staleList)) {
+                return $staleList;
+            }
+
+            return $returnErrors ? ['error' => (string) $failureMessage] : [];
+        }
+
+        try {
+            [$list, $cacheTtl] = $fetchList();
+
+            CacheManager::set($cacheKey, $list, $cacheTtl, [$cacheTag]);
+            // Untagged and without expiry: survives invalidation, used only while the API is failing.
+            CacheManager::set("$cacheKey.stale", $list);
+
+            return $list;
+        } catch (FilesystemException $e) {
+            ErrorLogger::getLoggerInstance()->logError($cacheErrorPrefix, $e->getMessage());
+
+            return $list ?? [];
+        } catch (\Throwable $e) {
+            CacheManager::set("$cacheKey.failed", $e->getMessage(), self::NEGATIVE_CACHE_TTL);
+
+            ApiClient::processApiError('Settings error on page "' . Main::getCurrentUrl() . '" (ComfinoPay API)', $e, OperationContext::Configuration);
+
+            if (is_array($staleList)) {
+                return $staleList;
+            }
+
+            if ($returnErrors) {
+                return ['error' => $e->getMessage()];
+            }
+        }
+
+        return [];
     }
 
     private static function getFilterManager(string $listType): ProductTypeFilterManager

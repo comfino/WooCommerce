@@ -271,4 +271,11 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($specificOptions, array_keys(ConfigManager::getConfigurationValues('payment_settings', $specificOptions)));
     }
+
+    public function testEnvironmentInfoHasNoServerAddress(): void
+    {
+        // The server address is no longer sent with error reports or the User-Agent environment.
+        $this->assertArrayNotHasKey('server_addr', ConfigManager::getEnvironmentInfo());
+        $this->assertArrayHasKey('server_software', ConfigManager::getEnvironmentInfo());
+    }
 }
