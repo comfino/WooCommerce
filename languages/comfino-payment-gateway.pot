@@ -2,7 +2,7 @@
 # This file is distributed under the GPLv3.
 msgid ""
 msgstr ""
-"Project-Id-Version: Comfino Payment Gateway 4.3.2\n"
+"Project-Id-Version: Comfino Payment Gateway 4.4.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/comfino-payment-gateway\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -145,6 +145,14 @@ msgstr ""
 
 #: src/Main.php:526
 msgid "The Comfino plugin has been deactivated. It requires PHP cURL extension which is not installed. More details: https://www.php.net/manual/en/book.curl.php"
+msgstr ""
+
+#: src/Main.php
+msgid "The plugin could not be activated. It requires PHP mbstring extension which is not installed. More details: https://www.php.net/manual/en/book.mbstring.php"
+msgstr ""
+
+#: src/Main.php
+msgid "The Comfino plugin has been deactivated. It requires PHP mbstring extension which is not installed. More details: https://www.php.net/manual/en/book.mbstring.php"
 msgstr ""
 
 #: src/Order/ShopStatusManager.php:84
@@ -405,6 +413,18 @@ msgstr ""
 
 #: src/View/SettingsForm.php:746
 msgid "When enabled, the full paywall offer browser is not displayed. The order is submitted with the default financial product and the customer is redirected directly to the Comfino payment gateway."
+msgstr ""
+
+#: src/View/SettingsForm.php:751
+msgid "Paywall statistics"
+msgstr ""
+
+#: src/View/SettingsForm.php:753
+msgid "Allow collecting ComfinoPay plugin view statistics"
+msgstr ""
+
+#: src/View/SettingsForm.php:756
+msgid "When enabled, the ComfinoPay product widget and the paywall in the checkout report their views and shopper interactions (e.g. offer and installment changes) to ComfinoPay. These statistics help optimize the widget and the paywall and thus increase sales. Linking product page visits with the checkout additionally requires the shopper's consent to analytics cookies in your shop."
 msgstr ""
 
 #: src/View/SettingsForm.php:752

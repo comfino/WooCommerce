@@ -2,6 +2,8 @@
 
 namespace Comfino\Tests\View;
 
+use Comfino\Common\Backend\ConfigurationManager;
+use Comfino\Configuration\ConfigManager;
 use Comfino\View\FrontendManager;
 use Comfino\Main;
 use WC_Settings_API;
@@ -396,5 +398,38 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         FrontendManager::resetStyles();
 
         $this->assertTrue(true);
+    }
+
+    public function testWidgetConfigElementCarriesTrackingConsent(): void
+    {
+        foreach ([true, false] as $trackingConsent) {
+            ConfigManager::getInstance()->setConfigurationValue('COMFINO_PAYWALL_TRACKING_CONSENT', $trackingConsent);
+
+            $config = $this->decodeWidgetConfigElement(FrontendManager::renderWidgetConfigElement(null));
+
+            $this->assertArrayHasKey('trackingConsent', $config);
+            $this->assertSame($trackingConsent, $config['trackingConsent']);
+            $this->assertArrayHasKey('trackId', $config);
+
+            $this->resetConfigManager();
+        }
+    }
+
+    private function decodeWidgetConfigElement(string $element): array
+    {
+        $this->assertRegExp('#^<script type="application/json" id="comfino-widget-config">(.*)</script>$#s', $element);
+
+        return json_decode(preg_replace('#^<script[^>]*>(.*)</script>$#s', '$1', $element), true);
+    }
+
+    private function resetConfigManager(): void
+    {
+        $staticProps = [[ConfigManager::class, 'configurationManager', null], [ConfigurationManager::class, 'instances', []]];
+
+        foreach ($staticProps as [$class, $property, $value]) {
+            $prop = new \ReflectionProperty($class, $property);
+            $prop->setAccessible(true);
+            $prop->setValue(null, $value);
+        }
     }
 }

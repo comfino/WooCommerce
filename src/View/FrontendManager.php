@@ -466,6 +466,7 @@ final class FrontendManager
                 'widgetKey' => $settings['COMFINO_WIDGET_KEY'] ?? null,
                 'loggingToken' => $variables['LOGGING_TOKEN'] ?? null,
                 'trackId' => $variables['TRACK_ID'] ?? null,
+                'trackingConsent' => ConfigManager::isPaywallTrackingEnabled(),
                 'widgetTargetSelector' => $settings['COMFINO_WIDGET_TARGET_SELECTOR'] ?? null,
                 'priceSelector' => $settings['COMFINO_WIDGET_PRICE_SELECTOR'] ?? null,
                 'priceAttribute' => ($settings['COMFINO_WIDGET_PRICE_ATTRIBUTE'] ?? '') ?: null,

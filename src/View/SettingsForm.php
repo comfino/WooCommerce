@@ -445,7 +445,7 @@ final class SettingsForm
                     array_flip([
                         'enabled', 'production_key', 'payment_text_enabled', 'payment_text',  'checkout_product_types',
                         'min_cart_amount', 'cart_value_limits_config', 'use_order_reference',  'paywall_settings_section',
-                        'paywall_direct_redirect', 'paywall_custom_css_url',
+                        'paywall_direct_redirect', 'paywall_tracking_consent', 'paywall_custom_css_url',
                     ])
                 );
 
@@ -744,6 +744,16 @@ final class SettingsForm
                 'default' => ConfigManager::getDefaultValue('paywall_direct_redirect') === true ? 'yes' : 'no',
                 'description' => __(
                     'When enabled, the full paywall offer browser is not displayed. The order is submitted with the default financial product and the customer is redirected directly to the Comfino payment gateway.',
+                    'comfino-payment-gateway'
+                ),
+            ],
+            'paywall_tracking_consent' => [
+                'title' => __('Paywall statistics', 'comfino-payment-gateway'),
+                'type' => 'checkbox',
+                'label' => __('Allow collecting ComfinoPay plugin view statistics', 'comfino-payment-gateway'),
+                'default' => ConfigManager::getDefaultValue('paywall_tracking_consent') === true ? 'yes' : 'no',
+                'description' => __(
+                    'When enabled, the ComfinoPay product widget and the paywall in the checkout report their views and shopper interactions (e.g. offer and installment changes) to ComfinoPay. These statistics help optimize the widget and the paywall and thus increase sales. Linking product page visits with the checkout additionally requires the shopper\'s consent to analytics cookies in your shop.',
                     'comfino-payment-gateway'
                 ),
             ],

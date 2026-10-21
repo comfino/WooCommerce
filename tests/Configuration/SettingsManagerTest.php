@@ -131,8 +131,9 @@ class SettingsManagerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertNull(SettingsManager::getAllowedProductTypes($listType, $cart));
 
-        // Test with returnOnlyArray flag.
-        $this->assertCount(0, SettingsManager::getAllowedProductTypes($listType, $cart, true));
+        /* Inactive filters return null even with returnOnlyArray: the widget config forwards it as availableProductTypes,
+           where null means "no filter" and [] would hide the widget. */
+        $this->assertNull(SettingsManager::getAllowedProductTypes($listType, $cart, true));
     }
 
     public function testConstantsExist(): void

@@ -109,6 +109,13 @@ namespace {
         }
     }
 
+    if (!function_exists('get_current_blog_id')) {
+        function get_current_blog_id(): int
+        {
+            return 1;
+        }
+    }
+
     if (!function_exists('get_woocommerce_currency')) {
         function get_woocommerce_currency(): string
         {
@@ -260,16 +267,17 @@ namespace {
     }
 
     if (!function_exists('wc_get_price_including_tax')) {
-        function wc_get_price_including_tax($product): float
+        function wc_get_price_including_tax($product)
         {
-            return 100.00;
+            // Like WooCommerce, return '' for a product without a price.
+            return $product->get_price() === '' ? '' : 100.00;
         }
     }
 
     if (!function_exists('wc_get_price_excluding_tax')) {
-        function wc_get_price_excluding_tax($product): float
+        function wc_get_price_excluding_tax($product)
         {
-            return 90.00;
+            return $product->get_price() === '' ? '' : 90.00;
         }
     }
 

@@ -4,6 +4,7 @@ namespace Comfino\Api;
 
 use Comfino\Api\Exception\AccessDenied;
 use Comfino\Common\Backend\Factory\ApiClientFactory;
+use Comfino\Common\Backend\Log\ResponseBodySummarizer;
 use Comfino\Common\Exception\ConnectionTimeout;
 use Comfino\Common\Frontend\FrontendHelper;
 use Comfino\Configuration\ConfigManager;
@@ -23,6 +24,7 @@ final class ApiClient
     private const CHECKOUT_TRACK_ID_COOKIE = 'comfino_checkout_track_id';
     private const CHECKOUT_TRACK_ID_COOKIE_TTL = 900;
     private const CHECKOUT_TRACK_ID_PATTERN = '/^[A-Za-z0-9_.:-]{1,128}$/';
+    private const JOURNEY_TRACK_ID_COOKIE = 'comfino_journey_track_id';
 
     /** @var \Comfino\Common\Api\Client */
     private static $apiClient;
@@ -60,7 +62,8 @@ final class ApiClient
                 Main::getShopLanguage(),
                 ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_TIMEOUT', 1),
                 ConfigManager::getConfigurationValue('COMFINO_API_TIMEOUT', 3),
-                ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_NUM_ATTEMPTS', 3)
+                ConfigManager::getConfigurationValue('COMFINO_API_CONNECT_NUM_ATTEMPTS', 3),
+                self::getDevEnvCurlOptions()
             );
 
             self::$apiClient->setClientHostName(Main::getShopDomain());
@@ -81,17 +84,38 @@ final class ApiClient
     }
 
     /**
+     * The shared client restricts cURL to HTTPS. A local development API host set via COMFINO_DEV_API_HOST may be plain
+     * HTTP, so HTTP is allowed again for that case only: dev environment variable set to TRUE, dev env vars option
+     * active and an http:// API host. Production stays HTTPS-only.
+     */
+    private static function getDevEnvCurlOptions(): array
+    {
+        if (!ConfigManager::useDevEnvVars() || stripos((string) ConfigManager::getApiHost(), 'http://') !== 0) {
+            return [];
+        }
+
+        return [
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+            CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+        ];
+    }
+
+    /**
      * Pins this instance's trackId to the checkout-scoped cookie value, so a checkout-page paywall render and the
      * later separate order-create request share the same trackId. Checkout-only: never call this from product-page
      * rendering, where a fresh trackId per page load is still correct behavior.
+     *
+     * When the merchant enabled statistics consent, a valid SDK-owned journey cookie (set only with the shopper's
+     * analytics consent) takes precedence, so product-page widget events and checkout share one trackId. The journey
+     * cookie is never read with the setting off, and never written here.
      */
     public static function pinCheckoutTrackId(): void
     {
         $client = self::getInstance();
 
-        if (isset($_COOKIE[self::CHECKOUT_TRACK_ID_COOKIE]) &&
-            preg_match(self::CHECKOUT_TRACK_ID_PATTERN, $_COOKIE[self::CHECKOUT_TRACK_ID_COOKIE]) === 1
-        ) {
+        if (ConfigManager::isPaywallTrackingEnabled() && self::isValidTrackIdCookie(self::JOURNEY_TRACK_ID_COOKIE)) {
+            $client->setTrackId($_COOKIE[self::JOURNEY_TRACK_ID_COOKIE]);
+        } elseif (self::isValidTrackIdCookie(self::CHECKOUT_TRACK_ID_COOKIE)) {
             $client->setTrackId($_COOKIE[self::CHECKOUT_TRACK_ID_COOKIE]);
         }
 
@@ -191,6 +215,8 @@ final class ApiClient
             $responseBody = null;
         }
 
+        $responseBody = ResponseBodySummarizer::summarize($responseBody);
+
         DebugLogger::logEvent(
             '[API_ERROR]',
             $errorPrefix,
@@ -233,5 +259,12 @@ final class ApiClient
                 $responseBody
             ),
         ];
+    }
+
+    private static function isValidTrackIdCookie(string $cookieName): bool
+    {
+        return isset($_COOKIE[$cookieName]) &&
+            is_string($_COOKIE[$cookieName]) &&
+            preg_match(self::CHECKOUT_TRACK_ID_PATTERN, $_COOKIE[$cookieName]) === 1;
     }
 }

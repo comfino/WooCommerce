@@ -143,6 +143,7 @@ final class PaymentGateway extends AbstractPaymentMethodType
             'authToken' => $authToken,
             'loggingToken' => FrontendManager::getLoggingToken(),
             'trackId' => FrontendManager::getTrackId(),
+            'trackingConsent' => ConfigManager::isPaywallTrackingEnabled(),
             'loanAmount' => $loanAmount,
             'environment' => ConfigManager::isSandboxMode() ? 'sandbox' : 'production',
             'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),

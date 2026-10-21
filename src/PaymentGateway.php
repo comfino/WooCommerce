@@ -32,8 +32,8 @@ if (!defined('ABSPATH')) {
 class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
-    public const VERSION = '4.3.3';
-    public const BUILD_TS = 1789134385;
+    public const VERSION = '4.4.0';
+    public const BUILD_TS = 1792586806;
 
     public function __construct()
     {
@@ -183,9 +183,27 @@ class PaymentGateway extends \WC_Payment_Gateway
                 return ['result' => 'failure', 'redirect' => ''];
             }
 
-            // Use first offer with default term as an emergency preselection before redirection to the external Comfino page.
-            $loanType = (string) $financialProducts[0]->type;
-            $loanTerm = $financialProducts[0]->loanTerm;
+            /* Use the first offer with its default term as an emergency preselection before redirection to the external
+               ComfinoPay page. INSTANT_PAYMENTS (a different payment path that cannot be changed later) and BLIK are never
+               used as the default: the first offer of any other type is taken. */
+            $defaultProduct = null;
+
+            foreach ($financialProducts as $financialProduct) {
+                if (!in_array((string) $financialProduct->type, ['INSTANT_PAYMENTS', 'BLIK'], true)) {
+                    $defaultProduct = $financialProduct;
+
+                    break;
+                }
+            }
+
+            if ($defaultProduct === null) {
+                wc_add_notice(__('Preselected financial offer data incomplete. Please try again.', 'comfino-payment-gateway'));
+
+                return ['result' => 'failure', 'redirect' => ''];
+            }
+
+            $loanType = (string) $defaultProduct->type;
+            $loanTerm = $defaultProduct->loanTerm;
         }
 
         $shopCustomer = OrderManager::getShopCustomerFromOrder($wcOrder);

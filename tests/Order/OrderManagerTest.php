@@ -81,6 +81,18 @@ class OrderManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($product->get_sku(), $cartProduct->getEan());
     }
 
+    public function testGetShopCartFromProductWithoutPrice(): void
+    {
+        $product = new class extends \WC_Product {
+            protected $price = '';
+        };
+
+        $cart = OrderManager::getShopCartFromProduct($product);
+
+        $this->assertSame(0, $cart->getTotalValue());
+        $this->assertSame(0, $cart->getCartItems()[0]->getProduct()->getPrice());
+    }
+
     public function testGetShopCartFromVariationProduct(): void
     {
         $variationProduct = new \WC_Product_Variation();

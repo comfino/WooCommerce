@@ -4,7 +4,7 @@ Donate link: https://comfino.pl/
 Tags: comfino, woocommerce, gateway, payment, bank
 WC tested up to: 10.7.0
 WC requires at least: 3.0
-Stable tag: 4.3.3
+Stable tag: 4.4.0
 Tested up to: 7.1
 Requires at least: 5.0
 Requires PHP: 7.1
@@ -20,6 +20,15 @@ Comfino is an innovative payment method for customers of e-commerce stores! Thes
 * You will reach new customers.
 
 === Changelog ===
+
+4.4.0
+ * Fixed an error on product pages: a product without a price (for example a variable product whose price is not set) no longer causes a fatal "Unsupported operand types: string * int" error when the product widget is displayed.
+ * New option to share anonymous widget and paywall view statistics with ComfinoPay (off by default). Linking product page visits with the checkout additionally requires the shopper's consent to analytics cookies in your shop.
+ * Customer data is now removed more thoroughly from error reports and logs sent to ComfinoPay (e-mail, phone, names, address, tax ID and IP address).
+ * Error logs are now rotated automatically, so they no longer grow without limit.
+ * Connection and response timeouts for ComfinoPay requests are now kept within safe limits.
+ * The shop's server address is no longer included in the plugin configuration data.
+ * Improved handling of API errors and error reporting.
 
 4.3.3
  * Minor fixes and improvements.

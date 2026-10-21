@@ -65,8 +65,9 @@ final class OrderManager
                     $categoryIds = $parentProduct->get_category_ids();
                 }
 
-                $grossPrice = (int) round(wc_get_price_including_tax($product) * 100);
-                $netPrice = (int) round(wc_get_price_excluding_tax($product) * 100);
+                // Both functions return '' for a product without a price.
+                $grossPrice = (int) round((float) wc_get_price_including_tax($product) * 100);
+                $netPrice = (int) round((float) wc_get_price_excluding_tax($product) * 100);
 
                 if (!empty($taxRates = \WC_Tax::get_rates($product->get_tax_class()))) {
                     $taxRate = reset($taxRates);
@@ -191,8 +192,10 @@ final class OrderManager
             $categoryIds = $parentProduct->get_category_ids();
         }
 
-        $grossPrice = (int) (wc_get_price_including_tax($product) * 100);
-        $netPrice = ($taxRate !== null ? (int) (wc_get_price_excluding_tax($product) * 100) : $grossPrice);
+        /* Both functions return '' for a product without a price (e.g. a variable product parent or an item with no
+           price set), which would make the multiplication a TypeError on every product page view. */
+        $grossPrice = (int) round((float) wc_get_price_including_tax($product) * 100);
+        $netPrice = ($taxRate !== null ? (int) round((float) wc_get_price_excluding_tax($product) * 100) : $grossPrice);
         $taxValue = ($taxRate !== null ? $grossPrice - $netPrice : 0);
 
         return new Cart(

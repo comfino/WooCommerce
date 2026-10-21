@@ -313,6 +313,7 @@ final class Main
                 'authToken' => $authToken,
                 'loggingToken' => $loggingToken,
                 'trackId' => $trackId,
+                'trackingConsent' => ConfigManager::isPaywallTrackingEnabled(),
                 'loanAmount' => $loanAmount,
                 'paymentMethodAuth' => ConfigManager::getPaywallLogoAuthHash(),
                 'paymentMethodLabel' => ConfigManager::getPaymentMethodLabel(),
@@ -524,6 +525,12 @@ final class Main
             return $duringActivation
                 ? __('The plugin could not be activated. It requires PHP cURL extension which is not installed. More details: https://www.php.net/manual/en/book.curl.php', 'comfino-payment-gateway')
                 : __('The Comfino plugin has been deactivated. It requires PHP cURL extension which is not installed. More details: https://www.php.net/manual/en/book.curl.php', 'comfino-payment-gateway');
+        }
+
+        if (!extension_loaded('mbstring')) {
+            return $duringActivation
+                ? __('The plugin could not be activated. It requires PHP mbstring extension which is not installed. More details: https://www.php.net/manual/en/book.mbstring.php', 'comfino-payment-gateway')
+                : __('The Comfino plugin has been deactivated. It requires PHP mbstring extension which is not installed. More details: https://www.php.net/manual/en/book.mbstring.php', 'comfino-payment-gateway');
         }
 
         return false;

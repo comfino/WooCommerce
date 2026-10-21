@@ -45,6 +45,7 @@ final class ConfigManager
         'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => 'cat_filter_avail_prod_types',
         'COMFINO_ALLOWED_PRODUCTS_CONFIG_FORBIDDEN_PROD_TYPES' => 'allowed_products_config_forbidden_prod_types',
         'COMFINO_PAYWALL_DIRECT_REDIRECT' => 'paywall_direct_redirect',
+        'COMFINO_PAYWALL_TRACKING_CONSENT' => 'paywall_tracking_consent',
         'COMFINO_PAYWALL_CUSTOM_CSS_URL' => 'paywall_custom_css_url',
         'COMFINO_WIDGET_ENABLED' => 'widget_enabled',
         'COMFINO_WIDGET_KEY' => 'widget_key',
@@ -87,6 +88,7 @@ final class ConfigManager
             'COMFINO_CART_VALUE_LIMITS_CONFIG' => ConfigurationManager::OPT_VALUE_TYPE_JSON,
             'COMFINO_USE_ORDER_REFERENCE' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_PAYWALL_DIRECT_REDIRECT' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
+            'COMFINO_PAYWALL_TRACKING_CONSENT' => ConfigurationManager::OPT_VALUE_TYPE_BOOL,
             'COMFINO_PAYWALL_CUSTOM_CSS_URL' => ConfigurationManager::OPT_VALUE_TYPE_STRING,
         ],
         'sale_settings' => [
@@ -349,6 +351,11 @@ final class ConfigManager
     public static function isOrderReferenceEnabled(): bool
     {
         return self::getInstance()->getConfigurationValue('COMFINO_USE_ORDER_REFERENCE') ?? false;
+    }
+
+    public static function isPaywallTrackingEnabled(): bool
+    {
+        return self::getInstance()->getConfigurationValue('COMFINO_PAYWALL_TRACKING_CONSENT') === true;
     }
 
     /**
@@ -824,6 +831,7 @@ final class ConfigManager
             'COMFINO_CAT_FILTER_AVAIL_PROD_TYPES' => 'INSTALLMENTS_ZERO_PERCENT,PAY_LATER,COMPANY_BNPL,COMPANY_INSTALLMENTS,LEASING,PAY_IN_PARTS',
             'COMFINO_ALLOWED_PRODUCTS_CONFIG_FORBIDDEN_PROD_TYPES' => 'BLIK,PAY_LATER,PAY_IN_PARTS,INSTANT_PAYMENTS',
             'COMFINO_PAYWALL_DIRECT_REDIRECT' => false,
+            'COMFINO_PAYWALL_TRACKING_CONSENT' => false,
             'COMFINO_PAYWALL_CUSTOM_CSS_URL' => '',
             'COMFINO_WIDGET_ENABLED' => false,
             'COMFINO_WIDGET_KEY' => '',
