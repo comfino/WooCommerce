@@ -6,6 +6,7 @@ namespace Comfino\Extended\Api\Request;
 
 use Comfino\Api\Exception\RequestValidationError;
 use Comfino\Api\Request;
+use Comfino\Api\SensitiveDataRedactor;
 use Comfino\Extended\Api\Dto\Plugin\ShopPluginError;
 
 class ReportShopPluginError extends Request
@@ -36,11 +37,6 @@ class ReportShopPluginError extends Request
     private const MAX_ENVIRONMENT_ENTRIES = 50;
 
     private const MAX_ENVIRONMENT_VALUE_LENGTH = 200;
-
-    private const PII_FIELDS = [
-        'firstName', 'lastName', 'email', 'phone', 'taxId',
-        'street', 'buildingNumber', 'apartmentNumber', 'postalCode', 'city',
-    ];
 
     private const SENSITIVE_ENV_PATTERNS = [
         '/password/i',
@@ -171,26 +167,10 @@ class ReportShopPluginError extends Request
         }
 
         try {
-            return json_encode(self::redactArray($data), 0);
+            return json_encode(SensitiveDataRedactor::redactStructure($data), 0);
         } catch (\JsonException $exception) {
             return $payload;
         }
-    }
-
-    /**
-     * @return array<array-key,
-     */
-    private static function redactArray(array $data): array
-    {
-        foreach ($data as $key => &$value) {
-            if (in_array($key, self::PII_FIELDS, true)) {
-                $value = '[REDACTED]';
-            } elseif (is_array($value)) {
-                $value = self::redactArray($value);
-            }
-        }
-
-        return $data;
     }
 
     /**

@@ -114,13 +114,10 @@ class Configuration extends RestEndpoint
                     'plugin_version' => $this->pluginVersion,
                     'plugin_build_ts' => $this->pluginBuildTs,
                     'wordpress_version' => $wpVersion,
-                    'symfony_version' => class_exists('\Symfony\Component\HttpKernel\Kernel')
-                        ? \ComfinoExternal\Symfony\Component\HttpKernel\Kernel::VERSION
-                        : 'n/a',
+                    'symfony_version' => self::getSymfonyVersion(),
                     'php_version' => PHP_VERSION,
-                    'server_software' => $serverRequest->getServerParams()['SERVER_SOFTWARE'],
-                    'server_name' => $serverRequest->getServerParams()['SERVER_NAME'],
-                    'server_addr' => $serverRequest->getServerParams()['SERVER_ADDR'],
+                    'server_software' => $serverRequest->getServerParams()['SERVER_SOFTWARE'] ?? '',
+                    'server_name' => $serverRequest->getServerParams()['SERVER_NAME'] ?? '',
                     'database_version' => $this->databaseVersion,
                     'extra_variables' => $shopExtraVariables,
                 ],
@@ -138,5 +135,14 @@ class Configuration extends RestEndpoint
         $this->configurationManager->persist();
 
         return null;
+    }
+
+    private static function getSymfonyVersion(): string
+    {
+        if (defined('\Symfony\Component\HttpKernel\Kernel::VERSION')) {
+            return constant('\Symfony\Component\HttpKernel\Kernel::VERSION');
+        }
+
+        return '';
     }
 }

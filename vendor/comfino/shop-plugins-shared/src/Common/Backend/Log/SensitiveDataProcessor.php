@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Comfino\Common\Backend\Log;
 
+use Comfino\Api\SensitiveDataRedactor;
 use ComfinoExternal\Monolog\Processor\ProcessorInterface;
 
 final class SensitiveDataProcessor implements ProcessorInterface
@@ -27,6 +28,18 @@ final class SensitiveDataProcessor implements ProcessorInterface
         '/ssn/i',
         '/pesel/i',  
         '/nip/i',    
+        '/e[_-]?mail/i',
+        '/phone/i',
+        '/first[_-]?name/i',
+        '/last[_-]?name/i',
+        '/street/i',
+        '/city/i',
+        '/postal[_-]?code/i',
+        '/zip/i',
+        '/tax[_-]?id/i',
+        '/building[_-]?number/i',
+        '/apartment[_-]?number/i',
+        '/(^|[_\-.])ip($|[_\-.]|address)/i',
 
         '/session[_-]?id/i',
         '/csrf[_-]?token/i',
@@ -50,6 +63,10 @@ final class SensitiveDataProcessor implements ProcessorInterface
     {
         $records['context'] = $this->sanitize($records['context'] ?? []);
         $records['extra'] = $this->sanitize($records['extra'] ?? []);
+
+        if (isset($records['message']) && is_string($records['message'])) {
+            $records['message'] = SensitiveDataRedactor::redactText($records['message']);
+        }
 
         return $records;
     }

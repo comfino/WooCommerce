@@ -6,7 +6,6 @@ namespace Comfino\Common\Backend\Log;
 
 use ComfinoExternal\Monolog\Logger;
 use ComfinoExternal\Monolog\Handler\RotatingFileHandler;
-use ComfinoExternal\Monolog\Handler\StreamHandler;
 use ComfinoExternal\Monolog\Formatter\LineFormatter;
 use ComfinoExternal\Monolog\Processor\PsrLogMessageProcessor;
 
@@ -18,7 +17,7 @@ final class LoggerFactory
      * @param bool $enableSanitization
      * @return Logger
      */
-    public static function createDebugLogger(string $logFilePath, string $minLevel = 'debug', bool $enableSanitization = true): Logger
+    public static function createDebugLogger(string $logFilePath, string $minLevel = 'debug', bool $enableSanitization = true, int $maxFiles = 5): Logger
     {
         self::ensureLogDirectory($logFilePath);
 
@@ -26,7 +25,7 @@ final class LoggerFactory
 
         $level = self::stringToLevel($minLevel);
 
-        $handler = new RotatingFileHandler($logFilePath, 5, $level, true, 0644);
+        $handler = new RotatingFileHandler($logFilePath, $maxFiles, $level, true, 0644);
         $handler->setFormatter(
             new LineFormatter(
                 "[%datetime%] [%level_name%] %message% %context%\n",
@@ -53,7 +52,7 @@ final class LoggerFactory
      * @return Logger
      * @throws \Exception
      */
-    public static function createErrorLogger(string $logFilePath, bool $enableSanitization = true): Logger
+    public static function createErrorLogger(string $logFilePath, bool $enableSanitization = true, int $maxFiles = 30): Logger
     {
         self::ensureLogDirectory($logFilePath);
 
@@ -61,7 +60,7 @@ final class LoggerFactory
 
         $level = self::stringToLevel('error');
 
-        $handler = new StreamHandler($logFilePath, $level, true, 0644);
+        $handler = new RotatingFileHandler($logFilePath, $maxFiles, $level, true, 0644);
         $handler->setFormatter(
             new LineFormatter(
                 "[%datetime%] [%level_name%] %message% %context%\n",
@@ -176,6 +175,19 @@ final class LoggerFactory
         }
     }
 
+    /** The old Apache 2.2-only .htaccess content; rewritten in place, never left as the only guard. */
+    private const LEGACY_HTACCESS_CONTENT = "Order deny,allow\nDeny from all\n";
+
+    private const HTACCESS_CONTENT = <<<'HTACCESS'
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+</IfModule>
+HTACCESS;
+
     /**
      * @param string $logFilePath
      */
@@ -187,8 +199,10 @@ final class LoggerFactory
             return;
         }
 
-        if (!file_exists($htaccessPath = $logDir . DIRECTORY_SEPARATOR . '.htaccess')) {
-            file_put_contents($htaccessPath, "Order deny,allow\nDeny from all\n");
+        $htaccessPath = $logDir . DIRECTORY_SEPARATOR . '.htaccess';
+
+        if (!file_exists($htaccessPath) || file_get_contents($htaccessPath) === self::LEGACY_HTACCESS_CONTENT) {
+            file_put_contents($htaccessPath, self::HTACCESS_CONTENT . "\n");
         }
 
         if (!file_exists($indexPath = $logDir . DIRECTORY_SEPARATOR . 'index.php')) {

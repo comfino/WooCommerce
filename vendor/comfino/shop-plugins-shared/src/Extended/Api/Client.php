@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Comfino\Extended\Api;
 
+use Comfino\Api\Exception\AccessDenied;
+use Comfino\Api\Exception\AuthorizationError;
+use Comfino\Api\Exception\RequestValidationError;
+use Comfino\Api\Exception\ResponseValidationError;
+use Comfino\Api\Exception\ServiceUnavailable;
 use Comfino\Api\Response\Base as BaseApiResponse;
 use Comfino\Api\SerializerInterface;
 use Comfino\Extended\Api\Dto\Plugin\ShopPluginError;
@@ -17,6 +22,7 @@ use Comfino\Extended\Api\Response\ClaimErrorLoggingToken as ClaimErrorLoggingTok
 use Comfino\Extended\Api\Response\GetLatestPluginRelease as GetLatestPluginReleaseResponse;
 use Comfino\Extended\Api\Response\GetSupportedPlatforms as GetSupportedPlatformsResponse;
 use Comfino\Extended\Api\Serializer\Json as JsonSerializer;
+use ComfinoExternal\Psr\Http\Client\ClientExceptionInterface;
 use ComfinoExternal\Psr\Http\Client\ClientInterface;
 use ComfinoExternal\Psr\Http\Message\RequestFactoryInterface;
 use ComfinoExternal\Psr\Http\Message\StreamFactoryInterface;
@@ -36,24 +42,23 @@ class Client extends \Comfino\Api\Client
 
     /**
      * @param ShopPluginError $shopPluginError
-     * @return bool
+     * @throws RequestValidationError
+     * @throws ResponseValidationError
+     * @throws AuthorizationError
+     * @throws AccessDenied
+     * @throws ServiceUnavailable
+     * @throws ClientExceptionInterface
      */
-    public function sendLoggedError($shopPluginError): bool
+    public function sendLoggedError($shopPluginError): void
     {
-        try {
-            $request = new ReportShopPluginError($shopPluginError, $this->getUserAgent());
+        $request = new ReportShopPluginError($shopPluginError, $this->getUserAgent());
 
-            new BaseApiResponse(
-                $request,
-                
-                $this->sendRequest($request->setSerializer($this->serializer), 2),
-                $this->serializer
-            );
-        } catch (\Throwable $exception) {
-            return false;
-        }
-
-        return true;
+        new BaseApiResponse(
+            $request,
+            
+            $this->sendRequest($request->setSerializer($this->serializer), 2),
+            $this->serializer
+        );
     }
 
     /**

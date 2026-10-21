@@ -19,7 +19,7 @@ class RequestValidationError extends \LogicException implements HttpErrorExcepti
     
     private $deserializedResponseBody;
     /**
-     * @var \ComfinoExternal\Psr\Http\Message\ResponseInterface
+     * @var \ComfinoExternal\Psr\Http\Message\ResponseInterface|null
      */
     private $response;
 
@@ -89,7 +89,7 @@ class RequestValidationError extends \LogicException implements HttpErrorExcepti
         $this->deserializedResponseBody = $deserializedResponseBody;
     }
 
-    public function getResponse(): ResponseInterface
+    public function getResponse(): ?ResponseInterface
     {
         return $this->response;
     }

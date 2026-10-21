@@ -29,9 +29,13 @@ class GetFinancialProducts extends Base
             );
             $this->checkResponseType($financialProduct['loanParameters'], 'array', 'loanParameters');
 
+            if (($productType = LoanTypeEnum::tryFrom($financialProduct['type'])) === null) {
+                continue;
+            }
+
             $financialProducts[] = new FinancialProduct(
                 $financialProduct['name'],
-                LoanTypeEnum::from($financialProduct['type']),
+                $productType,
                 $financialProduct['creditorName'],
                 $financialProduct['description'] ?? '',
                 $financialProduct['icon'],

@@ -36,6 +36,18 @@ abstract class Enum implements \JsonSerializable
      */
     abstract public static function from($value, $strict = true): self;
 
+    /**
+     * @param string $value
+     */
+    public static function tryFrom($value): ?self
+    {
+        try {
+            return static::from($value, true);
+        } catch (\InvalidArgumentException $e) {
+            return null;
+        }
+    }
+
     public function jsonSerialize(): string
     {
         return $this->value;

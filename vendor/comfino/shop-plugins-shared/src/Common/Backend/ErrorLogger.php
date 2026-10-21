@@ -4,8 +4,17 @@ declare(strict_types=1);
 
 namespace Comfino\Common\Backend;
 
+use Comfino\Api\Exception\RequestValidationError;
+use Comfino\Api\Exception\ResponseValidationError;
+use Comfino\Api\SensitiveDataRedactor;
+use Comfino\Api\Serializer\Json;
+use Comfino\Api\SerializerInterface;
 use Comfino\Common\Backend\Log\ErrorMessageNormalizer;
 use Comfino\Common\Backend\Log\LoggerFactory;
+use Comfino\Common\Backend\Log\ResponseBodySummarizer;
+use Comfino\Common\Backend\Queue\ApiTransientErrorClassifier;
+use Comfino\Common\Backend\Queue\OutboundRequestQueue;
+use Comfino\Common\Backend\Queue\ReportErrorHandler;
 use Comfino\Extended\Api\Client;
 use Comfino\Extended\Api\Dto\Plugin\ErrorCategory;
 use Comfino\Extended\Api\Dto\Plugin\ErrorSeverity;
@@ -56,6 +65,14 @@ final class ErrorLogger extends Logger
      * @var ErrorMessageNormalizer
      */
     private $normalizer;
+    /**
+     * @var OutboundRequestQueue|null
+     */
+    private $outboundQueue;
+    /**
+     * @var SerializerInterface
+     */
+    private $serializer;
     private const CATCHED_ERRORS_MASK = E_ERROR | E_RECOVERABLE_ERROR | E_PARSE;
     private const ERROR_TYPES = [
         E_ERROR => 'E_ERROR',
@@ -85,6 +102,13 @@ final class ErrorLogger extends Logger
      */
     private static $logger;
 
+    private $previousExceptionHandler = null;
+
+    /**
+     * @var string|null
+     */
+    private $rethrownExceptionLocation;
+
     /**
      * @param Client $apiClient
      * @param string $logFilePath
@@ -92,10 +116,20 @@ final class ErrorLogger extends Logger
      * @param string $platform
      * @param string $modulePath
      * @param array $environment
+     * @param OutboundRequestQueue|null $outboundQueue
+     * @param SerializerInterface|null $serializer
      * @return self
      */
-    public static function getInstance($apiClient, $logFilePath, $host, $platform, $modulePath, $environment): self
-    {
+    public static function getInstance(
+        $apiClient,
+        $logFilePath,
+        $host,
+        $platform,
+        $modulePath,
+        $environment,
+        $outboundQueue = null,
+        $serializer = null
+    ): self {
         if (self::$instance === null) {
             $pluginVersion = (string) ($environment['plugin_version'] ?? '');
             $platformVersion = (string) ($environment['platform_version'] ?? $environment['shop_version'] ?? '');
@@ -113,7 +147,9 @@ final class ErrorLogger extends Logger
                 $pluginVersion,
                 $platformVersion,
                 $phpVersion,
-                new ErrorMessageNormalizer()
+                new ErrorMessageNormalizer(),
+                $outboundQueue,
+                $serializer ?? new Json()
             );
         }
 
@@ -131,9 +167,12 @@ final class ErrorLogger extends Logger
      * @param string $platformVersion
      * @param string $phpVersion
      * @param ErrorMessageNormalizer $normalizer
+     * @param OutboundRequestQueue|null $outboundQueue
+     * @param SerializerInterface $serializer
      */
-    private function __construct(Client $apiClient, string $logFilePath, string $host, string $platform, string $modulePath, array $environment, string $pluginVersion, string $platformVersion, string $phpVersion, ErrorMessageNormalizer $normalizer)
+    private function __construct(Client $apiClient, string $logFilePath, string $host, string $platform, string $modulePath, array $environment, string $pluginVersion, string $platformVersion, string $phpVersion, ErrorMessageNormalizer $normalizer, ?OutboundRequestQueue $outboundQueue = null, ?SerializerInterface $serializer = null)
     {
+        $serializer = $serializer ?? new Json();
         $this->apiClient = $apiClient;
         $this->logFilePath = $logFilePath;
         $this->host = $host;
@@ -144,6 +183,8 @@ final class ErrorLogger extends Logger
         $this->platformVersion = $platformVersion;
         $this->phpVersion = $phpVersion;
         $this->normalizer = $normalizer;
+        $this->outboundQueue = $outboundQueue;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -181,7 +222,7 @@ final class ErrorLogger extends Logger
         $apiResponse = null,
         $stackTrace = null
     ): void {
-        if (preg_match('/Error .*in |Exception .*in /', $errorMessage) && strpos($errorMessage, $this->modulePath) === false) {
+        if (preg_match('/Error .*in |Exception .*in /', $errorMessage) && strpos(self::normalizePath($errorMessage), self::normalizePath($this->modulePath)) === false) {
             return;
         }
 
@@ -190,6 +231,12 @@ final class ErrorLogger extends Logger
         } else {
             $errorsSendingDisabled = false;
         }
+
+        $errorMessage = SensitiveDataRedactor::redactText($errorMessage);
+        $apiRequest = $apiRequest !== null ? SensitiveDataRedactor::redactPayload($apiRequest) : null;
+        $apiResponse = $apiResponse !== null
+            ? SensitiveDataRedactor::redactPayload(ResponseBodySummarizer::summarize($apiResponse))
+            : null;
 
         $callEnv = array_merge($this->environment, [
             'caller' => $this->formatContext($this->extractCallerContext()),
@@ -219,45 +266,47 @@ final class ErrorLogger extends Logger
         );
 
         $logPrefix = "[{$category->value}][{$context->value}]";
+        $logContext = array_filter([
+            'api_url' => $apiRequestUrl,
+            'api_request' => $apiRequest,
+            'api_response' => $apiResponse,
+            'stack_trace' => $normalizedTrace,
+        ], static function ($value) {
+            return $value !== null;
+        });
 
-        if ($errorsSendingDisabled || !$this->apiClient->sendLoggedError($error)) {
-            $requestInfo = [];
+        if ($errorsSendingDisabled) {
+            $this->logError($logPrefix, $normalizedMessage, $logContext);
+        } elseif ($this->outboundQueue !== null) {
+            $this->outboundQueue->enqueue(ReportErrorHandler::OPERATION_TYPE, ReportErrorHandler::toQueuePayload($error, $this->serializer));
 
-            if ($apiRequestUrl !== null) {
-                $requestInfo[] = "API URL: $apiRequestUrl";
+            $this->logError($logPrefix, $normalizedMessage, $logContext);
+        } else {
+            try {
+                $this->apiClient->sendLoggedError($error);
+            } catch (\Throwable $exception) {
+                $this->logError($logPrefix, $normalizedMessage, $logContext);
             }
-
-            if ($apiRequest !== null) {
-                $requestInfo[] = "API request: $apiRequest";
-            }
-
-            if ($apiResponse !== null) {
-                $requestInfo[] = "API response: $apiResponse";
-            }
-
-            if (count($requestInfo) > 0) {
-                $errorMessage .= "\n" . implode("\n", $requestInfo);
-            }
-
-            if ($stackTrace !== null) {
-                $errorMessage .= "\nStack trace: $stackTrace";
-            }
-
-            $this->logError($logPrefix, $errorMessage);
         }
     }
 
     /**
      * @param string $errorPrefix
      * @param string $errorMessage
+     * @param array $context
      */
-    public function logError($errorPrefix, $errorMessage): void
+    public function logError($errorPrefix, $errorMessage, $context = []): void
     {
         try {
-            $this->getLogger()->error("$errorPrefix: $errorMessage");
+            $this->getLogger()->error("$errorPrefix: $errorMessage", $context);
         } catch (\Exception $e) {
             if (FileUtils::isWritable($this->logFilePath)) {
                 FileUtils::append($this->logFilePath, "$errorPrefix: $errorMessage");
+
+                if (!empty($context)) {
+                    FileUtils::append($this->logFilePath, "\n" . json_encode(SensitiveDataRedactor::redactStructure($context)));
+                }
+
                 FileUtils::append($this->logFilePath, "Logger error: {$e->getMessage()} in {$e->getFile()}:{$e->getLine()}");
             }
         }
@@ -313,6 +362,24 @@ final class ErrorLogger extends Logger
     }
 
     /**
+     * @param \Throwable $error
+     * @param string $default
+     * @return string|null
+     */
+    public static function resolveSeverity($error, $default = ErrorSeverity::Error): ?string
+    {
+        if (ApiTransientErrorClassifier::isTransient($error)) {
+            return ErrorSeverity::Warning;
+        }
+
+        if ($error instanceof RequestValidationError || $error instanceof ResponseValidationError) {
+            return null;
+        }
+
+        return $default;
+    }
+
+    /**
      * @param int $errorType
      * @param string $errorMessage
      * @param string $file
@@ -343,19 +410,51 @@ final class ErrorLogger extends Logger
      */
     public function exceptionHandler($exception): void
     {
-        $exceptionClass = (new \ReflectionClass($exception))->getShortName();
+        try {
+            $exceptionClass = (new \ReflectionClass($exception))->getShortName();
 
-        $this->sendError(
-            self::classifyException($exception),
-            ErrorSeverity::from(ErrorSeverity::Error),
-            OperationContext::from(OperationContext::Unknown),
-            $exceptionClass,
-            sprintf('Exception %s in %s:%d: %s', $exceptionClass, $exception->getFile(), $exception->getLine(), $exception->getMessage()),
-            null,
-            null,
-            null,
-            $exception->getTraceAsString()
-        );
+            $this->sendError(
+                self::classifyException($exception),
+                ErrorSeverity::from(ErrorSeverity::Error),
+                OperationContext::from(OperationContext::Unknown),
+                $exceptionClass,
+                sprintf('Exception %s in %s:%d: %s', $exceptionClass, $exception->getFile(), $exception->getLine(), $exception->getMessage()),
+                null,
+                null,
+                null,
+                $exception->getTraceAsString()
+            );
+        } catch (\Throwable $loggingFailure) {
+            error_log('Comfino exception logger failed: ' . $loggingFailure->getMessage());
+        }
+
+        if ($this->previousExceptionHandler !== null) {
+            ($this->previousExceptionHandler)($exception);
+
+            return;
+        }
+
+        $this->rethrownExceptionLocation = $exception->getFile() . ':' . $exception->getLine();
+
+        throw $exception;
+    }
+
+    /**
+     * @param array $error
+     * @return bool
+     */
+    private function isRethrownExceptionError(array $error): bool
+    {
+        return $error['file'] . ':' . $error['line'] === $this->rethrownExceptionLocation && strncmp($error['message'], 'Uncaught ', strlen('Uncaught ')) === 0;
+    }
+
+    /**
+     * @param string $path
+     * @return string
+     */
+    private static function normalizePath(string $path): string
+    {
+        return DIRECTORY_SEPARATOR === '/' ? $path : str_replace(DIRECTORY_SEPARATOR, '/', $path);
     }
 
     public function init(): void
@@ -368,7 +467,7 @@ final class ErrorLogger extends Logger
 
         if (!$initialized) {
             set_error_handler([$this, 'errorHandler'], self::CATCHED_ERRORS_MASK);
-            set_exception_handler([$this, 'exceptionHandler']);
+            $this->previousExceptionHandler = set_exception_handler([$this, 'exceptionHandler']);
             register_shutdown_function([$this, 'shutdown']);
 
             $initialized = true;
@@ -377,7 +476,7 @@ final class ErrorLogger extends Logger
 
     public function shutdown(): void
     {
-        if (($error = error_get_last()) !== null && ($error['type'] & self::CATCHED_ERRORS_MASK)) {
+        if (($error = error_get_last()) !== null && ($error['type'] & self::CATCHED_ERRORS_MASK) && !$this->isRethrownExceptionError($error)) {
             $errorLevel = $this->getErrorTypeName($error['type']);
 
             $this->sendError(

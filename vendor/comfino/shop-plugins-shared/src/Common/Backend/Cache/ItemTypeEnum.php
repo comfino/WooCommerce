@@ -15,6 +15,7 @@ class ItemTypeEnum extends Enum
     public const PAYWALL_FRONTEND_SCRIPT = 'paywall_frontend_script';
     public const ADMIN_PRODUCT_TYPES = 'admin_product_types';
     public const ADMIN_WIDGET_TYPES = 'admin_widget_types';
+    public const REMOTE_FLAGS = 'remote_flags';
 
     /**
      * @param string $value

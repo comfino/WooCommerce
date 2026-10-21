@@ -49,6 +49,10 @@ class Order implements OrderInterface
      */
     private $allowedProductsConfig;
     /**
+     * @var string|null
+     */
+    private $promoCode;
+    /**
      * @param string $id
      * @param string $returnUrl
      * @param LoanParametersInterface $loanParameters
@@ -59,8 +63,9 @@ class Order implements OrderInterface
      * @param string|null $accountNumber
      * @param string|null $transferTitle
      * @param AllowedProductConfig[]|null $allowedProductsConfig
+     * @param string|null $promoCode
      */
-    public function __construct(string $id, string $returnUrl, LoanParametersInterface $loanParameters, CartInterface $cart, CustomerInterface $customer, ?string $notifyUrl = null, ?SellerInterface $seller = null, ?string $accountNumber = null, ?string $transferTitle = null, ?array $allowedProductsConfig = null)
+    public function __construct(string $id, string $returnUrl, LoanParametersInterface $loanParameters, CartInterface $cart, CustomerInterface $customer, ?string $notifyUrl = null, ?SellerInterface $seller = null, ?string $accountNumber = null, ?string $transferTitle = null, ?array $allowedProductsConfig = null, ?string $promoCode = null)
     {
         $this->id = $id;
         $this->returnUrl = $returnUrl;
@@ -72,6 +77,7 @@ class Order implements OrderInterface
         $this->accountNumber = $accountNumber;
         $this->transferTitle = $transferTitle;
         $this->allowedProductsConfig = $allowedProductsConfig;
+        $this->promoCode = $promoCode;
     }
 
     public function getId(): string
@@ -122,5 +128,10 @@ class Order implements OrderInterface
     public function getAllowedProductsConfig(): ?array
     {
         return $this->allowedProductsConfig;
+    }
+
+    public function getPromoCode(): ?string
+    {
+        return $this->promoCode !== null ? trim(html_entity_decode(strip_tags($this->promoCode))) : null;
     }
 }

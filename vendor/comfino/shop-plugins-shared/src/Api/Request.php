@@ -185,4 +185,12 @@ abstract class Request
      * @return array|null
      */
     abstract protected function prepareRequestBody(): ?array;
+
+    /**
+     * @param int $statusCode
+     */
+    public function isIdempotentFailure($statusCode): bool
+    {
+        return false;
+    }
 }
