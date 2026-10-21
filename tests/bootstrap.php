@@ -470,7 +470,7 @@ namespace {
         function wp_delete_file($file): void
         {
             if (is_file($file)) {
-                unlink($file);
+                unlink($file); // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
             }
         }
     }
