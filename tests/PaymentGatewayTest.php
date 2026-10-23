@@ -34,7 +34,7 @@ class PaymentGatewayTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(PaymentGateway::GATEWAY_ID, $this->gateway->id);
         $this->assertEquals('comfino', $this->gateway->id);
         $this->assertTrue($this->gateway->has_fields);
-        $this->assertEquals('Comfino payments', $this->gateway->method_title);
+        $this->assertEquals('ComfinoPay payments', $this->gateway->method_title);
         $this->assertInternalType('array', $this->gateway->supports);
         $this->assertContains('products', $this->gateway->supports);
     }

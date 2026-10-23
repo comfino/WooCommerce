@@ -1,10 +1,10 @@
 <?php /** @noinspection PhpExpressionResultUnusedInspection */
 /*
- * Plugin Name: Comfino Payment Gateway
+ * Plugin Name: ComfinoPay Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
- * Description: Comfino Payment Gateway for WooCommerce.
+ * Description: ComfinoPay Payment Gateway for WooCommerce.
  * Version: 4.4.0
- * Author: Comfino
+ * Author: ComfinoPay
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
  * Text Domain: comfino-payment-gateway
@@ -118,7 +118,12 @@ class Comfino_Payment_Gateway
         add_action('admin_post_comfino_clear_debug_log', [$this, 'handle_clear_debug_log']);
         add_action('plugins_loaded', function (): void {
             // Store current version in persistent option for upgrade tracking.
-            if (get_option('comfino_plugin_current_version', '') !== PaymentGateway::VERSION) {
+            if (($previousVersion = get_option('comfino_plugin_current_version', '')) !== PaymentGateway::VERSION) {
+                if ($previousVersion !== '') {
+                    set_transient('comfino_plugin_updated', 1);
+                    set_transient('comfino_plugin_prev_version', $previousVersion);
+                }
+
                 update_option('comfino_plugin_current_version', PaymentGateway::VERSION, false);
             }
 
@@ -480,7 +485,7 @@ class Comfino_Payment_Gateway
             echo wp_kses(
                 sprintf(
                     /* translators: 1: Current version 2: Available version 3: GitHub releases URL */
-                    __('<strong>Comfino Payment Gateway:</strong> A new version (%2$s) is available on GitHub. You are currently using version %1$s. Visit <a href="%3$s" target="_blank">GitHub Releases</a> for more information.', 'comfino-payment-gateway'),
+                    __('<strong>ComfinoPay Payment Gateway:</strong> A new version (%2$s) is available on GitHub. You are currently using version %1$s. Visit <a href="%3$s" target="_blank">GitHub Releases</a> for more information.', 'comfino-payment-gateway'),
                     esc_html($currentVersion),
                     esc_html($githubVersion),
                     esc_url($releaseNotesUrl)
@@ -774,6 +779,11 @@ class Comfino_Payment_Gateway
         // The tracking consent switch is hidden in 4.4.0: persist its default so the stored state matches the form.
         ConfigManager::initConfigurationValues(['COMFINO_PAYWALL_TRACKING_CONSENT' => false]);
 
+        // Rebrand the untouched default payment text "Comfino" to "ComfinoPay" - a merchant's own text is kept as is.
+        if (ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT') === 'Comfino') {
+            ConfigManager::updateConfigurationValue('COMFINO_PAYMENT_TEXT', 'ComfinoPay');
+        }
+
         // Clear configuration and front cache.
         CacheManager::getCachePool()->clear();
 
@@ -786,7 +796,7 @@ class Comfino_Payment_Gateway
 
         // Log upgrade statistics.
         $upgradeStats = [
-            'plugin_name' => 'Comfino Payment Gateway',
+            'plugin_name' => 'ComfinoPay Payment Gateway',
             'previous_version' => get_transient('comfino_plugin_prev_version') ?: 'unknown',
             'current_version' => PaymentGateway::VERSION,
             'upgraded_at' => get_transient('comfino_plugin_updated_at')
