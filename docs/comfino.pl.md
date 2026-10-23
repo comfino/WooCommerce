@@ -8,8 +8,8 @@ Wersja on-line dokumentacji: https://comfino.pl/plugins/WooCommerce/pl
 
 Przejdź do zakładki `"Wtyczki"`, następnie kliknij przycisk `"Dodaj wtyczkę -> Wyślij wtyczkę na serwer"`. Należy wybrać odpowiedni plik z modułem. Wtyczka zainstaluje się automatycznie.
 
-![Instalacja](images/pl/installation-1.png "Instalacja")
-![Instalacja](images/pl/installation-2.png "Instalacja")
+<img src="images/pl/installation-1.png" alt="Instalacja" width="1000">
+<img src="images/pl/installation-2.png" alt="Instalacja" width="1000">
 
 ## KONFIGURACJA
 Parametry konfiguracyjne modułu są pogrupowane kategoriami odpowiadającymi zakładkom panelu konfiguracyjnego: `"Ustawienia płatności"`, `"Ustawienia sprzedaży"`, `"Ustawienia widgetu"`, `"Ustawienia ratowania koszyków"`, `"Ustawienia deweloperskie"`.
@@ -37,7 +37,7 @@ Pola parametrów konfiguracyjnych:
 * **Tryb bezpośredniego przekierowania** — Nie wyświetlaj paywalla ComfinoPay, wyłącza automatyczne wyświetlanie paywalla na podsumowaniu płatności, pozwalając przejść na wniosek bez potrzeby wyboru jednego z produktów finansowych ComfinoPay.
 * **Niestandardowy styl CSS paywalla** — Odnośnik do pliku CSS ze stylami nadpisującymi wygląd paywalla (akceptowane są tylko adresy bezwzględne z domeny sklepu)
 
-![Konfiguracja](images/pl/configuration1.png "Konfiguracja")
+<img src="images/pl/configuration1.png" alt="Konfiguracja" width="1000">
 
 **USTAWIENIA SPRZEDAŻY**
 
@@ -45,7 +45,7 @@ Pola parametrów konfiguracyjnych:
 
 Sekcja reguł dostępności produktów finansowych umożliwia zawężenie dostępnych okresów dla każdego typu produktu finansowego, odpowiadającego dostępnym metodom finansowania zakupów w ramach umowy zawartej z ComfinoPay. Dla każdego typu można określić minimalny i maksymalny okres spłaty oraz wyszczególnić konkretne okresy (rozdzielone przecinkami). Aby nie stosować żadnych ograniczeń dla danego typu produktu, wystarczy zostawić puste pola. Wszystkie ograniczenia działają łącznie: jeśli ustawione są "Wyszczególnione okresy", oferowane są tylko te konkretne okresy; wartości "Min./Maks." dodatkowo je zawężają. Ograniczenia są stosowane zarówno na paywallu, jak i wniosku.
 
-![Konfiguracja](images/pl/configuration2a.png "Konfiguracja")
+<img src="images/pl/configuration2a.png" alt="Konfiguracja" width="1000">
 
 **Kategorie produktów**
 
@@ -63,7 +63,7 @@ Jeśli w koszyku klienta znajdzie się którykolwiek z wymienionych produktów, 
 
 Filtr po ID produktu działa niezależnie od filtrów kategorii produktowych.
 
-![Konfiguracja](images/pl/configuration2b.png "Konfiguracja")
+<img src="images/pl/configuration2b.png" alt="Konfiguracja" width="1000">
 
 **USTAWIENIA WIDGETU**
 
@@ -78,7 +78,7 @@ Filtr po ID produktu działa niezależnie od filtrów kategorii produktowych.
 
 Dostępność typów ofert na liście jest uzależniona od indywidualnej umowy i może różnić się od tej opisanej w dokumentacji.
 
-![Konfiguracja](images/pl/configuration3a.png "Konfiguracja")
+<img src="images/pl/configuration3a.png" alt="Konfiguracja" width="1000">
 
 **Ustawienia zaawansowane**
 
@@ -93,11 +93,11 @@ Dostępność typów ofert na liście jest uzależniona od indywidualnej umowy i
 
 Szczegółowe informacje o działaniu widgetu i jego opcjach konfiguracyjnych znajdziesz w osobnej [dokumentacji widgetu ComfinoPay](https://comfino.pl/widgets/comfino-woocommerce/pl).
 
-![Konfiguracja](images/pl/configuration3b.png "Konfiguracja")
+<img src="images/pl/configuration3b.png" alt="Konfiguracja" width="1000">
 
 **USTAWIENIA RATOWANIA KOSZYKÓW**
 
-![Konfiguracja](images/pl/configuration4.png "Konfiguracja")
+<img src="images/pl/configuration4.png" alt="Konfiguracja" width="1000">
 
 Funkcja "Ratowanie koszyków" pozwala zminimalizować problem porzuconych koszyków. Gdy klient dodaje produkty do koszyka, ale porzuca go, także z powodu nieudanej płatności, automatycznie otrzyma przypominający e-mail z bezpośrednim linkiem prowadzącym do płatności. Ta usługa pozwala skutecznie odzyskiwać potencjalne transakcje i zwiększać konwersję zamówień.
 
@@ -112,7 +112,7 @@ Tryb debugowania przydaje się w przypadku problemów z dostępnością płatno�
 
 Tryb serwisowy jest przydatny do testowania bramki płatniczej ComfinoPay bez konieczności udostępniania jej klientom. W tym trybie metoda płatności ComfinoPay widoczna jest tylko dla wybranych sesji, a logi debugowania są zbierane wyłącznie dla tych sesji.
 
-![Konfiguracja](images/pl/configuration5.png "Konfiguracja")
+<img src="images/pl/configuration5.png" alt="Konfiguracja" width="1000">
 
 **Uwaga**
 
@@ -122,12 +122,12 @@ Przed uruchomieniem płatności na sklepie produkcyjnym, wyłącz tryb deweloper
 
 Zakładka zawiera informacje techniczne o wtyczce i środowisku (wersja wtyczki, wersja sklepu, wersja PHP i serwera www, itp.).\
 
-![Konfiguracja](images/pl/configuration6a.png "Konfiguracja")
+<img src="images/pl/configuration6a.png" alt="Konfiguracja" width="1000">
 
 Zawiera też listę ostatnich błędów wraz z podglądem lokalnego dziennika błędów (log błędów) oraz listę z zapisanymi w trybie debug operacjami wewnętrznymi wtyczki (log trybu debugowania).
 Jest również opcja wyczyszczenia dziennika błędów, jak i listy operacji wewnętrznych w trybie debug.
 
-![Konfiguracja](images/pl/configuration6b.png "Konfiguracja")
+<img src="images/pl/configuration6b.png" alt="Konfiguracja" width="1000">
 
 Sekcja **Reset wtyczki** służy do przywrócenia wtyczki do stanu początkowej konfiguracji bez utraty danych ani indywidualnych ustawień biznesowych.\
 Operacja resetu wykonuje następujące czynności:
@@ -138,8 +138,8 @@ Operacja resetu wykonuje następujące czynności:
 
 Aby wykonać reset, należy użyć przycisku „Zresetuj wtyczkę”.
 
-![Konfiguracja](images/pl/configuration6b1.png "Konfiguracja")
-![Konfiguracja](images/pl/configuration6b2.png "Konfiguracja")
+<img src="images/pl/configuration6b1.png" alt="Konfiguracja" width="1000">
+<img src="images/pl/configuration6b2.png" alt="Konfiguracja" width="1000">
 
 Zakładka zawiera dodatkowo zapis operacji wykonanych podczas instalacji, aktualizacji i dezinstalacji wtyczki.
 
@@ -155,7 +155,7 @@ Log aktualizacji:
 Log dezinstalacji:
 * **Po odinstalowaniu – weryfikacja, czy proces zakończył się prawidłowo**
 
-![Konfiguracja](images/pl/configuration6c.png "Konfiguracja")
+<img src="images/pl/configuration6c.png" alt="Konfiguracja" width="1000">
 
 Informacja o aktywności trybu deweloperskiego jest wyświetlana w zakładkach `"USTAWIENIA PŁATNOŚCI"` i `"DIAGNOSTYKA WTYCZKI"`.
 W trybie tym wtyczka używa klucza z zakładki `"USTAWIENIA DEWELOPERSKIE"` do komunikacji z testowym API ComfinoPay. Klucz środowiska testowego również otrzymasz od przedstawiciela ComfinoPay.
@@ -195,9 +195,10 @@ location ~* /wp-content/plugins/comfino-payment-gateway/var/ {
 
 ## PRZYKŁADOWY WYGLĄD KOSZYKA Z LISTĄ METOD PŁATNOŚCI
 
-![Koszyk](images/pl/cart_payment_view_folded.png "Koszyk")
-![Koszyk](images/pl/cart_payment_view_unfolded.png "Koszyk")
+<img src="images/pl/cart_payment_view_folded.png" alt="Koszyk" width="760">
+
+<img src="images/pl/cart_payment_view_unfolded.png" alt="Koszyk" width="760">
 
 ## PRZEBIEG PROCESU COMFINOPAY
 
-![Flow](images/comfino-flow.png "Flow")
+<img src="images/comfino-flow.png" alt="Flow" width="1000">

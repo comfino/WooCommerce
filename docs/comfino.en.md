@@ -8,8 +8,8 @@ On-line version of the documentation: https://comfino.pl/plugins/WooCommerce/en
 
 Go to the `"Plugins"` tab, then click the `"Add Plugin -> Upload plugin"` button. Select the appropriate module file. The plugin will install automatically.
 
-![Installation](images/en/installation-1.png "Installation")
-![Installation](images/en/installation-2.png "Installation")
+<img src="images/en/installation-1.png" alt="Installation" width="1000">
+<img src="images/en/installation-2.png" alt="Installation" width="1000">
 
 ## CONFIGURATION
 
@@ -38,7 +38,7 @@ Configuration parameter fields:
 * **Direct redirect mode** — Do not display the ComfinoPay paywall. Disables the automatic display of the paywall on the payment summary, allowing you to proceed to the application without having to select one of ComfinoPay's financial products.
 * **Custom paywall CSS style** — Link to a CSS file with styles that override the paywall's appearance (only absolute addresses from the store's domain are accepted).
 
-![Configuration](images/en/configuration1.png "Configuration")
+<img src="images/en/configuration1.png" alt="Configuration" width="1000">
 
 **SALE SETTINGS**
 
@@ -46,7 +46,7 @@ Configuration parameter fields:
 
 The financial product availability rules section allows you to narrow down the available terms for each type of financial product, corresponding to the available financing methods for purchases under your ComfinoPay contract. For each type, you can specify a minimum and maximum repayment term, and specify specific terms (separated by commas). To avoid applying any restrictions to a given product type, simply leave the fields blank. All restrictions are cumulative: if "Specific terms" are set, only those specific terms are offered; "Min/Max" values further narrow them. Restrictions are applied to both the paywall and the application.
 
-![Configuration](images/en/configuration2a.png "Konfiguracja")
+<img src="images/en/configuration2a.png" alt="Configuration" width="1000">
 
 **Product categories**
 
@@ -64,7 +64,7 @@ If the customer's cart contains any of the listed products, all ComfinoPay payme
 
 The product ID filter works independently of the product category filters.
 
-![Configuration](images/en/configuration2b.png "Konfiguracja")
+<img src="images/en/configuration2b.png" alt="Configuration" width="1000">
 
 **WIDGET SETTINGS**
 
@@ -79,7 +79,7 @@ The product ID filter works independently of the product category filters.
 
 The availability of offer types on the list depends on the individual contract and may differ from that described in the documentation.
 
-![Configuration](images/en/configuration3a.png "Configuration")
+<img src="images/en/configuration3a.png" alt="Configuration" width="1000">
 
 **Advanced settings**
 
@@ -94,11 +94,11 @@ The availability of offer types on the list depends on the individual contract a
 
 Detailed information on the operation of the widget and its configuration options can be found in a separate [ComfinoPay widget documentation](https://comfino.pl/widgets/comfino-woocommerce/en).
 
-![Configuration](images/en/configuration3b.png "Configuration")
+<img src="images/en/configuration3b.png" alt="Configuration" width="1000">
 
 **ABANDONED CART SETTINGS**
 
-![Configuration](images/en/configuration4.png "Konfiguracja")
+<img src="images/en/configuration4.png" alt="Configuration" width="1000">
 
 The "Abandoned cart rescue" feature allows you to minimize the problem of abandoned carts. When a customer adds products to the cart but abandons it, also due to an unsuccessful payment, they will automatically receive a reminder email with a direct link to the payment. This service allows you to effectively recover potential transactions and increase order conversions.
 
@@ -113,7 +113,7 @@ Debug mode is useful in case of problems with ComfinoPay payment availability. I
 
 Debug mode is useful in case of problems with ComfinoPay payment availability. In this mode module logs details of internal process responsible for displaying of ComfinoPay payment option at the payment methods list.
 
-![Configuration](images/en/configuration5.png "Configuration")
+<img src="images/en/configuration5.png" alt="Configuration" width="1000">
 
 **Note**
 
@@ -123,12 +123,12 @@ Before launching payments on the production store, disable developer mode to blo
 
 The tab contains technical information about the plugin and the environment (plugin version, store version, PHP and web server version, etc.).\
 
-![Configuration](images/en/configuration6a.png "Configuration")
+<img src="images/en/configuration6a.png" alt="Configuration" width="1000">
 
 It also contains a list of recent errors with a preview of the local error log and a list of the plugin's internal operations recorded in debug mode (debug mode log).
 There is also an option to clear the error log as well as the list of internal operations in debug mode.
 
-![Configuration](images/en/configuration6b.png "Configuration")
+<img src="images/en/configuration6b.png" alt="Configuration" width="1000">
 
 The **Plugin reset** section allows you to restore the module to its initial configuration without losing any data or individual business settings.\
 The reset operation performs the following actions:
@@ -139,8 +139,8 @@ The reset operation performs the following actions:
 
 To perform a reset, click the "Reset plugin" button.
 
-![Configuration](images/en/configuration6b1.png "Konfiguracja")
-![Configuration](images/en/configuration6b2.png "Konfiguracja")
+<img src="images/en/configuration6b1.png" alt="Configuration" width="1000">
+<img src="images/en/configuration6b2.png" alt="Configuration" width="1000">
 
 This tab also contains a record of operations performed during module installation, update and uninstallation.
 
@@ -156,7 +156,7 @@ Update log:
 Uninstallation log:
 * **After uninstallation – verifying that the process completed correctly**
 
-![Configuration](images/en/configuration6c.png "Konfiguracja")
+<img src="images/en/configuration6c.png" alt="Configuration" width="1000">
 
 Information about developer mode activity is displayed in the tabs `"PAYMENT SETTINGS"` and `"PLUGIN DIAGNOSTICS"`.
 In this mode, the plugin uses the key from the `"DEVELOPER SETTINGS"` tab to communicate with the ComfinoPay test API. You will also receive a test environment key from a ComfinoPay representative.
@@ -197,9 +197,10 @@ location ~* /wp-content/plugins/comfino-payment-gateway/var/ {
 
 ## SAMPLE CART VIEW WITH A LIST OF PAYMENT METHODS
 
-![Cart](images/en/cart_payment_view_folded.png "Cart")
-![Cart](images/en/cart_payment_view_unfolded.png "Cart")
+<img src="images/en/cart_payment_view_folded.png" alt="Cart" width="760">
+
+<img src="images/en/cart_payment_view_unfolded.png" alt="Cart" width="760">
 
 ## COMFINOPAY PROCESS FLOW
 
-![Flow](images/comfino-flow.png "Flow")
+<img src="images/comfino-flow.png" alt="Flow" width="1000">
