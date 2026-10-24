@@ -12,6 +12,7 @@ use Comfino\Api\Dto\Payment\LoanTypeEnum;
 use Comfino\Common\Backend\ConfigurationManager;
 use Comfino\Common\Backend\Factory\OrderFactory;
 use Comfino\Common\Shop\Cart;
+use Comfino\Common\Shop\Order\PromoCode;
 use Comfino\Configuration\ConfigManager;
 use Comfino\Configuration\SettingsManager;
 use Comfino\Extended\Api\Dto\Plugin\OperationContext;
@@ -34,7 +35,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
     public const VERSION = '4.4.0';
-    public const BUILD_TS = 1792604487;
+    public const BUILD_TS = 1792686553;
 
     public function __construct()
     {
@@ -167,6 +168,10 @@ class PaymentGateway extends \WC_Payment_Gateway
         $loanType = sanitize_text_field(wp_unslash($_POST['comfino_loan_type'] ?? ''));
         $loanTerm = (int) filter_var(sanitize_text_field(wp_unslash($_POST['comfino_loan_term'] ?? '0')), FILTER_VALIDATE_INT);
 
+        // Optional customer-entered promotional code (hidden input in the classic checkout, payment_data in Blocks).
+        $rawPromoCode = $_POST[PromoCode::REQUEST_FIELD] ?? null;
+        $promoCode = PromoCode::normalize(is_string($rawPromoCode) ? sanitize_text_field(wp_unslash($rawPromoCode)) : null);
+
         if ($loanType === 'undefined') {
             $loanType = '';
         }
@@ -232,7 +237,7 @@ class PaymentGateway extends \WC_Payment_Gateway
         $shopCustomer = OrderManager::getShopCustomerFromOrder($wcOrder);
         $returnUrl = $this->get_return_url($wcOrder);
 
-        $order = $this->createOrder($orderId, $loanType, $loanTerm, $returnUrl, $shopCart, $shopCustomer);
+        $order = $this->createOrder($orderId, $loanType, $loanTerm, $returnUrl, $shopCart, $shopCustomer, $promoCode);
 
         // Perform comprehensive validation before sending credit application.
         $validationErrors = $this->validatePaymentData($order, $cart);
@@ -817,7 +822,8 @@ class PaymentGateway extends \WC_Payment_Gateway
         int $loanTerm,
         string $returnUrl,
         Cart $shopCart,
-        Customer $shopCustomer
+        Customer $shopCustomer,
+        ?string $promoCode = null
     ): Order
     {
         return (new OrderFactory())->createOrder(
@@ -835,7 +841,8 @@ class PaymentGateway extends \WC_Payment_Gateway
             $shopCart->getDeliveryTaxRate(),
             $shopCart->getDeliveryTaxValue(),
             null,
-            self::buildAllowedProductsConfig()
+            self::buildAllowedProductsConfig(),
+            $promoCode
         );
     }
 

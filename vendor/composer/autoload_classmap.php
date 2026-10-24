@@ -338,6 +338,7 @@ return array(
     'Comfino\\Common\\Frontend\\WidgetIframeRenderer' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Frontend/WidgetIframeRenderer.php',
     'Comfino\\Common\\Shop\\Cart' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Shop/Cart.php',
     'Comfino\\Common\\Shop\\OrderStatusAdapterInterface' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Shop/OrderStatusAdapterInterface.php',
+    'Comfino\\Common\\Shop\\Order\\PromoCode' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Shop/Order/PromoCode.php',
     'Comfino\\Common\\Shop\\Order\\StatusApplicationContext' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Shop/Order/StatusApplicationContext.php',
     'Comfino\\Common\\Shop\\Order\\StatusManager' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Shop/Order/StatusManager.php',
     'Comfino\\Common\\Shop\\Product\\Category' => $vendorDir . '/comfino/shop-plugins-shared/src/Common/Shop/Product/Category.php',

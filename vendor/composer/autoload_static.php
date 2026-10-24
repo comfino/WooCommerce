@@ -495,6 +495,7 @@ class ComposerStaticInit116d5c55f52c1dd381de94d6b503e7ef
         'Comfino\\Common\\Frontend\\WidgetIframeRenderer' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Frontend/WidgetIframeRenderer.php',
         'Comfino\\Common\\Shop\\Cart' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Shop/Cart.php',
         'Comfino\\Common\\Shop\\OrderStatusAdapterInterface' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Shop/OrderStatusAdapterInterface.php',
+        'Comfino\\Common\\Shop\\Order\\PromoCode' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Shop/Order/PromoCode.php',
         'Comfino\\Common\\Shop\\Order\\StatusApplicationContext' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Shop/Order/StatusApplicationContext.php',
         'Comfino\\Common\\Shop\\Order\\StatusManager' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Shop/Order/StatusManager.php',
         'Comfino\\Common\\Shop\\Product\\Category' => __DIR__ . '/..' . '/comfino/shop-plugins-shared/src/Common/Shop/Product/Category.php',

@@ -132,6 +132,14 @@ class Order implements OrderInterface
 
     public function getPromoCode(): ?string
     {
-        return $this->promoCode !== null ? trim(html_entity_decode(strip_tags($this->promoCode))) : null;
+        if ($this->promoCode === null) {
+            return null;
+        }
+
+        $promoCode = html_entity_decode(strip_tags($this->promoCode));
+
+        $promoCode = preg_replace('/^[\p{Z}\s]+|[\p{Z}\s]+$/u', '', $promoCode) ?? trim($promoCode);
+
+        return $promoCode !== '' ? $promoCode : null;
     }
 }

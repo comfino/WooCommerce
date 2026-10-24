@@ -1,6 +1,7 @@
 4.4.0
  * Comfino is now ComfinoPay: names and messages use the new brand. Your settings, orders and integration are unchanged.
  * The ComfinoPay payment method at checkout can now show the current shop promotion and its amount.
+ * A promotional code entered by the customer in the ComfinoPay payment method is now passed along with the order (a blank or unusable code is ignored).
  * Orders cancelled or rejected by ComfinoPay no longer send an unnecessary cancellation request back (all site languages).
  * Checkout no longer fails when a cart contains a deleted product or when ComfinoPay is temporarily unreachable.
  * The financing option used for an order now always matches what the customer selected, even with custom checkout templates.
