@@ -16,7 +16,7 @@ msgstr ""
 
 #. Plugin Name of the plugin
 #: comfino-payment-gateway.php
-msgid "Comfino Payment Gateway"
+msgid "ComfinoPay Payment Gateway"
 msgstr ""
 
 #. Plugin URI of the plugin
@@ -26,12 +26,12 @@ msgstr ""
 
 #. Description of the plugin
 #: comfino-payment-gateway.php
-msgid "Comfino Payment Gateway for WooCommerce."
+msgid "ComfinoPay Payment Gateway for WooCommerce."
 msgstr ""
 
 #. Author of the plugin
 #: comfino-payment-gateway.php
-msgid "Comfino"
+msgid "ComfinoPay"
 msgstr ""
 
 #. Author URI of the plugin
@@ -79,7 +79,7 @@ msgstr ""
 
 #. translators: 1: Current version 2: Available version 3: GitHub releases URL
 #: comfino-payment-gateway.php:481
-msgid "<strong>Comfino Payment Gateway:</strong> A new version (%2$s) is available on GitHub. You are currently using version %1$s. Visit <a href=\"%3$s\" target=\"_blank\">GitHub Releases</a> for more information."
+msgid "<strong>ComfinoPay Payment Gateway:</strong> A new version (%2$s) is available on GitHub. You are currently using version %1$s. Visit <a href=\"%3$s\" target=\"_blank\">GitHub Releases</a> for more information."
 msgstr ""
 
 #: comfino-payment-gateway.php:571
@@ -177,7 +177,7 @@ msgid "Order reminder"
 msgstr ""
 
 #: src/PaymentGateway.php:43
-msgid "Comfino payments"
+msgid "ComfinoPay payments"
 msgstr ""
 
 #: src/PaymentGateway.php:44
@@ -202,7 +202,7 @@ msgstr ""
 
 #. translators: 1: WordPress version 2: WooCommerce version 3: ComfinoPay plugin version
 #: src/PaymentGateway.php:373
-msgid "WordPress %1$s WooCommerce %2$s Comfino %3$s - question"
+msgid "WordPress %1$s WooCommerce %2$s ComfinoPay %3$s - question"
 msgstr ""
 
 #: src/PaymentGateway.php:385
@@ -678,11 +678,11 @@ msgstr ""
 
 #. translators: 1: Plugin version 2: Required PHP version 3: Current PHP version 4: Link to compatible version
 #: views/admin/php-compatibility-notice.php:24
-msgid "<strong>Comfino Payment Gateway:</strong> Plugin version %1$s requires PHP %2$s or higher. You are running PHP %3$s. Please upgrade your PHP version or downgrade to %4$s (compatible with PHP 7.0+)."
+msgid "<strong>ComfinoPay Payment Gateway:</strong> Plugin version %1$s requires PHP %2$s or higher. You are running PHP %3$s. Please upgrade your PHP version or downgrade to %4$s (compatible with PHP 7.0+)."
 msgstr ""
 
 #: views/admin/php-compatibility-notice.php:40
-msgid "<strong>Comfino Payment Gateway:</strong> The plugin has been automatically deactivated to prevent fatal errors. Please resolve the PHP version issue before reactivating."
+msgid "<strong>ComfinoPay Payment Gateway:</strong> The plugin has been automatically deactivated to prevent fatal errors. Please resolve the PHP version issue before reactivating."
 msgstr ""
 
 #: views/admin/_configure/allowed-products-config.php:20

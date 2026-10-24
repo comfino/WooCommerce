@@ -892,7 +892,7 @@ final class ConfigManager
         return [
             'COMFINO_ENABLED' => false,
             'COMFINO_PAYMENT_TEXT_ENABLED' => false,
-            'COMFINO_PAYMENT_TEXT' => 'Comfino',
+            'COMFINO_PAYMENT_TEXT' => 'ComfinoPay',
             'COMFINO_CHECKOUT_PRODUCT_TYPES' => [],
             'COMFINO_CHECKOUT_PRODUCT_TYPES_ORDER' => [
                 'INSTALLMENTS_ZERO_PERCENT',

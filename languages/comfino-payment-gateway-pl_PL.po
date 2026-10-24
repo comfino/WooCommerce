@@ -18,8 +18,8 @@ msgstr ""
 
 #. Plugin Name of the plugin
 #: comfino-payment-gateway.php
-msgid "Comfino Payment Gateway"
-msgstr "Bramka płatności Comfino"
+msgid "ComfinoPay Payment Gateway"
+msgstr "Bramka płatności ComfinoPay"
 
 #. Plugin URI of the plugin
 #: comfino-payment-gateway.php
@@ -28,13 +28,13 @@ msgstr "https://github.com/comfino/WooCommerce.git"
 
 #. Description of the plugin
 #: comfino-payment-gateway.php
-msgid "Comfino Payment Gateway for WooCommerce."
-msgstr "Bramka płatności Comfino dla WooCommerce."
+msgid "ComfinoPay Payment Gateway for WooCommerce."
+msgstr "Bramka płatności ComfinoPay dla WooCommerce."
 
 #. Author of the plugin
 #: comfino-payment-gateway.php
-msgid "Comfino"
-msgstr "Comfino"
+msgid "ComfinoPay"
+msgstr "ComfinoPay"
 
 #. Author URI of the plugin
 #: comfino-payment-gateway.php
@@ -101,11 +101,11 @@ msgstr "Log debugowania wyczyszczony pomyślnie."
 #. translators: 1: Current version 2: Available version 3: GitHub releases URL
 #: comfino-payment-gateway.php:481
 msgid ""
-"<strong>Comfino Payment Gateway:</strong> A new version (%2$s) is available "
+"<strong>ComfinoPay Payment Gateway:</strong> A new version (%2$s) is available "
 "on GitHub. You are currently using version %1$s. Visit <a href=\"%3$s\" "
 "target=\"_blank\">GitHub Releases</a> for more information."
 msgstr ""
-"<strong>Bramka płatności Comfino:</strong> Nowa wersja (%2$s) jest dostępna "
+"<strong>Bramka płatności ComfinoPay:</strong> Nowa wersja (%2$s) jest dostępna "
 "na GitHub. Obecnie używasz wersji %1$s. Odwiedź <a href=\"%3$s\" "
 "target=\"_blank\">GitHub Releases</a>, aby uzyskać więcej informacji."
 
@@ -249,8 +249,8 @@ msgid "Order reminder"
 msgstr "Przypomnienie o zamówieniu"
 
 #: src/PaymentGateway.php:43
-msgid "Comfino payments"
-msgstr "Płatności Comfino"
+msgid "ComfinoPay payments"
+msgstr "Płatności ComfinoPay"
 
 #: src/PaymentGateway.php:44
 msgid ""
@@ -298,8 +298,8 @@ msgstr "Wniosek ComfinoPay stworzony"
 
 #. translators: 1: WordPress version 2: WooCommerce version 3: ComfinoPay plugin version
 #: src/PaymentGateway.php:373
-msgid "WordPress %1$s WooCommerce %2$s Comfino %3$s - question"
-msgstr "WordPress %1$s WooCommerce %2$s Comfino %3$s - pytanie"
+msgid "WordPress %1$s WooCommerce %2$s ComfinoPay %3$s - question"
+msgstr "WordPress %1$s WooCommerce %2$s ComfinoPay %3$s - pytanie"
 
 #: src/PaymentGateway.php:385
 msgid "Do you want to ask about something? Write to us at"
@@ -955,21 +955,21 @@ msgstr ""
 #. translators: 1: Plugin version 2: Required PHP version 3: Current PHP version 4: Link to compatible version
 #: views/admin/php-compatibility-notice.php:24
 msgid ""
-"<strong>Comfino Payment Gateway:</strong> Plugin version %1$s requires PHP "
+"<strong>ComfinoPay Payment Gateway:</strong> Plugin version %1$s requires PHP "
 "%2$s or higher. You are running PHP %3$s. Please upgrade your PHP version or "
 "downgrade to %4$s (compatible with PHP 7.0+)."
 msgstr ""
-"<strong>Bramka płatności Comfino:</strong> Wtyczka w wersji %1$s wymaga PHP "
+"<strong>Bramka płatności ComfinoPay:</strong> Wtyczka w wersji %1$s wymaga PHP "
 "%2$s lub wyższej. Używasz PHP %3$s. Zaktualizuj wersję PHP lub zainstaluj "
 "%4$s (kompatybilną z PHP 7.0+)."
 
 #: views/admin/php-compatibility-notice.php:40
 msgid ""
-"<strong>Comfino Payment Gateway:</strong> The plugin has been automatically "
+"<strong>ComfinoPay Payment Gateway:</strong> The plugin has been automatically "
 "deactivated to prevent fatal errors. Please resolve the PHP version issue "
 "before reactivating."
 msgstr ""
-"<strong>Bramka płatności Comfino:</strong> Wtyczka została automatycznie "
+"<strong>Bramka płatności ComfinoPay:</strong> Wtyczka została automatycznie "
 "wyłączona, aby zapobiec błędom krytycznym. Rozwiąż problem z wersją PHP "
 "przed ponownym włączeniem."
 

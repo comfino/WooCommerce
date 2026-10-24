@@ -41,7 +41,7 @@ class PaymentGateway extends \WC_Payment_Gateway
     {
         $this->id = self::GATEWAY_ID;
         $this->has_fields = true;
-        $this->method_title = __('Comfino payments', 'comfino-payment-gateway');
+        $this->method_title = __('ComfinoPay payments', 'comfino-payment-gateway');
         $this->method_description = __(
             'ComfinoPay is an innovative payment method for customers of e-commerce stores! These are installment payments, deferred (buy now, pay later) and corporate payments available on one platform with the help of quick integration. Grow your business with ComfinoPay!',
             'comfino-payment-gateway'
@@ -51,7 +51,7 @@ class PaymentGateway extends \WC_Payment_Gateway
             'comfino-payment-gateway'
         );
         $this->supports = ['products'];
-        $this->title = 'Comfino';
+        $this->title = 'ComfinoPay';
 
         if (is_admin() && strpos(Main::getCurrentUrl(), $this->id) === false && strpos(Main::getCurrentUrl(), 'wc-orders') === false) {
             return;
@@ -361,13 +361,13 @@ class PaymentGateway extends \WC_Payment_Gateway
             'support_email_address' => SettingsForm::COMFINO_SUPPORT_EMAIL,
             'support_email_subject' => sprintf(
             /* translators: 1: WordPress version 2: WooCommerce version 3: ComfinoPay plugin version */
-                __('WordPress %1$s WooCommerce %2$s Comfino %3$s - question', 'comfino-payment-gateway'),
+                __('WordPress %1$s WooCommerce %2$s ComfinoPay %3$s - question', 'comfino-payment-gateway'),
                 $wp_version,
                 WC_VERSION,
                 self::VERSION
             ),
             'support_email_body' => sprintf(
-                'WordPress %1$s WooCommerce %2$s Comfino %3$s, PHP %s',
+                'WordPress %1$s WooCommerce %2$s ComfinoPay %3$s, PHP %s',
                 $wp_version,
                 WC_VERSION,
                 self::VERSION,
