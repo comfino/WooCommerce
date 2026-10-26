@@ -1,5 +1,5 @@
 === ComfinoPay Payment Gateway ===
-Contributors: comfino
+Contributors: comfinopay
 Donate link: https://comfino.pl/
 Tags: comfinopay, woocommerce, gateway, payment, bank
 WC tested up to: 10.7.0
