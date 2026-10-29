@@ -21,11 +21,11 @@ class ValidateOrder extends \Comfino\Api\Response\ValidateOrder
 
     /**
      * @param Request $request
-     * @param ResponseInterface $response
+     * @param ResponseInterface|null $response
      * @param SerializerInterface $serializer
      * @param \Throwable|null $exception
      */
-    public function __construct(Request $request, ResponseInterface $response, SerializerInterface $serializer, ?\Throwable $exception = null)
+    public function __construct(Request $request, ?ResponseInterface $response, SerializerInterface $serializer, ?\Throwable $exception = null)
     {
         parent::__construct($request, $response, $serializer, $exception);
 

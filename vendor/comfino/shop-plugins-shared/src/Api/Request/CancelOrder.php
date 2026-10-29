@@ -21,4 +21,12 @@ class CancelOrder extends Request
     {
         return null;
     }
+
+    /**
+     * @param int $statusCode
+     */
+    public function isIdempotentFailure($statusCode): bool
+    {
+        return $statusCode === 404 || $statusCode === 409;
+    }
 }

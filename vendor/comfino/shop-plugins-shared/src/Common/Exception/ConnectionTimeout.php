@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Comfino\Common\Exception;
 
 use Comfino\Api\HttpErrorExceptionInterface;
+use Comfino\Api\SensitiveDataRedactor;
 
 class ConnectionTimeout extends \RuntimeException implements HttpErrorExceptionInterface
 {
@@ -72,6 +73,11 @@ class ConnectionTimeout extends \RuntimeException implements HttpErrorExceptionI
     public function getRequestBody(): string
     {
         return $this->requestBody;
+    }
+
+    public function getRedactedRequestBody(): string
+    {
+        return SensitiveDataRedactor::redactPayload($this->requestBody);
     }
 
     /**

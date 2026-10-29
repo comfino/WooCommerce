@@ -15,6 +15,8 @@ class AccessDenied extends \RuntimeException implements HttpErrorExceptionInterf
     private $requestBody;
     
     private $responseBody;
+    
+    private $idempotentFailure = false;
 
     public function __construct(string $message = '', int $code = 0, ?\Throwable $previous = null, string $url = '', string $requestBody = '', string $responseBody = '')
     {
@@ -67,5 +69,21 @@ class AccessDenied extends \RuntimeException implements HttpErrorExceptionInterf
     public function getStatusCode(): int
     {
         return 403;
+    }
+
+    public function isIdempotentFailure(): bool
+    {
+        return $this->idempotentFailure;
+    }
+
+    /**
+     * @param bool $idempotentFailure
+     * @return static
+     */
+    public function setIdempotentFailure($idempotentFailure)
+    {
+        $this->idempotentFailure = $idempotentFailure;
+
+        return $this;
     }
 }

@@ -34,4 +34,9 @@ interface OrderInterface
     public function getTransferTitle(): ?string;
 
     public function getAllowedProductsConfig(): ?array;
+
+    /**
+     * @return string|null
+     */
+    public function getPromoCode(): ?string;
 }

@@ -2,7 +2,7 @@
 /**
  * Template for an inline payment error message in checkout.
  *
- * Outputs a plain escaped error message when Comfino payment processing fails
+ * Outputs a plain escaped error message when ComfinoPay payment processing fails
  * (e.g., cart creation error). Displayed inline in the payment fields area.
  *
  * @var string $error_message User-facing error message to display

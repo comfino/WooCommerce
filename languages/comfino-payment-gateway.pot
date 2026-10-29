@@ -2,21 +2,21 @@
 # This file is distributed under the GPLv3.
 msgid ""
 msgstr ""
-"Project-Id-Version: Comfino Payment Gateway 4.3.2\n"
+"Project-Id-Version: Comfino Payment Gateway 4.4.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/comfino-payment-gateway\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-28T07:31:27+00:00\n"
+"POT-Creation-Date: 2026-10-21T16:52:54+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.10.0\n"
 "X-Domain: comfino-payment-gateway\n"
 
 #. Plugin Name of the plugin
 #: comfino-payment-gateway.php
-msgid "Comfino Payment Gateway"
+msgid "ComfinoPay Payment Gateway"
 msgstr ""
 
 #. Plugin URI of the plugin
@@ -26,12 +26,12 @@ msgstr ""
 
 #. Description of the plugin
 #: comfino-payment-gateway.php
-msgid "Comfino Payment Gateway for WooCommerce."
+msgid "ComfinoPay Payment Gateway for WooCommerce."
 msgstr ""
 
 #. Author of the plugin
 #: comfino-payment-gateway.php
-msgid "Comfino"
+msgid "ComfinoPay"
 msgstr ""
 
 #. Author URI of the plugin
@@ -39,571 +39,603 @@ msgstr ""
 msgid "https://github.com/comfino"
 msgstr ""
 
-#: comfino-payment-gateway.php:270
-msgid "The Comfino plugin could not be network activated. Comfino does not support network activation - activate it individually on each site in the network that should offer Comfino payments."
+#: comfino-payment-gateway.php:271
+msgid "The ComfinoPay plugin could not be network activated. ComfinoPay does not support network activation - activate it individually on each site in the network that should offer ComfinoPay payments."
 msgstr ""
 
-#: comfino-payment-gateway.php:288
-msgid "Comfino requires OpenSSL >= 1.1.0 (SHA-3 support) for the V3 paywall."
+#: comfino-payment-gateway.php:289
+msgid "ComfinoPay requires OpenSSL >= 1.1.0 (SHA-3 support) for the V3 paywall."
 msgstr ""
 
-#: comfino-payment-gateway.php:348
-msgid "The Comfino plugin is network activated, which is not supported. Only the site it was activated from is fully configured; other sites in the network may be missing Comfino settings and database tables. Deactivate it for the network and activate it individually on each site that should offer Comfino payments."
+#: comfino-payment-gateway.php:349
+msgid "The ComfinoPay plugin is network activated, which is not supported. Only the site it was activated from is fully configured; other sites in the network may be missing ComfinoPay settings and database tables. Deactivate it for the network and activate it individually on each site that should offer ComfinoPay payments."
 msgstr ""
 
 #. translators: 1: Previous plugin version 2: Current plugin version
-#: comfino-payment-gateway.php:385
-msgid "Comfino plugin updated from version %1$s to %2$s."
-msgstr ""
-
-#: comfino-payment-gateway.php:398
-msgid "Plugin reset completed with some errors."
+#: comfino-payment-gateway.php:386
+msgid "ComfinoPay plugin updated from version %1$s to %2$s."
 msgstr ""
 
 #: comfino-payment-gateway.php:399
+msgid "Plugin reset completed with some errors."
+msgstr ""
+
+#: comfino-payment-gateway.php:400
 msgid "Plugin reset completed successfully."
 msgstr ""
 
 #. translators: 1: Number of configuration options repaired 2: Number of configuration options failed
-#: comfino-payment-gateway.php:402
+#: comfino-payment-gateway.php:403
 msgid "Configuration: %1$d repaired, %2$d failed"
 msgstr ""
 
-#: comfino-payment-gateway.php:417
+#: comfino-payment-gateway.php:418
 msgid "Error log cleared successfully."
 msgstr ""
 
-#: comfino-payment-gateway.php:428
+#: comfino-payment-gateway.php:429
 msgid "Debug log cleared successfully."
 msgstr ""
 
 #. translators: 1: Current version 2: Available version 3: GitHub releases URL
-#: comfino-payment-gateway.php:480
-msgid "<strong>Comfino Payment Gateway:</strong> A new version (%2$s) is available on GitHub. You are currently using version %1$s. Visit <a href=\"%3$s\" target=\"_blank\">GitHub Releases</a> for more information."
+#: comfino-payment-gateway.php:481
+msgid "<strong>ComfinoPay Payment Gateway:</strong> A new version (%2$s) is available on GitHub. You are currently using version %1$s. Visit <a href=\"%3$s\" target=\"_blank\">GitHub Releases</a> for more information."
 msgstr ""
 
-#: comfino-payment-gateway.php:570
+#: comfino-payment-gateway.php:571
 msgid "Invalid nonce."
 msgstr ""
 
-#: comfino-payment-gateway.php:576
+#: comfino-payment-gateway.php:577
 msgid "Insufficient permissions."
 msgstr ""
 
-#: comfino-payment-gateway.php:583
+#: comfino-payment-gateway.php:584
 msgid "Notice dismissed."
 msgstr ""
 
-#: src/Api/ApiClient.php:133
-#: src/View/FrontendManager.php:579
+#: src/Api/ApiClient.php:221
+#: src/View/FrontendManager.php:573
 msgid "There was a technical problem. Please try again in a moment and it should work!"
 msgstr ""
 
-#: src/Api/ApiClient.php:170
+#: src/Api/ApiClient.php:257
 msgid "We have a configuration problem. The store is already working on a solution!"
 msgstr ""
 
-#: src/Api/ApiClient.php:175
+#: src/Api/ApiClient.php:263
 msgid "It looks like we have an outage. We'll fix it as soon as possible!"
 msgstr ""
 
-#: src/Main.php:151
+#: src/Main.php:167
 msgid "Settings"
 msgstr ""
 
 #. translators: 1: Minimum required PHP version 2: Current PHP version
-#: src/Main.php:489
-msgid "The plugin could not be activated. The minimum PHP version required for Comfino is %1$s. You are running %2$s."
+#: src/Main.php:520
+msgid "The plugin could not be activated. The minimum PHP version required for ComfinoPay is %1$s. You are running %2$s."
 msgstr ""
 
 #. translators: 1: Minimum required PHP version 2: Current PHP version
-#: src/Main.php:495
-msgid "The Comfino plugin has been deactivated. The minimum PHP version required for Comfino is %1$s. You are running %2$s."
+#: src/Main.php:526
+msgid "The ComfinoPay plugin has been deactivated. The minimum PHP version required for ComfinoPay is %1$s. You are running %2$s."
 msgstr ""
 
-#: src/Main.php:503
+#: src/Main.php:534
 msgid "The plugin could not be activated. WooCommerce needs to be activated."
 msgstr ""
 
-#: src/Main.php:504
-msgid "The Comfino plugin has been deactivated. WooCommerce needs to be activated."
+#: src/Main.php:535
+msgid "The ComfinoPay plugin has been deactivated. WooCommerce needs to be activated."
 msgstr ""
 
 #. translators: 1: Minimum required WooCommerce version 2: Current WooCommerce version
-#: src/Main.php:511
-msgid "The plugin could not be activated. The minimum WooCommerce version required for Comfino is %1$s. You are running %2$s."
+#: src/Main.php:542
+msgid "The plugin could not be activated. The minimum WooCommerce version required for ComfinoPay is %1$s. You are running %2$s."
 msgstr ""
 
 #. translators: 1: Minimum required WooCommerce version 2: Current WooCommerce version
-#: src/Main.php:517
-msgid "The Comfino plugin has been deactivated. The minimum WooCommerce version required for Comfino is %1$s. You are running %2$s."
+#: src/Main.php:548
+msgid "The ComfinoPay plugin has been deactivated. The minimum WooCommerce version required for ComfinoPay is %1$s. You are running %2$s."
 msgstr ""
 
-#: src/Main.php:525
+#: src/Main.php:556
 msgid "The plugin could not be activated. It requires PHP cURL extension which is not installed. More details: https://www.php.net/manual/en/book.curl.php"
 msgstr ""
 
-#: src/Main.php:526
-msgid "The Comfino plugin has been deactivated. It requires PHP cURL extension which is not installed. More details: https://www.php.net/manual/en/book.curl.php"
+#: src/Main.php:557
+msgid "The ComfinoPay plugin has been deactivated. It requires PHP cURL extension which is not installed. More details: https://www.php.net/manual/en/book.curl.php"
 msgstr ""
 
-#: src/Order/ShopStatusManager.php:84
-msgid "Order cancellation sent to Comfino."
+#: src/Main.php:562
+msgid "The plugin could not be activated. It requires PHP mbstring extension which is not installed. More details: https://www.php.net/manual/en/book.mbstring.php"
 msgstr ""
 
-#: src/Order/ShopStatusManager.php:96
-msgid "Order reminder"
+#: src/Main.php:563
+msgid "The ComfinoPay plugin has been deactivated. It requires PHP mbstring extension which is not installed. More details: https://www.php.net/manual/en/book.mbstring.php"
 msgstr ""
 
-#: src/Order/StatusAdapter.php:122
+#: src/Order/OrderManager.php:675
 msgid "Comfino status"
 msgstr ""
 
-#: src/PaymentGateway.php:42
-msgid "Comfino payments"
+#: src/Order/OrderManager.php:676
+#: src/Order/StatusAdapter.php:122
+msgid "ComfinoPay status"
+msgstr ""
+
+#: src/Order/ShopStatusManager.php:124
+msgid "Order cancellation sent to ComfinoPay."
+msgstr ""
+
+#: src/Order/ShopStatusManager.php:128
+msgid "Order cancellation could not be sent to ComfinoPay."
+msgstr ""
+
+#: src/Order/ShopStatusManager.php:141
+msgid "Order reminder"
 msgstr ""
 
 #: src/PaymentGateway.php:43
-msgid "Comfino is an innovative payment method for customers of e-commerce stores! These are installment payments, deferred (buy now, pay later) and corporate payments available on one platform with the help of quick integration. Grow your business with Comfino!"
+msgid "ComfinoPay payments"
 msgstr ""
 
-#: src/PaymentGateway.php:47
-msgid "The wide range of Comfino installment payments means fast and safe shopping without burdening your budget here and now. Unexpected expenses, larger purchases, or maybe you just prefer to pay later? With Comfino you have a choice! 0% installments, Convenient Installments and deferred payments \"Buy now, pay later\". All so that you can enjoy shopping without worrying about your finances."
+#: src/PaymentGateway.php:44
+msgid "ComfinoPay is an innovative payment method for customers of e-commerce stores! These are installment payments, deferred (buy now, pay later) and corporate payments available on one platform with the help of quick integration. Grow your business with ComfinoPay!"
 msgstr ""
 
-#: src/PaymentGateway.php:181
+#: src/PaymentGateway.php:48
+msgid "The wide range of ComfinoPay installment payments means fast and safe shopping without burdening your budget here and now. Unexpected expenses, larger purchases, or maybe you just prefer to pay later? With ComfinoPay you have a choice! 0% installments, Convenient Installments and deferred payments \"Buy now, pay later\". All so that you can enjoy shopping without worrying about your finances."
+msgstr ""
+
+#: src/PaymentGateway.php:231
 msgid "Preselected financial offer data incomplete. Please try again."
 msgstr ""
 
-#: src/PaymentGateway.php:246
+#: src/PaymentGateway.php:301
 msgid "Invalid payment address received from the payment gateway. Please try again or choose another payment method."
 msgstr ""
 
-#: src/PaymentGateway.php:257
-msgid "Comfino create order"
+#: src/PaymentGateway.php:312
+msgid "ComfinoPay create order"
 msgstr ""
 
-#. translators: 1: WordPress version 2: WooCommerce version 3: Comfino plugin version
-#: src/PaymentGateway.php:316
-msgid "WordPress %1$s WooCommerce %2$s Comfino %3$s - question"
+#. translators: 1: WordPress version 2: WooCommerce version 3: ComfinoPay plugin version
+#: src/PaymentGateway.php:373
+msgid "WordPress %1$s WooCommerce %2$s ComfinoPay %3$s - question"
 msgstr ""
 
-#: src/PaymentGateway.php:328
+#: src/PaymentGateway.php:385
 msgid "Do you want to ask about something? Write to us at"
 msgstr ""
 
-#. translators: s%: Comfino support telephone
-#: src/PaymentGateway.php:331
+#. translators: s%: ComfinoPay support telephone
+#: src/PaymentGateway.php:388
 msgid "or contact us by phone. We are waiting on the number: %s. We will answer all your questions!"
 msgstr ""
 
 #. translators: 1: Available plugin version 2: Current plugin version
-#: src/PaymentGateway.php:357
-msgid "New Comfino %1$s plugin version is available. You are using %2$s version. Please update your Comfino plugin."
+#: src/PaymentGateway.php:414
+msgid "New ComfinoPay %1$s plugin version is available. You are using %2$s version. Please update your ComfinoPay plugin."
 msgstr ""
 
-#: src/PaymentGateway.php:668
+#: src/PaymentGateway.php:732
 msgid "Invalid customer e-mail address. Please check your account contact data."
 msgstr ""
 
-#: src/PaymentGateway.php:675
+#: src/PaymentGateway.php:739
 msgid "Phone number is required. Please add a phone number to your billing or delivery address."
 msgstr ""
 
-#: src/PaymentGateway.php:683
+#: src/PaymentGateway.php:747
 msgid "First name is required."
 msgstr ""
 
-#: src/PaymentGateway.php:687
+#: src/PaymentGateway.php:751
 msgid "Last name is required."
 msgstr ""
 
-#: src/PaymentGateway.php:694
+#: src/PaymentGateway.php:758
 msgid "Cart is empty. Please add products to your cart."
 msgstr ""
 
-#: src/PaymentGateway.php:699
+#: src/PaymentGateway.php:763
 msgid "Cart total amount must be greater than zero."
 msgstr ""
 
-#: src/PaymentGateway.php:704
-msgid "Comfino payment is not available for this cart. Please check cart amount and product types."
-msgstr ""
-
-#. translators: s%: Validated form field name
-#: src/View/SettingsForm.php:52
-msgid "Field '%s' can not be empty."
+#: src/PaymentGateway.php:768
+msgid "ComfinoPay payment is not available for this cart. Please check cart amount and product types."
 msgstr ""
 
 #. translators: s%: Validated form field name
 #: src/View/SettingsForm.php:54
+msgid "Field '%s' can not be empty."
+msgstr ""
+
+#. translators: s%: Validated form field name
+#: src/View/SettingsForm.php:56
 msgid "Field '%s' has wrong numeric format."
 msgstr ""
 
-#: src/View/SettingsForm.php:66
-#: src/View/SettingsForm.php:676
+#: src/View/SettingsForm.php:68
+#: src/View/SettingsForm.php:710
 msgid "Production environment API key"
 msgstr ""
 
-#: src/View/SettingsForm.php:76
 #: src/View/SettingsForm.php:78
-#: src/View/SettingsForm.php:711
+#: src/View/SettingsForm.php:80
+#: src/View/SettingsForm.php:744
 msgid "Minimal amount in cart"
 msgstr ""
 
 #. translators: %s: Unknown product type code submitted in cart value limits form
-#: src/View/SettingsForm.php:90
+#: src/View/SettingsForm.php:92
 msgid "Unknown product type \"%s\" in cart value limits — entry skipped."
 msgstr ""
 
 #. translators: %s: Product type code
-#: src/View/SettingsForm.php:104
+#: src/View/SettingsForm.php:106
 msgid "Cart value limits for \"%s\": min cart value must not exceed max cart value."
 msgstr ""
 
 #. translators: s%: Custom CSS URL
-#: src/View/SettingsForm.php:124
-#: src/View/SettingsForm.php:320
+#: src/View/SettingsForm.php:126
+#: src/View/SettingsForm.php:325
 msgid "Custom CSS URL \"%s\" is not valid."
 msgstr ""
 
 #. translators: s%: Custom CSS URL
-#: src/View/SettingsForm.php:127
-#: src/View/SettingsForm.php:323
+#: src/View/SettingsForm.php:129
+#: src/View/SettingsForm.php:328
 msgid "Custom CSS URL \"%s\" is not absolute."
 msgstr ""
 
 #. translators: 1: Custom CSS URL 2: Shop domain
-#: src/View/SettingsForm.php:131
-#: src/View/SettingsForm.php:327
+#: src/View/SettingsForm.php:133
+#: src/View/SettingsForm.php:332
 msgid "Custom CSS URL \"%1$s\" is not in shop domain \"%2$s\"."
 msgstr ""
 
-#. translators: s%: Comfino API key
-#: src/View/SettingsForm.php:181
-#: src/View/SettingsForm.php:358
-msgid "API key %s is not valid."
-msgstr ""
-
 #. translators: %s: Unknown product type code submitted in term-limits form
-#: src/View/SettingsForm.php:257
+#: src/View/SettingsForm.php:262
 msgid "Unknown product type \"%s\" in term limits — entry skipped."
 msgstr ""
 
 #. translators: %s: Product type code
-#: src/View/SettingsForm.php:280
+#: src/View/SettingsForm.php:285
 msgid "Term limits for \"%s\": minTerm must not exceed maxTerm."
 msgstr ""
 
-#: src/View/SettingsForm.php:307
-#: src/View/SettingsForm.php:893
+#: src/View/SettingsForm.php:312
+#: src/View/SettingsForm.php:938
 msgid "Price change detection - container hierarchy level"
 msgstr ""
 
-#: src/View/SettingsForm.php:506
-#: src/View/SettingsForm.php:804
+#: src/View/SettingsForm.php:514
+#: src/View/SettingsForm.php:849
 msgid "Product categories"
 msgstr ""
 
-#: src/View/SettingsForm.php:509
+#: src/View/SettingsForm.php:517
 msgid "Restrict the availability of each financial product type by product category. For each financial product listed below, select the categories whose products should be eligible for that payment option. If a customer's cart contains only products from unselected categories, that financial product will not be offered at checkout."
 msgstr ""
 
-#: src/View/SettingsForm.php:517
+#: src/View/SettingsForm.php:525
 msgid "Filter by product ID"
 msgstr ""
 
-#: src/View/SettingsForm.php:519
-msgid "Enter product IDs (separated by commas) for which Comfino payment options should not be offered. If the cart contains any of the listed products, all Comfino financial products will be hidden at checkout."
+#: src/View/SettingsForm.php:527
+msgid "Enter product IDs (separated by commas) for which ComfinoPay payment options should not be offered. If the cart contains any of the listed products, all ComfinoPay financial products will be hidden at checkout."
 msgstr ""
 
-#: src/View/SettingsForm.php:539
-#: src/View/SettingsForm.php:800
+#: src/View/SettingsForm.php:547
+#: src/View/SettingsForm.php:845
 msgid "Installment term limits"
 msgstr ""
 
-#: src/View/SettingsForm.php:669
-#: src/View/SettingsForm.php:930
+#. translators: s%: ComfinoPay API key
+#: src/View/SettingsForm.php:688
+msgid "API key %s is not valid."
+msgstr ""
+
+#: src/View/SettingsForm.php:693
+msgid "The API key could not be verified because the ComfinoPay API could not be reached. Please check the connection and try again."
+msgstr ""
+
+#: src/View/SettingsForm.php:703
+#: src/View/SettingsForm.php:975
 msgid "Enable/Disable"
 msgstr ""
 
-#: src/View/SettingsForm.php:671
-msgid "Enable Comfino payment module"
+#: src/View/SettingsForm.php:705
+msgid "Enable ComfinoPay payment module"
 msgstr ""
 
-#: src/View/SettingsForm.php:673
-msgid "Shows Comfino payment option at the payment list."
+#: src/View/SettingsForm.php:707
+msgid "Shows ComfinoPay payment option at the payment list."
 msgstr ""
 
-#: src/View/SettingsForm.php:678
+#: src/View/SettingsForm.php:712
 msgid "Please enter the key provided during registration"
 msgstr ""
 
-#: src/View/SettingsForm.php:681
+#: src/View/SettingsForm.php:715
 msgid "Custom payment label"
 msgstr ""
 
-#: src/View/SettingsForm.php:683
+#: src/View/SettingsForm.php:717
 msgid "Use custom payment label text"
 msgstr ""
 
-#: src/View/SettingsForm.php:685
+#: src/View/SettingsForm.php:719
 msgid "When disabled, the text below is ignored and the checkout item label is built from the financial product types selected below instead."
 msgstr ""
 
-#: src/View/SettingsForm.php:691
+#: src/View/SettingsForm.php:725
 msgid "Payment text"
 msgstr ""
 
-#: src/View/SettingsForm.php:695
-msgid "Label displayed for Comfino in the checkout payment method list."
-msgstr ""
-
-#: src/View/SettingsForm.php:698
-msgid "Payment label product types"
-msgstr ""
-
-#: src/View/SettingsForm.php:705
-msgid "Used only when the custom payment label above is disabled. Select up to two financial product types to show their names in the checkout payment method label."
-msgstr ""
-
-#: src/View/SettingsForm.php:714
-msgid "Applied to all financial product types unless overridden below."
-msgstr ""
-
-#: src/View/SettingsForm.php:720
-msgid "Cart value limits per financial product type"
-msgstr ""
-
-#: src/View/SettingsForm.php:722
-msgid "Leave fields empty to apply no restriction for that product type. These limits apply on top of the global minimal cart amount above: min/max cart value further narrows the availability of each financial product."
-msgstr ""
-
-#: src/View/SettingsForm.php:728
-msgid "Order number"
-msgstr ""
-
-#: src/View/SettingsForm.php:730
-msgid "Use order reference as external ID"
+#: src/View/SettingsForm.php:729
+msgid "Label displayed for ComfinoPay in the checkout payment method list."
 msgstr ""
 
 #: src/View/SettingsForm.php:732
-msgid "Use customer-visible order reference instead of numeric order ID for Comfino API integration. New orders only."
+msgid "Payment label product types"
 msgstr ""
 
 #: src/View/SettingsForm.php:738
-msgid "Paywall settings"
+msgid "Used only when the custom payment label above is disabled. Select up to two financial product types to show their names in the checkout payment method label."
 msgstr ""
 
-#: src/View/SettingsForm.php:742
-msgid "Direct redirect mode"
+#: src/View/SettingsForm.php:747
+msgid "Applied to all financial product types unless overridden below."
 msgstr ""
 
-#: src/View/SettingsForm.php:744
-msgid "Enable direct redirect to Comfino payment gateway"
-msgstr ""
-
-#: src/View/SettingsForm.php:746
-msgid "When enabled, the full paywall offer browser is not displayed. The order is submitted with the default financial product and the customer is redirected directly to the Comfino payment gateway."
-msgstr ""
-
-#: src/View/SettingsForm.php:752
-msgid "Custom paywall CSS style"
+#: src/View/SettingsForm.php:753
+msgid "Cart value limits per financial product type"
 msgstr ""
 
 #: src/View/SettingsForm.php:755
-msgid "URL for a custom CSS file injected into the paywall iframe. Only links from your store domain are allowed."
+msgid "Leave fields empty to apply no restriction for that product type. These limits apply on top of the global minimal cart amount above: min/max cart value further narrows the availability of each financial product."
 msgstr ""
 
 #: src/View/SettingsForm.php:761
-msgid "Test environment"
+msgid "Order number"
 msgstr ""
 
 #: src/View/SettingsForm.php:763
-msgid "Use test environment"
+msgid "Use order reference as external ID"
 msgstr ""
 
 #: src/View/SettingsForm.php:765
-msgid "The test environment allows the store owner to get acquainted with the functionality of the Comfino module. This is a Comfino simulator, thanks to which you can get to know all the advantages of this payment method. The use of the test mode is free (there are also no charges for orders)."
+msgid "Use customer-visible order reference instead of numeric order ID for ComfinoPay API integration. New orders only."
 msgstr ""
 
 #: src/View/SettingsForm.php:771
+msgid "Paywall settings"
+msgstr ""
+
+#: src/View/SettingsForm.php:775
+msgid "Direct redirect mode"
+msgstr ""
+
+#: src/View/SettingsForm.php:777
+msgid "Enable direct redirect to ComfinoPay payment gateway"
+msgstr ""
+
+#: src/View/SettingsForm.php:779
+msgid "When enabled, the full paywall offer browser is not displayed. The order is submitted with the default financial product and the customer is redirected directly to the ComfinoPay payment gateway."
+msgstr ""
+
+#: src/View/SettingsForm.php:787
+msgid "Paywall statistics"
+msgstr ""
+
+#: src/View/SettingsForm.php:789
+msgid "Allow collecting ComfinoPay plugin view statistics"
+msgstr ""
+
+#: src/View/SettingsForm.php:791
+msgid "When enabled, the ComfinoPay product widget and the paywall in the checkout report their views and shopper interactions (e.g. offer and installment changes) to ComfinoPay. These statistics help optimize the widget and the paywall and thus increase sales. Linking product page visits with the checkout additionally requires the shopper's consent to analytics cookies in your shop."
+msgstr ""
+
+#: src/View/SettingsForm.php:797
+msgid "Custom paywall CSS style"
+msgstr ""
+
+#: src/View/SettingsForm.php:800
+msgid "URL for a custom CSS file injected into the paywall iframe. Only links from your store domain are allowed."
+msgstr ""
+
+#: src/View/SettingsForm.php:806
+msgid "Test environment"
+msgstr ""
+
+#: src/View/SettingsForm.php:808
+msgid "Use test environment"
+msgstr ""
+
+#: src/View/SettingsForm.php:810
+msgid "The test environment allows the store owner to get acquainted with the functionality of the ComfinoPay module. This is a ComfinoPay simulator, thanks to which you can get to know all the advantages of this payment method. The use of the test mode is free (there are also no charges for orders)."
+msgstr ""
+
+#: src/View/SettingsForm.php:816
 msgid "Test environment API key"
 msgstr ""
 
-#: src/View/SettingsForm.php:773
+#: src/View/SettingsForm.php:818
 msgid "Ask the supervisor for access to the test environment (key, login, password, link). Remember, the test key is different from the production key."
 msgstr ""
 
-#: src/View/SettingsForm.php:776
+#: src/View/SettingsForm.php:821
 msgid "Debug mode"
 msgstr ""
 
-#: src/View/SettingsForm.php:778
+#: src/View/SettingsForm.php:823
 msgid "Enable debug mode"
 msgstr ""
 
-#: src/View/SettingsForm.php:780
-msgid "Debug mode is useful in case of problems with Comfino payment availability. In this mode module logs details of internal process responsible for displaying of Comfino payment option at the payment methods list."
+#: src/View/SettingsForm.php:825
+msgid "Debug mode is useful in case of problems with ComfinoPay payment availability. In this mode module logs details of internal process responsible for displaying of ComfinoPay payment option at the payment methods list."
 msgstr ""
 
-#: src/View/SettingsForm.php:786
+#: src/View/SettingsForm.php:831
 msgid "Service mode"
 msgstr ""
 
-#: src/View/SettingsForm.php:788
+#: src/View/SettingsForm.php:833
 msgid "Enable service mode"
 msgstr ""
 
-#: src/View/SettingsForm.php:790
-msgid "Service mode is useful in testing Comfino payment gateway without sharing it with customers. In this mode Comfino payment method is visible only for selected sessions and debug logs are collected only for these sessions."
+#: src/View/SettingsForm.php:835
+msgid "Service mode is useful in testing ComfinoPay payment gateway without sharing it with customers. In this mode ComfinoPay payment method is visible only for selected sessions and debug logs are collected only for these sessions."
 msgstr ""
 
-#: src/View/SettingsForm.php:796
+#: src/View/SettingsForm.php:841
 msgid "Rules for the availability of financial products"
 msgstr ""
 
-#: src/View/SettingsForm.php:809
+#: src/View/SettingsForm.php:854
 msgid "Basic settings"
 msgstr ""
 
-#: src/View/SettingsForm.php:813
+#: src/View/SettingsForm.php:858
 msgid "Widget enable"
 msgstr ""
 
-#: src/View/SettingsForm.php:815
-msgid "Enable Comfino widget"
+#: src/View/SettingsForm.php:860
+msgid "Enable ComfinoPay widget"
 msgstr ""
 
-#: src/View/SettingsForm.php:817
-msgid "Show Comfino widget in the product."
-msgstr ""
-
-#: src/View/SettingsForm.php:820
-msgid "Widget key"
-msgstr ""
-
-#: src/View/SettingsForm.php:824
-msgid "Widget type"
-msgstr ""
-
-#: src/View/SettingsForm.php:829
-msgid "Offer types"
-msgstr ""
-
-#: src/View/SettingsForm.php:833
-msgid "Other payment methods (Installments 0%, Buy now, pay later, Installments for companies, Leasing) available after consulting a Comfino advisor (kontakt@comfino.pl)."
-msgstr ""
-
-#: src/View/SettingsForm.php:836
-msgid "Show logos"
-msgstr ""
-
-#: src/View/SettingsForm.php:838
-msgid "Show logos of financial services providers"
-msgstr ""
-
-#: src/View/SettingsForm.php:842
-msgid "Disable banner"
-msgstr ""
-
-#: src/View/SettingsForm.php:844
-msgid "Disable standard widget banner (standalone calculator)"
-msgstr ""
-
-#: src/View/SettingsForm.php:846
-msgid "Do not embed the installment banner on the product page. The Comfino calculator window can still be opened from your own button/link using the trigger element selector below."
-msgstr ""
-
-#: src/View/SettingsForm.php:849
-msgid "Calculator trigger element selector"
-msgstr ""
-
-#: src/View/SettingsForm.php:852
-msgid "Selector of the element (e.g. a button or link) whose click opens the Comfino calculator window when the banner is disabled. Leave empty to open it yourself via window.comfinoWidget.open() or the comfino:widget:ready event."
-msgstr ""
-
-#: src/View/SettingsForm.php:861
-msgid "Advanced settings"
+#: src/View/SettingsForm.php:862
+msgid "Show ComfinoPay widget in the product."
 msgstr ""
 
 #: src/View/SettingsForm.php:865
-msgid "Widget price element selector"
+msgid "Widget key"
 msgstr ""
 
-#: src/View/SettingsForm.php:870
-msgid "Widget price element attribute"
+#: src/View/SettingsForm.php:869
+msgid "Widget type"
 msgstr ""
 
-#: src/View/SettingsForm.php:873
-msgid "Attribute of the price element holding the numeric price value. When set, the widget reads the price from this attribute instead of parsing the element text, which avoids a race with asynchronous price rendering. Leave empty to parse text (WooCommerce core exposes no such attribute by default)."
+#: src/View/SettingsForm.php:874
+msgid "Offer types"
 msgstr ""
 
-#: src/View/SettingsForm.php:879
-msgid "Widget anchor element selector"
+#: src/View/SettingsForm.php:878
+msgid "Other payment methods (Installments 0%, Buy now, pay later, Installments for companies, Leasing) available after consulting a ComfinoPay advisor (kontakt@comfino.pl)."
 msgstr ""
 
-#: src/View/SettingsForm.php:884
-msgid "Price change detection - container selector"
+#: src/View/SettingsForm.php:881
+msgid "Show logos"
+msgstr ""
+
+#: src/View/SettingsForm.php:883
+msgid "Show logos of financial services providers"
 msgstr ""
 
 #: src/View/SettingsForm.php:887
-msgid "Selector of observed parent element which contains price element."
+msgid "Disable banner"
 msgstr ""
 
-#: src/View/SettingsForm.php:896
-msgid "Hierarchy level of observed parent element relative to the price element."
+#: src/View/SettingsForm.php:889
+msgid "Disable standard widget banner (standalone calculator)"
 msgstr ""
 
-#: src/View/SettingsForm.php:902
-msgid "Embedding method"
+#: src/View/SettingsForm.php:891
+msgid "Do not embed the installment banner on the product page. The ComfinoPay calculator window can still be opened from your own button/link using the trigger element selector below."
 msgstr ""
 
-#: src/View/SettingsForm.php:912
-msgid "Custom banner CSS style"
+#: src/View/SettingsForm.php:894
+msgid "Calculator trigger element selector"
+msgstr ""
+
+#: src/View/SettingsForm.php:897
+msgid "Selector of the element (e.g. a button or link) whose click opens the ComfinoPay calculator window when the banner is disabled. Leave empty to open it yourself via window.comfinoWidget.open() or the comfino:widget:ready event."
+msgstr ""
+
+#: src/View/SettingsForm.php:906
+msgid "Advanced settings"
+msgstr ""
+
+#: src/View/SettingsForm.php:910
+msgid "Widget price element selector"
 msgstr ""
 
 #: src/View/SettingsForm.php:915
-msgid "URL for the custom banner style. Only links from your store domain are allowed."
+msgid "Widget price element attribute"
 msgstr ""
 
-#: src/View/SettingsForm.php:921
-msgid "Custom calculator CSS style"
+#: src/View/SettingsForm.php:918
+msgid "Attribute of the price element holding the numeric price value. When set, the widget reads the price from this attribute instead of parsing the element text, which avoids a race with asynchronous price rendering. Leave empty to parse text (WooCommerce core exposes no such attribute by default)."
 msgstr ""
 
 #: src/View/SettingsForm.php:924
-msgid "URL for the custom calculator style. Only links from your store domain are allowed."
+msgid "Widget anchor element selector"
+msgstr ""
+
+#: src/View/SettingsForm.php:929
+msgid "Price change detection - container selector"
 msgstr ""
 
 #: src/View/SettingsForm.php:932
-msgid "By enabling \"Saving shopping cart\", you agree and accept <a target=\"_blank\" href=\"https://cdn.comfino.pl/regulamin/Regulamin-Ratowanie-Koszyka.pdf\">Regulations</a>"
-msgstr ""
-
-#: src/View/SettingsForm.php:934
-msgid "With the \"Cart Rescue\" feature, you will effectively minimize the problem of abandoned carts that all sellers face. When a customer adds products to the cart but abandons it, also due to an unsuccessful payment, they will automatically receive a reminder e-mail with a direct link leading to payment. This service allows you to effectively recover potential transactions and increase order conversions."
-msgstr ""
-
-#: src/View/SettingsForm.php:937
-msgid "View in payment list"
-msgstr ""
-
-#: src/View/SettingsForm.php:940
-msgid "Only Comfino"
+msgid "Selector of observed parent element which contains price element."
 msgstr ""
 
 #: src/View/SettingsForm.php:941
+msgid "Hierarchy level of observed parent element relative to the price element."
+msgstr ""
+
+#: src/View/SettingsForm.php:947
+msgid "Embedding method"
+msgstr ""
+
+#: src/View/SettingsForm.php:957
+msgid "Custom banner CSS style"
+msgstr ""
+
+#: src/View/SettingsForm.php:960
+msgid "URL for the custom banner style. Only links from your store domain are allowed."
+msgstr ""
+
+#: src/View/SettingsForm.php:966
+msgid "Custom calculator CSS style"
+msgstr ""
+
+#: src/View/SettingsForm.php:969
+msgid "URL for the custom calculator style. Only links from your store domain are allowed."
+msgstr ""
+
+#: src/View/SettingsForm.php:977
+msgid "By enabling \"Saving shopping cart\", you agree and accept <a target=\"_blank\" href=\"https://cdn.comfino.pl/regulamin/Regulamin-Ratowanie-Koszyka.pdf\">Regulations</a>"
+msgstr ""
+
+#: src/View/SettingsForm.php:979
+msgid "With the \"Cart Rescue\" feature, you will effectively minimize the problem of abandoned carts that all sellers face. When a customer adds products to the cart but abandons it, also due to an unsuccessful payment, they will automatically receive a reminder e-mail with a direct link leading to payment. This service allows you to effectively recover potential transactions and increase order conversions."
+msgstr ""
+
+#: src/View/SettingsForm.php:982
+msgid "View in payment list"
+msgstr ""
+
+#: src/View/SettingsForm.php:985
+msgid "Only ComfinoPay"
+msgstr ""
+
+#: src/View/SettingsForm.php:986
 msgid "All payments"
 msgstr ""
 
-#: src/View/SettingsForm.php:948
+#: src/View/SettingsForm.php:993
 msgid "Environment variables"
 msgstr ""
 
-#: src/View/SettingsForm.php:950
+#: src/View/SettingsForm.php:995
 msgid "Use development environment variables"
 msgstr ""
 
-#: src/View/SettingsForm.php:952
+#: src/View/SettingsForm.php:997
 msgid "Use of development environment variables with custom hosts which overwrite hosts stored in the plugin."
 msgstr ""
 
@@ -632,7 +664,7 @@ msgid "Plugin diagnostics"
 msgstr ""
 
 #: views/admin/debug-mode-notice.php:18
-msgid "Comfino Debug Mode Active"
+msgid "ComfinoPay Debug Mode Active"
 msgstr ""
 
 #: views/admin/debug-mode-notice.php:19
@@ -646,11 +678,11 @@ msgstr ""
 
 #. translators: 1: Plugin version 2: Required PHP version 3: Current PHP version 4: Link to compatible version
 #: views/admin/php-compatibility-notice.php:24
-msgid "<strong>Comfino Payment Gateway:</strong> Plugin version %1$s requires PHP %2$s or higher. You are running PHP %3$s. Please upgrade your PHP version or downgrade to %4$s (compatible with PHP 7.0+)."
+msgid "<strong>ComfinoPay Payment Gateway:</strong> Plugin version %1$s requires PHP %2$s or higher. You are running PHP %3$s. Please upgrade your PHP version or downgrade to %4$s (compatible with PHP 7.0+)."
 msgstr ""
 
 #: views/admin/php-compatibility-notice.php:40
-msgid "<strong>Comfino Payment Gateway:</strong> The plugin has been automatically deactivated to prevent fatal errors. Please resolve the PHP version issue before reactivating."
+msgid "<strong>ComfinoPay Payment Gateway:</strong> The plugin has been automatically deactivated to prevent fatal errors. Please resolve the PHP version issue before reactivating."
 msgstr ""
 
 #: views/admin/_configure/allowed-products-config.php:20

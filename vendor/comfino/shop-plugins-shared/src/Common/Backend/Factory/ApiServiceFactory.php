@@ -20,7 +20,8 @@ final class ApiServiceFactory
         string $platformName,
         string $platformVersion,
         string $pluginVersion,
-        array $apiKeys
+        array $apiKeys,
+        string $scope = ''
     ): RestEndpointManager {
         return RestEndpointManager::getInstance(
             $platformName,
@@ -31,7 +32,8 @@ final class ApiServiceFactory
             new StreamFactory(),
             new UriFactory(),
             new ResponseFactory(),
-            new JsonSerializer()
+            new JsonSerializer(),
+            $scope
         );
     }
 }

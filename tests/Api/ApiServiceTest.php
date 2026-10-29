@@ -218,4 +218,28 @@ class ApiServiceTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals('', ApiService::getEndpointPath('unknown_endpoint_xyz'));
     }
+
+    public function testRequestLogHeadersReduceSignatureToFingerprint(): void
+    {
+        $method = new \ReflectionMethod(ApiService::class, 'getLoggableHeaders');
+        $method->setAccessible(true);
+
+        $signature = str_repeat('ab', 32);
+        $headers = $method->invoke(null, ['cr_signature' => [$signature], 'content_type' => ['application/json']]);
+
+        $this->assertSame('fingerprint:' . substr(hash('sha256', $signature), 0, 12), $headers['cr_signature'][0]);
+        $this->assertNotContains($signature, wp_json_encode($headers));
+        $this->assertSame(['application/json'], $headers['content_type']);
+    }
+
+    public function testLogBodyIsStructuredOrLengthOnly(): void
+    {
+        $method = new \ReflectionMethod(ApiService::class, 'getLoggableBody');
+        $method->setAccessible(true);
+
+        // JSON becomes structured context, so the log processor redacts sensitive keys.
+        $this->assertSame(['email' => 'a@b.pl'], $method->invoke(null, '{"email":"a@b.pl"}'));
+        $this->assertSame('[non-JSON body, 9 bytes]', $method->invoke(null, 'plain=raw'));
+        $this->assertSame('', $method->invoke(null, ''));
+    }
 }

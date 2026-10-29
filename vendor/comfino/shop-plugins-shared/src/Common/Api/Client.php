@@ -64,14 +64,11 @@ class Client extends \Comfino\Extended\Api\Client
         $this->transferTimeout = $transferTimeout;
         $this->connectionMaxNumAttempts = $connectionMaxNumAttempts;
         $this->options = $options;
-        
-        if ($this->connectionTimeout >= $this->transferTimeout) {
-            $this->transferTimeout = 3 * $this->connectionTimeout;
-        }
-
-        if ($this->connectionMaxNumAttempts === 0) {
-            $this->connectionMaxNumAttempts = self::DEFAULT_MAX_ATTEMPTS;
-        }
+        [$this->connectionTimeout, $this->transferTimeout, $this->connectionMaxNumAttempts] = self::normalizeTransport(
+            $this->connectionTimeout,
+            $this->transferTimeout,
+            $this->connectionMaxNumAttempts
+        );
 
         self::$responseFactory = new ResponseFactory();
 
@@ -110,22 +107,26 @@ class Client extends \Comfino\Extended\Api\Client
      */
     public function resetClient($connectionTimeout, $transferTimeout, $connectionMaxNumAttempts, $options = []): void
     {
-        $this->connectionMaxNumAttempts = $connectionMaxNumAttempts;
+        [$connectionTimeout, $transferTimeout, $connectionMaxNumAttempts] = self::normalizeTransport(
+            $connectionTimeout,
+            $transferTimeout,
+            $connectionMaxNumAttempts
+        );
 
-        sort($this->options);
-        sort($options);
+        $currentOptions = $this->options;
+        $newOptions = $options;
 
-        if ($this->connectionTimeout === $connectionTimeout && $this->transferTimeout === $transferTimeout && $this->options === $options) {
+        ksort($currentOptions);
+        ksort($newOptions);
+
+        if ($this->connectionTimeout === $connectionTimeout && $this->transferTimeout === $transferTimeout && $currentOptions === $newOptions) {
             return;
         }
 
         $this->connectionTimeout = $connectionTimeout;
         $this->transferTimeout = $transferTimeout;
+        $this->connectionMaxNumAttempts = $connectionMaxNumAttempts;
         $this->options = $options;
-
-        if ($this->connectionTimeout >= $this->transferTimeout) {
-            $this->transferTimeout = 3 * $this->connectionTimeout;
-        }
 
         $this->client = $this->createClient($connectionTimeout, $transferTimeout, $options);
     }
@@ -221,15 +222,36 @@ class Client extends \Comfino\Extended\Api\Client
      */
     protected function createClient($connectionTimeout, $transferTimeout, $options = []): \ComfinoExternal\Sunrise\Http\Client\Curl\Client
     {
-        $clientOptions = [
+        $defaults = [
             CURLOPT_CONNECTTIMEOUT => $connectionTimeout,
-            CURLOPT_TIMEOUT => $transferTimeout
+            CURLOPT_TIMEOUT => $transferTimeout,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
+            CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTPS,
         ];
 
-        foreach ($options as $optionKey => $optionValue) {
-            $clientOptions[$optionKey] = $optionValue;
+        return new \ComfinoExternal\Sunrise\Http\Client\Curl\Client(self::$responseFactory, array_replace($defaults, $options));
+    }
+
+    /**
+     * @return array{int,
+     */
+    private static function normalizeTransport(int $connectionTimeout, int $transferTimeout, int $connectionMaxNumAttempts): array
+    {
+        $connectionTimeout = max(1, min($connectionTimeout, self::MAX_CONNECTION_TIMEOUT));
+        $transferTimeout = max(1, min($transferTimeout, self::MAX_TRANSFER_TIMEOUT));
+
+        if ($connectionTimeout >= $transferTimeout) {
+            $transferTimeout = min(3 * $connectionTimeout, self::MAX_TRANSFER_TIMEOUT);
         }
 
-        return new \ComfinoExternal\Sunrise\Http\Client\Curl\Client(self::$responseFactory, $clientOptions);
+        if ($connectionMaxNumAttempts < 1) {
+            $connectionMaxNumAttempts = self::DEFAULT_MAX_ATTEMPTS;
+        }
+
+        $connectionMaxNumAttempts = min($connectionMaxNumAttempts, 5);
+
+        return [$connectionTimeout, $transferTimeout, $connectionMaxNumAttempts];
     }
 }

@@ -43,10 +43,10 @@ final class FrontendHelper
 
     public static function getLogoAuthKey(string $platformCode, string $platformVersion, string $pluginVersion, int $buildTimestamp): string
     {
-        $packedPlatformVersion = pack('c*', ...array_map('intval', explode('.', $platformVersion)));
-        $packedPluginVersion = pack('c*', ...array_map('intval', explode('.', $pluginVersion)));
-        $platformVersionLength = pack('c', strlen($packedPlatformVersion));
-        $pluginVersionLength = pack('c', strlen($packedPluginVersion));
+        $packedPlatformVersion = self::packVersion($platformVersion);
+        $packedPluginVersion = self::packVersion($pluginVersion);
+        $platformVersionLength = pack('C', strlen($packedPlatformVersion));
+        $pluginVersionLength = pack('C', strlen($packedPluginVersion));
         $packedBuildTimestamp = pack('J', $buildTimestamp); 
 
         $authKeyParts = [
@@ -59,6 +59,26 @@ final class FrontendHelper
         ];
 
         return implode($authKeyParts);
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    private static function packVersion(string $version): string
+    {
+        $parts = array_map('intval', explode('.', $version));
+
+        if (count($parts) > 16) {
+            throw new \InvalidArgumentException("Version \"$version\" has more than 16 parts.");
+        }
+
+        foreach ($parts as $part) {
+            if ($part < 0 || $part > 255) {
+                throw new \InvalidArgumentException("Version \"$version\" has a part out of the 0-255 range.");
+            }
+        }
+
+        return pack('C*', ...$parts);
     }
 
     public static function renderAdminLogo(

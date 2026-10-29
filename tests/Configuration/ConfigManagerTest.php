@@ -36,9 +36,9 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
         $cmProp->setAccessible(true);
         $cmProp->setValue(null, null);
 
-        $baseProp = new \ReflectionProperty(ConfigurationManager::class, 'instance');
+        $baseProp = new \ReflectionProperty(ConfigurationManager::class, 'instances');
         $baseProp->setAccessible(true);
-        $baseProp->setValue(null, null);
+        $baseProp->setValue(null, []);
 
         parent::tearDown();
     }
@@ -83,6 +83,20 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
         $defaults = ConfigManager::getDefaultConfigurationValues();
         $this->assertArrayHasKey('COMFINO_ALLOWED_PRODUCTS_CONFIG', $defaults);
         $this->assertNull($defaults['COMFINO_ALLOWED_PRODUCTS_CONFIG']);
+    }
+
+    public function testPaywallTrackingConsentIsOptInBoolOption(): void
+    {
+        $this->assertEquals('paywall_tracking_consent', ConfigManager::CONFIG_OPTIONS_MAP['COMFINO_PAYWALL_TRACKING_CONSENT']);
+        $this->assertEquals(
+            ConfigurationManager::OPT_VALUE_TYPE_BOOL,
+            ConfigManager::CONFIG_OPTIONS['payment_settings']['COMFINO_PAYWALL_TRACKING_CONSENT']
+        );
+        $this->assertFalse(ConfigManager::getDefaultConfigurationValues()['COMFINO_PAYWALL_TRACKING_CONSENT']);
+        $this->assertFalse(ConfigManager::getDefaultValue('paywall_tracking_consent'));
+        $this->assertFalse(ConfigManager::isPaywallTrackingEnabled());
+        // Merchant consent must not be remotely writable via the configuration REST endpoint.
+        $this->assertNotContains('COMFINO_PAYWALL_TRACKING_CONSENT', ConfigManager::ACCESSIBLE_CONFIG_OPTIONS);
     }
 
     public function testGetEnvironmentInfo(): void
@@ -256,5 +270,12 @@ class ConfigManagerTest extends \PHPUnit_Framework_TestCase
         $specificOptions = ['COMFINO_ENABLED', 'COMFINO_API_KEY'];
 
         $this->assertEquals($specificOptions, array_keys(ConfigManager::getConfigurationValues('payment_settings', $specificOptions)));
+    }
+
+    public function testEnvironmentInfoHasNoServerAddress(): void
+    {
+        // The server address is no longer sent with error reports or the User-Agent environment.
+        $this->assertArrayNotHasKey('server_addr', ConfigManager::getEnvironmentInfo());
+        $this->assertArrayHasKey('server_software', ConfigManager::getEnvironmentInfo());
     }
 }

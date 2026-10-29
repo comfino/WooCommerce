@@ -171,8 +171,8 @@ class RestEndpointAuthTest extends \PHPUnit_Framework_TestCase
      */
     private function resetEndpointManager(): void
     {
-        $instance = new \ReflectionProperty(RestEndpointManager::class, 'instance');
-        $instance->setAccessible(true);
-        $instance->setValue(null, null);
+        $instances = new \ReflectionProperty(RestEndpointManager::class, 'instances');
+        $instances->setAccessible(true);
+        $instances->setValue(null, []);
     }
 }

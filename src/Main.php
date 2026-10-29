@@ -29,6 +29,8 @@ final class Main
     private const INSTALL_LOG_FILENAME = 'install.log';
     private const UPGRADE_LOG_FILENAME = 'upgrade.log';
     private const UNINSTALL_LOG_FILENAME = 'uninstall.log';
+    // The upgrade log is appended on every upgrade - keep only its newest part.
+    private const UPGRADE_LOG_MAX_SIZE = 65536;
 
     /** @var bool */
     private static $initialized = false;
@@ -118,10 +120,23 @@ final class Main
                     $wcProduct = $product;
                 }
 
-                $allowedProductTypes = SettingsManager::getAllowedProductTypes(
-                   ProductTypesListTypeEnum::LIST_TYPE_WIDGET,
-                   OrderManager::getShopCartFromProduct($wcProduct)
-                );
+                if (!($wcProduct instanceof \WC_Product)) {
+                    // No product object on this page (deleted, unpublished or a non-standard product page template).
+                    DebugLogger::logEvent('[WIDGET]', 'No product object found - widget not rendered.');
+
+                    return;
+                }
+
+                try {
+                    $allowedProductTypes = SettingsManager::getAllowedProductTypes(
+                        ProductTypesListTypeEnum::LIST_TYPE_WIDGET,
+                        OrderManager::getShopCartFromProduct($wcProduct)
+                    );
+                } catch (\Throwable $e) {
+                    FrontendManager::processError('Widget product types error', $e, null, null, null, '[WIDGET]', OperationContext::WidgetRendering);
+
+                    return;
+                }
 
                 if ($allowedProductTypes === []) {
                     // Filters active - all product types disabled.
@@ -197,14 +212,8 @@ final class Main
 
         ErrorLogger::init();
 
-        $resultStats = ['operations' => []];
-
         // 1. Delete configuration values.
-        if (ConfigManager::deleteConfigurationValues()) {
-            $resultStats['operations'][] = ['name' => 'configuration_options_delete', 'success' => true];
-        } else {
-            $resultStats['operations'][] = ['name' => 'configuration_options_delete', 'success' => false];
-        }
+        ConfigManager::deleteConfigurationValues();
 
         // 2. Delete options and transients.
         delete_option('comfino_plugin_current_version');
@@ -212,16 +221,25 @@ final class Main
         delete_transient('comfino_plugin_prev_version');
         delete_transient('comfino_plugin_updated_at');
 
-        $resultStats['operations'][] = ['name' => 'transients_delete', 'success' => true];
+        // 3. Notify ComfinoPay API about plugin removal.
+        ApiClient::getInstance()->notifyPluginRemoval();
 
-        // 3. Notify Comfino API about plugin removal.
-        if (ApiClient::getInstance()->notifyPluginRemoval()) {
-            $resultStats['operations'][] = ['name' => 'uninstall_notification_sent', 'success' => true];
-        } else {
-            $resultStats['operations'][] = ['name' => 'uninstall_notification_sent', 'success' => false];
+        /* 4. Delete logs and cache. WordPress normally deletes the plugin folder afterwards, but not when that fails or
+           with "wp plugin uninstall --skip-delete" - leave no shop data behind in that case either. The uninstall log is
+           no longer written into the plugin directory. */
+        DebugLogger::clearLogs();
+        ErrorLogger::clearLogs();
+
+        foreach ([self::INSTALL_LOG_FILENAME, self::UPGRADE_LOG_FILENAME, self::UNINSTALL_LOG_FILENAME] as $logFileName) {
+            $logPath = FileUtils::buildPathFromComponents([self::getVarPath(), 'log', $logFileName]);
+
+            if (FileUtils::exists($logPath)) {
+                wp_delete_file($logPath);
+            }
         }
 
-        self::createUninstallLog(print_r($resultStats, true));
+        // CacheManager is not initialised during uninstall: remove the cache directories directly.
+        self::deleteDirectoryContents(self::getCacheRootPath() . DIRECTORY_SEPARATOR . 'cache', ['index.php', '.htaccess']);
     }
 
     public static function renderPaywallIframe(\WC_Cart $cart, float $total, bool $isPaymentBlock): string
@@ -262,6 +280,8 @@ final class Main
                     ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
                     $shopCart
                 );
+            } catch (\InvalidArgumentException $e) {
+                DebugLogger::logEvent('[PAYWALL]', 'renderPaywallIframe: cart validation failed.', ['error_message' => $e->getMessage()]);
             } catch (\Throwable $e) {
                 ErrorLogger::sendError($e, OperationContext::PaymentProcessing, (string) $e->getCode(), $e->getMessage());
             }
@@ -313,6 +333,7 @@ final class Main
                 'authToken' => $authToken,
                 'loggingToken' => $loggingToken,
                 'trackId' => $trackId,
+                'trackingConsent' => ConfigManager::isPaywallTrackingEnabled(),
                 'loanAmount' => $loanAmount,
                 'paymentMethodAuth' => ConfigManager::getPaywallLogoAuthHash(),
                 'paymentMethodLabel' => ConfigManager::getPaymentMethodLabel(),
@@ -324,14 +345,15 @@ final class Main
                 'paywallSettings' => [
                     'language' => self::getShopLanguage(),
                     'currency' => self::getShopCurrency(),
-                    'customPaywallCss' => ConfigManager::getConfigurationValue('COMFINO_PAYWALL_CUSTOM_CSS_URL') ?: null,
+                    'customPaywallCss' => ConfigManager::getCustomCssUrl('COMFINO_PAYWALL_CUSTOM_CSS_URL'),
                 ],
                 'shopEnvironment' => $shopEnvironment,
                 'directRedirect' => (bool) ConfigManager::getConfigurationValue('COMFINO_PAYWALL_DIRECT_REDIRECT'),
                 'creditors' => SettingsManager::getCreditors() ?: null,
                 'allowedProductsConfig' => SettingsManager::getAllowedProductsConfigForFrontend(),
-                'flags' => ConfigManager::getRemoteFlags(),
-                'flagAttributes' => ConfigManager::getRemoteFlagAttributes(),
+                'flags' => ConfigManager::getRemoteFlags() ?: null,
+                // Forwarded as received (raw PROMO included): the SDK interprets the attributes and gates on `flags`.
+                'flagAttributes' => ConfigManager::getCheckoutFlagAttributes() ?: null,
             ];
 
             DebugLogger::logEvent(
@@ -373,16 +395,21 @@ final class Main
 
         try {
             $shopCart = OrderManager::getShopCart($cart);
-        } catch (\Exception $e) {
-            FrontendManager::processError('Shop cart creation error', $e);
+            $allowedProductTypes = SettingsManager::getAllowedProductTypes(
+                ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
+                $shopCart
+            );
+        } catch (\InvalidArgumentException $e) {
+            // Expected cart validation outcome (e.g. negative cart total) - hide the payment method, report nothing.
+            DebugLogger::logEvent('[PAYWALL]', 'paymentIsAvailable: cart validation failed.', ['error_message' => $e->getMessage()]);
+
+            return false;
+        } catch (\Throwable $e) {
+            FrontendManager::processError('Shop cart creation error', $e, null, null, null, '[ERROR]', OperationContext::PaymentProcessing);
 
             return false;
         }
 
-        $allowedProductTypes = SettingsManager::getAllowedProductTypes(
-            ProductTypesListTypeEnum::LIST_TYPE_PAYWALL,
-            $shopCart
-        );
         $paymentIsAvailable = ($allowedProductTypes !== []);
 
         DebugLogger::logEvent(
@@ -475,7 +502,7 @@ final class Main
     }
 
     /**
-     * Checks the environment compatibility with Comfino plugin requirements.
+     * Checks the environment compatibility with ComfinoPay plugin requirements.
      * Returns a string with the first incompatibility found or false if the environment has no problems.
      *
      * @return string|bool
@@ -486,13 +513,13 @@ final class Main
             return $duringActivation
                 ? sprintf(
                     /* translators: 1: Minimum required PHP version 2: Current PHP version */
-                    __('The plugin could not be activated. The minimum PHP version required for Comfino is %1$s. You are running %2$s.', 'comfino-payment-gateway'),
+                    __('The plugin could not be activated. The minimum PHP version required for ComfinoPay is %1$s. You are running %2$s.', 'comfino-payment-gateway'),
                     self::MIN_PHP_VERSION,
                     PHP_VERSION
                 )
                 : sprintf(
                     /* translators: 1: Minimum required PHP version 2: Current PHP version */
-                    __('The Comfino plugin has been deactivated. The minimum PHP version required for Comfino is %1$s. You are running %2$s.', 'comfino-payment-gateway'),
+                    __('The ComfinoPay plugin has been deactivated. The minimum PHP version required for ComfinoPay is %1$s. You are running %2$s.', 'comfino-payment-gateway'),
                     self::MIN_PHP_VERSION,
                     PHP_VERSION
                 );
@@ -501,20 +528,20 @@ final class Main
         if (!defined('WC_VERSION')) {
             return $duringActivation
                 ? __('The plugin could not be activated. WooCommerce needs to be activated.', 'comfino-payment-gateway')
-                : __('The Comfino plugin has been deactivated. WooCommerce needs to be activated.', 'comfino-payment-gateway');
+                : __('The ComfinoPay plugin has been deactivated. WooCommerce needs to be activated.', 'comfino-payment-gateway');
         }
 
         if (version_compare(WC_VERSION, self::MIN_WC_VERSION, '<')) {
             return $duringActivation
                 ? sprintf(
                     /* translators: 1: Minimum required WooCommerce version 2: Current WooCommerce version */
-                    __('The plugin could not be activated. The minimum WooCommerce version required for Comfino is %1$s. You are running %2$s.', 'comfino-payment-gateway'),
+                    __('The plugin could not be activated. The minimum WooCommerce version required for ComfinoPay is %1$s. You are running %2$s.', 'comfino-payment-gateway'),
                     self::MIN_WC_VERSION,
                     WC_VERSION
                 )
                 : sprintf(
                     /* translators: 1: Minimum required WooCommerce version 2: Current WooCommerce version */
-                    __('The Comfino plugin has been deactivated. The minimum WooCommerce version required for Comfino is %1$s. You are running %2$s.', 'comfino-payment-gateway'),
+                    __('The ComfinoPay plugin has been deactivated. The minimum WooCommerce version required for ComfinoPay is %1$s. You are running %2$s.', 'comfino-payment-gateway'),
                     self::MIN_WC_VERSION,
                     WC_VERSION
                 );
@@ -523,7 +550,13 @@ final class Main
         if (!extension_loaded('curl')) {
             return $duringActivation
                 ? __('The plugin could not be activated. It requires PHP cURL extension which is not installed. More details: https://www.php.net/manual/en/book.curl.php', 'comfino-payment-gateway')
-                : __('The Comfino plugin has been deactivated. It requires PHP cURL extension which is not installed. More details: https://www.php.net/manual/en/book.curl.php', 'comfino-payment-gateway');
+                : __('The ComfinoPay plugin has been deactivated. It requires PHP cURL extension which is not installed. More details: https://www.php.net/manual/en/book.curl.php', 'comfino-payment-gateway');
+        }
+
+        if (!extension_loaded('mbstring')) {
+            return $duringActivation
+                ? __('The plugin could not be activated. It requires PHP mbstring extension which is not installed. More details: https://www.php.net/manual/en/book.mbstring.php', 'comfino-payment-gateway')
+                : __('The ComfinoPay plugin has been deactivated. It requires PHP mbstring extension which is not installed. More details: https://www.php.net/manual/en/book.mbstring.php', 'comfino-payment-gateway');
         }
 
         return false;
@@ -598,11 +631,6 @@ final class Main
         self::writeLog(self::INSTALL_LOG_FILENAME, $logContents);
     }
 
-    private static function createUninstallLog(string $logContents): void
-    {
-        self::writeLog(self::UNINSTALL_LOG_FILENAME, $logContents);
-    }
-
     private static function readLog(string $fileName): string
     {
         $logPath = FileUtils::buildPathFromComponents([self::getVarPath(), 'log', $fileName]);
@@ -630,6 +658,42 @@ final class Main
         // Check if file is writable (if exists) or if directory is writable (to create new file).
         if (FileUtils::isWritable($logPath) || (!FileUtils::exists($logPath) && FileUtils::isWritable(dirname($logPath)))) {
             FileUtils::append($logPath, gmdate('Y-m-d H:i:s') . "\n$logContents");
+
+            if ($fileName === self::UPGRADE_LOG_FILENAME && ($logSize = filesize($logPath)) !== false && $logSize > self::UPGRADE_LOG_MAX_SIZE) {
+                // Keep the newest part only, starting at a line boundary.
+                $logTail = substr(FileUtils::read($logPath), -self::UPGRADE_LOG_MAX_SIZE);
+                $logTail = ($newLinePos = strpos($logTail, "\n")) !== false ? substr($logTail, $newLinePos + 1) : $logTail;
+
+                FileUtils::write($logPath, $logTail);
+            }
+        }
+    }
+
+    /**
+     * Recursively deletes the contents of a directory, keeping the listed top-level files (directory protection).
+     *
+     * @param string[] $keepFiles
+     */
+    private static function deleteDirectoryContents(string $directory, array $keepFiles = []): void
+    {
+        if (!is_dir($directory)) {
+            return;
+        }
+
+        foreach (scandir($directory) ?: [] as $entry) {
+            if ($entry === '.' || $entry === '..' || in_array($entry, $keepFiles, true)) {
+                continue;
+            }
+
+            $path = $directory . DIRECTORY_SEPARATOR . $entry;
+
+            if (is_dir($path) && !is_link($path)) {
+                self::deleteDirectoryContents($path);
+
+                rmdir($path); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir
+            } else {
+                wp_delete_file($path);
+            }
         }
     }
 

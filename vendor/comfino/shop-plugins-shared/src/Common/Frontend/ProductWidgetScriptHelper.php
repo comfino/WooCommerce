@@ -18,6 +18,7 @@ class ProductWidgetScriptHelper
         'widgetKey',
         'loggingToken',
         'trackId',
+        'trackingConsent',
         'components',
         'container',
         'widgetTargetSelector',

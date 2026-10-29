@@ -12,6 +12,10 @@ class StatusManager
      * @var \Comfino\Common\Shop\OrderStatusAdapterInterface
      */
     private $orderStatusAdapter;
+    /**
+     * @var string
+     */
+    private $scope = '';
     public const STATUS_CREATED = 'CREATED';
     public const STATUS_WAITING_FOR_FILLING = 'WAITING_FOR_FILLING';
     public const STATUS_WAITING_FOR_CONFIRMATION = 'WAITING_FOR_CONFIRMATION';
@@ -45,26 +49,21 @@ class StatusManager
 
     public const DEFAULT_FORBIDDEN_STATUSES = [self::STATUS_RESIGN];
 
-    /**
-     * @var $this|null
-     */
-    private static $instance;
+    private static $instances = [];
 
     /**
      * @param \Comfino\Common\Shop\OrderStatusAdapterInterface $orderStatusAdapter
+     * @param string $scope
      */
-    public static function getInstance($orderStatusAdapter): self
+    public static function getInstance($orderStatusAdapter, $scope = ''): self
     {
-        if (self::$instance === null) {
-            self::$instance = new self($orderStatusAdapter);
-        }
-
-        return self::$instance;
+        return self::$instances[$scope] = self::$instances[$scope] ?? new self($orderStatusAdapter, $scope);
     }
 
-    private function __construct(OrderStatusAdapterInterface $orderStatusAdapter)
+    private function __construct(OrderStatusAdapterInterface $orderStatusAdapter, string $scope = '')
     {
         $this->orderStatusAdapter = $orderStatusAdapter;
+        $this->scope = $scope;
     }
 
     /**
@@ -73,6 +72,13 @@ class StatusManager
      */
     public function setOrderStatus($externalId, $status): void
     {
-        $this->orderStatusAdapter->setStatus($externalId, $status);
+        $this->applicationContext()->apply(function () use ($externalId, $status) {
+            return $this->orderStatusAdapter->setStatus($externalId, $status);
+        });
+    }
+
+    public function applicationContext(): StatusApplicationContext
+    {
+        return StatusApplicationContext::forScope($this->scope);
     }
 }

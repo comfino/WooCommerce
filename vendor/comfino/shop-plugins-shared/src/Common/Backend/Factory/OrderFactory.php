@@ -10,6 +10,7 @@ use Comfino\Shop\Order\Cart;
 use Comfino\Shop\Order\Cart\CartItemInterface;
 use Comfino\Shop\Order\CustomerInterface;
 use Comfino\Shop\Order\LoanParameters;
+use Comfino\Common\Shop\Order\PromoCode;
 use Comfino\Shop\Order\Order;
 
 final class OrderFactory
@@ -34,7 +35,8 @@ final class OrderFactory
         ?int $deliveryCostTaxRate = null,
         ?int $deliveryCostTaxValue = null,
         ?string $category = null,
-        ?array $allowedProductsConfig = null
+        ?array $allowedProductsConfig = null,
+        ?string $promoCode = null
     ): Order {
         return new Order(
             $orderId,
@@ -59,7 +61,8 @@ final class OrderFactory
             null,
             null,
             null,
-            $allowedProductsConfig
+            $allowedProductsConfig,
+            PromoCode::normalize($promoCode)
         );
     }
 }

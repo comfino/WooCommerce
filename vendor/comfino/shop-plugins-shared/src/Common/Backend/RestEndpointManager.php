@@ -50,10 +50,10 @@ final class RestEndpointManager
      * @var \Comfino\Api\SerializerInterface
      */
     protected $serializer;
-    /**
-     * @var $this|null
-     */
-    private static $instance;
+    
+    public const MIN_API_KEY_LENGTH = 16;
+
+    private static $instances = [];
 
     private $registeredEndpoints = [];
 
@@ -76,6 +76,7 @@ final class RestEndpointManager
      * @param UriFactoryInterface $uriFactory
      * @param ResponseFactoryInterface $responseFactory
      * @param SerializerInterface $serializer
+     * @param string $scope
      * @return self
      */
     public static function getInstance(
@@ -87,10 +88,11 @@ final class RestEndpointManager
         StreamFactoryInterface $streamFactory,
         UriFactoryInterface $uriFactory,
         ResponseFactoryInterface $responseFactory,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        string $scope = ''
     ): self {
-        if (self::$instance === null) {
-            self::$instance = new self(
+        if (!isset(self::$instances[$scope])) {
+            self::$instances[$scope] = new self(
                 $platformName,
                 $platformVersion,
                 $pluginVersion,
@@ -103,7 +105,19 @@ final class RestEndpointManager
             );
         }
 
-        return self::$instance;
+        return self::$instances[$scope];
+    }
+
+    /**
+     * @param string|null $scope
+     */
+    public static function reset(?string $scope = null): void
+    {
+        if ($scope === null) {
+            self::$instances = [];
+        } else {
+            unset(self::$instances[$scope]);
+        }
     }
 
     /**
@@ -133,9 +147,12 @@ final class RestEndpointManager
         $this->uriFactory = $uriFactory;
         $this->responseFactory = $responseFactory;
         $this->serializer = $serializer;
-        $this->apiKeys = array_values(array_filter($apiKeys, static function ($apiKey) {
-            return is_string($apiKey) && $apiKey !== '';
-        }));
+        $this->apiKeys = array_values(array_unique(array_filter(
+            $apiKeys,
+            static function ($apiKey) {
+                return is_string($apiKey) && strlen(trim($apiKey)) >= self::MIN_API_KEY_LENGTH;
+            }
+        )));
     }
 
     /**
@@ -169,7 +186,20 @@ final class RestEndpointManager
      */
     public function getCalculatedCrSignature(): ?string
     {
-        return $this->calculatedCrSignature;
+        return $this->calculatedCrSignature !== null ? self::fingerprint($this->calculatedCrSignature) : null;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getReceivedCrSignatureFingerprint(): ?string
+    {
+        return $this->crSignature !== null ? self::fingerprint($this->crSignature) : null;
+    }
+
+    private static function fingerprint(string $value): string
+    {
+        return substr(hash('sha256', $value), 0, 12);
     }
 
     /**
@@ -184,9 +214,14 @@ final class RestEndpointManager
     /**
      * @param string $requestData
      * @return string
+     * @throws AccessDenied
      */
     public function getCrSignature(string $requestData): string
     {
+        if (empty($this->apiKeys)) {
+            throw new AccessDenied('Access not allowed.');
+        }
+
         return hash('sha3-256', $this->apiKeys[0] . $requestData);
     }
 
@@ -342,7 +377,7 @@ final class RestEndpointManager
         }
 
         if (empty($this->apiKeys)) {
-            throw new AccessDenied('Access not allowed. No API key configured.');
+            throw new AccessDenied('Access not allowed.');
         }
 
         $requestAuthorized = false;

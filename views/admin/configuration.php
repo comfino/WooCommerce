@@ -21,7 +21,7 @@
  * @var string $shop_info Shop environment information (diagnostics tab)
  * @var string $errors_log Error log contents (diagnostics tab)
  * @var string $debug_log Debug log contents (diagnostics tab)
- * @var string $api_host Comfino API host URL (diagnostics tab)
+ * @var string $api_host ComfinoPay API host URL (diagnostics tab)
  * @var string $shop_domain Shop domain name (diagnostics tab)
  * @var string $widget_key Widget key (diagnostics tab)
  * @var bool $is_dev_env Development environment flag (diagnostics tab)
@@ -32,7 +32,7 @@
  * @var string $update_available_message Plain-text "new version available" notice, or '' when up to date
  * @var string $release_description Sanitized "what's new" HTML of the latest release, or '' when up to date
  * @var bool $auto_updates_enabled WordPress auto-updates enabled flag (diagnostics tab)
- * @var string $comfino_logo_img Comfino logo HTML
+ * @var string $comfino_logo_img ComfinoPay logo HTML
  * @var array $comfino_logo_allowed_html Allowed HTML tags for logo
  * @var string $cache_root_path Cache root directory path (diagnostics tab)
  * @var string $cache_path Cache directory path (diagnostics tab)
@@ -101,7 +101,7 @@ function comfino_prepare_tab_url(string $subsection): string
                 <th scope="row" class="titledesc"></th>
                 <td>
                     <hr>
-                    <p><b>Comfino API host:</b> <?php echo esc_html($api_host) ?></p>
+                    <p><b>ComfinoPay API host:</b> <?php echo esc_html($api_host) ?></p>
                     <p><b>Plugin build time:</b> <?php echo esc_html($build_ts) ?> UTC</p>
                     <p><b>Shop domain:</b> <?php echo esc_html($shop_domain) ?></p>
                     <p><b>Widget key:</b> <?php echo esc_html($widget_key) ?></p>

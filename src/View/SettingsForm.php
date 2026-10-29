@@ -7,7 +7,9 @@ use Comfino\Api\ApiService;
 use Comfino\Api\Dto\Payment\LoanTypeEnum;
 use Comfino\Api\Exception\AccessDenied;
 use Comfino\Api\Exception\AuthorizationError;
+use Comfino\Api\Exception\NotFound;
 use Comfino\Configuration\ConfigManager;
+use Comfino\Configuration\RemoteValueValidator;
 use Comfino\Configuration\SettingsManager;
 use Comfino\DebugLogger;
 use Comfino\ErrorLogger;
@@ -125,7 +127,7 @@ final class SettingsForm
                         } elseif (wp_parse_url($customCssUrl, PHP_URL_SCHEME) === null) {
                             /* translators: s%: Custom CSS URL */
                             $errorMessages[] = sprintf(__('Custom CSS URL "%s" is not absolute.', 'comfino-payment-gateway'), $customCssUrl);
-                        } elseif (stripos($customCssUrl, Main::getShopDomain()) === false) {
+                        } elseif (!RemoteValueValidator::isValidCssUrl($customCssUrl)) {
                             $errorMessages[] = sprintf(
                                 /* translators: 1: Custom CSS URL 2: Shop domain */
                                 __('Custom CSS URL "%1$s" is not in shop domain "%2$s".', 'comfino-payment-gateway'),
@@ -164,7 +166,7 @@ final class SettingsForm
                         } catch (\Throwable $e) {
                             ApiClient::processApiError(
                                 ($activeTab === 'payment_settings' ? 'Payment' : 'Developer') .
-                                ' settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)',
+                                ' settings error on page "' . Main::getCurrentUrl() . '" (ComfinoPay API)',
                                 $e,
                                 OperationContext::Configuration
                             );
@@ -173,20 +175,23 @@ final class SettingsForm
                             $widgetKeyError = true;
 
                             if (!empty(getenv('COMFINO_DEV'))) {
-                                $errorMessages[] = sprintf('Comfino API host: %s', $apiClient->getApiHost());
+                                $errorMessages[] = sprintf('ComfinoPay API host: %s', $apiClient->getApiHost());
                             }
                         }
                     } catch (AuthorizationError|AccessDenied $e) {
-                        /* translators: s%: Comfino API key */
-                        $errorMessages[] = sprintf(__('API key %s is not valid.', 'comfino-payment-gateway'), $apiKey);
+                        $errorMessages[] = self::getApiKeyCheckErrorMessage(
+                            $e,
+                            $apiKey,
+                            ($activeTab === 'payment_settings' ? 'Payment' : 'Developer') . ' settings error on page "' . Main::getCurrentUrl() . '" (ComfinoPay API)'
+                        );
 
                         if (!empty(getenv('COMFINO_DEV'))) {
-                            $errorMessages[] = sprintf('Comfino API host: %s', $apiClient->getApiHost());
+                            $errorMessages[] = sprintf('ComfinoPay API host: %s', $apiClient->getApiHost());
                         }
                     } catch (\Throwable $e) {
                         ApiClient::processApiError(
                             ($activeTab === 'payment_settings' ? 'Payment' : 'Developer') .
-                            ' settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)',
+                            ' settings error on page "' . Main::getCurrentUrl() . '" (ComfinoPay API)',
                             $e,
                             OperationContext::Configuration
                         );
@@ -194,7 +199,7 @@ final class SettingsForm
                         $errorMessages[] = $e->getMessage();
 
                         if (!empty(getenv('COMFINO_DEV'))) {
-                            $errorMessages[] = sprintf('Comfino API host: %s', $apiClient->getApiHost());
+                            $errorMessages[] = sprintf('ComfinoPay API host: %s', $apiClient->getApiHost());
                         }
                     }
                 }
@@ -321,7 +326,7 @@ final class SettingsForm
                         } elseif (wp_parse_url($customCssUrl, PHP_URL_SCHEME) === null) {
                             /* translators: s%: Custom CSS URL */
                             $errorMessages[] = sprintf(__('Custom CSS URL "%s" is not absolute.', 'comfino-payment-gateway'), $customCssUrl);
-                        } elseif (stripos($customCssUrl, Main::getShopDomain()) === false) {
+                        } elseif (!RemoteValueValidator::isValidCssUrl($customCssUrl)) {
                             $errorMessages[] = sprintf(
                                 /* translators: 1: Custom CSS URL 2: Shop domain */
                                 __('Custom CSS URL "%1$s" is not in shop domain "%2$s".', 'comfino-payment-gateway'),
@@ -345,7 +350,7 @@ final class SettingsForm
                             $widgetKey = ApiClient::getInstance()->getWidgetKey();
                         } catch (\Throwable $e) {
                             ApiClient::processApiError(
-                                'Widget settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)',
+                                'Widget settings error on page "' . Main::getCurrentUrl() . '" (ComfinoPay API)',
                                 $e,
                                 OperationContext::Configuration
                             );
@@ -354,11 +359,14 @@ final class SettingsForm
                             $widgetKeyError = true;
                         }
                     } catch (AuthorizationError|AccessDenied $e) {
-                        /* translators: s%: Comfino API key */
-                        $errorMessages[] = sprintf(__('API key %s is not valid.', 'comfino-payment-gateway'), $apiKey);
+                        $errorMessages[] = self::getApiKeyCheckErrorMessage(
+                            $e,
+                            $apiKey,
+                            'Widget settings error on page "' . Main::getCurrentUrl() . '" (ComfinoPay API)'
+                        );
                     } catch (\Throwable $e) {
                         ApiClient::processApiError(
-                            'Widget settings error on page "' . Main::getCurrentUrl() . '" (Comfino API)',
+                            'Widget settings error on page "' . Main::getCurrentUrl() . '" (ComfinoPay API)',
                             $e,
                             OperationContext::Configuration
                         );
@@ -399,7 +407,7 @@ final class SettingsForm
             // Update plugin configuration.
             ConfigManager::updateConfiguration($configurationOptionsToSave, false);
 
-            // Report the shop environment to Comfino after a successful settings save (fire-and-forget).
+            // Report the shop environment to ComfinoPay after a successful settings save (fire-and-forget).
             if (!empty(ConfigManager::getApiKey())) {
                 ShopEnvironmentReporter::report();
             }
@@ -517,7 +525,7 @@ final class SettingsForm
                     'title' => __('Filter by product ID', 'comfino-payment-gateway'),
                     'type' => 'product_id_filter',
                     'description' => __(
-                        'Enter product IDs (separated by commas) for which Comfino payment options should not be offered. If the cart contains any of the listed products, all Comfino financial products will be hidden at checkout.',
+                        'Enter product IDs (separated by commas) for which ComfinoPay payment options should not be offered. If the cart contains any of the listed products, all ComfinoPay financial products will be hidden at checkout.',
                         'comfino-payment-gateway'
                     ),
                     'product_ids' => SettingsManager::getProductIdFilter(),
@@ -652,6 +660,32 @@ final class SettingsForm
     }
 
     /**
+     * Message for a failed API key check. "API key is not valid" only for a 401, or a 403 whose body is the API's own
+     * JSON error. A 403/404 with a non-JSON body (WAF, proxy, wrong API host) is a connection problem, not a key problem.
+     */
+    private static function getApiKeyCheckErrorMessage(\Throwable $exception, string $apiKey, string $errorPrefix): string
+    {
+        $invalidApiKey = $exception instanceof AuthorizationError || (
+            $exception instanceof AccessDenied &&
+            !$exception instanceof NotFound &&
+            $exception->getStatusCode() === 403 &&
+            is_array(json_decode((string) $exception->getResponseBody(), true))
+        );
+
+        if ($invalidApiKey) {
+            /* translators: s%: ComfinoPay API key */
+            return sprintf(__('API key %s is not valid.', 'comfino-payment-gateway'), $apiKey);
+        }
+
+        ApiClient::processApiError($errorPrefix, $exception, OperationContext::Configuration);
+
+        return __(
+            'The API key could not be verified because the ComfinoPay API could not be reached. Please check the connection and try again.',
+            'comfino-payment-gateway'
+        );
+    }
+
+    /**
      * Returns complete form field definitions for all configuration tabs.
      *
      * Defines all available form fields with their properties, including:
@@ -668,9 +702,9 @@ final class SettingsForm
             'enabled' => [
                 'title' => __('Enable/Disable', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
-                'label' => __('Enable Comfino payment module', 'comfino-payment-gateway'),
+                'label' => __('Enable ComfinoPay payment module', 'comfino-payment-gateway'),
                 'default' => ConfigManager::getDefaultValue('enabled') === true ? 'yes' : 'no',
-                'description' => __('Shows Comfino payment option at the payment list.', 'comfino-payment-gateway'),
+                'description' => __('Shows ComfinoPay payment option at the payment list.', 'comfino-payment-gateway'),
             ],
             'production_key' => [
                 'title' => __('Production environment API key', 'comfino-payment-gateway'),
@@ -692,7 +726,7 @@ final class SettingsForm
                 'type' => 'text',
                 'default' => (string) ConfigManager::getDefaultValue('payment_text'),
                 'disabled' => !ConfigManager::getConfigurationValue('COMFINO_PAYMENT_TEXT_ENABLED'),
-                'description' => __('Label displayed for Comfino in the checkout payment method list.', 'comfino-payment-gateway'),
+                'description' => __('Label displayed for ComfinoPay in the checkout payment method list.', 'comfino-payment-gateway'),
             ],
             'checkout_product_types' => [
                 'title' => __('Payment label product types', 'comfino-payment-gateway'),
@@ -729,7 +763,7 @@ final class SettingsForm
                 'label' => __('Use order reference as external ID', 'comfino-payment-gateway'),
                 'default' => ConfigManager::getDefaultValue('use_order_reference') === true ? 'yes' : 'no',
                 'description' => __(
-                    'Use customer-visible order reference instead of numeric order ID for Comfino API integration. New orders only.',
+                    'Use customer-visible order reference instead of numeric order ID for ComfinoPay API integration. New orders only.',
                     'comfino-payment-gateway'
                 ),
             ],
@@ -740,10 +774,22 @@ final class SettingsForm
             'paywall_direct_redirect' => [
                 'title' => __('Direct redirect mode', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
-                'label' => __('Enable direct redirect to Comfino payment gateway', 'comfino-payment-gateway'),
+                'label' => __('Enable direct redirect to ComfinoPay payment gateway', 'comfino-payment-gateway'),
                 'default' => ConfigManager::getDefaultValue('paywall_direct_redirect') === true ? 'yes' : 'no',
                 'description' => __(
-                    'When enabled, the full paywall offer browser is not displayed. The order is submitted with the default financial product and the customer is redirected directly to the Comfino payment gateway.',
+                    'When enabled, the full paywall offer browser is not displayed. The order is submitted with the default financial product and the customer is redirected directly to the ComfinoPay payment gateway.',
+                    'comfino-payment-gateway'
+                ),
+            ],
+            /* Hidden in 4.4.0 (not listed in any tab), revealed in 4.5.0. A field missing from the form is never saved, so
+               the stored consent value stays untouched. */
+            'paywall_tracking_consent' => [
+                'title' => __('Paywall statistics', 'comfino-payment-gateway'),
+                'type' => 'checkbox',
+                'label' => __('Allow collecting ComfinoPay plugin view statistics', 'comfino-payment-gateway'),
+                'default' => ConfigManager::getDefaultValue('paywall_tracking_consent') === true ? 'yes' : 'no',
+                'description' => __(
+                    'When enabled, the ComfinoPay product widget and the paywall in the checkout report their views and shopper interactions (e.g. offer and installment changes) to ComfinoPay. These statistics help optimize the widget and the paywall and thus increase sales. Linking product page visits with the checkout additionally requires the shopper\'s consent to analytics cookies in your shop.',
                     'comfino-payment-gateway'
                 ),
             ],
@@ -762,7 +808,7 @@ final class SettingsForm
                 'label' => __('Use test environment', 'comfino-payment-gateway'),
                 'default' => ConfigManager::getDefaultValue('sandbox_mode') === true ? 'yes' : 'no',
                 'description' => __(
-                    'The test environment allows the store owner to get acquainted with the functionality of the Comfino module. This is a Comfino simulator, thanks to which you can get to know all the advantages of this payment method. The use of the test mode is free (there are also no charges for orders).',
+                    'The test environment allows the store owner to get acquainted with the functionality of the ComfinoPay module. This is a ComfinoPay simulator, thanks to which you can get to know all the advantages of this payment method. The use of the test mode is free (there are also no charges for orders).',
                     'comfino-payment-gateway'
                 ),
             ],
@@ -777,7 +823,7 @@ final class SettingsForm
                 'label' => __('Enable debug mode', 'comfino-payment-gateway'),
                 'default' => ConfigManager::getDefaultValue('debug_mode') === true ? 'yes' : 'no',
                 'description' => __(
-                    'Debug mode is useful in case of problems with Comfino payment availability. In this mode module logs details of internal process responsible for displaying of Comfino payment option at the payment methods list.',
+                    'Debug mode is useful in case of problems with ComfinoPay payment availability. In this mode module logs details of internal process responsible for displaying of ComfinoPay payment option at the payment methods list.',
                     'comfino-payment-gateway'
                 ),
             ],
@@ -787,7 +833,7 @@ final class SettingsForm
                 'label' => __('Enable service mode', 'comfino-payment-gateway'),
                 'default' => ConfigManager::getDefaultValue('service_mode') === true ? 'yes' : 'no',
                 'description' => __(
-                    'Service mode is useful in testing Comfino payment gateway without sharing it with customers. In this mode Comfino payment method is visible only for selected sessions and debug logs are collected only for these sessions.',
+                    'Service mode is useful in testing ComfinoPay payment gateway without sharing it with customers. In this mode ComfinoPay payment method is visible only for selected sessions and debug logs are collected only for these sessions.',
                     'comfino-payment-gateway'
                 ),
             ],
@@ -811,9 +857,9 @@ final class SettingsForm
             'widget_enabled' => [
                 'title' => __('Widget enable', 'comfino-payment-gateway'),
                 'type' => 'checkbox',
-                'label' => __('Enable Comfino widget', 'comfino-payment-gateway'),
+                'label' => __('Enable ComfinoPay widget', 'comfino-payment-gateway'),
                 'default' => ConfigManager::getDefaultValue('debug_mode') === true ? 'yes' : 'no',
-                'description' => __('Show Comfino widget in the product.', 'comfino-payment-gateway'),
+                'description' => __('Show ComfinoPay widget in the product.', 'comfino-payment-gateway'),
             ],
             'widget_key' => [
                 'title' => __('Widget key', 'comfino-payment-gateway'),
@@ -829,7 +875,7 @@ final class SettingsForm
                 'type' => 'checkboxset',
                 'values' => SettingsManager::getProductTypesSelectList(ProductTypesListTypeEnum::LIST_TYPE_WIDGET),
                 'default' => [key(SettingsManager::getProductTypesSelectList(ProductTypesListTypeEnum::LIST_TYPE_WIDGET))],
-                'description' => __('Other payment methods (Installments 0%, Buy now, pay later, Installments for companies, Leasing) available after consulting a Comfino advisor (kontakt@comfino.pl).', 'comfino-payment-gateway'),
+                'description' => __('Other payment methods (Installments 0%, Buy now, pay later, Installments for companies, Leasing) available after consulting a ComfinoPay advisor (kontakt@comfino.pl).', 'comfino-payment-gateway'),
             ],
             'widget_show_provider_logos' => [
                 'title' => __('Show logos', 'comfino-payment-gateway'),
@@ -842,14 +888,14 @@ final class SettingsForm
                 'type' => 'checkbox',
                 'label' => __('Disable standard widget banner (standalone calculator)', 'comfino-payment-gateway'),
                 'default' => ConfigManager::getDefaultValue('widget_disable_banner') === true ? 'yes' : 'no',
-                'description' => __('Do not embed the installment banner on the product page. The Comfino calculator window can still be opened from your own button/link using the trigger element selector below.', 'comfino-payment-gateway'),
+                'description' => __('Do not embed the installment banner on the product page. The ComfinoPay calculator window can still be opened from your own button/link using the trigger element selector below.', 'comfino-payment-gateway'),
             ],
             'widget_calculator_trigger_selector' => [
                 'title' => __('Calculator trigger element selector', 'comfino-payment-gateway'),
                 'type' => 'text',
                 'default' => ConfigManager::getDefaultValue('widget_calculator_trigger_selector'),
                 'description' => __(
-                    'Selector of the element (e.g. a button or link) whose click opens the Comfino calculator window when the banner is disabled. Leave empty to open it yourself via window.comfinoWidget.open() or the comfino:widget:ready event.',
+                    'Selector of the element (e.g. a button or link) whose click opens the ComfinoPay calculator window when the banner is disabled. Leave empty to open it yourself via window.comfinoWidget.open() or the comfino:widget:ready event.',
                     'comfino-payment-gateway'
                 ),
             ],
@@ -936,7 +982,7 @@ final class SettingsForm
                 'title' => __('View in payment list', 'comfino-payment-gateway'),
                 'type' => 'select',
                 'options' => [
-                    'comfino' => __('Only Comfino', 'comfino-payment-gateway'),
+                    'comfino' => __('Only ComfinoPay', 'comfino-payment-gateway'),
                     'all' => __('All payments', 'comfino-payment-gateway'),
                 ],
             ],

@@ -17,10 +17,6 @@ class GetUserSettings extends Base
         $this->checkResponseStructure($deserializedResponseBody, ['flags']);
         $this->checkResponseType($deserializedResponseBody['flags'], 'array', 'flags');
 
-        foreach ($deserializedResponseBody['flags'] as $flagName => $attributes) {
-            $this->checkResponseType($attributes, 'array', "flags.$flagName");
-        }
-
         $this->flags = $deserializedResponseBody['flags'];
     }
 
@@ -38,6 +34,6 @@ class GetUserSettings extends Base
      */
     public function getFlagAttributes($flag): array
     {
-        return $this->flags[$flag] ?? [];
+        return is_array($this->flags[$flag] ?? null) ? $this->flags[$flag] : [];
     }
 }

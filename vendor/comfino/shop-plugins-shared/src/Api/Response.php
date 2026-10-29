@@ -9,10 +9,12 @@ use Comfino\Api\Exception\AuthorizationError;
 use Comfino\Api\Exception\Conflict;
 use Comfino\Api\Exception\Forbidden;
 use Comfino\Api\Exception\MethodNotAllowed;
+use Comfino\Api\Exception\NonJsonResponse;
 use Comfino\Api\Exception\NotFound;
 use Comfino\Api\Exception\RequestValidationError;
 use Comfino\Api\Exception\ResponseValidationError;
 use Comfino\Api\Exception\ServiceUnavailable;
+use Comfino\Api\Exception\TooManyRequests;
 use ComfinoExternal\Psr\Http\Message\ResponseInterface;
 
 abstract class Response
@@ -103,41 +105,39 @@ abstract class Response
             return $this;
         }
 
-        if ($this->response->hasHeader('Content-Type') && strpos($this->response->getHeader('Content-Type')[0], 'application/json') !== false) {
-            try {
-                $deserializedResponseBody = $this->deserializeResponseBody($responseBody, $this->serializer);
-            } catch (ResponseValidationError $e) {
-                $e->setUrl($this->request->getRequestUri());
-                $e->setRequestBody($requestBody);
-                $e->setResponseBody($responseBody);
+        $statusCode = $this->response->getStatusCode();
 
-                throw $e;
-            }
-        } else {
-            $deserializedResponseBody = $responseBody;
-        }
-
-        if ($this->exception === null && $this->response->getStatusCode() >= 500) {
+        if ($statusCode >= 500) {
             throw new ServiceUnavailable(
-                "Comfino API service is unavailable: {$this->response->getReasonPhrase()} [{$this->response->getStatusCode()}]",
-                $this->response->getStatusCode(),
+                "Comfino API service is unavailable: {$this->response->getReasonPhrase()} [{$statusCode}]",
+                $statusCode,
                 null,
                 $this->request->getRequestUri(),
                 $requestBody,
-                $responseBody
+                SensitiveDataRedactor::redactPayload($responseBody)
             );
         }
 
-        if ($this->exception === null && $this->response->getStatusCode() >= 400) {
-            switch ($this->response->getStatusCode()) {
+        $contentType = $this->response->hasHeader('Content-Type') ? $this->response->getHeader('Content-Type')[0] : '';
+        $nonJson = false;
+
+        try {
+            $deserializedResponseBody = $this->deserializeResponseBody($responseBody, $this->serializer);
+        } catch (ResponseValidationError $e) {
+            $deserializedResponseBody = null;
+            $nonJson = true;
+        }
+
+        if ($statusCode >= 400) {
+            switch ($statusCode) {
                 case 400:
                     throw new RequestValidationError(
                         $this->getErrorMessage(
-                            $this->response->getStatusCode(),
+                            $statusCode,
                             $deserializedResponseBody,
-                            "Invalid request data: {$this->response->getReasonPhrase()} [{$this->response->getStatusCode()}]"
+                            "Invalid request data: {$this->response->getReasonPhrase()} [{$statusCode}]"
                         ),
-                        $this->response->getStatusCode(),
+                        $statusCode,
                         null,
                         $this->request->getRequestUri(),
                         $requestBody,
@@ -148,8 +148,8 @@ abstract class Response
 
                 case 401:
                     throw new AuthorizationError(
-                        $this->getErrorMessage($this->response->getStatusCode(), $deserializedResponseBody, "Invalid credentials: {$this->response->getReasonPhrase()} [{$this->response->getStatusCode()}]"),
-                        $this->response->getStatusCode(),
+                        $this->getErrorMessage($statusCode, $deserializedResponseBody, "Invalid credentials: {$this->response->getReasonPhrase()} [{$statusCode}]"),
+                        $statusCode,
                         null,
                         $this->request->getRequestUri(),
                         $requestBody
@@ -158,11 +158,11 @@ abstract class Response
                 case 403:
                     throw new Forbidden(
                         $this->getErrorMessage(
-                            $this->response->getStatusCode(),
+                            $statusCode,
                             $deserializedResponseBody,
-                            "Access denied: {$this->response->getReasonPhrase()} [{$this->response->getStatusCode()}]"
+                            "Access denied: {$this->response->getReasonPhrase()} [{$statusCode}]"
                         ),
-                        $this->response->getStatusCode(),
+                        $statusCode,
                         null,
                         $this->request->getRequestUri(),
                         $requestBody,
@@ -170,27 +170,27 @@ abstract class Response
                     );
 
                 case 404:
-                    throw new NotFound(
+                    throw (new NotFound(
                         $this->getErrorMessage(
-                            $this->response->getStatusCode(),
+                            $statusCode,
                             $deserializedResponseBody,
-                            "Entity not found: {$this->response->getReasonPhrase()} [{$this->response->getStatusCode()}]"
+                            "Entity not found: {$this->response->getReasonPhrase()} [{$statusCode}]"
                         ),
-                        $this->response->getStatusCode(),
+                        $statusCode,
                         null,
                         $this->request->getRequestUri(),
                         $requestBody,
                         $responseBody
-                    );
+                    ))->setIdempotentFailure($this->request->isIdempotentFailure($statusCode));
 
                 case 405:
                     throw new MethodNotAllowed(
                         $this->getErrorMessage(
-                            $this->response->getStatusCode(),
+                            $statusCode,
                             $deserializedResponseBody,
-                            "Method not allowed: {$this->response->getReasonPhrase()} [{$this->response->getStatusCode()}]"
+                            "Method not allowed: {$this->response->getReasonPhrase()} [{$statusCode}]"
                         ),
-                        $this->response->getStatusCode(),
+                        $statusCode,
                         null,
                         $this->request->getRequestUri(),
                         $requestBody,
@@ -198,23 +198,40 @@ abstract class Response
                     );
 
                 case 409:
-                    throw new Conflict(
+                    throw (new Conflict(
                         $this->getErrorMessage(
-                            $this->response->getStatusCode(),
+                            $statusCode,
                             $deserializedResponseBody,
-                            "Entity already exists: {$this->response->getReasonPhrase()} [{$this->response->getStatusCode()}]"
+                            "Entity already exists: {$this->response->getReasonPhrase()} [{$statusCode}]"
                         ),
-                        $this->response->getStatusCode(),
+                        $statusCode,
                         null,
                         $this->request->getRequestUri(),
                         $requestBody,
                         $responseBody
+                    ))->setIdempotentFailure($this->request->isIdempotentFailure($statusCode));
+
+                case 429:
+                    throw new TooManyRequests(
+                        $this->getErrorMessage(
+                            $statusCode,
+                            $deserializedResponseBody,
+                            "Too many requests: {$this->response->getReasonPhrase()} [{$statusCode}]"
+                        ),
+                        $statusCode,
+                        null,
+                        $this->request->getRequestUri(),
+                        $requestBody,
+                        $responseBody,
+                        $deserializedResponseBody,
+                        $this->response,
+                        $this->parseRetryAfterSeconds()
                     );
 
                 default:
                     throw new RequestValidationError(
-                        "Invalid request data: {$this->response->getReasonPhrase()} [{$this->response->getStatusCode()}]",
-                        $this->response->getStatusCode(),
+                        "Invalid request data: {$this->response->getReasonPhrase()} [{$statusCode}]",
+                        $statusCode,
                         null,
                         $this->request->getRequestUri(),
                         $requestBody,
@@ -225,16 +242,28 @@ abstract class Response
             }
         }
 
-        if (($errorMessage = $this->getErrorMessage($this->response->getStatusCode(), $deserializedResponseBody)) !== null) {
+        if (($errorMessage = $this->getErrorMessage($statusCode, $deserializedResponseBody)) !== null) {
             throw new RequestValidationError(
                 $errorMessage,
-                $this->response->getStatusCode(),
+                $statusCode,
                 null,
                 $this->request->getRequestUri(),
                 $requestBody,
                 $responseBody,
                 $deserializedResponseBody,
                 $this->response
+            );
+        }
+
+        if ($nonJson) {
+            throw new NonJsonResponse(
+                "Invalid response data: non-JSON response body received [{$statusCode}]",
+                $statusCode,
+                null,
+                $this->request->getRequestUri(),
+                $requestBody,
+                $responseBody,
+                $contentType
             );
         }
 
@@ -249,6 +278,13 @@ abstract class Response
         }
 
         return $this;
+    }
+
+    private function parseRetryAfterSeconds(): ?int
+    {
+        $retryAfter = $this->getHeader('Retry-After');
+
+        return $retryAfter !== null && ctype_digit($retryAfter) ? (int) $retryAfter : null;
     }
 
     /**

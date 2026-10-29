@@ -18,7 +18,7 @@
         <env name="COMFINO_DEV_ENV" value="TRUE"/>
     </php>
     <testsuites>
-        <testsuite name="Comfino WooCommerce plugin tests">
+        <testsuite name="ComfinoPay WooCommerce plugin tests">
             <directory suffix="Test.php">tests</directory>
         </testsuite>
     </testsuites>

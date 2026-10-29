@@ -1,20 +1,37 @@
+4.4.0
+ * Comfino is now ComfinoPay: names and messages use the new brand. Your settings, orders and integration are unchanged.
+ * The ComfinoPay payment method at checkout can now show the current shop promotion and its amount.
+ * A promotional code entered by the customer in the ComfinoPay payment method is now passed along with the order (a blank or unusable code is ignored).
+ * Orders cancelled or rejected by ComfinoPay no longer send an unnecessary cancellation request back (all site languages).
+ * Checkout no longer fails when a cart contains a deleted product or when ComfinoPay is temporarily unreachable.
+ * The financing option used for an order now always matches what the customer selected, even with custom checkout templates.
+ * Fixed an error on product pages: a product without a price (for example a variable product whose price is not set) no longer causes a fatal "Unsupported operand types: string * int" error when the product widget is displayed.
+ * Customer data is now removed more thoroughly from error reports and logs sent to ComfinoPay (e-mail, phone, names, address, tax ID and IP address).
+ * Error logs are now rotated automatically, so they no longer grow without limit, and logs and cached data are removed when the plugin is uninstalled.
+ * Connection and response timeouts for ComfinoPay requests are now kept within safe limits.
+ * The shop's server address is no longer included in the plugin configuration data or in error reports.
+ * Custom CSS addresses are checked more strictly.
+ * Fewer and more accurate error reports are sent to ComfinoPay.
+ * Error details in the logs and error reports stay short and readable even when the ComfinoPay service answers with a whole web page.
+ * Improved handling of API errors and error reporting.
+
 4.3.3
  * Minor fixes and improvements.
 
 4.3.2
- * Security: the address a customer is sent to after placing an order is now verified to be a genuine Comfino payment address before the customer is redirected there. If it is not, the payment is stopped with an error message, and the cart and stock are left untouched so the customer can try again or pay another way.
- * Security: hardened the verification of requests coming from Comfino. Requests are now rejected when the store has no matching payment key saved, and the test environment key is accepted only while test mode is switched on.
+ * Security: the address a customer is sent to after placing an order is now verified to be a genuine ComfinoPay payment address before the customer is redirected there. If it is not, the payment is stopped with an error message, and the cart and stock are left untouched so the customer can try again or pay another way.
+ * Security: hardened the verification of requests coming from ComfinoPay. Requests are now rejected when the store has no matching payment key saved, and the test environment key is accepted only while test mode is switched on.
 
 4.3.1
- * Multisite: network activation is now refused with a clear message, and installations that are already network activated show a warning in the admin. Comfino only configures the site it is activated from, so it must be activated individually on each site in a network.
- * Added shop environment metadata to diagnostic reports sent to Comfino, improving support and troubleshooting.
+ * Multisite: network activation is now refused with a clear message, and installations that are already network activated show a warning in the admin. ComfinoPay only configures the site it is activated from, so it must be activated individually on each site in a network.
+ * Added shop environment metadata to diagnostic reports sent to ComfinoPay, improving support and troubleshooting.
  * Improved billing/shipping address fallback handling for shops using third-party checkout plugins that delay saving address fields on the order (e.g., FunnelKit Checkout).
  * Randomized (jittered) the daily GitHub version check interval and added a short-lived lock to prevent duplicate/bursted checks under concurrent admin requests.
  * Added an option to disable the custom payment method text and instead select up to two financial product types whose names are shown in the checkout payment method label.
  * Added per-product-type cart value limits: admins can now define a minimum and maximum cart value for each financial product type separately (in addition to the global minimum cart amount), with a new management UI in the sale settings.
 
 4.3.0
- * Paywall frontend migrated to V3 API and new frontend Comfino SDK — faster loading, improved stability.
+ * Paywall frontend migrated to V3 API and new frontend ComfinoPay SDK — faster loading, improved stability.
  * Fixed: paywall invisible when Cloudflare RocketLoader is active (added data-cfasync="false" to prevent async script deferral).
  * Fixed: paywall invisible or broken with JS optimization plugins (PhastPress, Autoptimize, WP Rocket) that bundle or defer scripts.
  * Fixed: paywall rendered inside hidden Elementor builder wrapper instead of the visible checkout — only the first visible paywall container is now used.
@@ -22,15 +39,15 @@
  * Fixed: paywall loan amount now updates correctly when cart items or shipping costs change.
  * Added support for strict Content Security Policy environments: shops using a nonce-based CSP can now propagate the nonce to the dynamically injected SDK script via the comfino_csp_script_nonce WordPress filter.
  * Added per-product-type installment term limits (allowedProductsConfig): admins can now restrict available installment terms per financial product type in the sale settings. Limits are enforced on both the paywall (financial products listing) and order creation.
- * Added direct redirect mode: when enabled, the full paywall offer browser is skipped and the customer is redirected straight to the Comfino payment gateway with the default financial product.
+ * Added direct redirect mode: when enabled, the full paywall offer browser is skipped and the customer is redirected straight to the ComfinoPay payment gateway with the default financial product.
  * Added a custom paywall CSS style option: admins can inject a custom CSS file into the paywall iframe (only URLs within the store domain are accepted).
- * Added a custom payment method text option, and centralized default logo handling for the Comfino payment method.
+ * Added a custom payment method text option, and centralized default logo handling for the ComfinoPay payment method.
  * Added a widget price attribute setting to fix cases where the installment widget showed a stale or incorrect price on pages that render the price asynchronously.
  * Improved delivery/shipping tax handling in cart calculations for more accurate offer amounts.
  * Payment tracking is now more reliable across the checkout flow (tracking ID kept consistent from cart to order), improving diagnostics when investigating payment issues.
- * Enhanced error logging sent to Comfino with more context (severity level, error category, shop environment details), speeding up support and troubleshooting.
+ * Enhanced error logging sent to ComfinoPay with more context (severity level, error category, shop environment details), speeding up support and troubleshooting.
  * Improved compatibility with WooCommerce Blocks checkout and block-based themes.
- * Added product-level exclusion: admins can now exclude specific products by ID from Comfino availability, in addition to existing category-based filtering.
+ * Added product-level exclusion: admins can now exclude specific products by ID from ComfinoPay availability, in addition to existing category-based filtering.
 
 4.2.8
  * Fixed a bug in webhook (payment status notifications): order not found error when "Use order reference as external ID" option is active, fixed a frontend bug concerned with Gutenberg blocks (empty comfino_loan_type error).
@@ -60,7 +77,7 @@
 
 4.2.0
  * Improved plugin security and compatibility with best practices of WordPress plugins design and development.
- * Fixed a few bugs: empty payment type for Comfino payments, wrong total amount presented at checkout screen after changed shipping method in the new WC UI (blocks), problem with cart rescuing function.
+ * Fixed a few bugs: empty payment type for ComfinoPay payments, wrong total amount presented at checkout screen after changed shipping method in the new WC UI (blocks), problem with cart rescuing function.
  * Added workaround for Firefox bug in the new WC UI (blocks) - woocommerce_blocks-checkout-render-checkout-form hook fired with incomplete data.
 
 4.1.3
@@ -72,7 +89,7 @@
  * Fixed bug in API configuration management (wrong API host used in sandbox mode).
  * Fixed bug in remote configuration management (sandbox mode logic flag couldn't be changed remotely).
  * Fixed bug in API client (added extended data for correction items in cart required by leasing).
- * Fixed bug in Comfino availability filter (lower cart total value limit not worked properly).
+ * Fixed bug in ComfinoPay availability filter (lower cart total value limit not worked properly).
  * Fixed bug in LeaseLink calculations in paywall view.
  * Removed security issue in configuration panel template (added tab links sanitization).
 
@@ -111,7 +128,7 @@
  * Add new widget init options: productId, productPrice, platform, platformVersion, platformDomain.
 
 3.2.5
- * Add dynamically loaded list of widget types from Comfino API in configuration form (widget settings), fix bug in loading product types from API.
+ * Add dynamically loaded list of widget types from ComfinoPay API in configuration form (widget settings), fix bug in loading product types from API.
 
 3.2.4
  * Add cart rescue.
@@ -120,7 +137,7 @@
  * Fix bug in cart total value calculation if discount is present.
 
 3.2.2
- * Fix bug in communication with Comfino API.
+ * Fix bug in communication with ComfinoPay API.
 
 3.2.1
  * Update documentation.
@@ -128,7 +145,7 @@
  * Extend error information - add HTTP request headers in API request body field.
 
 3.2.0
- * Add dynamically loaded list of offer types from Comfino API in configuration form (widget settings).
+ * Add dynamically loaded list of offer types from ComfinoPay API in configuration form (widget settings).
 
 3.1.1
  * Fix bug in total amount rounding.
@@ -193,9 +210,9 @@
  * Documentation update
 
 2.2.4
- * Update contact information (support e-mail and phone number), add a new offer type in Comfino widget: Pay later (PAY_LATER)
- * Add automatic retrieving of widget key from Comfino API
- * Link all images (Comfino logo, icons) to the external host to avoid problems with hosting configurations at some websites (403 error)
+ * Update contact information (support e-mail and phone number), add a new offer type in ComfinoPay widget: Pay later (PAY_LATER)
+ * Add automatic retrieving of widget key from ComfinoPay API
+ * Link all images (ComfinoPay logo, icons) to the external host to avoid problems with hosting configurations at some websites (403 error)
 
 2.2.3
  * Tested WP 5.9.3 or 5.4.2
@@ -242,4 +259,4 @@
  * Fix documentation
 
 1.0.0
- * First release Comfino Payment Gateway
+ * First release ComfinoPay Payment Gateway

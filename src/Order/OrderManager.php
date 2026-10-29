@@ -18,16 +18,16 @@ if (!defined('ABSPATH')) {
 final class OrderManager
 {
     /**
-     * Converts WooCommerce cart to Comfino cart structure for API submission.
+     * Converts WooCommerce cart to ComfinoPay cart structure for API submission.
      *
      * Transforms cart data including products, prices, delivery costs, and tax information
-     * into the format expected by Comfino API. Handles product variations, category inheritance,
+     * into the format expected by ComfinoPay API. Handles product variations, category inheritance,
      * and optional price modifiers.
      *
      * @param \WC_Cart $cart WooCommerce cart object containing items and totals
      * @param int $priceModifier Optional price modifier in cents (e.g., custom commission). Default 0.
      *
-     * @return Cart Comfino cart structure with cart items, totals, and delivery information
+     * @return Cart ComfinoPay cart structure with cart items, totals, and delivery information
      *
      * @throws \InvalidArgumentException If cart total value is negative
      * @throws \Exception If cart data cannot be retrieved or processed
@@ -37,7 +37,7 @@ final class OrderManager
         $totalValue = (int) round($cart->get_total('edit') * 100);
 
         if ($totalValue < 0) {
-            throw new \InvalidArgumentException('Total value must be greater than 0.');
+            throw new \InvalidArgumentException('Total value must not be negative.');
         }
 
         if ($priceModifier > 0 && $priceModifier < $totalValue) {
@@ -65,8 +65,9 @@ final class OrderManager
                     $categoryIds = $parentProduct->get_category_ids();
                 }
 
-                $grossPrice = (int) round(wc_get_price_including_tax($product) * 100);
-                $netPrice = (int) round(wc_get_price_excluding_tax($product) * 100);
+                // Both functions return '' for a product without a price.
+                $grossPrice = (int) round((float) wc_get_price_including_tax($product) * 100);
+                $netPrice = (int) round((float) wc_get_price_excluding_tax($product) * 100);
 
                 if (!empty($taxRates = \WC_Tax::get_rates($product->get_tax_class()))) {
                     $taxRate = reset($taxRates);
@@ -90,7 +91,13 @@ final class OrderManager
                     (int) $item['quantity']
                 );
             },
-            $cart->get_cart()
+            array_filter(
+                $cart->get_cart(),
+                static function ($item): bool {
+                    // A cart item of a deleted or unpublished product has no product object.
+                    return is_array($item) && isset($item['data']) && $item['data'] instanceof \WC_Product;
+                }
+            )
         );
 
         $totalNetValue = 0;
@@ -165,7 +172,7 @@ final class OrderManager
     }
 
     /**
-     * Creates Comfino cart structure from a single product for widget display.
+     * Creates ComfinoPay cart structure from a single product for widget display.
      *
      * Generates a minimal cart containing only the specified product, used for calculating
      * available payment options on product pages. Handles product variations and category
@@ -173,7 +180,7 @@ final class OrderManager
      *
      * @param \WC_Product $product WooCommerce product object (simple, variable, or variation)
      *
-     * @return Cart Comfino cart structure with single product, prices including/excluding tax, and tax information
+     * @return Cart ComfinoPay cart structure with single product, prices including/excluding tax, and tax information
      */
     public static function getShopCartFromProduct(\WC_Product $product): Cart
     {
@@ -191,8 +198,10 @@ final class OrderManager
             $categoryIds = $parentProduct->get_category_ids();
         }
 
-        $grossPrice = (int) (wc_get_price_including_tax($product) * 100);
-        $netPrice = ($taxRate !== null ? (int) (wc_get_price_excluding_tax($product) * 100) : $grossPrice);
+        /* Both functions return '' for a product without a price (e.g. a variable product parent or an item with no
+           price set), which would make the multiplication a TypeError on every product page view. */
+        $grossPrice = (int) round((float) wc_get_price_including_tax($product) * 100);
+        $netPrice = ($taxRate !== null ? (int) round((float) wc_get_price_excluding_tax($product) * 100) : $grossPrice);
         $taxValue = ($taxRate !== null ? $grossPrice - $netPrice : 0);
 
         return new Cart(
@@ -224,14 +233,14 @@ final class OrderManager
     }
 
     /**
-     * Extracts customer information from WooCommerce order for Comfino API.
+     * Extracts customer information from WooCommerce order for ComfinoPay API.
      *
-     * Converts order billing and shipping data into Comfino customer structure. Attempts to find
+     * Converts order billing and shipping data into ComfinoPay customer structure. Attempts to find
      * phone number from billing info or order metadata. Includes both billing and delivery addresses.
      *
      * @param \WC_Order $order WooCommerce order object with customer and address information
      *
-     * @return Customer Comfino customer structure with name, email, phone, tax ID, and addresses
+     * @return Customer ComfinoPay customer structure with name, email, phone, tax ID, and addresses
      */
     public static function getShopCustomerFromOrder(\WC_Order $order): Customer
     {
@@ -618,31 +627,54 @@ final class OrderManager
     }
 
     /**
-     * Retrieves order notes containing specific Comfino status updates.
+     * Retrieves order notes containing specific ComfinoPay status updates.
      *
-     * Searches through WooCommerce order notes to find system-generated notes
-     * recording Comfino payment status changes. Used to prevent duplicate status
-     * notifications to Comfino API.
+     * Searches through WooCommerce order notes to find notes recording ComfinoPay payment status changes. Used as the
+     * legacy fallback of the redundant-cancel guard for orders created before the terminal status order meta existed.
+     * The note was written translated, so every known variant is accepted: English and translated, "Comfino" and
+     * "ComfinoPay". The status token is matched case-sensitively; the note author is not checked (it is translated too).
      *
      * @param int $orderId WooCommerce order ID to search notes for
-     * @param array $statuses Array of Comfino status strings to search for (e.g., ['CANCELLED_BY_SHOP', 'RESIGN'])
+     * @param array $statuses Array of ComfinoPay status strings to search for (e.g., ['CANCELLED_BY_SHOP', 'RESIGN'])
      *
      * @return array Associative array with status as key and order note object as value
      */
     public static function getOrderStatusNotes(int $orderId, array $statuses): array
     {
         $orderNotes = wc_get_order_notes(['order_id' => $orderId]);
+        $notePrefixes = self::getStatusNotePrefixes();
         $notes = [];
 
         foreach ($orderNotes as $note) {
+            $noteContent = trim((string) $note->content);
+
             foreach ($statuses as $status) {
-                if ($note->added_by === 'system' && $note->content === "Comfino status: $status") {
-                    $notes[$status] = $note;
+                foreach ($notePrefixes as $notePrefix) {
+                    if ($noteContent === "$notePrefix: $status") {
+                        $notes[$status] = $note;
+
+                        break;
+                    }
                 }
             }
         }
 
         return $notes;
+    }
+
+    /**
+     * @return string[] Every known prefix of the ComfinoPay status order note, past and present, in any language
+     */
+    private static function getStatusNotePrefixes(): array
+    {
+        return array_values(array_unique(array_filter([
+            'Comfino status',
+            'ComfinoPay status',
+            'Status Comfino',
+            'Status ComfinoPay',
+            __('Comfino status', 'comfino-payment-gateway'),
+            __('ComfinoPay status', 'comfino-payment-gateway'),
+        ])));
     }
 
     /**

@@ -22,6 +22,7 @@ A shared PHP library for e-commerce shop plugins integrating with the Comfino pa
 - Required PHP extensions:
   - `ext-curl`
   - `ext-json`
+  - `ext-mbstring`
   - `ext-zlib`
 
 ## Installation

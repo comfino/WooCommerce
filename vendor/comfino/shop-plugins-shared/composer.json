@@ -16,6 +16,7 @@
         "php": ">=7.1",
         "ext-curl": "*",
         "ext-json": "*",
+        "ext-mbstring": "*",
         "ext-zlib": "*",
         "psr/log": "^1.1",
         "monolog/monolog": "^1.27",

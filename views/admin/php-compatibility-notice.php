@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
         wp_kses(
             sprintf(
                 /* translators: 1: Plugin version 2: Required PHP version 3: Current PHP version 4: Link to compatible version */
-                __('<strong>Comfino Payment Gateway:</strong> Plugin version %1$s requires PHP %2$s or higher. You are running PHP %3$s. Please upgrade your PHP version or downgrade to %4$s (compatible with PHP 7.0+).', 'comfino-payment-gateway'),
+                __('<strong>ComfinoPay Payment Gateway:</strong> Plugin version %1$s requires PHP %2$s or higher. You are running PHP %3$s. Please upgrade your PHP version or downgrade to %4$s (compatible with PHP 7.0+).', 'comfino-payment-gateway'),
                 esc_html($plugin_version),
                 esc_html($required_php_version),
                 esc_html($current_php_version),
@@ -37,7 +37,7 @@ if (!defined('ABSPATH')) {
         <p>
             <?php echo
             wp_kses(
-                __('<strong>Comfino Payment Gateway:</strong> The plugin has been automatically deactivated to prevent fatal errors. Please resolve the PHP version issue before reactivating.', 'comfino-payment-gateway'),
+                __('<strong>ComfinoPay Payment Gateway:</strong> The plugin has been automatically deactivated to prevent fatal errors. Please resolve the PHP version issue before reactivating.', 'comfino-payment-gateway'),
                 ['strong' => []]
             )
             ?>

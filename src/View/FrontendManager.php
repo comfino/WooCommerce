@@ -7,6 +7,7 @@ use Comfino\Api\HttpErrorExceptionInterface;
 use Comfino\Common\Frontend\FrontendHelper;
 use Comfino\Common\Frontend\ProductWidgetScriptHelper;
 use Comfino\Configuration\ConfigManager;
+use Comfino\Configuration\RemoteValueValidator;
 use Comfino\DebugLogger;
 use Comfino\ErrorLogger;
 use Comfino\Extended\Api\Dto\Plugin\OperationContext;
@@ -59,7 +60,7 @@ final class FrontendManager
             PaymentGateway::VERSION,
             PaymentGateway::BUILD_TS,
             'width: 300px',
-            'Comfino logo'
+            'ComfinoPay logo'
         );
     }
 
@@ -466,6 +467,7 @@ final class FrontendManager
                 'widgetKey' => $settings['COMFINO_WIDGET_KEY'] ?? null,
                 'loggingToken' => $variables['LOGGING_TOKEN'] ?? null,
                 'trackId' => $variables['TRACK_ID'] ?? null,
+                'trackingConsent' => ConfigManager::isPaywallTrackingEnabled(),
                 'widgetTargetSelector' => $settings['COMFINO_WIDGET_TARGET_SELECTOR'] ?? null,
                 'priceSelector' => $settings['COMFINO_WIDGET_PRICE_SELECTOR'] ?? null,
                 'priceAttribute' => ($settings['COMFINO_WIDGET_PRICE_ATTRIBUTE'] ?? '') ?: null,
@@ -476,9 +478,10 @@ final class FrontendManager
                 'offerTypes' => $offerTypes !== [] ? $offerTypes : null,
                 'showProviderLogos' => (bool) ($settings['COMFINO_WIDGET_SHOW_PROVIDER_LOGOS'] ?? false),
                 'hasPriceInput' => false,
-                'bannerCssUrl' => ($settings['COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL'] ?? '') ?: null,
-                'calculatorCssUrl' => ($settings['COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL'] ?? '') ?: null,
-                /* Standalone calculator (no banner): the shop's own button/link opens the Comfino calculator window,
+                // Remotely writable options: validated on read too (https, shop host).
+                'bannerCssUrl' => RemoteValueValidator::getValidCssUrl($settings['COMFINO_WIDGET_CUSTOM_BANNER_CSS_URL'] ?? null),
+                'calculatorCssUrl' => RemoteValueValidator::getValidCssUrl($settings['COMFINO_WIDGET_CUSTOM_CALCULATOR_CSS_URL'] ?? null),
+                /* Standalone calculator (no banner): the shop's own button/link opens the ComfinoPay calculator window,
                    either via triggerSelector (config bridge wires the click) or window.comfinoWidget.open() / the
                    comfino:widget:ready event. */
                 'components' => !empty($settings['COMFINO_WIDGET_DISABLE_BANNER']) ? 'calculator' : null,
@@ -512,17 +515,8 @@ final class FrontendManager
 
             return '<script type="application/json" id="' . ProductWidgetScriptHelper::CONFIG_ELEMENT_ID . '">' . $json . '</script>';
         } catch (\Throwable $e) {
+            // processError() already reports the error.
             self::processError('Widget config element', $e, null, null, null, '[ERROR]', OperationContext::WidgetRendering);
-            ErrorLogger::sendError(
-                $e,
-                OperationContext::WidgetRendering,
-                (string) $e->getCode(),
-                $e->getMessage(),
-                $e instanceof HttpErrorExceptionInterface ? $e->getUrl() : null,
-                $e instanceof HttpErrorExceptionInterface ? $e->getRequestBody() : null,
-                $e instanceof HttpErrorExceptionInterface ? $e->getResponseBody() : null,
-                $e->getTraceAsString()
-            );
         }
 
         return '';
