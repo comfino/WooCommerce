@@ -34,8 +34,8 @@ if (!defined('ABSPATH')) {
 class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
-    public const VERSION = '4.4.0';
-    public const BUILD_TS = 1793201086;
+    public const VERSION = '4.4.1';
+    public const BUILD_TS = 1793286506;
 
     public function __construct()
     {

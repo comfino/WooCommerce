@@ -1,10 +1,10 @@
 === ComfinoPay Payment Gateway ===
-Contributors: comfinopay
+Contributors: comfino
 Donate link: https://comfino.pl/
 Tags: comfinopay, woocommerce, gateway, payment, bank
 WC tested up to: 10.7.0
 WC requires at least: 3.0
-Stable tag: 4.4.0
+Stable tag: 4.4.1
 Tested up to: 7.1
 Requires at least: 5.0
 Requires PHP: 7.1
@@ -20,6 +20,9 @@ ComfinoPay is an innovative payment method for customers of e-commerce stores! T
 * You will reach new customers.
 
 === Changelog ===
+
+4.4.1
+ * Minor fixes and improvements.
 
 4.4.0
  * Comfino is now ComfinoPay: names and messages use the new brand. Your settings, orders and integration are unchanged.

@@ -1,3 +1,6 @@
+4.4.1
+ * Minor fixes and improvements.
+
 4.4.0
  * Comfino is now ComfinoPay: names and messages use the new brand. Your settings, orders and integration are unchanged.
  * The ComfinoPay payment method at checkout can now show the current shop promotion and its amount.
