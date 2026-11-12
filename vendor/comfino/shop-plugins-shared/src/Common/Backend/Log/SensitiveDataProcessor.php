@@ -19,23 +19,17 @@ final class SensitiveDataProcessor implements ProcessorInterface
 
         '/password/i',
         '/passwd/i',
-        '/pwd/i',
 
         '/card[_-]?number/i',
         '/cvv/i',
-        '/cvc/i',
 
-        '/ssn/i',
         '/pesel/i',  
-        '/nip/i',    
         '/e[_-]?mail/i',
         '/phone/i',
         '/first[_-]?name/i',
         '/last[_-]?name/i',
         '/street/i',
-        '/city/i',
         '/postal[_-]?code/i',
-        '/zip/i',
         '/tax[_-]?id/i',
         '/building[_-]?number/i',
         '/apartment[_-]?number/i',
@@ -45,10 +39,16 @@ final class SensitiveDataProcessor implements ProcessorInterface
         '/csrf[_-]?token/i',
     ];
 
+    private const SENSITIVE_WORDS = ['ssn', 'nip', 'pwd', 'cvc', 'city', 'zip'];
+
     private const SENSITIVE_HEADERS = [
         'authorization',
+        'proxy-authorization',
         'api-key',
         'x-api-key',
+        'auth',
+        'cookie',
+        'set-cookie',
     ];
 
     private const UNMASKED_KEY_PATTERNS = [
@@ -69,6 +69,51 @@ final class SensitiveDataProcessor implements ProcessorInterface
         }
 
         return $records;
+    }
+
+    /**
+     * @param string $text
+     * @return string
+     */
+    public function sanitizeText($text): string
+    {
+        $text = (string) preg_replace(
+            '/\b(authorization|proxy-authorization|cookie|set-cookie)(\s*[=:]\s*)[^\r\n]+/i',
+            '$1$2[REDACTED]',
+            $text
+        );
+        $text = (string) preg_replace('/\bBearer\s+[A-Za-z0-9._~+\/=-]+/i', 'Bearer [REDACTED]', $text);
+
+        $text = (string) preg_replace_callback(
+            '/"([A-Za-z0-9_-]+)"\s*:\s*("(?:[^"\\\\]|\\\\.)*"|-?[0-9.]+)/',
+            function (array $m) : string {
+                return $this->isSensitiveTextKey($m[1]) ? '"' . $m[1] . '":"[REDACTED]"' : $m[0];
+            },
+            $text
+        );
+
+        $text = (string) preg_replace_callback(
+            '/\b([A-Za-z0-9_-]+)(\s*[=:]\s*)([^\s&,;"]+)/',
+            function (array $m) : string {
+                return $this->isSensitiveTextKey($m[1]) ? $m[1] . $m[2] . '[REDACTED]' : $m[0];
+            },
+            $text
+        );
+
+        $text = (string) preg_replace('/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/', '[REDACTED]', $text);
+
+        return (string) preg_replace('/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*/', '[REDACTED]', $text);
+    }
+
+    private function isSensitiveTextKey(string $key): bool
+    {
+        foreach (self::UNMASKED_KEY_PATTERNS as $keyPattern) {
+            if (preg_match($keyPattern, $key)) {
+                return false;
+            }
+        }
+
+        return $this->isSensitiveKey($key);
     }
 
     /**
@@ -123,6 +168,14 @@ final class SensitiveDataProcessor implements ProcessorInterface
 
         foreach (self::SENSITIVE_PATTERNS as $pattern) {
             if (preg_match($pattern, $key)) {
+                return true;
+            }
+        }
+
+        $words = preg_split('/[^A-Za-z0-9]+|(?<=[a-z0-9])(?=[A-Z])/', $key, -1, PREG_SPLIT_NO_EMPTY);
+
+        foreach ($words === false ? [] : $words as $word) {
+            if (in_array(strtolower($word), self::SENSITIVE_WORDS, true)) {
                 return true;
             }
         }

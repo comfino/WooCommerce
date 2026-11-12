@@ -39,4 +39,9 @@ interface OrderInterface
      * @return string|null
      */
     public function getPromoCode(): ?string;
+
+    /**
+     * @return bool|null
+     */
+    public function getDirectRedirect(): ?bool;
 }

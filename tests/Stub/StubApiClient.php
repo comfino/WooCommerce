@@ -21,6 +21,8 @@ class StubApiClient extends \Comfino\Common\Api\Client
     public $userSettingsHeaders = [];
     /** @var \Throwable|null */
     public $productTypesException;
+    /** @var \Comfino\Extended\Api\Response\ClaimErrorLoggingToken|\Throwable|null Null reproduces the shared client's swallowed request error */
+    public $claimTokenResult;
 
     public function __construct()
     {
@@ -94,6 +96,17 @@ class StubApiClient extends \Comfino\Common\Api\Client
         $headers->setValue($response, $this->userSettingsHeaders);
 
         return $response;
+    }
+
+    public function claimErrorLoggingToken(): ?\Comfino\Extended\Api\Response\ClaimErrorLoggingToken
+    {
+        $this->recordCall('claimErrorLoggingToken');
+
+        if ($this->claimTokenResult instanceof \Throwable) {
+            throw $this->claimTokenResult;
+        }
+
+        return $this->claimTokenResult;
     }
 
     public function getCallCount(string $method): int

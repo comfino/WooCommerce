@@ -4,7 +4,7 @@ Donate link: https://comfino.pl/
 Tags: comfinopay, woocommerce, gateway, payment, bank
 WC tested up to: 10.7.0
 WC requires at least: 3.0
-Stable tag: 4.4.1
+Stable tag: 4.4.2
 Tested up to: 7.1
 Requires at least: 5.0
 Requires PHP: 7.1
@@ -20,6 +20,13 @@ ComfinoPay is an innovative payment method for customers of e-commerce stores! T
 * You will reach new customers.
 
 === Changelog ===
+
+4.4.2
+ * Direct redirect mode state is now sent with the order, so ComfinoPay can report it reliably.
+ * Error-logging token refresh no longer repeats on every request after a failed or short-lived token claim.
+ * Product types, widget types and creditors are cached for 1 hour when the API gives no cache lifetime.
+ * Stronger masking of credentials and personal data (authorization headers, tokens, NIP, city) in logs and diagnostics.
+ * Outbound request queue handles storage and reporting failures without losing or repeating requests.
 
 4.4.1
  * Minor fixes and improvements.

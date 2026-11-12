@@ -34,8 +34,8 @@ if (!defined('ABSPATH')) {
 class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
-    public const VERSION = '4.4.1';
-    public const BUILD_TS = 1793286506;
+    public const VERSION = '4.4.2';
+    public const BUILD_TS = 1794473443;
 
     public function __construct()
     {
@@ -130,7 +130,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function process_payment($order_id): array
     {
-        // Reuse the trackId minted during this checkout session's paywall render, if any.
+        // Reuse the trackId generated during this checkout session's paywall render, if any.
         ApiClient::pinCheckoutTrackId();
 
         $cart = WC()->cart;
@@ -237,7 +237,7 @@ class PaymentGateway extends \WC_Payment_Gateway
         $shopCustomer = OrderManager::getShopCustomerFromOrder($wcOrder);
         $returnUrl = $this->get_return_url($wcOrder);
 
-        $order = $this->createOrder($orderId, $loanType, $loanTerm, $returnUrl, $shopCart, $shopCustomer, $promoCode);
+        $order = $this->createOrder($orderId, $loanType, $loanTerm, $returnUrl, $shopCart, $shopCustomer, $promoCode, $directRedirect);
 
         // Perform comprehensive validation before sending credit application.
         $validationErrors = $this->validatePaymentData($order, $cart);
@@ -823,7 +823,8 @@ class PaymentGateway extends \WC_Payment_Gateway
         string $returnUrl,
         Cart $shopCart,
         Customer $shopCustomer,
-        ?string $promoCode = null
+        ?string $promoCode = null,
+        ?bool $directRedirect = null
     ): Order
     {
         return (new OrderFactory())->createOrder(
@@ -842,7 +843,8 @@ class PaymentGateway extends \WC_Payment_Gateway
             $shopCart->getDeliveryTaxValue(),
             null,
             self::buildAllowedProductsConfig(),
-            $promoCode
+            $promoCode,
+            $directRedirect
         );
     }
 

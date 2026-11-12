@@ -36,7 +36,8 @@ final class OrderFactory
         ?int $deliveryCostTaxValue = null,
         ?string $category = null,
         ?array $allowedProductsConfig = null,
-        ?string $promoCode = null
+        ?string $promoCode = null,
+        ?bool $directRedirect = null
     ): Order {
         return new Order(
             $orderId,
@@ -62,7 +63,8 @@ final class OrderFactory
             null,
             null,
             $allowedProductsConfig,
-            PromoCode::normalize($promoCode)
+            PromoCode::normalize($promoCode),
+            $directRedirect
         );
     }
 }

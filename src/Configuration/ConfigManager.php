@@ -197,8 +197,13 @@ final class ConfigManager
     private const REMOTE_FLAGS_FAILURE_TTL = 300;
     private const REMOTE_FLAG_NAME_PATTERN = '/^[A-Z0-9_]{1,64}$/';
 
-    private const ERROR_LOGGING_TOKEN_FAILURE_CACHE_KEY = 'error_logging_token_claim_failed';
+    private const ERROR_LOGGING_TOKEN_COOLDOWN_CACHE_KEY = 'error_logging_token_claim_cooldown';
+    // Pause after a failed claim.
     private const ERROR_LOGGING_TOKEN_FAILURE_TTL = 300;
+    // Pause after a successful claim of a token that expires within the refresh window.
+    private const ERROR_LOGGING_TOKEN_SHORT_LIVED_TTL = 900;
+    // A token expiring within this many seconds is refreshed.
+    private const ERROR_LOGGING_TOKEN_REFRESH_WINDOW = 3600;
 
     /** @var ConfigurationManager */
     private static $configurationManager;
@@ -458,28 +463,46 @@ final class ConfigManager
             return;
         }
 
-        if (self::getErrorLoggingAccessToken() !== '' && self::getErrorLoggingAccessTokenExpiresAt() > time() + 3600) {
+        if (self::getErrorLoggingAccessToken() !== '' && self::getErrorLoggingAccessTokenExpiresAt() > time() + self::ERROR_LOGGING_TOKEN_REFRESH_WINDOW) {
             return;
         }
 
-        if (CacheManager::get(self::ERROR_LOGGING_TOKEN_FAILURE_CACHE_KEY) !== null) {
-            // A claim failed recently - don't retry on every request while the API is unreachable.
+        if (CacheManager::get(self::ERROR_LOGGING_TOKEN_COOLDOWN_CACHE_KEY) !== null) {
+            // A claim failed, or issued a token that is already due again - don't claim on every request.
             return;
         }
 
         try {
             $response = ApiClient::getInstance()->claimErrorLoggingToken();
 
-            if ($response !== null) {
-                self::updateConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN', $response->accessToken);
-                self::updateConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT', strtotime($response->expiresAt));
-                self::updateRemoteFlagsIfChanged($response->getHeader('Comfino-Flags', ''));
+            // The shared API client swallows request errors and returns null, so null is a failed claim, not "nothing to do".
+            $expiresAt = $response !== null ? strtotime($response->expiresAt) : false;
+
+            if ($response === null || $expiresAt === false) {
+                DebugLogger::logEvent(
+                    '[ERROR_LOGGING_TOKEN]',
+                    'Token claim failed',
+                    ['error_message' => $response === null ? 'No response.' : 'Unparsable token expiry.']
+                );
+
+                CacheManager::set(self::ERROR_LOGGING_TOKEN_COOLDOWN_CACHE_KEY, time(), self::ERROR_LOGGING_TOKEN_FAILURE_TTL);
+
+                return;
+            }
+
+            self::updateConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN', $response->accessToken);
+            self::updateConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT', $expiresAt);
+            self::updateRemoteFlagsIfChanged($response->getHeader('Comfino-Flags', ''));
+
+            // A token issued with a lifetime within the refresh window is due again at once; wait before claiming another.
+            if ($expiresAt <= time() + self::ERROR_LOGGING_TOKEN_REFRESH_WINDOW) {
+                CacheManager::set(self::ERROR_LOGGING_TOKEN_COOLDOWN_CACHE_KEY, time(), self::ERROR_LOGGING_TOKEN_SHORT_LIVED_TTL);
             }
         } catch (\Throwable $e) {
             // CETS token claim is best-effort: back off for a few minutes and keep a local debug record only.
             DebugLogger::logEvent('[ERROR_LOGGING_TOKEN]', 'Token claim error', ['error_message' => $e->getMessage()]);
 
-            CacheManager::set(self::ERROR_LOGGING_TOKEN_FAILURE_CACHE_KEY, time(), self::ERROR_LOGGING_TOKEN_FAILURE_TTL);
+            CacheManager::set(self::ERROR_LOGGING_TOKEN_COOLDOWN_CACHE_KEY, time(), self::ERROR_LOGGING_TOKEN_FAILURE_TTL);
         }
     }
 

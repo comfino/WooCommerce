@@ -25,6 +25,13 @@ if (!defined('ABSPATH')) {
 
 final class SettingsManager
 {
+    /**
+     * Lifetime, in seconds, of the product types, widget types and creditors when the API names none (a missing, zero or
+     * negative `Comfino-Cache-TTL`, e.g. stripped by a proxy). `CacheManager::set()` treats 0 as "never expires", which
+     * would keep these lists until the next cache invalidation webhook.
+     */
+    private const FALLBACK_CACHE_TTL = 3600;
+
     private const NEGATIVE_CACHE_TTL = 300;
 
     /** @var ProductTypeFilterManager */
@@ -381,7 +388,8 @@ final class SettingsManager
         try {
             [$list, $cacheTtl] = $fetchList();
 
-            CacheManager::set($cacheKey, $list, $cacheTtl, [$cacheTag]);
+            // A missing, zero or negative Comfino-Cache-TTL must not mean "never expires" (CacheManager::set() semantics).
+            CacheManager::set($cacheKey, $list, $cacheTtl > 0 ? $cacheTtl : self::FALLBACK_CACHE_TTL, [$cacheTag]);
             // Untagged and without expiry: survives invalidation, used only while the API is failing.
             CacheManager::set("$cacheKey.stale", $list);
 

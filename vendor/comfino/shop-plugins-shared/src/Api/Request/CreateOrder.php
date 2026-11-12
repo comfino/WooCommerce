@@ -123,6 +123,7 @@ class CreateOrder extends Request
                 'accountNumber' => $this->order->getAccountNumber(),
                 'transferTitle' => $this->order->getTransferTitle(),
                 'promoCode' => $this->order->getPromoCode(),
+                'directRedirect' => $this->order->getDirectRedirect(),
                 'simulation' => $this->validateOnly ?: null,
 
                 'allowedProductsConfig' => ($configs = $this->order->getAllowedProductsConfig()) !== null
