@@ -22,15 +22,25 @@ if (!defined('ABSPATH')) {
 
 final class ApiClient
 {
+    /** Cookie keeping the checkout track ID between the paywall render and the order-create request. */
     private const CHECKOUT_TRACK_ID_COOKIE = 'comfino_checkout_track_id';
-    private const CHECKOUT_TRACK_ID_COOKIE_TTL = 900;
+    /** Same sliding lifetime as the SDK journey cookie, which the SDK clears when the shopper starts the payment. */
+    private const CHECKOUT_TRACK_ID_COOKIE_TTL = 1800;
+    /** Track ID format accepted from cookies and requests, shared with the frontend SDK and the Comfino API. */
     private const CHECKOUT_TRACK_ID_PATTERN = '/^[A-Za-z0-9_.:-]{1,128}$/';
+    /** Cookie owned by the frontend SDK with the consent-gated shopper journey track ID (read only, never written). */
     private const JOURNEY_TRACK_ID_COOKIE = 'comfino_journey_track_id';
+    /** Place-order request field with the paywall track ID, written by the frontend SDK. */
+    public const TRACK_ID_REQUEST_FIELD = 'comfino_track_id';
 
-    /* Plugin bounds for the remotely writable transport options, tighter than the shared client's own floor. Retries
-       double the timeouts, so the limits keep a single API call from stalling a page for minutes. */
+    /**
+     * Upper bound of the remotely writable connection timeout in seconds, tighter than the shared client's own floor.
+     * Retries double the timeouts, so the limit keeps a single API call from stalling a page for minutes.
+     */
     public const MAX_CONNECT_TIMEOUT = 5;
+    /** Upper bound of the remotely writable transfer timeout in seconds (see MAX_CONNECT_TIMEOUT). */
     public const MAX_TRANSFER_TIMEOUT = 15;
+    /** Upper bound of the remotely writable number of connection attempts (see MAX_CONNECT_TIMEOUT). */
     public const MAX_CONNECT_ATTEMPTS = 3;
 
     /** @var \Comfino\Common\Api\Client */
@@ -174,12 +184,22 @@ final class ApiClient
      * When the merchant enabled statistics consent, a valid SDK-owned journey cookie (set only with the shopper's
      * analytics consent) takes precedence, so product-page widget events and checkout share one trackId. The journey
      * cookie is never read with the setting off, and never written here.
+     *
+     * A valid track ID sent with the place-order request by the frontend SDK (the one of the paywall events, see
+     * TRACK_ID_REQUEST_FIELD) wins over both cookies: the SDK clears the journey cookie when the payment starts, and
+     * the checkout cookie may be missing or expired by then.
+     *
+     * @param string $submittedTrackId Track ID from the place-order request, empty when the request has none
      */
-    public static function pinCheckoutTrackId(): void
+    public static function pinCheckoutTrackId(string $submittedTrackId = ''): void
     {
         $client = self::getInstance();
 
-        if (ConfigManager::isPaywallTrackingEnabled() && self::isValidTrackIdCookie(self::JOURNEY_TRACK_ID_COOKIE)) {
+        if (preg_match(self::CHECKOUT_TRACK_ID_PATTERN, $submittedTrackId) === 1) {
+            $client->setTrackId($submittedTrackId);
+        } elseif (ConfigManager::isPaywallTrackingEnabled() &&
+            self::isValidTrackIdCookie(self::JOURNEY_TRACK_ID_COOKIE)
+        ) {
             $client->setTrackId($_COOKIE[self::JOURNEY_TRACK_ID_COOKIE]);
         } elseif (self::isValidTrackIdCookie(self::CHECKOUT_TRACK_ID_COOKIE)) {
             $client->setTrackId($_COOKIE[self::CHECKOUT_TRACK_ID_COOKIE]);
@@ -189,12 +209,15 @@ final class ApiClient
 
         if (!headers_sent()) {
             $expires = time() + self::CHECKOUT_TRACK_ID_COOKIE_TTL;
+            /* Browsers drop a Secure cookie sent over plain HTTP, which would leave the order-create request without
+               the checkout trackId. */
+            $secure = is_ssl();
 
             if (PHP_VERSION_ID >= 70300) {
                 setcookie(self::CHECKOUT_TRACK_ID_COOKIE, $trackId, [
                     'expires' => $expires,
                     'path' => '/',
-                    'secure' => true,
+                    'secure' => $secure,
                     'httponly' => true,
                     'samesite' => 'Lax',
                 ]);
@@ -208,7 +231,7 @@ final class ApiClient
                     $expires,
                     '/; SameSite=Lax',
                     '',
-                    true,
+                    $secure,
                     true
                 );
             }
