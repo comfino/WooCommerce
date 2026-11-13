@@ -35,7 +35,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
     public const VERSION = '4.4.2';
-    public const BUILD_TS = 1794577532;
+    public const BUILD_TS = 1794588443;
 
     public function __construct()
     {
@@ -313,6 +313,9 @@ class PaymentGateway extends \WC_Payment_Gateway
             $wcOrder->get_data_store()->set_stock_reduced($wcOrder->get_id(), true);
 
             $cart->empty_cart();
+
+            // The order is created: the next checkout starts a new journey (own trackId).
+            ApiClient::releaseCheckoutTrackId();
 
             $result = ['result' => 'success', 'redirect' => $response->applicationUrl];
         } catch (\Throwable $e) {

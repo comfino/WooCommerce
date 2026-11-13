@@ -276,6 +276,16 @@ class ApiClientTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('checkout-track-id.1', ApiClient::getInstance()->getTrackId());
     }
 
+    public function testReleaseCheckoutTrackIdDropsCheckoutCookieOnly(): void
+    {
+        $this->prepareTrackIdPinning(true, 'journey-track-id.1', 'checkout-track-id.1');
+
+        ApiClient::releaseCheckoutTrackId();
+
+        $this->assertArrayNotHasKey('comfino_checkout_track_id', $_COOKIE);
+        $this->assertEquals('journey-track-id.1', $_COOKIE['comfino_journey_track_id']);
+    }
+
     /**
      * Swaps in a fresh client (a pinned trackId can't be overwritten) and sets the consent option and cookies.
      */

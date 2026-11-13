@@ -205,36 +205,57 @@ final class ApiClient
             $client->setTrackId($_COOKIE[self::CHECKOUT_TRACK_ID_COOKIE]);
         }
 
-        $trackId = $client->getTrackId();
+        self::writeCheckoutTrackIdCookie($client->getTrackId(), time() + self::CHECKOUT_TRACK_ID_COOKIE_TTL);
+    }
 
-        if (!headers_sent()) {
-            $expires = time() + self::CHECKOUT_TRACK_ID_COOKIE_TTL;
-            /* Browsers drop a Secure cookie sent over plain HTTP, which would leave the order-create request without
-               the checkout trackId. */
-            $secure = is_ssl();
+    /**
+     * Releases the checkout-scoped trackId after the order was created with it, so the next checkout of the same
+     * browser (a retry after a failed or canceled payment, another order within the cookie lifetime) starts a new
+     * journey instead of reusing the trackId of the finished one.
+     *
+     * The SDK-owned journey cookie is not touched here: the SDK clears it itself when the payment starts.
+     */
+    public static function releaseCheckoutTrackId(): void
+    {
+        unset($_COOKIE[self::CHECKOUT_TRACK_ID_COOKIE]);
 
-            if (PHP_VERSION_ID >= 70300) {
-                setcookie(self::CHECKOUT_TRACK_ID_COOKIE, $trackId, [
-                    'expires' => $expires,
-                    'path' => '/',
-                    'secure' => $secure,
-                    'httponly' => true,
-                    'samesite' => 'Lax',
-                ]);
-            } else {
-                /* PHP 7.1/7.2 target: setcookie()'s array-options 4th param (needed for a clean SameSite flag) requires
-                   PHP 7.3+. SameSite is set via the well-known path-suffix workaround instead. Since PHP 8.1, setcookie()
-                   rejects ";"/" " in the "path" arg, so this branch must stay 7.3-excluded. */
-                setcookie(
-                    self::CHECKOUT_TRACK_ID_COOKIE,
-                    $trackId,
-                    $expires,
-                    '/; SameSite=Lax',
-                    '',
-                    $secure,
-                    true
-                );
-            }
+        self::writeCheckoutTrackIdCookie('', time() - 3600);
+    }
+
+    /**
+     * Writes the checkout trackId cookie (an expiry in the past deletes it).
+     */
+    private static function writeCheckoutTrackIdCookie(string $value, int $expires): void
+    {
+        if (headers_sent()) {
+            return;
+        }
+
+        /* Browsers drop a Secure cookie sent over plain HTTP, which would leave the order-create request without
+           the checkout trackId. */
+        $secure = is_ssl();
+
+        if (PHP_VERSION_ID >= 70300) {
+            setcookie(self::CHECKOUT_TRACK_ID_COOKIE, $value, [
+                'expires' => $expires,
+                'path' => '/',
+                'secure' => $secure,
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]);
+        } else {
+            /* PHP 7.1/7.2 target: setcookie()'s array-options 4th param (needed for a clean SameSite flag) requires
+               PHP 7.3+. SameSite is set via the well-known path-suffix workaround instead. Since PHP 8.1, setcookie()
+               rejects ";"/" " in the "path" arg, so this branch must stay 7.3-excluded. */
+            setcookie(
+                self::CHECKOUT_TRACK_ID_COOKIE,
+                $value,
+                $expires,
+                '/; SameSite=Lax',
+                '',
+                $secure,
+                true
+            );
         }
     }
 
