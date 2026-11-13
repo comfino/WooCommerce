@@ -35,7 +35,7 @@ class PaymentGateway extends \WC_Payment_Gateway
 {
     public const GATEWAY_ID = 'comfino';
     public const VERSION = '4.4.2';
-    public const BUILD_TS = 1794497504;
+    public const BUILD_TS = 1794577532;
 
     public function __construct()
     {
@@ -130,8 +130,13 @@ class PaymentGateway extends \WC_Payment_Gateway
 
     public function process_payment($order_id): array
     {
-        // Reuse the trackId generated during this checkout session's paywall render, if any.
-        ApiClient::pinCheckoutTrackId();
+        /* Create the order with the trackId of the paywall events: sent by the frontend SDK (hidden input in the
+           classic checkout, payment_data in Blocks), else the one of this checkout session's paywall render, if any. */
+        $submittedTrackId = $_POST[ApiClient::TRACK_ID_REQUEST_FIELD] ?? '';
+
+        ApiClient::pinCheckoutTrackId(
+            is_string($submittedTrackId) ? sanitize_text_field(wp_unslash($submittedTrackId)) : ''
+        );
 
         $cart = WC()->cart;
 

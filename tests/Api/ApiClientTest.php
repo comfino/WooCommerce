@@ -258,6 +258,24 @@ class ApiClientTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('checkout-track-id.1', ApiClient::getInstance()->getTrackId());
     }
 
+    public function testPinCheckoutTrackIdPrefersSubmittedTrackIdOverBothCookies(): void
+    {
+        $this->prepareTrackIdPinning(true, 'journey-track-id.1', 'checkout-track-id.1');
+
+        ApiClient::pinCheckoutTrackId('01a1d4b7-46b3-725e-86cc-0047ff6f3881');
+
+        $this->assertEquals('01a1d4b7-46b3-725e-86cc-0047ff6f3881', ApiClient::getInstance()->getTrackId());
+    }
+
+    public function testPinCheckoutTrackIdIgnoresInvalidSubmittedTrackId(): void
+    {
+        $this->prepareTrackIdPinning(false, null, 'checkout-track-id.1');
+
+        ApiClient::pinCheckoutTrackId("bad\r\nvalue");
+
+        $this->assertEquals('checkout-track-id.1', ApiClient::getInstance()->getTrackId());
+    }
+
     /**
      * Swaps in a fresh client (a pinned trackId can't be overwritten) and sets the consent option and cookies.
      */
