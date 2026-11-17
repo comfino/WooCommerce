@@ -25,8 +25,7 @@ final class ApiService
     /**
      * Minimal length of an API key accepted as a request signature secret.
      *
-     * The error reporting request builder already refuses to key a MAC with anything shorter
-     * (ReportShopPluginError::MIN_HASH_KEY_LENGTH), so a value below this length cannot be a real ComfinoPay API key.
+     * A value below this length cannot be a real ComfinoPay API key.
      */
     private const MIN_API_KEY_LENGTH = 16;
 
@@ -98,9 +97,8 @@ final class ApiService
             ]
         );
 
-        /* ComfinoPay API callback endpoints - require CR-Signature authentication.
-           These are server-to-server requests from ComfinoPay API (no WordPress user context).
-           Authentication is performed by RestEndpointManager::verifyRequest() using SHA3-256 HMAC signature verification. */
+        /* ComfinoPay API callback endpoints - require request signature authentication. These are server-to-server requests
+           from ComfinoPay API (no WordPress user context). Authentication is performed by RestEndpointManager::verifyRequest(). */
 
         self::getEndpointManager()->registerEndpoint(
             new StatusNotification(
@@ -327,7 +325,7 @@ final class ApiService
      * Permission callback for admin-only endpoints (future use).
      * Requires WordPress admin capabilities.
      *
-     * Note: This is NOT used for webhook/callback endpoints which authenticate via CR-Signature.
+     * Note: This is NOT used for webhook/callback endpoints which authenticate via request signature.
      * Use this only for admin panel features that modify plugin settings or trigger diagnostic actions.
      *
      * @return bool True if user has WooCommerce management capabilities.

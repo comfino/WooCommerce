@@ -192,7 +192,7 @@ final class ConfigManager
     private const CONFIG_MANAGER_OPTIONS = 0;
 
     private const REMOTE_FLAGS_CACHE_KEY = 'remote_flag_attributes';
-    // Daily fallback re-fetch for shops whose server rejects the backend's cache invalidation requests.
+    // Daily fallback re-fetch for shops whose server rejects cache invalidation requests.
     private const REMOTE_FLAGS_MAX_TTL = 86400;
     private const REMOTE_FLAGS_FAILURE_TTL = 300;
     private const REMOTE_FLAG_NAME_PATTERN = '/^[A-Z0-9_]{1,64}$/';
@@ -499,7 +499,7 @@ final class ConfigManager
                 CacheManager::set(self::ERROR_LOGGING_TOKEN_COOLDOWN_CACHE_KEY, time(), self::ERROR_LOGGING_TOKEN_SHORT_LIVED_TTL);
             }
         } catch (\Throwable $e) {
-            // CETS token claim is best-effort: back off for a few minutes and keep a local debug record only.
+            // Error logging token claim is best-effort: back off for a few minutes and keep a local debug record only.
             DebugLogger::logEvent('[ERROR_LOGGING_TOKEN]', 'Token claim error', ['error_message' => $e->getMessage()]);
 
             CacheManager::set(self::ERROR_LOGGING_TOKEN_COOLDOWN_CACHE_KEY, time(), self::ERROR_LOGGING_TOKEN_FAILURE_TTL);
@@ -519,9 +519,9 @@ final class ConfigManager
     }
 
     /**
-     * Flag attributes from GET /user/settings/flags (the PROMO entry included), cached under the "remote_flags" tag so
-     * the backend can invalidate them when the shop's promotion or flags change. Fetched lazily, on a cache miss, when
-     * a checkout config is built.
+     * Flag attributes from the user settings API (the PROMO entry included), cached under the "remote_flags" tag so
+     * they can be invalidated when the shop's promotion or flags change. Fetched lazily, on a cache miss, when a
+     * checkout config is built.
      *
      * @return array<string, mixed>
      */
@@ -539,11 +539,11 @@ final class ConfigManager
             $userSettings = ApiClient::getInstance()->getUserSettings();
             $flagAttributes = self::sanitizeRemoteFlagAttributes($userSettings->flags);
             $cacheTtl = (int) $userSettings->getHeader('Comfino-Cache-TTL', '0');
-            // The backend can only shorten the daily re-fetch, never lengthen it.
+            // The API-provided cache TTL can only shorten the daily re-fetch, never lengthen it.
             $cacheTtl = $cacheTtl > 0 ? min($cacheTtl, self::REMOTE_FLAGS_MAX_TTL) : self::REMOTE_FLAGS_MAX_TTL;
 
             if (empty(self::getRemoteFlags()) && !empty($flagNames = array_diff(array_keys($flagAttributes), ['PROMO']))) {
-                // Seed the name list right after an upgrade, before the first CRM push or token claim.
+                // Seed the name list right after an upgrade, before the first remote configuration update or token claim.
                 self::updateConfigurationValue('COMFINO_REMOTE_FLAGS', array_values($flagNames));
             }
         } catch (\Throwable $e) {
@@ -562,7 +562,7 @@ final class ConfigManager
 
     /**
      * Keeps entries under well-formed flag names whose values are encodable as JSON. Values are opaque to the plugin
-     * (the backend owns their structure, the SDK interprets them), so they pass through unchanged.
+     * (the API owns their structure, the SDK interprets them), so they pass through unchanged.
      *
      * @param mixed $flags
      *

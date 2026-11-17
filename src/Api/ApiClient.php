@@ -340,7 +340,7 @@ final class ApiClient
             ]
         );
 
-        /* A 404 and an idempotent failure (e.g. a 409 on an order already cancelled at ComfinoPay) need no report: the
+        /* A 404 and an idempotent failure (e.g. canceling an order that is already canceled) need no report: the
            requested state already holds or the resource is gone. */
         if ($statusCode !== 404 && !($exception instanceof AccessDenied && $exception->isIdempotentFailure())) {
             ErrorLogger::sendError(

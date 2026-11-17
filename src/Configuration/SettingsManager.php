@@ -26,9 +26,9 @@ if (!defined('ABSPATH')) {
 final class SettingsManager
 {
     /**
-     * Lifetime, in seconds, of the product types, widget types and creditors when the API names none (a missing, zero or
-     * negative `Comfino-Cache-TTL`, e.g. stripped by a proxy). `CacheManager::set()` treats 0 as "never expires", which
-     * would keep these lists until the next cache invalidation webhook.
+     * Lifetime, in seconds, of the product types, widget types and creditors when the API names none (a missing, zero
+     * or negative cache TTL header, e.g. stripped by a proxy). `CacheManager::set()` treats 0 as "never expires", which
+     * would keep these lists until the next cache invalidation.
      */
     private const FALLBACK_CACHE_TTL = 3600;
 
@@ -358,7 +358,7 @@ final class SettingsManager
      * Reads an API-backed list through the cache. A failed API call is not repeated for NEGATIVE_CACHE_TTL seconds
      * (one report per window instead of one per page view), and meanwhile the last good list is served as a stale copy.
      *
-     * @param callable $fetchList Returns [list, cache TTL from the Comfino-Cache-TTL header]
+     * @param callable $fetchList Returns [list, cache TTL from the API response]
      */
     private static function getCachedApiList(
         string $cacheKey,
@@ -388,7 +388,7 @@ final class SettingsManager
         try {
             [$list, $cacheTtl] = $fetchList();
 
-            // A missing, zero or negative Comfino-Cache-TTL must not mean "never expires" (CacheManager::set() semantics).
+            // A missing, zero or negative cache TTL must not mean "never expires" (CacheManager::set() semantics).
             CacheManager::set($cacheKey, $list, $cacheTtl > 0 ? $cacheTtl : self::FALLBACK_CACHE_TTL, [$cacheTag]);
             // Untagged and without expiry: survives invalidation, used only while the API is failing.
             CacheManager::set("$cacheKey.stale", $list);
@@ -479,9 +479,9 @@ final class SettingsManager
 
     /**
      * Returns the normalized `COMFINO_ALLOWED_PRODUCTS_CONFIG` payload ready for both the paywall iframe bootstrap
-     * (frontend) and the backend `AllowedProductConfig` DTO builder. Drops entries whose `type` is missing or not
-     * a known `LoanTypeEnum`, ensures `terms` are positive ints, returns `null` when the result is empty, so the
-     * SDK's `?.length` short-circuit matches the "no restrictions" semantics.
+     * (frontend) and the API request builder. Drops entries whose `type` is missing or not a known `LoanTypeEnum`,
+     * ensures `terms` are positive ints, returns `null` when the result is empty, so the SDK's `?.length` short-circuit
+     * matches the "no restrictions" semantics.
      *
      * @return array[]|null
      */
