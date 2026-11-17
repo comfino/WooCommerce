@@ -110,7 +110,7 @@ class ApiServiceTest extends \PHPUnit_Framework_TestCase
     public function testGetEndpointUrlForAllKnownEndpoints(): void
     {
         // Test frontend endpoints.
-        $frontendEndpoints = ['availableOfferTypes'];
+        $frontendEndpoints = ['availableOfferTypes', 'widgetSession'];
 
         foreach ($frontendEndpoints as $endpoint) {
             $url = ApiService::getEndpointUrl($endpoint);
@@ -134,6 +134,17 @@ class ApiServiceTest extends \PHPUnit_Framework_TestCase
             $this->assertContains('wp-json/comfino/', $url);
             $this->assertContains(strtolower($endpoint), $url);
         }
+    }
+
+    public function testWidgetSessionResponseIsNeverCached(): void
+    {
+        $method = new \ReflectionMethod(ApiService::class, 'getWidgetSessionResponse');
+        $method->setAccessible(true);
+
+        $response = $method->invoke(null);
+
+        $this->assertEquals(200, $response->get_status());
+        $this->assertContains('no-store', $response->get_headers()['Cache-Control'][0]);
     }
 
     public function testGetEndpointPathForAllKnownEndpoints(): void

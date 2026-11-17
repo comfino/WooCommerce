@@ -97,6 +97,21 @@ final class ApiService
             ]
         );
 
+        /* Per-visitor values of the product widget (track ID, logging token): fetched by the product page loader, because
+           the page itself may be served from a full-page cache. Never cached. */
+        self::registerWordPressApiEndpoint(
+            'widgetSession',
+            [
+                [
+                    'methods' => \WP_REST_Server::READABLE,
+                    'callback' => static function (): \WP_REST_Response {
+                        return self::getWidgetSessionResponse();
+                    },
+                    'permission_callback' => '__return_true',
+                ],
+            ]
+        );
+
         /* ComfinoPay API callback endpoints - require request signature authentication. These are server-to-server requests
            from ComfinoPay API (no WordPress user context). Authentication is performed by RestEndpointManager::verifyRequest(). */
 
@@ -194,6 +209,7 @@ final class ApiService
             'transactionStatus' => '/transactionstatus',
             'configuration' => '/configuration(?:/(?P<vkey>[a-f0-9]+))?',
             'cacheInvalidate' => '/cacheinvalidate',
+            'widgetSession' => '/widgetsession',
         ];
 
         add_action('rest_api_init', [self::class, 'init']);
@@ -215,6 +231,30 @@ final class ApiService
         $endpointParams = wp_parse_url($endpointUrl, PHP_URL_QUERY);
 
         return $endpointPath . (!empty($endpointParams) ? '?' . $endpointParams : '');
+    }
+
+    /**
+     * GET comfino/widgetsession: the per-visitor values of the product widget (track ID, logging token), which must not
+     * be embedded in full-page-cached product pages. Never cached.
+     */
+    private static function getWidgetSessionResponse(): \WP_REST_Response
+    {
+        $values = ConfigManager::isWidgetEnabled()
+            ? array_filter(
+                ConfigManager::getWidgetSessionValues(),
+                static function (?string $value): bool {
+                    return $value !== null;
+                }
+            )
+            : [];
+
+        $response = new \WP_REST_Response((object) $values, 200);
+
+        $response->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0, private');
+        $response->header('Pragma', 'no-cache');
+        $response->header('Expires', 'Wed, 11 Jan 1984 05:00:00 GMT');
+
+        return $response;
     }
 
     public static function processRequest(string $endpointName, \WP_REST_Request $request): \WP_REST_Response

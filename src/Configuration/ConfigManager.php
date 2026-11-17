@@ -879,9 +879,30 @@ final class ConfigManager
             'PRODUCT_CART_DETAILS' => $productData['product_cart_details'],
             'LANGUAGE' => Main::getShopLanguage(),
             'CURRENCY' => Main::getShopCurrency(),
-            'LOGGING_TOKEN' => FrontendManager::getLoggingToken(),
-            'TRACK_ID' => FrontendManager::getTrackId(),
         ];
+    }
+
+    /**
+     * Per-visitor values of the product widget. Kept out of getWidgetVariables(): the product page (and the widget
+     * config in it) may be served from a full-page cache, so these are fetched per request from an uncached endpoint.
+     *
+     * @return array{trackId: string|null, loggingToken: string|null}
+     */
+    public static function getWidgetSessionValues(): array
+    {
+        try {
+            $trackId = FrontendManager::getTrackId();
+        } catch (\Throwable $e) {
+            $trackId = null;
+        }
+
+        try {
+            $loggingToken = FrontendManager::getLoggingToken();
+        } catch (\Throwable $e) {
+            $loggingToken = '';
+        }
+
+        return ['trackId' => $trackId ?: null, 'loggingToken' => $loggingToken ?: null];
     }
 
     public static function getConfigurationValues(string $optionsGroup, array $optionsToReturn = []): array

@@ -411,6 +411,13 @@ namespace {
         }
     }
 
+    if (!function_exists('esc_url')) {
+        function esc_url($url): string
+        {
+            return htmlspecialchars((string) $url, ENT_QUOTES, 'UTF-8');
+        }
+    }
+
     if (!function_exists('wc_get_template')) {
         function wc_get_template($template_name, $args = [], $template_path = '', $default_path = '')
         {
@@ -800,6 +807,11 @@ namespace {
                 } else {
                     $this->headers[$name][] = $value;
                 }
+            }
+
+            public function get_headers(): array
+            {
+                return $this->headers;
             }
         }
     }

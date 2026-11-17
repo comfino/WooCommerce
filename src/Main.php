@@ -150,13 +150,9 @@ final class Main
                    Replaces the legacy inline widget-frontend init. */
                 echo FrontendManager::renderWidgetConfigElement($wcProduct->get_id()); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 
-                wp_enqueue_script(
-                    'comfino-product-widget',
-                    ConfigManager::getProductWidgetScriptUrl(),
-                    [],
-                    null,
-                    true
-                );
+                /* The config block above may be served from a full-page cache: the loader fetches the per-visitor values
+                   (track ID, logging token) from an uncached endpoint, then loads the CDN widget script. */
+                FrontendManager::includeLocalScripts(['widget-loader.js']);
             }
         });
 
