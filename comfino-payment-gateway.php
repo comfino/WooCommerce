@@ -3,14 +3,13 @@
  * Plugin Name: ComfinoPay Payment Gateway
  * Plugin URI: https://github.com/comfino/WooCommerce.git
  * Description: ComfinoPay Payment Gateway for WooCommerce.
- * Version: 4.4.1
+ * Version: 4.4.2
  * Author: ComfinoPay
  * Author URI: https://github.com/comfino
  * Domain Path: /languages
  * Text Domain: comfino-payment-gateway
- * WC tested up to: 10.7.0
+ * WC tested up to: 11.3.0
  * WC requires at least: 3.0
- * Tested up to: 7.1
  * Requires at least: 5.0
  * Requires PHP: 7.1
  * License: GPLv3
@@ -864,9 +863,8 @@ class Comfino_Payment_Gateway
 
             set_transient($lockKey, true, 5 * MINUTE_IN_SECONDS);
 
-            /* Fetch the latest release from the centralized ComfinoPay release API. It resolves the release of the line
-               compatible with this shop's PHP and WooCommerce version (from the client User-Agent) automatically. */
             try {
+                // Fetch the latest plugin release compatible with this shop's environment from the ComfinoPay API.
                 $release = ApiClient::getInstance()->getLatestPluginRelease('woocommerce');
             } catch (\Throwable $e) {
                 // Cache failure too - an unreachable/erroring API must not turn this into an hourly retry loop.
@@ -900,8 +898,8 @@ class Comfino_Payment_Gateway
      * Seconds until the next release check, randomized around one day.
      *
      * Every shop running this plugin activates/upgrades at roughly the same moments (release day), so a fixed
-     * DAY_IN_SECONDS interval makes every installation re-check at the same hour indefinitely, clustering a load on the
-     * release API across many shops. Jittering the interval (+/- 4 hours) makes each installation's check hour drift
+     * DAY_IN_SECONDS interval makes every installation re-check at the same hour indefinitely, clustering the
+     * requests from many shops. Jittering the interval (+/- 4 hours) makes each installation's check hour drift
      * randomly from day to day while keeping the check frequency at effectively once per day.
      */
     private static function next_release_check_interval(): int

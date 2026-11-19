@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Comfino\Common\Backend;
 
 use Comfino\Common\Backend\Log\LoggerFactory;
+use Comfino\Common\Backend\Log\SensitiveDataProcessor;
 use ComfinoExternal\Monolog\Logger as MonologLogger;
 
 class DebugLogger extends Logger
@@ -78,7 +79,7 @@ class DebugLogger extends Logger
             return '';
         }
 
-        return implode('', FileUtils::readLastLines($actualLogPath, $numLines));
+        return (new SensitiveDataProcessor())->sanitizeText(implode('', FileUtils::readLastLines($actualLogPath, $numLines)));
     }
 
     /**

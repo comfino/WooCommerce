@@ -28,7 +28,6 @@ final class SensitiveDataRedactor
         'apartment_number',
         'buildingnumber',
         'building_number',
-        'city',
         'ipaddress',
         'ip_address',
         'apikey',
@@ -39,9 +38,15 @@ final class SensitiveDataRedactor
         'token',
         'credential',
         'pesel',
-        'nip',
         'regon',
     ];
+
+    private const SENSITIVE_KEY_WORDS = ['nip', 'city'];
+
+    private const CREDENTIAL_HEADER_PATTERN = '/\b(authorization|proxy-authorization|cookie|set-cookie)(\s*[:=]\s*)[^\r\n]+/i';
+    private const BEARER_PATTERN = '/\bBearer\s+[A-Za-z0-9._~+\/=-]+/i';
+    private const JWT_PATTERN = '/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*/';
+    private const SECRET_QUERY_PARAMETER_PATTERN = '/([?&](?:auth|token|access_token|api[_-]?key|logging[_-]?token|signature)=)[^&\s"\']+/i';
 
     private const IP_KEY_PATTERN = '/(^|[_\-.])ip($|[_\-.]|address)/';
 
@@ -59,7 +64,11 @@ final class SensitiveDataRedactor
             return '';
         }
 
-        $masked = preg_replace(self::EMAIL_PATTERN, self::REDACTED, $text);
+        $masked = preg_replace(self::CREDENTIAL_HEADER_PATTERN, '$1$2' . self::REDACTED, $text);
+        $masked = preg_replace(self::BEARER_PATTERN, 'Bearer ' . self::REDACTED, $masked ?? $text);
+        $masked = preg_replace(self::JWT_PATTERN, self::REDACTED, $masked ?? $text);
+        $masked = preg_replace(self::SECRET_QUERY_PARAMETER_PATTERN, '$1' . self::REDACTED, $masked ?? $text);
+        $masked = preg_replace(self::EMAIL_PATTERN, self::REDACTED, $masked ?? $text);
         $masked = preg_replace(self::IPV6_PATTERN, self::REDACTED, $masked);
         $masked = preg_replace(self::IPV4_PATTERN, self::REDACTED, $masked);
         $masked = preg_replace(self::PHONE_PATTERN, self::REDACTED, $masked);
@@ -182,6 +191,14 @@ final class SensitiveDataRedactor
 
         foreach (self::SENSITIVE_KEY_FRAGMENTS as $fragment) {
             if (strpos($normalized, $fragment) !== false) {
+                return true;
+            }
+        }
+
+        $words = preg_split('/[^A-Za-z0-9]+|(?<=[a-z0-9])(?=[A-Z])/', $key, -1, PREG_SPLIT_NO_EMPTY);
+
+        foreach ($words === false ? [] : $words as $word) {
+            if (in_array(strtolower($word), self::SENSITIVE_KEY_WORDS, true)) {
                 return true;
             }
         }

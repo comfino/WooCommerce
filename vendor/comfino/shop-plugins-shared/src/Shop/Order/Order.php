@@ -53,6 +53,10 @@ class Order implements OrderInterface
      */
     private $promoCode;
     /**
+     * @var bool|null
+     */
+    private $directRedirect;
+    /**
      * @param string $id
      * @param string $returnUrl
      * @param LoanParametersInterface $loanParameters
@@ -64,8 +68,9 @@ class Order implements OrderInterface
      * @param string|null $transferTitle
      * @param AllowedProductConfig[]|null $allowedProductsConfig
      * @param string|null $promoCode
+     * @param bool|null $directRedirect
      */
-    public function __construct(string $id, string $returnUrl, LoanParametersInterface $loanParameters, CartInterface $cart, CustomerInterface $customer, ?string $notifyUrl = null, ?SellerInterface $seller = null, ?string $accountNumber = null, ?string $transferTitle = null, ?array $allowedProductsConfig = null, ?string $promoCode = null)
+    public function __construct(string $id, string $returnUrl, LoanParametersInterface $loanParameters, CartInterface $cart, CustomerInterface $customer, ?string $notifyUrl = null, ?SellerInterface $seller = null, ?string $accountNumber = null, ?string $transferTitle = null, ?array $allowedProductsConfig = null, ?string $promoCode = null, ?bool $directRedirect = null)
     {
         $this->id = $id;
         $this->returnUrl = $returnUrl;
@@ -78,6 +83,7 @@ class Order implements OrderInterface
         $this->transferTitle = $transferTitle;
         $this->allowedProductsConfig = $allowedProductsConfig;
         $this->promoCode = $promoCode;
+        $this->directRedirect = $directRedirect;
     }
 
     public function getId(): string
@@ -141,5 +147,10 @@ class Order implements OrderInterface
         $promoCode = preg_replace('/^[\p{Z}\s]+|[\p{Z}\s]+$/u', '', $promoCode) ?? trim($promoCode);
 
         return $promoCode !== '' ? $promoCode : null;
+    }
+
+    public function getDirectRedirect(): ?bool
+    {
+        return $this->directRedirect;
     }
 }

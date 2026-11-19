@@ -317,15 +317,27 @@ final class OutboundRequestQueue
 
         try {
             $this->dispatch($handler, $request->payload, $request->tenantKey);
-            $this->storage->remove($request);
-
-            $state->processed++;
-            $state->clearFailures($request->tenantKey);
-
-            return true;
         } catch (\Throwable $error) {
             return $this->handleFailure($request, $error, $state, $now);
         }
+
+        try {
+            $this->storage->remove($request);
+        } catch (\Throwable $removalError) {
+            $this->log(
+                'error',
+                '[REQUEST_QUEUE] Delivered request could not be removed from the queue storage.',
+                $request->operationType,
+                $request->payload,
+                $removalError,
+                $request->tenantKey
+            );
+        }
+
+        $state->processed++;
+        $state->clearFailures($request->tenantKey);
+
+        return true;
     }
 
     /**
@@ -515,7 +527,19 @@ final class OutboundRequestQueue
             $request->tenantKey
         );
         $this->storage->remove($request);
-        ($nullsafeVariable3 = $this->deadLetterReporter) ? $nullsafeVariable3->report($request, $error) : null;
+
+        try {
+            ($nullsafeVariable3 = $this->deadLetterReporter) ? $nullsafeVariable3->report($request, $error) : null;
+        } catch (\Throwable $reportingError) {
+            $this->log(
+                'error',
+                '[REQUEST_QUEUE] Dead-letter reporter failed.',
+                $request->operationType,
+                $request->payload,
+                $reportingError,
+                $request->tenantKey
+            );
+        }
     }
 
     private function describe(\Throwable $error): string

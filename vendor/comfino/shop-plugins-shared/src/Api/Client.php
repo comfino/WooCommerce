@@ -613,12 +613,10 @@ class Client
 
     private function generateTrackId(): string
     {
-        $base = !empty($this->clientHostName) ? $this->clientHostName : gethostname();
+        $random = random_bytes(10);
+        $random[0] = chr((ord($random[0]) & 0x0f) | 0x70);
+        $random[2] = chr((ord($random[2]) & 0x3f) | 0x80);
 
-        if ($base === false) {
-            return 'trid-' . bin2hex(random_bytes(8));
-        }
-
-        return $base . '-' . microtime(true) . '-' . bin2hex(random_bytes(4));
+        return bin2hex(substr(pack('J', (int) floor(microtime(true) * 1000)), 2) . $random);
     }
 }

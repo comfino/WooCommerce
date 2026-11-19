@@ -192,13 +192,18 @@ final class ConfigManager
     private const CONFIG_MANAGER_OPTIONS = 0;
 
     private const REMOTE_FLAGS_CACHE_KEY = 'remote_flag_attributes';
-    // Daily fallback re-fetch for shops whose server rejects the backend's cache invalidation requests.
+    // Daily fallback re-fetch for shops whose server rejects cache invalidation requests.
     private const REMOTE_FLAGS_MAX_TTL = 86400;
     private const REMOTE_FLAGS_FAILURE_TTL = 300;
     private const REMOTE_FLAG_NAME_PATTERN = '/^[A-Z0-9_]{1,64}$/';
 
-    private const ERROR_LOGGING_TOKEN_FAILURE_CACHE_KEY = 'error_logging_token_claim_failed';
+    private const ERROR_LOGGING_TOKEN_COOLDOWN_CACHE_KEY = 'error_logging_token_claim_cooldown';
+    // Pause after a failed claim.
     private const ERROR_LOGGING_TOKEN_FAILURE_TTL = 300;
+    // Pause after a successful claim of a token that expires within the refresh window.
+    private const ERROR_LOGGING_TOKEN_SHORT_LIVED_TTL = 900;
+    // A token expiring within this many seconds is refreshed.
+    private const ERROR_LOGGING_TOKEN_REFRESH_WINDOW = 3600;
 
     /** @var ConfigurationManager */
     private static $configurationManager;
@@ -458,28 +463,46 @@ final class ConfigManager
             return;
         }
 
-        if (self::getErrorLoggingAccessToken() !== '' && self::getErrorLoggingAccessTokenExpiresAt() > time() + 3600) {
+        if (self::getErrorLoggingAccessToken() !== '' && self::getErrorLoggingAccessTokenExpiresAt() > time() + self::ERROR_LOGGING_TOKEN_REFRESH_WINDOW) {
             return;
         }
 
-        if (CacheManager::get(self::ERROR_LOGGING_TOKEN_FAILURE_CACHE_KEY) !== null) {
-            // A claim failed recently - don't retry on every request while the API is unreachable.
+        if (CacheManager::get(self::ERROR_LOGGING_TOKEN_COOLDOWN_CACHE_KEY) !== null) {
+            // A claim failed, or issued a token that is already due again - don't claim on every request.
             return;
         }
 
         try {
             $response = ApiClient::getInstance()->claimErrorLoggingToken();
 
-            if ($response !== null) {
-                self::updateConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN', $response->accessToken);
-                self::updateConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT', strtotime($response->expiresAt));
-                self::updateRemoteFlagsIfChanged($response->getHeader('Comfino-Flags', ''));
+            // The shared API client swallows request errors and returns null, so null is a failed claim, not "nothing to do".
+            $expiresAt = $response !== null ? strtotime($response->expiresAt) : false;
+
+            if ($response === null || $expiresAt === false) {
+                DebugLogger::logEvent(
+                    '[ERROR_LOGGING_TOKEN]',
+                    'Token claim failed',
+                    ['error_message' => $response === null ? 'No response.' : 'Unparsable token expiry.']
+                );
+
+                CacheManager::set(self::ERROR_LOGGING_TOKEN_COOLDOWN_CACHE_KEY, time(), self::ERROR_LOGGING_TOKEN_FAILURE_TTL);
+
+                return;
+            }
+
+            self::updateConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN', $response->accessToken);
+            self::updateConfigurationValue('COMFINO_ERROR_LOGGING_ACCESS_TOKEN_EXPIRES_AT', $expiresAt);
+            self::updateRemoteFlagsIfChanged($response->getHeader('Comfino-Flags', ''));
+
+            // A token issued with a lifetime within the refresh window is due again at once; wait before claiming another.
+            if ($expiresAt <= time() + self::ERROR_LOGGING_TOKEN_REFRESH_WINDOW) {
+                CacheManager::set(self::ERROR_LOGGING_TOKEN_COOLDOWN_CACHE_KEY, time(), self::ERROR_LOGGING_TOKEN_SHORT_LIVED_TTL);
             }
         } catch (\Throwable $e) {
-            // CETS token claim is best-effort: back off for a few minutes and keep a local debug record only.
+            // Error logging token claim is best-effort: back off for a few minutes and keep a local debug record only.
             DebugLogger::logEvent('[ERROR_LOGGING_TOKEN]', 'Token claim error', ['error_message' => $e->getMessage()]);
 
-            CacheManager::set(self::ERROR_LOGGING_TOKEN_FAILURE_CACHE_KEY, time(), self::ERROR_LOGGING_TOKEN_FAILURE_TTL);
+            CacheManager::set(self::ERROR_LOGGING_TOKEN_COOLDOWN_CACHE_KEY, time(), self::ERROR_LOGGING_TOKEN_FAILURE_TTL);
         }
     }
 
@@ -496,9 +519,9 @@ final class ConfigManager
     }
 
     /**
-     * Flag attributes from GET /user/settings/flags (the PROMO entry included), cached under the "remote_flags" tag so
-     * the backend can invalidate them when the shop's promotion or flags change. Fetched lazily, on a cache miss, when
-     * a checkout config is built.
+     * Flag attributes from the user settings API (the PROMO entry included), cached under the "remote_flags" tag so
+     * they can be invalidated when the shop's promotion or flags change. Fetched lazily, on a cache miss, when a
+     * checkout config is built.
      *
      * @return array<string, mixed>
      */
@@ -516,11 +539,11 @@ final class ConfigManager
             $userSettings = ApiClient::getInstance()->getUserSettings();
             $flagAttributes = self::sanitizeRemoteFlagAttributes($userSettings->flags);
             $cacheTtl = (int) $userSettings->getHeader('Comfino-Cache-TTL', '0');
-            // The backend can only shorten the daily re-fetch, never lengthen it.
+            // The API-provided cache TTL can only shorten the daily re-fetch, never lengthen it.
             $cacheTtl = $cacheTtl > 0 ? min($cacheTtl, self::REMOTE_FLAGS_MAX_TTL) : self::REMOTE_FLAGS_MAX_TTL;
 
             if (empty(self::getRemoteFlags()) && !empty($flagNames = array_diff(array_keys($flagAttributes), ['PROMO']))) {
-                // Seed the name list right after an upgrade, before the first CRM push or token claim.
+                // Seed the name list right after an upgrade, before the first remote configuration update or token claim.
                 self::updateConfigurationValue('COMFINO_REMOTE_FLAGS', array_values($flagNames));
             }
         } catch (\Throwable $e) {
@@ -539,7 +562,7 @@ final class ConfigManager
 
     /**
      * Keeps entries under well-formed flag names whose values are encodable as JSON. Values are opaque to the plugin
-     * (the backend owns their structure, the SDK interprets them), so they pass through unchanged.
+     * (the API owns their structure, the SDK interprets them), so they pass through unchanged.
      *
      * @param mixed $flags
      *
@@ -856,9 +879,30 @@ final class ConfigManager
             'PRODUCT_CART_DETAILS' => $productData['product_cart_details'],
             'LANGUAGE' => Main::getShopLanguage(),
             'CURRENCY' => Main::getShopCurrency(),
-            'LOGGING_TOKEN' => FrontendManager::getLoggingToken(),
-            'TRACK_ID' => FrontendManager::getTrackId(),
         ];
+    }
+
+    /**
+     * Per-visitor values of the product widget. Kept out of getWidgetVariables(): the product page (and the widget
+     * config in it) may be served from a full-page cache, so these are fetched per request from an uncached endpoint.
+     *
+     * @return array{trackId: string|null, loggingToken: string|null}
+     */
+    public static function getWidgetSessionValues(): array
+    {
+        try {
+            $trackId = FrontendManager::getTrackId();
+        } catch (\Throwable $e) {
+            $trackId = null;
+        }
+
+        try {
+            $loggingToken = FrontendManager::getLoggingToken();
+        } catch (\Throwable $e) {
+            $loggingToken = '';
+        }
+
+        return ['trackId' => $trackId ?: null, 'loggingToken' => $loggingToken ?: null];
     }
 
     public static function getConfigurationValues(string $optionsGroup, array $optionsToReturn = []): array

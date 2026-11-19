@@ -17,9 +17,14 @@ final class PaywallAuthTokenGenerator
     /**
      * @param string $widgetKey
      * @param string $signingKey
+     * @return string
      */
     public static function generateLoggingToken(string $widgetKey, string $signingKey): string
     {
+        if ($widgetKey === '' || $signingKey === '') {
+            return '';
+        }
+
         $versionByte = pack('C', 1);
         $timestampBytes = pack('J', time());
         $hmac = hash_hmac(

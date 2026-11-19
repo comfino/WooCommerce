@@ -87,6 +87,21 @@ class PaymentGatewayTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    /**
+     * @throws \ReflectionException
+     */
+    public function testCreateOrderHelperAcceptsDirectRedirectFlag(): void
+    {
+        $method = (new \ReflectionClass($this->gateway))->getMethod('createOrder');
+        $parameters = $method->getParameters();
+        $last = end($parameters);
+
+        $this->assertSame('directRedirect', $last->getName());
+        $this->assertTrue($last->isOptional());
+        $this->assertNull($last->getDefaultValue());
+        $this->assertTrue($last->allowsNull());
+    }
+
     public function testProcessPaymentWithInvalidData(): void
     {
         // Mock minimal POST data.

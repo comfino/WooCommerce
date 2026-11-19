@@ -3,6 +3,7 @@
 namespace Comfino\View;
 
 use Comfino\Api\ApiClient;
+use Comfino\Api\ApiService;
 use Comfino\Api\HttpErrorExceptionInterface;
 use Comfino\Common\Frontend\FrontendHelper;
 use Comfino\Common\Frontend\ProductWidgetScriptHelper;
@@ -465,8 +466,8 @@ final class FrontendManager
                 'sdkScriptUrl' => ConfigManager::getSdkScriptUrl(),
                 'environment' => ConfigManager::isSandboxMode() ? 'sandbox' : 'production',
                 'widgetKey' => $settings['COMFINO_WIDGET_KEY'] ?? null,
-                'loggingToken' => $variables['LOGGING_TOKEN'] ?? null,
-                'trackId' => $variables['TRACK_ID'] ?? null,
+                /* No loggingToken / trackId here: the config is part of the (possibly full-page-cached) product page.
+                   The loader from getWidgetLoaderScript() merges the per-visitor values in. */
                 'trackingConsent' => ConfigManager::isPaywallTrackingEnabled(),
                 'widgetTargetSelector' => $settings['COMFINO_WIDGET_TARGET_SELECTOR'] ?? null,
                 'priceSelector' => $settings['COMFINO_WIDGET_PRICE_SELECTOR'] ?? null,
@@ -513,7 +514,12 @@ final class FrontendManager
                 return '';
             }
 
-            return '<script type="application/json" id="' . ProductWidgetScriptHelper::CONFIG_ELEMENT_ID . '">' . $json . '</script>';
+            /* The data attributes feed resources/js/front/widget-loader.js, which merges the per-visitor values (track ID,
+               logging token) from the uncached session endpoint into the config and then loads the widget script. */
+            return '<script type="application/json" id="' . ProductWidgetScriptHelper::CONFIG_ELEMENT_ID . '" ' .
+                'data-widget-script-url="' . esc_url(ConfigManager::getProductWidgetScriptUrl()) . '" ' .
+                'data-session-url="' . esc_url(ApiService::getEndpointUrl('widgetSession')) . '">' .
+                $json . '</script>';
         } catch (\Throwable $e) {
             // processError() already reports the error.
             self::processError('Widget config element', $e, null, null, null, '[ERROR]', OperationContext::WidgetRendering);

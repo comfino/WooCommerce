@@ -156,8 +156,8 @@ final class LoanSelection
 
     /**
      * Logs the missing selection locally and reports it to ComfinoPay at most once per code per 24 hours. The report
-     * is a summary without order or customer data: the number of occurrences since the previous report shows the
-     * scale of the problem in the shop. It comes from the backend: only process_payment sees a POST that arrives
+     * is a summary without order or customer data: the number of occurrences since the previous report shows the scale
+     * of the problem in the shop. It is sent from the plugin because only process_payment sees a POST that arrives
      * without the selection.
      *
      * @param string $code One of the CODE_* constants.

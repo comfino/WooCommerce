@@ -26,6 +26,34 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
         // Mock functions are handled in bootstrap.php
     }
 
+    public function testWidgetLoaderFetchesSessionValuesBeforeLoadingWidgetScript(): void
+    {
+        $dir = dirname(__DIR__, 2) . '/resources/js/front/';
+
+        foreach (['widget-loader.js', 'widget-loader.min.js'] as $file) {
+            $script = file_get_contents($dir . $file);
+
+            $this->assertContains('comfino-widget-config', $script, $file);
+            $this->assertContains('data-session-url', $script, $file);
+            $this->assertContains('data-widget-script-url', $script, $file);
+            $this->assertContains('"trackId","loggingToken"', str_replace("'", '"', str_replace(', ', ',', $script)), $file);
+            $this->assertLessThan(strrpos($script, 'then(' . ($file === 'widget-loader.js' ? 'loadWidget' : 'o')), strpos($script, 'fetch('), $file);
+        }
+    }
+
+    public function testWidgetLoaderIsNotEmbeddedInline(): void
+    {
+        $this->assertFalse(method_exists(FrontendManager::class, 'getWidgetLoaderScript'));
+    }
+
+    public function testWidgetSessionValuesHaveExpectedKeys(): void
+    {
+        $values = ConfigManager::getWidgetSessionValues();
+
+        $this->assertArrayHasKey('trackId', $values);
+        $this->assertArrayHasKey('loggingToken', $values);
+    }
+
     public function testGetAuthTokenReturnsString(): void
     {
         $token = FrontendManager::getAuthToken();
@@ -409,7 +437,9 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
 
             $this->assertArrayHasKey('trackingConsent', $config);
             $this->assertSame($trackingConsent, $config['trackingConsent']);
-            $this->assertArrayHasKey('trackId', $config);
+            // Per-visitor values are merged in by the loader: the config may be served from a full-page cache.
+            $this->assertArrayNotHasKey('trackId', $config);
+            $this->assertArrayNotHasKey('loggingToken', $config);
 
             $this->resetConfigManager();
         }
@@ -417,7 +447,9 @@ class FrontendManagerTest extends \PHPUnit_Framework_TestCase
 
     private function decodeWidgetConfigElement(string $element): array
     {
-        $this->assertRegExp('#^<script type="application/json" id="comfino-widget-config">(.*)</script>$#s', $element);
+        $this->assertRegExp('#^<script type="application/json" id="comfino-widget-config"[^>]*>(.*)</script>$#s', $element);
+        $this->assertContains('data-widget-script-url="', $element);
+        $this->assertContains('data-session-url="', $element);
 
         return json_decode(preg_replace('#^<script[^>]*>(.*)</script>$#s', '$1', $element), true);
     }

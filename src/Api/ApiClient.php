@@ -22,15 +22,25 @@ if (!defined('ABSPATH')) {
 
 final class ApiClient
 {
+    /** Cookie keeping the checkout track ID between the paywall render and the order-create request. */
     private const CHECKOUT_TRACK_ID_COOKIE = 'comfino_checkout_track_id';
-    private const CHECKOUT_TRACK_ID_COOKIE_TTL = 900;
+    /** Same sliding lifetime as the SDK journey cookie, which the SDK clears when the shopper starts the payment. */
+    private const CHECKOUT_TRACK_ID_COOKIE_TTL = 1800;
+    /** Track ID format accepted from cookies and requests, shared with the frontend SDK and the Comfino API. */
     private const CHECKOUT_TRACK_ID_PATTERN = '/^[A-Za-z0-9_.:-]{1,128}$/';
+    /** Cookie owned by the frontend SDK with the consent-gated shopper journey track ID (read only, never written). */
     private const JOURNEY_TRACK_ID_COOKIE = 'comfino_journey_track_id';
+    /** Place-order request field with the paywall track ID, written by the frontend SDK. */
+    public const TRACK_ID_REQUEST_FIELD = 'comfino_track_id';
 
-    /* Plugin bounds for the remotely writable transport options, tighter than the shared client's own floor. Retries
-       double the timeouts, so the limits keep a single API call from stalling a page for minutes. */
+    /**
+     * Upper bound of the remotely writable connection timeout in seconds, tighter than the shared client's own floor.
+     * Retries double the timeouts, so the limit keeps a single API call from stalling a page for minutes.
+     */
     public const MAX_CONNECT_TIMEOUT = 5;
+    /** Upper bound of the remotely writable transfer timeout in seconds (see MAX_CONNECT_TIMEOUT). */
     public const MAX_TRANSFER_TIMEOUT = 15;
+    /** Upper bound of the remotely writable number of connection attempts (see MAX_CONNECT_TIMEOUT). */
     public const MAX_CONNECT_ATTEMPTS = 3;
 
     /** @var \Comfino\Common\Api\Client */
@@ -174,44 +184,78 @@ final class ApiClient
      * When the merchant enabled statistics consent, a valid SDK-owned journey cookie (set only with the shopper's
      * analytics consent) takes precedence, so product-page widget events and checkout share one trackId. The journey
      * cookie is never read with the setting off, and never written here.
+     *
+     * A valid track ID sent with the place-order request by the frontend SDK (the one of the paywall events, see
+     * TRACK_ID_REQUEST_FIELD) wins over both cookies: the SDK clears the journey cookie when the payment starts, and
+     * the checkout cookie may be missing or expired by then.
+     *
+     * @param string $submittedTrackId Track ID from the place-order request, empty when the request has none
      */
-    public static function pinCheckoutTrackId(): void
+    public static function pinCheckoutTrackId(string $submittedTrackId = ''): void
     {
         $client = self::getInstance();
 
-        if (ConfigManager::isPaywallTrackingEnabled() && self::isValidTrackIdCookie(self::JOURNEY_TRACK_ID_COOKIE)) {
+        if (preg_match(self::CHECKOUT_TRACK_ID_PATTERN, $submittedTrackId) === 1) {
+            $client->setTrackId($submittedTrackId);
+        } elseif (ConfigManager::isPaywallTrackingEnabled() &&
+            self::isValidTrackIdCookie(self::JOURNEY_TRACK_ID_COOKIE)
+        ) {
             $client->setTrackId($_COOKIE[self::JOURNEY_TRACK_ID_COOKIE]);
         } elseif (self::isValidTrackIdCookie(self::CHECKOUT_TRACK_ID_COOKIE)) {
             $client->setTrackId($_COOKIE[self::CHECKOUT_TRACK_ID_COOKIE]);
         }
 
-        $trackId = $client->getTrackId();
+        self::writeCheckoutTrackIdCookie($client->getTrackId(), time() + self::CHECKOUT_TRACK_ID_COOKIE_TTL);
+    }
 
-        if (!headers_sent()) {
-            $expires = time() + self::CHECKOUT_TRACK_ID_COOKIE_TTL;
+    /**
+     * Releases the checkout-scoped trackId after the order was created with it, so the next checkout of the same
+     * browser (a retry after a failed or canceled payment, another order within the cookie lifetime) starts a new
+     * journey instead of reusing the trackId of the finished one.
+     *
+     * The SDK-owned journey cookie is not touched here: the SDK clears it itself when the payment starts.
+     */
+    public static function releaseCheckoutTrackId(): void
+    {
+        unset($_COOKIE[self::CHECKOUT_TRACK_ID_COOKIE]);
 
-            if (PHP_VERSION_ID >= 70300) {
-                setcookie(self::CHECKOUT_TRACK_ID_COOKIE, $trackId, [
-                    'expires' => $expires,
-                    'path' => '/',
-                    'secure' => true,
-                    'httponly' => true,
-                    'samesite' => 'Lax',
-                ]);
-            } else {
-                /* PHP 7.1/7.2 target: setcookie()'s array-options 4th param (needed for a clean SameSite flag) requires
-                   PHP 7.3+. SameSite is set via the well-known path-suffix workaround instead. Since PHP 8.1, setcookie()
-                   rejects ";"/" " in the "path" arg, so this branch must stay 7.3-excluded. */
-                setcookie(
-                    self::CHECKOUT_TRACK_ID_COOKIE,
-                    $trackId,
-                    $expires,
-                    '/; SameSite=Lax',
-                    '',
-                    true,
-                    true
-                );
-            }
+        self::writeCheckoutTrackIdCookie('', time() - 3600);
+    }
+
+    /**
+     * Writes the checkout trackId cookie (an expiry in the past deletes it).
+     */
+    private static function writeCheckoutTrackIdCookie(string $value, int $expires): void
+    {
+        if (headers_sent()) {
+            return;
+        }
+
+        /* Browsers drop a Secure cookie sent over plain HTTP, which would leave the order-create request without
+           the checkout trackId. */
+        $secure = is_ssl();
+
+        if (PHP_VERSION_ID >= 70300) {
+            setcookie(self::CHECKOUT_TRACK_ID_COOKIE, $value, [
+                'expires' => $expires,
+                'path' => '/',
+                'secure' => $secure,
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]);
+        } else {
+            /* PHP 7.1/7.2 target: setcookie()'s array-options 4th param (needed for a clean SameSite flag) requires
+               PHP 7.3+. SameSite is set via the well-known path-suffix workaround instead. Since PHP 8.1, setcookie()
+               rejects ";"/" " in the "path" arg, so this branch must stay 7.3-excluded. */
+            setcookie(
+                self::CHECKOUT_TRACK_ID_COOKIE,
+                $value,
+                $expires,
+                '/; SameSite=Lax',
+                '',
+                $secure,
+                true
+            );
         }
     }
 
@@ -296,7 +340,7 @@ final class ApiClient
             ]
         );
 
-        /* A 404 and an idempotent failure (e.g. a 409 on an order already cancelled at ComfinoPay) need no report: the
+        /* A 404 and an idempotent failure (e.g. canceling an order that is already canceled) need no report: the
            requested state already holds or the resource is gone. */
         if ($statusCode !== 404 && !($exception instanceof AccessDenied && $exception->isIdempotentFailure())) {
             ErrorLogger::sendError(

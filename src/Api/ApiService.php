@@ -25,8 +25,7 @@ final class ApiService
     /**
      * Minimal length of an API key accepted as a request signature secret.
      *
-     * The error reporting request builder already refuses to key a MAC with anything shorter
-     * (ReportShopPluginError::MIN_HASH_KEY_LENGTH), so a value below this length cannot be a real ComfinoPay API key.
+     * A value below this length cannot be a real ComfinoPay API key.
      */
     private const MIN_API_KEY_LENGTH = 16;
 
@@ -98,9 +97,23 @@ final class ApiService
             ]
         );
 
-        /* ComfinoPay API callback endpoints - require CR-Signature authentication.
-           These are server-to-server requests from ComfinoPay API (no WordPress user context).
-           Authentication is performed by RestEndpointManager::verifyRequest() using SHA3-256 HMAC signature verification. */
+        /* Per-visitor values of the product widget (track ID, logging token): fetched by the product page loader, because
+           the page itself may be served from a full-page cache. Never cached. */
+        self::registerWordPressApiEndpoint(
+            'widgetSession',
+            [
+                [
+                    'methods' => \WP_REST_Server::READABLE,
+                    'callback' => static function (): \WP_REST_Response {
+                        return self::getWidgetSessionResponse();
+                    },
+                    'permission_callback' => '__return_true',
+                ],
+            ]
+        );
+
+        /* ComfinoPay API callback endpoints - require request signature authentication. These are server-to-server requests
+           from ComfinoPay API (no WordPress user context). Authentication is performed by RestEndpointManager::verifyRequest(). */
 
         self::getEndpointManager()->registerEndpoint(
             new StatusNotification(
@@ -196,6 +209,7 @@ final class ApiService
             'transactionStatus' => '/transactionstatus',
             'configuration' => '/configuration(?:/(?P<vkey>[a-f0-9]+))?',
             'cacheInvalidate' => '/cacheinvalidate',
+            'widgetSession' => '/widgetsession',
         ];
 
         add_action('rest_api_init', [self::class, 'init']);
@@ -217,6 +231,30 @@ final class ApiService
         $endpointParams = wp_parse_url($endpointUrl, PHP_URL_QUERY);
 
         return $endpointPath . (!empty($endpointParams) ? '?' . $endpointParams : '');
+    }
+
+    /**
+     * GET comfino/widgetsession: the per-visitor values of the product widget (track ID, logging token), which must not
+     * be embedded in full-page-cached product pages. Never cached.
+     */
+    private static function getWidgetSessionResponse(): \WP_REST_Response
+    {
+        $values = ConfigManager::isWidgetEnabled()
+            ? array_filter(
+                ConfigManager::getWidgetSessionValues(),
+                static function (?string $value): bool {
+                    return $value !== null;
+                }
+            )
+            : [];
+
+        $response = new \WP_REST_Response((object) $values, 200);
+
+        $response->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0, private');
+        $response->header('Pragma', 'no-cache');
+        $response->header('Expires', 'Wed, 11 Jan 1984 05:00:00 GMT');
+
+        return $response;
     }
 
     public static function processRequest(string $endpointName, \WP_REST_Request $request): \WP_REST_Response
@@ -327,7 +365,7 @@ final class ApiService
      * Permission callback for admin-only endpoints (future use).
      * Requires WordPress admin capabilities.
      *
-     * Note: This is NOT used for webhook/callback endpoints which authenticate via CR-Signature.
+     * Note: This is NOT used for webhook/callback endpoints which authenticate via request signature.
      * Use this only for admin panel features that modify plugin settings or trigger diagnostic actions.
      *
      * @return bool True if user has WooCommerce management capabilities.
